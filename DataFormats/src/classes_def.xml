@@ -10,7 +10,10 @@
   <class name="edm::RefProd<edm::SortedCollection<HGCalTBRecHit,edm::StrictWeakOrdering<HGCalTBRecHit> > >"/>
 
   <class name="edm::Wrapper<HGCalTBRecHitCollection>"/>
- 
+
+  <class name="SKIROC2DigiCollection"/>
+  <class name="edm::Wrapper<SKIROC2DigiCollection>"/>  
+  
   <class name="edm::DetSet<HGCalTBRecHit>"/>
   <class name="edm::DetSetVector<HGCalTBRecHit>"/>
   <class name="std::vector<edm::DetSet<HGCalTBRecHit> >"/>
