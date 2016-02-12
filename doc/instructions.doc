@@ -10,7 +10,7 @@ scram project ${RELEASE}
 cd ${RELEASE}/src/
 cmsenv 
 git cms-init
-git clone git@github.com:CMS-HGCAL/TestBeam.git HGCal/TestBeam
+git clone git@github.com:CMS-HGCAL/TestBeam.git HGCal/
 scram b -j16
 \endverbatim
 
