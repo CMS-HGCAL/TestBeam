@@ -6,14 +6,14 @@ Download instructions: \ref instructions_
 
 
 \par GIT \b SHORT instructions
-The main branch is downloaded by default the first time you download the code. It is \b shervinWorking
+The main branch is downloaded by default the first time you download the code. It is \b master
 
 Developers have to:
 \verbatim
-git checkout shervinWorking
+git checkout master
 git pull
-git branch myWorkingBranch
-git checkout myWorkingBranch
+git branch master
+git checkout master
 ...
 ...
 git add files_you_have_worked_on.cc
@@ -23,9 +23,9 @@ git commit -m "new point in the history, this is a comment to make clear which a
 git add files_you_have_worked_on.cc
 git commit -m "another commit"
 # to make sure what you did works
-scram b -j16 && cmsRun test/runAnalysis_cfg.py test=3
+scram b -j16 
 git push origin myWorkingBranch:myWorkingBranch
-git checkout shervinWorking
+git checkout master
 \endverbatim
 
 \par GIT \b LONG instructions

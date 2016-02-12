@@ -33,3 +33,6 @@
 
 # patch
 *.rej
+
+
+doc/doxygen
