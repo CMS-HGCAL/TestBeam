@@ -5,6 +5,9 @@
 
 /** \class HGCalTBNumberingScheme
   *  
+  * Simple-minded numbering scheme appropriate for a testbeam geometry.
+  * Scheme version 0 assumes up to 28 planes of single 128-cell sensors.
+  *
   * $Date: $
   * $Revision: $
   * \author J. Mans - Minnesota

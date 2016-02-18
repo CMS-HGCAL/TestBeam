@@ -12,7 +12,7 @@ static HGCalTBDetId tb_detid_load(const char* buffer, int& ptr) {
   } else return HGCalTBDetId(0);  
 }
 static void tb_detid_store(HGCalTBDetId id, FILE* f) {
-  fprintf(f,"%08x %4d %4d %4d %4d %d ",id.rawId(),id.layer()*id.zside(),id.sensor(),id.ix(),id.iy(),(id.isCalib()?(1):(0)));
+  fprintf(f,"%08x %4d %4d %4d %4d %d ",id.rawId(),id.layer()*id.zside(),id.sensor(),id.ix(),id.iv(),(id.isCalib()?(1):(0)));
 }
 
 bool HGCalCondObjectTextIO::load(const std::string& filename, HGCalCondObjectContainer<double>& cont) {
@@ -55,12 +55,27 @@ bool HGCalCondObjectTextIO::store(const std::string& filename, const HGCalCondOb
   if (f==0) return false;
 
   fprintf(f,"SCHEME_CODE %lu\n",cont.schemeCode());
-  fprintf(f,"# HEX  LAYER SENSOR  IX  IY  CAL  VALUE\n");
+  fprintf(f,"# HEX  LAYER SENSOR  IX  IV  CAL  VALUE\n");
   for (size_t i=0; i<cont.size(); i++) {
     if (cont.get(i).id.null()) continue;
     tb_detid_store(HGCalTBDetId(cont.get(i).id),f);
     fprintf(f,"%.6g\n",cont.get(i).value);
   }
+  fclose(f);
+  return true;
+}
+
+
+bool HGCalCondObjectTextIO::load(const std::string& filename, HGCalElectronicsMap& emap) {
+
+  return true;
+}
+bool HGCalCondObjectTextIO::store(const std::string& filename, const HGCalElectronicsMap& emap) {
+  FILE* f=fopen(filename.c_str(),"r");
+  if (f==0) return false;
+
+  fprintf(f,"# ELECTRONICS  |  DETID\n");
+
   fclose(f);
   return true;
 }

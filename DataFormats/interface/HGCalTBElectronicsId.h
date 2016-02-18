@@ -24,6 +24,8 @@ public:
 
   int ichan() const { return (m_id)*kIChanMask; }
   int iskiroc() const { return (m_id>>kISkiRocOffset)*kISkiRocMask; }
+
+  uint32_t rawId() const { return m_id; }
   
 private:
   uint32_t m_id;
