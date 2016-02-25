@@ -8,65 +8,67 @@ using namespace std;
 
 HGCalTBTopology Top;
 double delta = 0.00001;//needed for comparing two doubles while deciding if the cell is within a sensor
- 
-HGCalTBCellVertices::HGCalTBCellVertices(){
-/*
-   ix_ = ix;  
-   iv_ = iv;
-   sensorsize_ = sensorsize;
-*/
-   ValidFlag_   = Top.ix_iv_valid(ix_, iv_, sensorsize_);
+
+HGCalTBCellVertices::HGCalTBCellVertices()
+{
+	/*
+	   ix_ = ix;
+	   iv_ = iv;
+	   sensorsize_ = sensorsize;
+	*/
+	ValidFlag_   = Top.ix_iv_valid(ix_, iv_, sensorsize_);
 // Initialize the co-ordinates of a hexagonal cell of side a centred at 0,0 with the top vertex numbered as the first with clockwise increments.
-    double x1[] = {0., x_a*a, x_a*a,0., -x_a*a, -x_a*a};
-    double y1[] = {a,  y_a*a, -y_a*a, -a, -y_a*a, y_a*a};
-    for(int iii=0;iii<6;iii++){// May have to be generalized to deal with polygons of any size
-        x_co_FullHex.push_back(x1[iii]);
-        y_co_FullHex.push_back(y1[iii]);
-       }
+	double x1[] = {0., x_a * a, x_a * a, 0., -x_a * a, -x_a * a};
+	double y1[] = {a,  y_a * a, -y_a * a, -a, -y_a * a, y_a * a};
+	for(int iii = 0; iii < 6; iii++) { // May have to be generalized to deal with polygons of any size
+		x_co_FullHex.push_back(x1[iii]);
+		y_co_FullHex.push_back(y1[iii]);
+	}
 
-  }
+}
 
 
-std::vector<std::pair<double,double>> HGCalTBCellVertices::GetCellCoordinates(int ix, int iv, int sensorsize){
-     ix_ = ix;
-     iv_ = iv;
-     sensorsize_ = sensorsize;
-     ValidFlag_   = Top.ix_iv_valid(ix_, iv_, sensorsize_);
-     double vertex_x_tmp=0.,vertex_y_tmp=0.;
-     Cell_co.clear();
-    if(ValidFlag_){
-        for(int iii=0;iii<6;iii++){// May have to be generalized to deal with polygons of any size
-           vertex_x_tmp = x_co_FullHex[iii] + ix*x0 + iv*vx0;
-           vertex_y_tmp = y_co_FullHex[iii] + iv*vy0;
+std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(int ix, int iv, int sensorsize)
+{
+	ix_ = ix;
+	iv_ = iv;
+	sensorsize_ = sensorsize;
+	ValidFlag_   = Top.ix_iv_valid(ix_, iv_, sensorsize_);
+	double vertex_x_tmp = 0., vertex_y_tmp = 0.;
+	Cell_co.clear();
+	if(ValidFlag_) {
+		for(int iii = 0; iii < 6; iii++) { // May have to be generalized to deal with polygons of any size
+			vertex_x_tmp = x_co_FullHex[iii] + ix * x0 + iv * vx0;
+			vertex_y_tmp = y_co_FullHex[iii] + iv * vy0;
 //The general strategy is to translate starting from the central hexagonal cell to the ix,iv desired. If any vertex goes out of the sensor boundary its cordinates are not filled into the vector of pairs.
-           if(fabs(vertex_x_tmp) <= Xmax(fabs(vertex_y_tmp)) + delta) Cell_co.push_back(std::make_pair(vertex_x_tmp,vertex_y_tmp));
-          }
-        return Cell_co; 
-       }
-     else{
-           Cell_co.push_back(std::make_pair(-123456,-123456));//ix_iv_Valid() is sufficient to decide if a given ix,iv is a valid sensor index but this is done if some future need may arise.
-           return Cell_co;
-          } 
+			if(fabs(vertex_x_tmp) <= Xmax(fabs(vertex_y_tmp)) + delta) Cell_co.push_back(std::make_pair(vertex_x_tmp, vertex_y_tmp));
+		}
+		return Cell_co;
+	} else {
+		Cell_co.push_back(std::make_pair(-123456, -123456)); //ix_iv_Valid() is sufficient to decide if a given ix,iv is a valid sensor index but this is done if some future need may arise.
+		return Cell_co;
+	}
 
-    }
+}
 
 
-std::pair<double,double> HGCalTBCellVertices::GetCellCentreCoordinates(int ix, int iv, int sensorsize){
-      double centre_x_tmp=0.,centre_y_tmp=0.;  
-      ValidFlag_   = Top.ix_iv_valid(ix_, iv_, sensorsize_);
-      if(ValidFlag_){
-         centre_x_tmp = ix*x0 + iv*vx0;
-         centre_y_tmp = iv*vy0;
-         return std::make_pair(centre_x_tmp,centre_y_tmp);
-        } 
-      else return std::make_pair(-123456,-123456);//ix_iv_Valid() is sufficient to decide if a given ix,iv is a valid sensor index but this is done if some future need may arise. 
+std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int ix, int iv, int sensorsize)
+{
+	double centre_x_tmp = 0., centre_y_tmp = 0.;
+	ValidFlag_   = Top.ix_iv_valid(ix_, iv_, sensorsize_);
+	if(ValidFlag_) {
+		centre_x_tmp = ix * x0 + iv * vx0;
+		centre_y_tmp = iv * vy0;
+		return std::make_pair(centre_x_tmp, centre_y_tmp);
+	} else return std::make_pair(-123456, -123456); //ix_iv_Valid() is sufficient to decide if a given ix,iv is a valid sensor index but this is done if some future need may arise.
 
-     }
+}
 
-double HGCalTBCellVertices::Xmax(double y){
-       if(fabs(iv_) <= 3) return 11*x_a*a;
-       else return (11*a - y)/(1/(2*x_a));
- } 
+double HGCalTBCellVertices::Xmax(double y)
+{
+	if(fabs(iv_) <= 3) return 11 * x_a * a;
+	else return (11 * a - y) / (1 / (2 * x_a));
+}
 
 // To be added if for reconstruction it is useful to simply know if a cell is full hex, half hex or mouse-bitten
 /*
@@ -83,14 +85,14 @@ std::ostream& operator<<(std::ostream& s, const HGCalTBCellVertices& vertices, i
 
   if(type == 1){
     return s << "This cell is a full hexagon"<<endl;
-    for(int iii=0;iii<6;iii++) 
+    for(int iii=0;iii<6;iii++)
        return s<<" Vertex 1 x co-ordinate = "<<vertices.HX[iii]<<" y co-ordinate = "<<vertices.Hy[iii]<<endl;
     }
   else if(type == 2){
       return s << "This cell is a half hexagon"<<endl;
-      for(int iii=0;iii<4;iii++) 
-       return s<<" Vertex 1 x co-ordinate = "<<vertices.HX[iii]<<" y co-ordinate = "<<vertices.Hy[iii]<<endl; 
-     }  
+      for(int iii=0;iii<4;iii++)
+       return s<<" Vertex 1 x co-ordinate = "<<vertices.HX[iii]<<" y co-ordinate = "<<vertices.Hy[iii]<<endl;
+     }
 
 }
 */

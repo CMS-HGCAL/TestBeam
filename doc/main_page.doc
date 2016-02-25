@@ -4,6 +4,9 @@
 
 Download instructions: \ref instructions_
 
+Playing with fake recHits: \ref testRecHits_
+
+
 
 \par GIT \b SHORT instructions
 The main branch is downloaded by default the first time you download the code. It is \b master
