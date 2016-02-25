@@ -37,7 +37,8 @@ void produceRechitCollection::produce(edm::Event& event, const edm::EventSetup&)
     for(int i=-7;i<8;i++){
        for(int j=-7;j<8;j++){
            HGCalTBDetId Id(Layer,Sensor,i,j,false);
-//           std::cout << std::endl<<HGCalTBRecHit(Id, 65 - fabs(i*j),mode) << std::endl;
+/* Currently filled with a random number for 1 sensor in one layer(also called a module). No check is done here if the i,j proxy for ix,iv are valid detector indices. This is done in the analyzer that reads the rechits produced here and does the plotting.
+*/
            Rechits->push_back(HGCalTBRecHit(Id,  Rand2.Gaus(4,1) + fabs(TMath::Gaus(sqrt(i*i + j*j),0.,5.)*Rand1.Gaus(10.,5.)),0,mode));  
          }
       } 
