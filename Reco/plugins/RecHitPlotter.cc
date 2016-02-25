@@ -61,7 +61,7 @@ class RecHitPlotter : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       edm::EDGetToken HGCalTBRecHitCollection_;
       HGCalTBTopology IsCellValid;
       HGCalTBCellVertices TheCell;
-     int sensorsize = 128;
+     int sensorsize = 128;// The geometry for a 256 cell sensor hasnt been implemted yet. Need a picture to do this.
      std::vector<std::pair<double,double>> CellXY;
      std::pair<double,double> CellCentreXY;
      std::vector<std::pair<double,double>>::const_iterator it;
@@ -89,6 +89,9 @@ RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig)
    //now do what ever initialization is needed
    usesResource("TFileService");
    edm::Service<TFileService> fs;
+   HGCalTBRecHitCollection_ = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
+
+//Booking 2 "hexagonal" histograms to display the sum of Rechits and the Occupancy(Hit > 5 GeV) in 1 sensor in 1 layer. To include all layers soon. Also the 1D Rechits per cell in a sensor is booked here.
    sprintf(name,"FullLayer");
    sprintf(title,"Sum of RecHit Energy");
    h_digi_layer = fs->make<TH2Poly>();
@@ -99,7 +102,6 @@ RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig)
    h_digi_layer_Occupancy = fs->make<TH2Poly>();
    h_digi_layer_Occupancy->SetName(name);
    h_digi_layer_Occupancy->SetTitle(title);
-   HGCalTBRecHitCollection_ = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 
    const int HalfHexVertices=4;
    double HalfHexX[HalfHexVertices]={0.};
@@ -111,6 +113,7 @@ RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig)
    for(int iv=-7;iv<8;iv++){
       for(int ix=-7;ix<8;ix++){
          if(!IsCellValid.ix_iv_valid(ix,iv,sensorsize)) continue;
+//Some thought needs to be put in about the binning and limits of this 1D histogram, probably different for beam type Fermilab and cern.
          sprintf(name,"Cell_X_%i_V_%i",ix,iv);
          sprintf(title,"Rechits for Cell_X_%i_V_%i",ix,iv);
          h_digi_layer_cell[ix+7][iv+7] = fs->make<TH1F>(name,title,100,0.,40.);
@@ -123,6 +126,7 @@ RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig)
                 HalfHexX[iii] =  it->first;
                 HalfHexY[iii++] =  it->second;
                }
+//Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
             h_digi_layer->AddBin(NumberOfCellVertices,HalfHexX, HalfHexY);
             h_digi_layer_Occupancy->AddBin(NumberOfCellVertices,HalfHexX, HalfHexY);
            }
@@ -165,17 +169,17 @@ RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
    event.getByToken(HGCalTBRecHitCollection_, Rechits);
   
    for(auto RecHit: *Rechits){
-//       CellXY = TheCell.GetCellCoordinates((RecHit.id()).ix(),(RecHit.id()).iv(), sensorsize);
+       if(!IsCellValid.ix_iv_valid((RecHit.id()).ix(),(RecHit.id()).iv(),sensorsize))  continue;  
+//We now obtain the cartesian coordinates of the cell corresponding to an ix,iv. This may either be a full hex, a half hex or an invalid cell. If a cell is invalid based on the ix,iv index -123456 is returned for its x,y vertices
        CellCentreXY = TheCell.GetCellCentreCoordinates((RecHit.id()).ix(),(RecHit.id()).iv(), sensorsize);
+//HARD CODED: Add/subtract delta = 0.0001 to x,y of a cell centre so the TH2Poly::Fill doesnt have a problem at the edges where the centre of a half-hex cell passes through the sennsor boundary line
        double ixx = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
        double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
-       if(CellCentreXY.first != -1){
            h_digi_layer->Fill(ixx , iyy,RecHit.energy());
-           if(RecHit.energy() > 5) h_digi_layer_Occupancy->Fill(ixx , iyy, 0);
-         }
-        
-       if(IsCellValid.ix_iv_valid((RecHit.id()).ix(),(RecHit.id()).iv(),sensorsize)) h_digi_layer_cell[7 + (RecHit.id()).ix()][7 + (RecHit.id()).iv()]->Fill(RecHit.energy());        
-//       if(CellXY.size() > 0) std::cout<<std::endl<<"Vertex 1 x = "<< (CellXY.begin())->first;
+//The energy threshold for the occupancy has been hardcoded here. Need to decide what a good choice is. Maybe dynamic per cell depending on the pedestal 
+       if(RecHit.energy() > 5) h_digi_layer_Occupancy->Fill(ixx , iyy);
+// There will be several array indices ix, iv that wont be filled due to it being invalid. Can think of alternate array filling.
+       h_digi_layer_cell[7 + (RecHit.id()).ix()][7 + (RecHit.id()).iv()]->Fill(RecHit.energy());        
      }
   
  

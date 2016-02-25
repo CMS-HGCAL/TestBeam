@@ -23,7 +23,7 @@ process.RechitCollection = cms.EDProducer("produceRechitCollection",
 )
 
 process.out = cms.OutputModule("PoolOutputModule",
-                fileName = cms.untracked.string("test2.root")
+                fileName = cms.untracked.string("test_RecHits_OneLayer_TB.root")
         )
 
 
