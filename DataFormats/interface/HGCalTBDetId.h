@@ -5,33 +5,38 @@
 #include "DataFormats/DetId/interface/DetId.h"
 #include "DataFormats/ForwardDetId/interface/ForwardSubdetector.h"
 
-/* This class is bit-compatible with HGCalDetId, but is better-matched to the testbeams.
-
+/* 
    On a sensor, the indexes are X and V.  X is horizontal (in most diagrams) and V increases along the hexagon faces towards the upper right.
 
  */
 class HGCalTBDetId : public DetId {
 
 public:
-  static const int kHGCalTBXOffset       = 0;
-  static const int kHGCalTBXMask         = 0xFF;
-  static const int kHGCalTBVOffset       = 8;
-  static const int kHGCalTBVMask         = 0xFF;
-  static const int kHGCalTBSensorOffset  = 16;
-  static const int kHGCalTBSensorMask    = 0x7F;
-  static const int kHGCalTBCalibFlagOffset = 23;
-  static const int kHGCalTBCalibFlagMask = 0x1;
-  static const int kHGCalLayerOffset     = 24;
-  static const int kHGCalLayerMask       = 0x7F;
-  static const int kHGCalZsideOffset     = 31;
-  static const int kHGCalZsideMask       = 0x1;
+  static const int kHGCalTBXOffset        = 0;
+  static const int kHGCalTBXMask          = 0x3F;
+  static const int kHGCalTBVOffset        = 6;
+  static const int kHGCalTBVMask          = 0x3F;
+  static const int kHGCalTBSensorXOffset  = 12;
+  static const int kHGCalTBSensorXMask    = 0xF;
+  static const int kHGCalTBSensorVOffset  = 16;
+  static const int kHGCalTBSensorVMask    = 0xF;
+  static const int kHGCalTBCellTypeOffset = 20;
+  static const int kHGCalTBCellTypeMask   = 0xF;
+  static const int kHGCalLayerOffset      = 24;
+  static const int kHGCalLayerMask        = 0x7F;
+  static const int kHGCalZsideOffset      = 31;
+  static const int kHGCalZsideMask        = 0x1;
 
+  static const int kCellTypeStandard      =   0;
+  static const int kCellTypeCalibInner    =   1;
+  static const int kCellTypeCalibOuter    =   2;
+  
   /** Create a null cellid*/
   HGCalTBDetId();
   /** Create cellid from raw id (0=invalid tower id) */
   HGCalTBDetId(uint32_t rawid);
-  /** Constructor from layer, sensor, ix, iv, calibr cell numbers */
-  HGCalTBDetId(int lay, int sensor, int ix, int iv, bool isCalib=false);
+  /** Constructor from layer, sensor_ix, sensor_iv, ix, iv, calibr cell numbers */
+  HGCalTBDetId(int lay, int sensor_ix, int sensor_iv, int ix, int iv, int cellType);
   /** Constructor from a generic cell id */
   HGCalTBDetId(const DetId& id);
   /** Assignment from a generic cell id */
@@ -42,10 +47,11 @@ public:
   int iv() const { return int8_t((id_>>kHGCalTBVOffset)&kHGCalTBVMask); }
 
   /// get the sensor #
-  int sensor() const { return (id_>>kHGCalTBSensorOffset)&kHGCalTBSensorMask; }
+  int sensorIX() const { return (id_>>kHGCalTBSensorXOffset)&kHGCalTBSensorXMask; }
+  int sensorIV() const { return (id_>>kHGCalTBSensorVOffset)&kHGCalTBSensorVMask; }
 
-  /// is this a calibration channel?
-  bool isCalib() const { return ( (id_>>kHGCalTBCalibFlagOffset)&kHGCalTBCalibFlagMask); }
+  /// cell type
+  int cellType() const { return ( (id_>>kHGCalTBCellTypeOffset)&kHGCalTBCellTypeMask); }
 
   /// get the layer #
   int layer() const { return (id_>>kHGCalLayerOffset)&kHGCalLayerMask; }
