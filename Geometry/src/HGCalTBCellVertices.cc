@@ -5,6 +5,7 @@
 #include <iomanip>
 #define PI 3.14159265
 using namespace std;
+#include "HGCal/Geometry/interface/HGCalTBTopology.h"
 
 HGCalTBTopology Top;
 double delta = 0.00001;//needed for comparing two doubles while deciding if the cell is within a sensor

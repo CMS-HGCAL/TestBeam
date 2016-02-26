@@ -5,10 +5,10 @@
 
 \brief definition of a cell
 
+This class implements the elementary cell in HGCal
 */
 
-#include "HGCal/Geometry/interface/HGCalTBTopology.h"
-#include "math.h"
+#include <cmath>
 #include <vector>
 
 class HGCalTBCellVertices
