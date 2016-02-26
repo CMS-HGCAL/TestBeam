@@ -5,14 +5,14 @@
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 
 static HGCalTBDetId tb_detid_load(const char* buffer, int& ptr) {
-  int v0,v1,v2,v3,v4,v5;
-  int found=sscanf(buffer,"%d %d %d %d %d %d%n ",&v0,&v1,&v2,&v3,&v4,&v5,&ptr);
-  if (found==6) {
-    return HGCalTBDetId(abs(v1),v2,v3,v4,v5!=0);
+  int v0,v1,v2,v3,v4,v5,v6;
+  int found=sscanf(buffer,"%d %d %d %d %d %d %d %n ",&v0,&v1,&v2,&v3,&v4,&v5,&v6,&ptr);
+  if (found==7) {
+    return HGCalTBDetId(abs(v1),v2,v3,v4,v5,v6);
   } else return HGCalTBDetId(0);  
 }
 static void tb_detid_store(HGCalTBDetId id, FILE* f) {
-  fprintf(f,"%08x %4d %4d %4d %4d %d ",id.rawId(),id.layer()*id.zside(),id.sensor(),id.ix(),id.iv(),(id.isCalib()?(1):(0)));
+  fprintf(f,"%08x %4d %4d %4d %4d %4d %d ",id.rawId(),id.layer()*id.zside(),id.sensorIX(),id.sensorIV(),id.ix(),id.iv(),id.cellType());
 }
 
 bool HGCalCondObjectTextIO::load(const std::string& filename, HGCalCondObjectContainer<double>& cont) {

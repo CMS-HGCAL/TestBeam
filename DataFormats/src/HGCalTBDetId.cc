@@ -9,13 +9,14 @@ HGCalTBDetId::HGCalTBDetId() : DetId() {
 HGCalTBDetId::HGCalTBDetId(uint32_t rawid) : DetId(rawid) {
 }
 
-HGCalTBDetId::HGCalTBDetId(int lay, int sen, int ix, int iv, bool isCalib) : DetId(0) {  
+HGCalTBDetId::HGCalTBDetId(int lay, int sen_ix, int sen_iv, int ix, int iv, int cellType) : DetId(0) {  
   uint32_t rawid=0;
   rawid |= ((ix   & kHGCalTBXMask)        << kHGCalTBXOffset);
   rawid |= ((iv   & kHGCalTBVMask)        << kHGCalTBVOffset);
-  rawid |= ((sen    & kHGCalTBSensorMask)      << kHGCalTBSensorOffset);  
+  rawid |= ((sen_ix  & kHGCalTBSensorXMask)      << kHGCalTBSensorXOffset);
+  rawid |= ((sen_iv  & kHGCalTBSensorVMask)      << kHGCalTBSensorVOffset);  
   rawid |= ((lay    & kHGCalLayerMask)       << kHGCalLayerOffset);
-  if (isCalib) rawid |= (kHGCalTBCalibFlagMask << kHGCalTBCalibFlagOffset);
+  rawid |= ((cellType & kHGCalTBCellTypeMask) << kHGCalTBCellTypeOffset);
   id_ = rawid;
 }
 
@@ -29,7 +30,14 @@ HGCalTBDetId& HGCalTBDetId::operator=(const DetId& gen) {
 }
 
 std::ostream& operator<<(std::ostream& s,const HGCalTBDetId& id) {
-  return s << "HGC(TB)" 
+  s << "HGC(TB)" 
 	   << " layer=" << id.layer()  
-	   << " sensor=" << id.sensor() << " ix,iv=" << id.ix() << "," << id.iv() << (id.isCalib()?("CALIB"):(""));
+    << " sensor(ix,iv)=" << id.sensorIX() << "," << id.sensorIV() << " ix,iv=" << id.ix() << "," << id.iv();
+  switch (id.cellType()) {
+  case HGCalTBDetId::kCellTypeCalibInner: s << "Calib(Inner)"; break;
+  case HGCalTBDetId::kCellTypeCalibOuter: s << "Calib(Outer)"; break;
+  default: break;
+  }
+
+return s;
 }
