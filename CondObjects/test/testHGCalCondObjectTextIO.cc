@@ -24,8 +24,7 @@ int main(int argc, char *argv[]) {
     }   
   }
 
-  HGCalTBNumberingScheme myScheme;    
-  HGCalCondObjectTextIO io(&myScheme);
+  HGCalCondObjectTextIO io(HGCalTBNumberScheme::scheme());
 
   if (!mapfile_in.empty()) {
     HGCalElectronicsMap emap;
