@@ -18,6 +18,7 @@ public:
   Digi backDataFrame() { return Digi(this->back()); }
   int samples() const { return int((stride()-Digi::HEADER_WORDS-Digi::FLAG_WORDS)/Digi::WORDS_PER_SAMPLE); }
   void addDataFrame(DetId detid, const uint16_t* data) { push_back(detid.rawId(),data); }
+  void addDataFrame(DetId detid) { std::vector<uint16_t> dummy_data(stride(),0); push_back(detid.rawId(),&(dummy_data[0])); }
   void push_back(const Digi& digi){ push_back(digi.id(), digi.begin()); }
 };
 

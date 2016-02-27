@@ -16,6 +16,10 @@ class HGCalTBNumberingScheme : public HGCalCondObjectNumberingScheme {
 public:
   virtual size_t rangeFor(uint64_t scheme) const;
   virtual size_t denseIndexFor(uint32_t rawDetId, uint64_t scheme) const;
+  static const HGCalCondObjectNumberingScheme* scheme() { return &the_scheme; }
+private:
+  HGCalTBNumberingScheme() { }
+  static HGCalTBNumberingScheme the_scheme;
 };
 
 #endif

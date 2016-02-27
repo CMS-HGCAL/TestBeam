@@ -3,6 +3,8 @@
 
 static const int CELLSLOTS_PER_SENSOR = 133+2;
 
+HGCalTBNumberingScheme HGCalTBNumberingScheme::the_scheme;
+
 size_t HGCalTBNumberingScheme::rangeFor(uint64_t scheme) const {
   if (scheme==0) return 28*CELLSLOTS_PER_SENSOR;
   else return 0;

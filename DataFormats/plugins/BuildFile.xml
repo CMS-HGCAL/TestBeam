@@ -1,0 +1,7 @@
+<use   name="boost"/>
+<use   name="HGCal/DataFormats"/>
+<use   name="FWCore/Framework"/>
+<use   name="FWCore/ParameterSet"/>
+<library   file="HGCalDigiDump.cc" name="HGCalDigiDump">
+  <flags   EDM_PLUGIN="1"/>
+</library>

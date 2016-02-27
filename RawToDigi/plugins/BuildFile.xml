@@ -7,4 +7,6 @@
 <use name="FWCore/Common"/>
 <use name="FWCore/Sources"/>
 <use name="DataFormats/FEDRawData"/>
+<use name="HGCal/DataFormats"/>
+<use name="HGCal/CondObjects"/>
 <flags EDM_PLUGIN="1"/>

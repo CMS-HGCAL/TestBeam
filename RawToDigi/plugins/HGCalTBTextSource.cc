@@ -22,13 +22,18 @@ public:
 private:
   virtual bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&) {
 
-    if (!(fileNames().size())) return false; // need a file...
+    if (!(fileNames().size())) return false; // need a file...    
     if (m_file==0) {
-      m_file=fopen(fileNames()[0].c_str(),"r");
-      if (m_file==0) return false; // can't open the file!
+      std::string name=fileNames()[0].c_str();
+      if (name.find("file:")==0) name=name.substr(5);
+      m_file=fopen(name.c_str(),"r");
+      if (m_file==0) {
+	throw cms::Exception("FileNotFound") << "Unable to open file " << name;
+      }
       m_event=0;
     }
     if (feof(m_file)) return false;
+    if (!readLines()) return false;
     
     m_event++;
     id=edm::EventID(m_run,1,m_event);
@@ -40,14 +45,47 @@ private:
     return true;
   }
   virtual void produce(edm::Event & e);
+  bool readLines();
 
+  std::vector<std::string> m_lines;
   FILE* m_file;
   int m_event, m_run;
   int m_sourceId;
 };
 
-void HGCalTBTextSource::produce(edm::Event & e) {
+bool HGCalTBTextSource::readLines() {
+  m_lines.clear();
+  char buffer[1024];
+  while (!feof(m_file)) {
+    buffer[0]=0; fgets(buffer,1000,m_file);
+    if (strstr(buffer,"DONE")) break; // done with this event!
+    if (buffer[0]!='0' && buffer[1]!='x') continue;
+    m_lines.push_back(buffer);
+  }
+  return !m_lines.empty();
+}
 
+void HGCalTBTextSource::produce(edm::Event & e) {
+  std::auto_ptr<FEDRawDataCollection> bare_product(new  FEDRawDataCollection());
+
+
+  // here we parse the data
+  std::vector<uint16_t> skiwords;
+  // make sure there are an even number of 32-bit-words (a round number of 64 bit words...
+  if (m_lines.size()%2) { skiwords.push_back(0); skiwords.push_back(0); }
+  for (std::vector<std::string>::const_iterator i=m_lines.begin(); i!=m_lines.end(); i++) {
+    uint32_t a,b;
+    sscanf(i->c_str(),"%x %x",&a,&b);
+    skiwords.push_back(uint16_t(b>>16));
+    skiwords.push_back(uint16_t(b));
+  }
+  
+  FEDRawData& fed=bare_product->FEDData(m_sourceId);
+  size_t len=sizeof(uint16_t)*skiwords.size();
+  fed.resize(len);
+  memcpy(fed.data(),&(skiwords[0]),len);
+  
+  e.put(bare_product);
 }
 
 

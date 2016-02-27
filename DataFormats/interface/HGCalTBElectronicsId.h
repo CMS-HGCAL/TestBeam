@@ -30,6 +30,8 @@ public:
   uint32_t rawId() const { return m_id; }
 
   bool null() const { return m_id==0; }
+
+  operator uint32_t() const { return m_id; }
 private:
   uint32_t m_id;
 };

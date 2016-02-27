@@ -33,7 +33,7 @@ DetId HGCalElectronicsMap::eid2detId(uint32_t eid) const {
   me.eid=eid;
   
   std::vector<HGCalElectronicsMap::MapEntry>::const_iterator where=std::lower_bound(m_map.begin(),m_map.end(),me);
-  return (where!=m_map.end() && where->eid==eid)?(DetId(0)):(DetId(me.detid));  
+  return (where==m_map.end() || where->eid!=eid)?(DetId(0)):(DetId(where->detid));  
 }
 
 uint32_t HGCalElectronicsMap::detId2eid(DetId did) const {
