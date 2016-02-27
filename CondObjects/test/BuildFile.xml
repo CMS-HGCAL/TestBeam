@@ -1,0 +1,3 @@
+<bin file="testHGCalCondObjectTextIO.cc">
+    <use   name="HGCal/CondObjects"/>
+</bin>

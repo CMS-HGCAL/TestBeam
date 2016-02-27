@@ -11,10 +11,10 @@ HGCalTBDetId::HGCalTBDetId(uint32_t rawid) : DetId(rawid) {
 
 HGCalTBDetId::HGCalTBDetId(int lay, int sen_ix, int sen_iv, int ix, int iv, int cellType) : DetId(0) {  
   uint32_t rawid=0;
-  rawid |= ((ix   & kHGCalTBXMask)        << kHGCalTBXOffset);
-  rawid |= ((iv   & kHGCalTBVMask)        << kHGCalTBVOffset);
-  rawid |= ((sen_ix  & kHGCalTBSensorXMask)      << kHGCalTBSensorXOffset);
-  rawid |= ((sen_iv  & kHGCalTBSensorVMask)      << kHGCalTBSensorVOffset);  
+  rawid |= ((ix   & (kHGCalTBXSignMask|kHGCalTBXMask))        << kHGCalTBXOffset);
+  rawid |= ((iv   & (kHGCalTBVSignMask|kHGCalTBVMask))        << kHGCalTBVOffset);
+  rawid |= ((sen_ix  & (kHGCalTBSensorXSignMask|kHGCalTBSensorXMask))      << kHGCalTBSensorXOffset);
+  rawid |= ((sen_iv  & (kHGCalTBSensorVSignMask||kHGCalTBSensorVMask))      << kHGCalTBSensorVOffset);  
   rawid |= ((lay    & kHGCalLayerMask)       << kHGCalLayerOffset);
   rawid |= ((cellType & kHGCalTBCellTypeMask) << kHGCalTBCellTypeOffset);
   id_ = rawid;

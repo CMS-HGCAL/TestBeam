@@ -12,20 +12,24 @@
 class HGCalTBDetId : public DetId {
 
 public:
-  static const int kHGCalTBXOffset        = 0;
-  static const int kHGCalTBXMask          = 0x3F;
-  static const int kHGCalTBVOffset        = 6;
-  static const int kHGCalTBVMask          = 0x3F;
-  static const int kHGCalTBSensorXOffset  = 12;
-  static const int kHGCalTBSensorXMask    = 0xF;
-  static const int kHGCalTBSensorVOffset  = 16;
-  static const int kHGCalTBSensorVMask    = 0xF;
-  static const int kHGCalTBCellTypeOffset = 20;
-  static const int kHGCalTBCellTypeMask   = 0xF;
-  static const int kHGCalLayerOffset      = 24;
-  static const int kHGCalLayerMask        = 0x7F;
-  static const int kHGCalZsideOffset      = 31;
-  static const int kHGCalZsideMask        = 0x1;
+  static const int kHGCalTBXOffset         = 0;
+  static const int kHGCalTBXMask           = 0x1F;
+  static const int kHGCalTBXSignMask       = 0x20;
+  static const int kHGCalTBVOffset         = 6;
+  static const int kHGCalTBVMask           = 0x1F;
+  static const int kHGCalTBVSignMask       = 0x20;
+  static const int kHGCalTBSensorXOffset   = 12;
+  static const int kHGCalTBSensorXMask     = 0x7;
+  static const int kHGCalTBSensorXSignMask = 0x8;
+  static const int kHGCalTBSensorVOffset   = 16;
+  static const int kHGCalTBSensorVMask     = 0x7;
+  static const int kHGCalTBSensorVSignMask = 0x8;
+  static const int kHGCalTBCellTypeOffset  = 20;
+  static const int kHGCalTBCellTypeMask    = 0xF;
+  static const int kHGCalLayerOffset       = 24;
+  static const int kHGCalLayerMask         = 0x7F;
+  static const int kHGCalZsideOffset       = 31;
+  static const int kHGCalZsideMask         = 0x1;
 
   static const int kCellTypeStandard      =   0;
   static const int kCellTypeCalibInner    =   1;
@@ -43,12 +47,24 @@ public:
   HGCalTBDetId& operator=(const DetId& id);
 
   /// get the absolute value of the cell #'s
-  int ix() const { return int8_t(id_&kHGCalTBXMask); }
-  int iv() const { return int8_t((id_>>kHGCalTBVOffset)&kHGCalTBVMask); }
+  int ix() const {
+    uint32_t v=id_;
+    return (v&kHGCalTBXSignMask)?((v&kHGCalTBXMask)-kHGCalTBXSignMask):(v&kHGCalTBXMask);
+  }
+  int iv() const {
+    uint32_t v=id_>>kHGCalTBVOffset;
+    return (v&kHGCalTBVSignMask)?((v&kHGCalTBVMask)-kHGCalTBVSignMask):(v&kHGCalTBVMask);
+  }
 
   /// get the sensor #
-  int sensorIX() const { return (id_>>kHGCalTBSensorXOffset)&kHGCalTBSensorXMask; }
-  int sensorIV() const { return (id_>>kHGCalTBSensorVOffset)&kHGCalTBSensorVMask; }
+  int sensorIX() const {
+    uint32_t v=id_>>kHGCalTBSensorXOffset;
+    return (v&kHGCalTBSensorXSignMask)?(-(v&kHGCalTBSensorXMask)):(v&kHGCalTBSensorXMask);
+  }
+  int sensorIV() const {
+    uint32_t v=id_>>kHGCalTBSensorVOffset;
+    return (v&kHGCalTBSensorVSignMask)?(-(v&kHGCalTBSensorVMask)):(v&kHGCalTBSensorVMask);
+  }
 
   /// cell type
   int cellType() const { return ( (id_>>kHGCalTBCellTypeOffset)&kHGCalTBCellTypeMask); }
@@ -57,7 +73,7 @@ public:
   int layer() const { return (id_>>kHGCalLayerOffset)&kHGCalLayerMask; }
 
   /// get the z-side of the cell (1/-1)
-  int zside() const { return ((id_>>kHGCalZsideOffset) & kHGCalZsideMask ? 1 : -1); }
+  int zside() const { return ((id_>>kHGCalZsideOffset) & kHGCalZsideMask ? -1 : 1); }
 
   /// consistency check : no bits left => no overhead
   bool isHGCal()   const { return true; }

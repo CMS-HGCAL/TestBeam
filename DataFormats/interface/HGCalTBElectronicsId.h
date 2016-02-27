@@ -21,12 +21,15 @@ public:
   static const int kISkiRocMask   = 0xF;
   
   HGCalTBElectronicsId(int iskiroc, int ichan);
-
-  int ichan() const { return (m_id)*kIChanMask; }
-  int iskiroc() const { return (m_id>>kISkiRocOffset)*kISkiRocMask; }
+  HGCalTBElectronicsId() : m_id(0) { }
+  HGCalTBElectronicsId(uint32_t rawId) : m_id(rawId) { }
+  
+  int ichan() const { return (m_id&kIChanMask); }
+  int iskiroc() const { return (m_id>>kISkiRocOffset)&kISkiRocMask; }
 
   uint32_t rawId() const { return m_id; }
-  
+
+  bool null() const { return m_id==0; }
 private:
   uint32_t m_id;
 };
