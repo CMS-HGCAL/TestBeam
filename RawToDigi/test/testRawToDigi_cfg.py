@@ -1,6 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 
+
+
 process = cms.Process("unpack")
+process.load('HGCal.RawToDigi.hgcaldigis_cfi')
 
 
 process.source = cms.Source("HGCalTBTextSource",
@@ -14,12 +17,5 @@ process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
 
 process.dumpDigi = cms.EDAnalyzer("HGCalDigiDump")
 
-process.hgcaldigis = cms.EDProducer("HGCalTBRawToDigi",
-                                    InputLabel=cms.InputTag("source"), ###
-                                    fedId=cms.untracked.int32(1000), ## FED ID is hard coded in the HGCalTBTextSource TO BE FIXED
-
-                                    electronicsMap=cms.untracked.string("HGCal/CondObjects/data/map_FNAL.txt"), ### electronicsMap written by hand
-
-                                    )
 
 process.p =cms.Path(process.dumpRaw*process.hgcaldigis*process.dumpDigi)
