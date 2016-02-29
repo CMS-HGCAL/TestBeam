@@ -3,6 +3,7 @@
 
 namespace SKIROC{
 	static const unsigned char NCHANNELS = 64;
+	static const unsigned char MAXSAMPLES = 15;
 }
 
 
