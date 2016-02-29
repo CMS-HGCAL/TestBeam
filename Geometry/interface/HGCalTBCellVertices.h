@@ -16,7 +16,7 @@ class HGCalTBCellVertices
 public:
 
 	HGCalTBCellVertices(); ///<  Constructor from cell ix & iv, valid sensorSizes are 128 and 256
-	std::vector<std::pair<double, double>> GetCellCoordinates(int ix, int iv, int sensorsize) const;
+	std::vector<std::pair<double, double> > GetCellCoordinates(int ix, int iv, int sensorsize);
 	std::pair<double, double> GetCellCentreCoordinates(int ix, int iv, int sensorsize);
 //  void CellType(int ix, int iv, bool ValidFlag);// 1 for full hex, 2 for half hex and 3 for the pentagons(to be implemented later)
 private:
