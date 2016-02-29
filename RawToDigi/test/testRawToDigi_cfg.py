@@ -4,7 +4,7 @@ process = cms.Process("unpack")
 
 
 process.source = cms.Source("HGCalTBTextSource",
-                            run=cms.untracked.int32(2),
+                            run=cms.untracked.int32(2), ###! maybe this should be read from the file
                             fileNames=cms.untracked.vstring("file:SKIROC_RO.txt")
 
 )
