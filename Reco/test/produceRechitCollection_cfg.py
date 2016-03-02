@@ -9,8 +9,8 @@ process.source = cms.Source ("EmptySource")
 
 import FWCore.ParameterSet.VarParsing as VarParsing
 options = VarParsing.VarParsing('standard')
-options.maxEvents = 100000
-process.MessageLogger.cerr.FwkReport.reportEvery = 5000
+options.maxEvents = 200
+process.MessageLogger.cerr.FwkReport.reportEvery = 1 
 
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)

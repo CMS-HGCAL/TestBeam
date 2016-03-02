@@ -9,7 +9,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 5000
 process.source = cms.Source("PoolSource",
                                 # replace 'myfile.root' with the source file you want to use
                                 fileNames = cms.untracked.vstring(
-            'file:/afs/cern.ch/work/r/rchatter/CMSSW_7_6_3_patch2/src/HGCal/Reco/test_RecHits_OneLayer_TB.root'
+            'file:/afs/cern.ch/work/r/rchatter/Updated_TB_Geometry/CMSSW_7_6_3_patch2/src/HGCal/Reco/test_RecHits_OneLayer_TB.root'
                 )
                             )
 

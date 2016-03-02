@@ -11,6 +11,6 @@ void SKIROC2DataFrame::setSample(edm::DataFrame::size_type isample, int adc, int
 std::ostream& operator<<(std::ostream& s, const SKIROC2DataFrame& ski) {
   s << ski.detid() << std::endl;
   for (int i=0; i<ski.samples(); i++)
-    s << "    " << ski[i].adc() << " " << ski[i].tdc() << std::endl;      
+    s << "    " << ski[i].adc() << " " << ski[i].tdc() << " " << ski.samples()  << std::endl;      
   return s;
 }
