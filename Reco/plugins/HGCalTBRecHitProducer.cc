@@ -34,6 +34,7 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg)
 }
 
 void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup&){
+
 	std::auto_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection); //auto_ptr are automatically deleted when out of scope
 	
 	edm::Handle<HGCalTBDigiCollection> digisHandle;
@@ -41,8 +42,14 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup&){
 
 	for(auto digi_itr = digisHandle->begin(); digi_itr != digisHandle->end(); ++digi_itr){
 #ifdef DEBUG
-		std::cout << *digi_itr << std::endl;
+		std::cout << "[RECHIT]" << *digi_itr << std::endl;
 #endif
+		SKIROC2DataFrame digi(*digi_itr);
+		unsigned int nSamples = digi.samples();
+		for(unsigned int iSample = 0; iSample < nSamples; ++iSample){
+			HGCalTBRecHit recHit(digi.detid(), digi[iSample].adc(), digi[iSample].tdc()); ///\todo use calibration!
+			rechits->push_back(recHit);
+		}
 	}
     event.put(rechits, outputCollectionName);
   }

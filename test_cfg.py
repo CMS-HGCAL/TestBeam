@@ -4,7 +4,7 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("unpack")
 process.load('HGCal.RawToDigi.hgcaltbdigis_cfi')
-process.load('HGCal.Reco.hgcalrechitproducer_cfi')
+process.load('HGCal.Reco.hgcaltbrechitproducer_cfi')
 
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(2), ### maybe this should be read from the file
