@@ -1,0 +1,18 @@
+<map id="DataFormats/interface/HGCalTBDetId.h" name="DataFormats/interface/HGCalTBDetId.h">
+<area shape="rect" id="node2" href="$HGCalCondObjectTextIO_8cc.html" title="CondObjects/src/HGCalCond\lObjectTextIO.cc" alt="" coords="5,97,200,138"/>
+<area shape="rect" id="node3" href="$HGCalTBNumberingScheme_8cc.html" title="CondObjects/src/HGCalTBNumbering\lScheme.cc" alt="" coords="225,97,468,138"/>
+<area shape="rect" id="node4" href="$HGCalTBRecHit_8h.html" title="DataFormats/interface\l/HGCalTBRecHit.h" alt="" coords="683,97,835,138"/>
+<area shape="rect" id="node11" href="$SKIROC2DataFrame_8h.html" title="DataFormats/interface\l/SKIROC2DataFrame.h" alt="" coords="1225,97,1385,138"/>
+<area shape="rect" id="node17" href="$HGCalTBDetId_8cc.html" title="DataFormats/src/HGCalTBDet\lId.cc" alt="" coords="859,97,1061,138"/>
+<area shape="rect" id="node7" href="$DigiPlotter_8cc.html" title="RawToDigi/plugins/DigiPlotter.cc" alt="" coords="1030,285,1244,312"/>
+<area shape="rect" id="node9" href="$RecHitPlotter_8cc.html" title="Reco/plugins/RecHitPlotter.cc" alt="" coords="458,285,656,312"/>
+<area shape="rect" id="node5" href="$HGCalTBRecHitCollections_8h.html" title="DataFormats/interface\l/HGCalTBRecHitCollections.h" alt="" coords="595,187,795,229"/>
+<area shape="rect" id="node6" href="$classes_8h.html" title="DataFormats/src/classes.h" alt="" coords="826,285,1005,312"/>
+<area shape="rect" id="node10" href="$HGCalTBRecHit_8cc.html" title="DataFormats/src/HGCalTBRec\lHit.cc" alt="" coords="819,187,1024,229"/>
+<area shape="rect" id="node8" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="951,369,1151,410"/>
+<area shape="rect" id="node12" href="$HGCalTBDataFrameContainers_8h.html" title="DataFormats/interface\l/HGCalTBDataFrameContainers.h" alt="" coords="1435,187,1657,229"/>
+<area shape="rect" id="node16" href="$SKIROC2DataFrame_8cc.html" title="DataFormats/src/SKIROC2Data\lFrame.cc" alt="" coords="1200,187,1411,229"/>
+<area shape="rect" id="node13" href="$HGCalTBDigiCollections_8h.html" title="DataFormats/interface\l/HGCalTBDigiCollections.h" alt="" coords="1269,278,1451,319"/>
+<area shape="rect" id="node14" href="$HGCalDigiDump_8cc.html" title="DataFormats/plugins\l/HGCalDigiDump.cc" alt="" coords="1475,278,1617,319"/>
+<area shape="rect" id="node15" href="$HGCalTBRawToDigi_8cc.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.cc" alt="" coords="1642,278,1861,319"/>
+</map>

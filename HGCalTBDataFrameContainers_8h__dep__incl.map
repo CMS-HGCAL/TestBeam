@@ -1,0 +1,8 @@
+<map id="DataFormats/interface/HGCalTBDataFrameContainers.h" name="DataFormats/interface/HGCalTBDataFrameContainers.h">
+<area shape="rect" id="node2" href="$HGCalTBDigiCollections_8h.html" title="DataFormats/interface\l/HGCalTBDigiCollections.h" alt="" coords="14,97,196,138"/>
+<area shape="rect" id="node4" href="$HGCalDigiDump_8cc.html" title="DataFormats/plugins\l/HGCalDigiDump.cc" alt="" coords="221,97,363,138"/>
+<area shape="rect" id="node5" href="$classes_8h.html" title="DataFormats/src/classes.h" alt="" coords="387,104,567,131"/>
+<area shape="rect" id="node6" href="$DigiPlotter_8cc.html" title="RawToDigi/plugins/DigiPlotter.cc" alt="" coords="591,104,805,131"/>
+<area shape="rect" id="node7" href="$HGCalTBRawToDigi_8cc.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.cc" alt="" coords="830,97,1049,138"/>
+<area shape="rect" id="node3" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="5,187,205,229"/>
+</map>

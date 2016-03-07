@@ -1,0 +1,10 @@
+<map id="RawToDigi/plugins/DigiPlotter.cc" name="RawToDigi/plugins/DigiPlotter.cc">
+<area shape="rect" id="node12" href="$HGCalTBRecHitCollections_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHitCollections.h" alt="" coords="1656,81,1856,122"/>
+<area shape="rect" id="node16" href="$HGCalTBDetId_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDetId.h" alt="" coords="2130,262,2325,303"/>
+<area shape="rect" id="node14" href="$HGCalTBRecHit_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHit.h" alt="" coords="1654,171,1849,213"/>
+<area shape="rect" id="node23" href="$HGCalTBCellVertices_8h.html" title="HGCal/Geometry/interface\l/HGCalTBCellVertices.h" alt="" coords="1998,81,2175,122"/>
+<area shape="rect" id="node24" href="$HGCalTBTopology_8h.html" title="HGCal/Geometry/interface\l/HGCalTBTopology.h" alt="" coords="1874,171,2051,213"/>
+<area shape="rect" id="node27" href="$HGCalTBDataFrameContainers_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDataFrameContainers.h" alt="" coords="2471,81,2693,122"/>
+<area shape="rect" id="node29" href="$SKIROC2DataFrame_8h.html" title="HGCal/DataFormats/interface\l/SKIROC2DataFrame.h" alt="" coords="2502,171,2697,213"/>
+<area shape="rect" id="node32" href="$SKIROCParameters_8h.html" title="HGCal/DataFormats/interface\l/SKIROCParameters.h" alt="" coords="2722,171,2917,213"/>
+</map>
