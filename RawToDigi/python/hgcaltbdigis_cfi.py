@@ -1,6 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 
-hgcaldigis = cms.EDProducer("HGCalTBRawToDigi",
+hgcaltbdigis = cms.EDProducer("HGCalTBRawToDigi",
                             InputLabel=cms.InputTag("source"), ###
                             fedId=cms.untracked.int32(1000), ## FED ID is hard coded in the HGCalTBTextSource TO BE FIXED
                             

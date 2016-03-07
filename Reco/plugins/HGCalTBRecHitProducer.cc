@@ -15,17 +15,17 @@
 #include <iostream>
 #endif
 
-class RecHitProducer : public edm::EDProducer{
+class HGCalTBRecHitProducer : public edm::EDProducer{
 
       public:
-             RecHitProducer(const edm::ParameterSet&);
+             HGCalTBRecHitProducer(const edm::ParameterSet&);
              virtual void produce(edm::Event&, const edm::EventSetup&);             
       private:
               std::string outputCollectionName;     ///<label name of collection made by this producer
 	edm::EDGetTokenT<HGCalTBDigiCollection> _digisToken;
 };
 
-RecHitProducer::RecHitProducer(const edm::ParameterSet& cfg)
+HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg)
 	: outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
 	  _digisToken(consumes<HGCalTBDigiCollection>(cfg.getParameter<edm::InputTag>("digiCollection")))
 {
@@ -33,7 +33,7 @@ RecHitProducer::RecHitProducer(const edm::ParameterSet& cfg)
 
 }
 
-void RecHitProducer::produce(edm::Event& event, const edm::EventSetup&){
+void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup&){
 	std::auto_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection); //auto_ptr are automatically deleted when out of scope
 	
 	edm::Handle<HGCalTBDigiCollection> digisHandle;
@@ -47,4 +47,4 @@ void RecHitProducer::produce(edm::Event& event, const edm::EventSetup&){
     event.put(rechits, outputCollectionName);
   }
 // Should there be a destructor ?? 
-DEFINE_FWK_MODULE(RecHitProducer);
+DEFINE_FWK_MODULE(HGCalTBRecHitProducer);
