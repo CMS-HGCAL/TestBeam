@@ -17,6 +17,7 @@ var searchData=
   ['hgcaltbdigis_5fcfi_2epy',['hgcaltbdigis_cfi.py',['../hgcaltbdigis__cfi_8py.html',1,'']]],
   ['hgcaltbelectronicsid_2ecc',['HGCalTBElectronicsId.cc',['../HGCalTBElectronicsId_8cc.html',1,'']]],
   ['hgcaltbelectronicsid_2eh',['HGCalTBElectronicsId.h',['../HGCalTBElectronicsId_8h.html',1,'']]],
+  ['hgcaltbelectronicsproducer_2ecc',['HGCalTBElectronicsProducer.cc',['../HGCalTBElectronicsProducer_8cc.html',1,'']]],
   ['hgcaltbnumberingscheme_2ecc',['HGCalTBNumberingScheme.cc',['../HGCalTBNumberingScheme_8cc.html',1,'']]],
   ['hgcaltbnumberingscheme_2eh',['HGCalTBNumberingScheme.h',['../HGCalTBNumberingScheme_8h.html',1,'']]],
   ['hgcaltbrawtodigi_2ecc',['HGCalTBRawToDigi.cc',['../HGCalTBRawToDigi_8cc.html',1,'']]],

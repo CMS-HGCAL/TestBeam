@@ -1,7 +1,8 @@
 <map id="CondObjects/interface/HGCalElectronicsMap.h" name="CondObjects/interface/HGCalElectronicsMap.h">
-<area shape="rect" id="node2" href="$HGCalCondObjectTextIO_8h.html" title="CondObjects/interface\l/HGCalCondObjectTextIO.h" alt="" coords="188,97,375,138"/>
-<area shape="rect" id="node6" href="$HGCalElectronicsMap_8cc.html" title="CondObjects/src/HGCalElectronics\lMap.cc" alt="" coords="399,97,628,138"/>
-<area shape="rect" id="node5" href="$HGCalTBRawToDigi_8cc.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.cc" alt="" coords="478,187,697,229"/>
+<area shape="rect" id="node2" href="$HGCalCondObjectTextIO_8h.html" title="CondObjects/interface\l/HGCalCondObjectTextIO.h" alt="" coords="297,97,484,138"/>
+<area shape="rect" id="node7" href="$HGCalElectronicsMap_8cc.html" title="CondObjects/src/HGCalElectronics\lMap.cc" alt="" coords="508,97,737,138"/>
+<area shape="rect" id="node5" href="$HGCalTBRawToDigi_8cc.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.cc" alt="" coords="665,187,884,229"/>
 <area shape="rect" id="node3" href="$HGCalCondObjectTextIO_8cc.html" title="CondObjects/src/HGCalCond\lObjectTextIO.cc" alt="" coords="5,187,200,229"/>
 <area shape="rect" id="node4" href="$testHGCalCondObjectTextIO_8cc.html" title="CondObjects/test/testHGCal\lCondObjectTextIO.cc" alt="" coords="225,187,415,229"/>
+<area shape="rect" id="node6" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="440,187,640,229"/>
 </map>

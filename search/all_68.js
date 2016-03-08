@@ -32,6 +32,7 @@ var searchData=
   ['hgcaltbelectronicsid',['HGCalTBElectronicsId',['../classHGCalTBElectronicsId.html',1,'HGCalTBElectronicsId'],['../classHGCalTBElectronicsId.html#a27bdc7ef8ec925204bfc02951f1fa647',1,'HGCalTBElectronicsId::HGCalTBElectronicsId(int iskiroc, int ichan)'],['../classHGCalTBElectronicsId.html#a63040c12d928c2f28cb5df1b6483dcc7',1,'HGCalTBElectronicsId::HGCalTBElectronicsId()'],['../classHGCalTBElectronicsId.html#aa260f8d8208cef2ac861b2cb94c51e0e',1,'HGCalTBElectronicsId::HGCalTBElectronicsId(uint32_t rawId)']]],
   ['hgcaltbelectronicsid_2ecc',['HGCalTBElectronicsId.cc',['../HGCalTBElectronicsId_8cc.html',1,'']]],
   ['hgcaltbelectronicsid_2eh',['HGCalTBElectronicsId.h',['../HGCalTBElectronicsId_8h.html',1,'']]],
+  ['hgcaltbelectronicsproducer_2ecc',['HGCalTBElectronicsProducer.cc',['../HGCalTBElectronicsProducer_8cc.html',1,'']]],
   ['hgcaltbnumberingscheme',['HGCalTBNumberingScheme',['../classHGCalTBNumberingScheme.html',1,'']]],
   ['hgcaltbnumberingscheme_2ecc',['HGCalTBNumberingScheme.cc',['../HGCalTBNumberingScheme_8cc.html',1,'']]],
   ['hgcaltbnumberingscheme_2eh',['HGCalTBNumberingScheme.h',['../HGCalTBNumberingScheme_8h.html',1,'']]],
