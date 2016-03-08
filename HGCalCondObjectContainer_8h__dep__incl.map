@@ -1,10 +1,11 @@
 <map id="CondObjects/interface/HGCalCondObjectContainer.h" name="CondObjects/interface/HGCalCondObjectContainer.h">
-<area shape="rect" id="node2" href="$HGCalCondObjects_8h.html" title="CondObjects/interface\l/HGCalCondObjects.h" alt="" coords="73,97,225,138"/>
-<area shape="rect" id="node3" href="$HGCalCondObjectTextIO_8h.html" title="CondObjects/interface\l/HGCalCondObjectTextIO.h" alt="" coords="251,97,437,138"/>
-<area shape="rect" id="node7" href="$HGCalTBNumberingScheme_8h.html" title="CondObjects/interface\l/HGCalTBNumberingScheme.h" alt="" coords="461,97,667,138"/>
-<area shape="rect" id="node9" href="$HGCalCondObjectContainer_8cc.html" title="CondObjects/src/HGCalCond\lObjectContainer.cc" alt="" coords="691,97,885,138"/>
-<area shape="rect" id="node4" href="$HGCalCondObjectTextIO_8cc.html" title="CondObjects/src/HGCalCond\lObjectTextIO.cc" alt="" coords="5,187,200,229"/>
-<area shape="rect" id="node5" href="$testHGCalCondObjectTextIO_8cc.html" title="CondObjects/test/testHGCal\lCondObjectTextIO.cc" alt="" coords="469,187,659,229"/>
-<area shape="rect" id="node6" href="$HGCalTBRawToDigi_8cc.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.cc" alt="" coords="225,187,444,229"/>
-<area shape="rect" id="node8" href="$HGCalTBNumberingScheme_8cc.html" title="CondObjects/src/HGCalTBNumbering\lScheme.cc" alt="" coords="683,187,927,229"/>
+<area shape="rect" id="node2" href="$HGCalCondObjects_8h.html" title="CondObjects/interface\l/HGCalCondObjects.h" alt="" coords="161,97,313,138"/>
+<area shape="rect" id="node4" href="$HGCalCondObjectTextIO_8h.html" title="CondObjects/interface\l/HGCalCondObjectTextIO.h" alt="" coords="468,97,655,138"/>
+<area shape="rect" id="node8" href="$HGCalTBNumberingScheme_8h.html" title="CondObjects/interface\l/HGCalTBNumberingScheme.h" alt="" coords="683,97,888,138"/>
+<area shape="rect" id="node10" href="$HGCalCondObjectContainer_8cc.html" title="CondObjects/src/HGCalCond\lObjectContainer.cc" alt="" coords="912,97,1107,138"/>
+<area shape="rect" id="node3" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="5,187,205,229"/>
+<area shape="rect" id="node5" href="$HGCalCondObjectTextIO_8cc.html" title="CondObjects/src/HGCalCond\lObjectTextIO.cc" alt="" coords="229,187,424,229"/>
+<area shape="rect" id="node6" href="$testHGCalCondObjectTextIO_8cc.html" title="CondObjects/test/testHGCal\lCondObjectTextIO.cc" alt="" coords="693,187,883,229"/>
+<area shape="rect" id="node7" href="$HGCalTBRawToDigi_8cc.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.cc" alt="" coords="449,187,668,229"/>
+<area shape="rect" id="node9" href="$HGCalTBNumberingScheme_8cc.html" title="CondObjects/src/HGCalTBNumbering\lScheme.cc" alt="" coords="907,187,1151,229"/>
 </map>

@@ -12,6 +12,7 @@ var searchData=
   ['hgcaltbelectronicsid',['HGCalTBElectronicsId',['../classHGCalTBElectronicsId.html',1,'']]],
   ['hgcaltbnumberingscheme',['HGCalTBNumberingScheme',['../classHGCalTBNumberingScheme.html',1,'']]],
   ['hgcaltbrechit',['HGCalTBRecHit',['../classHGCalTBRecHit.html',1,'']]],
+  ['hgcaltbrecoalgo',['HGCalTBRecoAlgo',['../classHGCalTBRecoAlgo.html',1,'']]],
   ['hgcaltbtopology',['HGCalTBTopology',['../classHGCalTBTopology.html',1,'']]],
   ['hgcrechit',['HGCRecHit',['../classHGCRecHit.html',1,'']]]
 ];

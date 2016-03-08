@@ -8,7 +8,6 @@ var searchData=
   ['hgcaldigidump_2ecc',['HGCalDigiDump.cc',['../HGCalDigiDump_8cc.html',1,'']]],
   ['hgcalelectronicsmap_2ecc',['HGCalElectronicsMap.cc',['../HGCalElectronicsMap_8cc.html',1,'']]],
   ['hgcalelectronicsmap_2eh',['HGCalElectronicsMap.h',['../HGCalElectronicsMap_8h.html',1,'']]],
-  ['hgcalrechitproducer_5fcfi_2epy',['hgcalrechitproducer_cfi.py',['../hgcalrechitproducer__cfi_8py.html',1,'']]],
   ['hgcaltbcellvertices_2ecc',['HGCalTBCellVertices.cc',['../HGCalTBCellVertices_8cc.html',1,'']]],
   ['hgcaltbcellvertices_2eh',['HGCalTBCellVertices.h',['../HGCalTBCellVertices_8h.html',1,'']]],
   ['hgcaltbdataframecontainers_2eh',['HGCalTBDataFrameContainers.h',['../HGCalTBDataFrameContainers_8h.html',1,'']]],
@@ -25,6 +24,8 @@ var searchData=
   ['hgcaltbrechit_2eh',['HGCalTBRecHit.h',['../HGCalTBRecHit_8h.html',1,'']]],
   ['hgcaltbrechitcollections_2eh',['HGCalTBRecHitCollections.h',['../HGCalTBRecHitCollections_8h.html',1,'']]],
   ['hgcaltbrechitproducer_2ecc',['HGCalTBRecHitProducer.cc',['../HGCalTBRecHitProducer_8cc.html',1,'']]],
+  ['hgcaltbrechitproducer_5fcfi_2epy',['hgcaltbrechitproducer_cfi.py',['../hgcaltbrechitproducer__cfi_8py.html',1,'']]],
+  ['hgcaltbrecoalgo_2eh',['HGCalTBRecoAlgo.h',['../HGCalTBRecoAlgo_8h.html',1,'']]],
   ['hgcaltbtextsource_2ecc',['HGCalTBTextSource.cc',['../HGCalTBTextSource_8cc.html',1,'']]],
   ['hgcaltbtopology_2ecc',['HGCalTBTopology.cc',['../HGCalTBTopology_8cc.html',1,'']]],
   ['hgcaltbtopology_2eh',['HGCalTBTopology.h',['../HGCalTBTopology_8h.html',1,'']]]
