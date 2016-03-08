@@ -1,6 +1,7 @@
 <map id="DataFormats/interface/HGCalTBRecHitCollections.h" name="DataFormats/interface/HGCalTBRecHitCollections.h">
 <area shape="rect" id="node2" href="$classes_8h.html" title="DataFormats/src/classes.h" alt="" coords="5,104,184,131"/>
 <area shape="rect" id="node3" href="$DigiPlotter_8cc.html" title="RawToDigi/plugins/DigiPlotter.cc" alt="" coords="209,104,423,131"/>
-<area shape="rect" id="node4" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="448,97,648,138"/>
-<area shape="rect" id="node5" href="$RecHitPlotter_8cc.html" title="Reco/plugins/RecHitPlotter.cc" alt="" coords="673,104,871,131"/>
+<area shape="rect" id="node4" href="$HGCalTBRecHitProducer_8h.html" title="Reco/plugins/HGCalTBRecHit\lProducer.h" alt="" coords="448,97,648,138"/>
+<area shape="rect" id="node6" href="$RecHitPlotter_8cc.html" title="Reco/plugins/RecHitPlotter.cc" alt="" coords="673,104,871,131"/>
+<area shape="rect" id="node5" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="448,187,648,229"/>
 </map>

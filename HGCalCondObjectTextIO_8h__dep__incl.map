@@ -2,5 +2,6 @@
 <area shape="rect" id="node2" href="$HGCalCondObjectTextIO_8cc.html" title="CondObjects/src/HGCalCond\lObjectTextIO.cc" alt="" coords="5,97,200,138"/>
 <area shape="rect" id="node3" href="$testHGCalCondObjectTextIO_8cc.html" title="CondObjects/test/testHGCal\lCondObjectTextIO.cc" alt="" coords="225,97,415,138"/>
 <area shape="rect" id="node4" href="$HGCalTBRawToDigi_8cc.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.cc" alt="" coords="439,97,659,138"/>
-<area shape="rect" id="node5" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="684,97,884,138"/>
+<area shape="rect" id="node5" href="$HGCalTBRecHitProducer_8h.html" title="Reco/plugins/HGCalTBRecHit\lProducer.h" alt="" coords="684,97,884,138"/>
+<area shape="rect" id="node6" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="684,187,884,229"/>
 </map>

@@ -8,6 +8,13 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/search.js"></script>
 <script type="text/javascript">
@@ -23,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">30a87a65ccebed68aa15ee6f08890b740db76987</span>
+   &#160;<span id="projectnumber">850737e36235c1185ca84aaff7c206e970ed524a</span>
    </div>
   </td>
  </tr>
@@ -68,6 +75,21 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="functions.html"><span>Class&#160;Members</span></a></li>
     </ul>
   </div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('classHGCalCondObjectContainer.html','');});
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -82,7 +104,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-</div><!-- top -->
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
@@ -100,14 +121,14 @@ Inheritance diagram for HGCalCondObjectContainer&lt; Payload &gt;:</div>
 <div class="center"><img src="classHGCalCondObjectContainer__inherit__graph.png" border="0" usemap="#HGCalCondObjectContainer_3_01Payload_01_4_inherit__map" alt="Inheritance graph"/></div>
 <map name="HGCalCondObjectContainer_3_01Payload_01_4_inherit__map" id="HGCalCondObjectContainer_3_01Payload_01_4_inherit__map">
 <area shape="rect" id="node2" href="classHGCalCondObjectContainerBase.html" title="HGCalCondObjectContainerBase" alt="" coords="5,5,221,32"/></map>
-<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
+<center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <div class="dynheader">
 Collaboration diagram for HGCalCondObjectContainer&lt; Payload &gt;:</div>
 <div class="dyncontent">
 <div class="center"><img src="classHGCalCondObjectContainer__coll__graph.png" border="0" usemap="#HGCalCondObjectContainer_3_01Payload_01_4_coll__map" alt="Collaboration graph"/></div>
 <map name="HGCalCondObjectContainer_3_01Payload_01_4_coll__map" id="HGCalCondObjectContainer_3_01Payload_01_4_coll__map">
 <area shape="rect" id="node2" href="classHGCalCondObjectContainerBase.html" title="HGCalCondObjectContainerBase" alt="" coords="5,5,221,32"/></map>
-<center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
+<center><span class="legend">[<a target="top" href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
@@ -247,7 +268,7 @@ template&lt;class Payload&gt; </div>
 
 <p>References <a class="el" href="classHGCalCondObjectContainerBase.html#aa97421d4a9f316aed3adaa511aba1593">HGCalCondObjectContainerBase::indexOf()</a>, and <a class="el" href="classHGCalCondObjectNumberingScheme.html#aed9e019026b3ff177bc23c80a058b173">HGCalCondObjectNumberingScheme::INVALID</a>.</p>
 
-<p>Referenced by <a class="el" href="classHGCalCondObjectTextIO.html#ad80870136cf62af22737d58d0ffffe96">HGCalCondObjectTextIO::store()</a>.</p>
+<p>Referenced by <a class="el" href="classHGCalTBRecHitProducer.html#aaf7ac7c1f01c8dc36dca0161bfb465ab">HGCalTBRecHitProducer::produce()</a>, and <a class="el" href="classHGCalCondObjectTextIO.html#ad80870136cf62af22737d58d0ffffe96">HGCalCondObjectTextIO::store()</a>.</p>
 
 </div>
 </div>
@@ -348,11 +369,15 @@ template&lt;class Payload&gt; </div>
 <li>CondObjects/interface/<a class="el" href="HGCalCondObjectContainer_8h_source.html">HGCalCondObjectContainer.h</a></li>
 </ul>
 </div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 8 2016 10:59:21 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
-<img class="footer" src="doxygen.png" alt="doxygen"/>
-</a> 1.8.5
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a></li>
+    <li class="footer">Generated on Tue Mar 8 2016 15:01:02 for HGCal Test Beam by
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
+  </ul>
+</div>
 </body>
 </html>

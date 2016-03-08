@@ -8,6 +8,13 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/search.js"></script>
 <script type="text/javascript">
@@ -23,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">30a87a65ccebed68aa15ee6f08890b740db76987</span>
+   &#160;<span id="projectnumber">850737e36235c1185ca84aaff7c206e970ed524a</span>
    </div>
   </td>
  </tr>
@@ -66,6 +73,21 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="globals.html"><span>File&#160;Members</span></a></li>
     </ul>
   </div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('HGCalTBNumberingScheme_8cc.html','');});
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -80,11 +102,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<div id="nav-path" class="navpath">
-  <ul>
-<li class="navelem"><a class="el" href="dir_669eb5eb474927b650502cea7dc4fc02.html">CondObjects</a></li><li class="navelem"><a class="el" href="dir_40826c91cdf40ce98fc39ad1767b1e24.html">src</a></li>  </ul>
-</div>
-</div><!-- top -->
 <div class="header">
   <div class="headertitle">
 <div class="title">HGCalTBNumberingScheme.cc File Reference</div>  </div>
@@ -100,11 +117,15 @@ Include dependency graph for HGCalTBNumberingScheme.cc:</div>
 <area shape="rect" id="node2" href="HGCalTBNumberingScheme_8h.html" title="HGCal/CondObjects/interface\l/HGCalTBNumberingScheme.h" alt="" coords="5,97,211,138"/><area shape="rect" id="node6" href="HGCalTBDetId_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDetId.h" alt="" coords="235,97,431,138"/><area shape="rect" id="node3" href="HGCalCondObjectContainer_8h.html" title="HGCal/CondObjects/interface\l/HGCalCondObjectContainer.h" alt="" coords="7,187,209,229"/></map>
 </div>
 </div></div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 8 2016 10:59:19 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
-<img class="footer" src="doxygen.png" alt="doxygen"/>
-</a> 1.8.5
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_669eb5eb474927b650502cea7dc4fc02.html">CondObjects</a></li><li class="navelem"><a class="el" href="dir_40826c91cdf40ce98fc39ad1767b1e24.html">src</a></li><li class="navelem"><a class="el" href="HGCalTBNumberingScheme_8cc.html">HGCalTBNumberingScheme.cc</a></li>
+    <li class="footer">Generated on Tue Mar 8 2016 15:01:00 for HGCal Test Beam by
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
+  </ul>
+</div>
 </body>
 </html>

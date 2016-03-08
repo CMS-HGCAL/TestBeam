@@ -8,6 +8,13 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/search.js"></script>
 <script type="text/javascript">
@@ -23,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">30a87a65ccebed68aa15ee6f08890b740db76987</span>
+   &#160;<span id="projectnumber">850737e36235c1185ca84aaff7c206e970ed524a</span>
    </div>
   </td>
  </tr>
@@ -66,6 +73,21 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="globals.html"><span>File&#160;Members</span></a></li>
     </ul>
   </div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('HGCalCondObjectContainer_8h_source.html','');});
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -80,11 +102,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<div id="nav-path" class="navpath">
-  <ul>
-<li class="navelem"><a class="el" href="dir_669eb5eb474927b650502cea7dc4fc02.html">CondObjects</a></li><li class="navelem"><a class="el" href="dir_1037def022d7294f7ab68b71018e586e.html">interface</a></li>  </ul>
-</div>
-</div><!-- top -->
 <div class="header">
   <div class="headertitle">
 <div class="title">HGCalCondObjectContainer.h</div>  </div>
@@ -97,100 +114,138 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &quot;DataFormats/DetId/interface/DetId.h&quot;</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;</div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;</div>
-<div class="line"><a name="l00008"></a><span class="lineno"><a class="line" href="classHGCalCondObjectNumberingScheme.html">    8</a></span>&#160;<span class="keyword">class </span><a class="code" href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a> {</div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00010"></a><span class="lineno"><a class="line" href="classHGCalCondObjectNumberingScheme.html#aed9e019026b3ff177bc23c80a058b173">   10</a></span>&#160;  <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html#aed9e019026b3ff177bc23c80a058b173">INVALID</a> = (size_t) -1;</div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;  <span class="keyword">virtual</span> <span class="keywordtype">size_t</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html#a3484069402b92ff56cd230c40b680d21">rangeFor</a>(uint64_t scheme) <span class="keyword">const</span> = 0;</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;  <span class="keyword">virtual</span> <span class="keywordtype">size_t</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html#aaa49e4a7ec05a5172936121564df76d1">denseIndexFor</a>(uint32_t rawDetId, uint64_t scheme) <span class="keyword">const</span> = 0;</div>
-<div class="line"><a name="l00013"></a><span class="lineno"><a class="line" href="classHGCalCondObjectNumberingScheme.html#a12b6cd57219ec32e9f5b10bc19f56713">   13</a></span>&#160;  <span class="keyword">virtual</span> <span class="keywordtype">size_t</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html#a12b6cd57219ec32e9f5b10bc19f56713">denseIndexFor</a>(DetId rawDetId, uint64_t scheme)<span class="keyword"> const </span>{ <span class="keywordflow">return</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html#a12b6cd57219ec32e9f5b10bc19f56713">denseIndexFor</a>(rawDetId.rawId(),scheme); }  </div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;};</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment">/** \class HGCalCondObjectContainerBase</span></div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment">  *  </span></div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment">  * $Date: $</span></div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment">  * $Revision: $</span></div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment">  * \author J. Mans - Minnesota</span></div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">  */</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html">   23</a></span>&#160;<span class="keyword">class </span><a class="code" href="classHGCalCondObjectContainerBase.html">HGCalCondObjectContainerBase</a> {</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00025"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html#aed2092342ba80ce38bd6ca78f445ae27">   25</a></span>&#160;  <a class="code" href="classHGCalCondObjectContainerBase.html#aed2092342ba80ce38bd6ca78f445ae27">HGCalCondObjectContainerBase</a>(<span class="keyword">const</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a>* scheme, uint64_t ischeme) : m_numbering_code(ischeme),p_numbering(scheme) { }</div>
-<div class="line"><a name="l00026"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html#a14d90144186b97194c495f13f1fa9685">   26</a></span>&#160;  <a class="code" href="classHGCalCondObjectContainerBase.html#a14d90144186b97194c495f13f1fa9685">HGCalCondObjectContainerBase</a>() : m_numbering_code(0),p_numbering(0) { }</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
-<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html#aae88eedea2c63ba64d14e4d767d561fb">   28</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classHGCalCondObjectContainerBase.html#aae88eedea2c63ba64d14e4d767d561fb">setNumberingScheme</a>(<span class="keyword">const</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a>* scheme) { p_numbering=scheme; }</div>
-<div class="line"><a name="l00029"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html#a3bcac38e7c735582f0e474fd5373c331">   29</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classHGCalCondObjectContainerBase.html#a3bcac38e7c735582f0e474fd5373c331">setNumberingScheme</a>(<span class="keyword">const</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a>* scheme, uint64_t code) { p_numbering=scheme; m_numbering_code=code;}</div>
-<div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html#a74fb441eab90ed1e3371d1975101a15a">   30</a></span>&#160;  <span class="keyword">const</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a>* <a class="code" href="classHGCalCondObjectContainerBase.html#a74fb441eab90ed1e3371d1975101a15a">getNumberingScheme</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> p_numbering; }</div>
-<div class="line"><a name="l00031"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html#a44346b0f2afeb787ed26a6746f27f403">   31</a></span>&#160;  uint64_t <a class="code" href="classHGCalCondObjectContainerBase.html#a44346b0f2afeb787ed26a6746f27f403">schemeCode</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> m_numbering_code; }</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;  </div>
-<div class="line"><a name="l00033"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html#aa0452e359321443eb947e87c5a39f8ab">   33</a></span>&#160;  <span class="keywordtype">bool</span> <a class="code" href="classHGCalCondObjectContainerBase.html#aa0452e359321443eb947e87c5a39f8ab">exists</a>(DetId <span class="keywordtype">id</span>)<span class="keyword"> const </span>{ <span class="keywordflow">return</span> <a class="code" href="classHGCalCondObjectContainerBase.html#aa97421d4a9f316aed3adaa511aba1593">indexOf</a>(<span class="keywordtype">id</span>)!=<a class="code" href="classHGCalCondObjectNumberingScheme.html#aed9e019026b3ff177bc23c80a058b173">HGCalCondObjectNumberingScheme::INVALID</a>; }</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;  <span class="keywordtype">size_t</span> <a class="code" href="classHGCalCondObjectContainerBase.html#aa97421d4a9f316aed3adaa511aba1593">indexOf</a>(DetId <span class="keywordtype">id</span>) <span class="keyword">const</span>;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;  uint64_t m_numbering_code;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;  <span class="keyword">const</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a>* p_numbering; <span class="comment">// volatile</span></div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;};</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment">/** \class HGCalCondObjectContainer</span></div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment">  *  </span></div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment">  * $Date: $</span></div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment">  * $Revision: $</span></div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment">  * \author J. Mans - Minnesota</span></div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment">  */</span></div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Payload&gt;</div>
-<div class="line"><a name="l00048"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainer.html">   48</a></span>&#160;<span class="keyword">class </span><a class="code" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a> : <span class="keyword">public</span> <a class="code" href="classHGCalCondObjectContainerBase.html">HGCalCondObjectContainerBase</a> {</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00050"></a><span class="lineno"><a class="line" href="structHGCalCondObjectContainer_1_1Item.html">   50</a></span>&#160;  <span class="keyword">struct </span><a class="code" href="structHGCalCondObjectContainer_1_1Item.html">Item</a> {</div>
-<div class="line"><a name="l00051"></a><span class="lineno"><a class="line" href="structHGCalCondObjectContainer_1_1Item.html#a0cca259b8300c306bf3401a78e7277aa">   51</a></span>&#160;    DetId <a class="code" href="structHGCalCondObjectContainer_1_1Item.html#a0cca259b8300c306bf3401a78e7277aa">id</a>;</div>
-<div class="line"><a name="l00052"></a><span class="lineno"><a class="line" href="structHGCalCondObjectContainer_1_1Item.html#af428754d44014ec39714175c73d75cc2">   52</a></span>&#160;    Payload <a class="code" href="structHGCalCondObjectContainer_1_1Item.html#af428754d44014ec39714175c73d75cc2">value</a>;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  };</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  </div>
-<div class="line"><a name="l00055"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainer.html#a36e365f3f8175f1bafb0059eafa0098a">   55</a></span>&#160;  <a class="code" href="classHGCalCondObjectContainer.html#a36e365f3f8175f1bafb0059eafa0098a">HGCalCondObjectContainer</a>(<span class="keyword">const</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a>* scheme, uint64_t ischeme) : <a class="code" href="classHGCalCondObjectContainerBase.html">HGCalCondObjectContainerBase</a>(scheme,ischeme), m_payload(scheme-&gt;rangeFor(ischeme)) {</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;  }</div>
-<div class="line"><a name="l00057"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainer.html#a8ea32c7cedacfb6424bf246b0ed1856d">   57</a></span>&#160;  <a class="code" href="classHGCalCondObjectContainer.html#a8ea32c7cedacfb6424bf246b0ed1856d">HGCalCondObjectContainer</a>() : <a class="code" href="classHGCalCondObjectContainerBase.html">HGCalCondObjectContainerBase</a>() { }</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;  </div>
-<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainer.html#a541bd28a943f2e0db936f1305182938b">   59</a></span>&#160;  <span class="keyword">const</span> <a class="code" href="structHGCalCondObjectContainer_1_1Item.html">Item</a>* <span class="keyword">get</span>(DetId id) <span class="keyword">const</span> { <span class="keywordtype">size_t</span> i=<a class="code" href="classHGCalCondObjectContainerBase.html#aa97421d4a9f316aed3adaa511aba1593">indexOf</a>(<span class="keywordtype">id</span>); <span class="keywordflow">return</span> (i==<a class="code" href="classHGCalCondObjectNumberingScheme.html#aed9e019026b3ff177bc23c80a058b173">HGCalCondObjectNumberingScheme::INVALID</a>)?(0):(&amp;(m_payload[i])); }</div>
-<div class="line"><a name="l00060"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainer.html#aa3062d28d80d223443efca6638008682">   60</a></span>&#160;  <span class="keywordtype">size_t</span> <a class="code" href="classHGCalCondObjectContainer.html#aa3062d28d80d223443efca6638008682">size</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> m_payload.size(); }</div>
-<div class="line"><a name="l00061"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainer.html#a67ec3104f4ff401be44ce9a973f21423">   61</a></span>&#160;  <span class="keyword">const</span> <a class="code" href="structHGCalCondObjectContainer_1_1Item.html">Item</a>&amp; <span class="keyword">get</span>(<span class="keywordtype">size_t</span> i) <span class="keyword">const</span> { <span class="keywordflow">return</span> m_payload[i]; }</div>
-<div class="line"><a name="l00062"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainer.html#ab9ca15553f3bf71115e7cdd4cc3ed901">   62</a></span>&#160;  <span class="keywordtype">void</span> <a class="code" href="classHGCalCondObjectContainer.html#ab9ca15553f3bf71115e7cdd4cc3ed901">set</a>(DetId <span class="keywordtype">id</span>, <span class="keyword">const</span> Payload&amp; value) {</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keywordtype">size_t</span> i=<a class="code" href="classHGCalCondObjectContainerBase.html#aa97421d4a9f316aed3adaa511aba1593">indexOf</a>(<span class="keywordtype">id</span>);</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keywordflow">if</span> (i!=<a class="code" href="classHGCalCondObjectNumberingScheme.html#aed9e019026b3ff177bc23c80a058b173">HGCalCondObjectNumberingScheme::INVALID</a>) {</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;      m_payload[i].id=id;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;      m_payload[i].value=value;</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    }</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  }</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;  std::vector&lt;Item&gt; m_payload;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;};</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="ttc" id="classHGCalCondObjectNumberingScheme_html_aed9e019026b3ff177bc23c80a058b173"><div class="ttname"><a href="classHGCalCondObjectNumberingScheme.html#aed9e019026b3ff177bc23c80a058b173">HGCalCondObjectNumberingScheme::INVALID</a></div><div class="ttdeci">static const size_t INVALID</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:10</div></div>
-<div class="ttc" id="classHGCalCondObjectContainer_html_a36e365f3f8175f1bafb0059eafa0098a"><div class="ttname"><a href="classHGCalCondObjectContainer.html#a36e365f3f8175f1bafb0059eafa0098a">HGCalCondObjectContainer::HGCalCondObjectContainer</a></div><div class="ttdeci">HGCalCondObjectContainer(const HGCalCondObjectNumberingScheme *scheme, uint64_t ischeme)</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:55</div></div>
+<div class="line"><a name="l00008"></a><span class="lineno"><a class="line" href="classHGCalCondObjectNumberingScheme.html">    8</a></span>&#160;<span class="keyword">class </span><a class="code" href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;{</div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00011"></a><span class="lineno"><a class="line" href="classHGCalCondObjectNumberingScheme.html#aed9e019026b3ff177bc23c80a058b173">   11</a></span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">size_t</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html#aed9e019026b3ff177bc23c80a058b173">INVALID</a> = (size_t) - 1;</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">size_t</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html#a3484069402b92ff56cd230c40b680d21">rangeFor</a>(uint64_t scheme) <span class="keyword">const</span> = 0;</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">size_t</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html#aaa49e4a7ec05a5172936121564df76d1">denseIndexFor</a>(uint32_t rawDetId, uint64_t scheme) <span class="keyword">const</span> = 0;</div>
+<div class="line"><a name="l00014"></a><span class="lineno"><a class="line" href="classHGCalCondObjectNumberingScheme.html#a12b6cd57219ec32e9f5b10bc19f56713">   14</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">size_t</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html#a12b6cd57219ec32e9f5b10bc19f56713">denseIndexFor</a>(DetId rawDetId, uint64_t scheme)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html#aaa49e4a7ec05a5172936121564df76d1">denseIndexFor</a>(rawDetId.rawId(), scheme);</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    }</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;};</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment">/** \class HGCalCondObjectContainerBase</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">  *</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment">  * $Date: $</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment">  * $Revision: $</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment">  * \author J. Mans - Minnesota</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment">  */</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html">   27</a></span>&#160;<span class="keyword">class </span><a class="code" href="classHGCalCondObjectContainerBase.html">HGCalCondObjectContainerBase</a></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;{</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html#aed2092342ba80ce38bd6ca78f445ae27">   30</a></span>&#160;    <a class="code" href="classHGCalCondObjectContainerBase.html#aed2092342ba80ce38bd6ca78f445ae27">HGCalCondObjectContainerBase</a>(<span class="keyword">const</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a>* scheme, uint64_t ischeme) : m_numbering_code(ischeme), p_numbering(scheme) { }</div>
+<div class="line"><a name="l00031"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html#a14d90144186b97194c495f13f1fa9685">   31</a></span>&#160;    <a class="code" href="classHGCalCondObjectContainerBase.html#a14d90144186b97194c495f13f1fa9685">HGCalCondObjectContainerBase</a>() : m_numbering_code(0), p_numbering(0) { }</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;</div>
+<div class="line"><a name="l00033"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html#aae88eedea2c63ba64d14e4d767d561fb">   33</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classHGCalCondObjectContainerBase.html#aae88eedea2c63ba64d14e4d767d561fb">setNumberingScheme</a>(<span class="keyword">const</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a>* scheme)</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        p_numbering = scheme;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    }</div>
+<div class="line"><a name="l00037"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html#a3bcac38e7c735582f0e474fd5373c331">   37</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classHGCalCondObjectContainerBase.html#a3bcac38e7c735582f0e474fd5373c331">setNumberingScheme</a>(<span class="keyword">const</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a>* scheme, uint64_t code)</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    {</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        p_numbering = scheme;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        m_numbering_code = code;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    }</div>
+<div class="line"><a name="l00042"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html#a74fb441eab90ed1e3371d1975101a15a">   42</a></span>&#160;    <span class="keyword">const</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a>* <a class="code" href="classHGCalCondObjectContainerBase.html#a74fb441eab90ed1e3371d1975101a15a">getNumberingScheme</a>()<span class="keyword"> const</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <span class="keywordflow">return</span> p_numbering;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    }</div>
+<div class="line"><a name="l00046"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html#a44346b0f2afeb787ed26a6746f27f403">   46</a></span>&#160;    uint64_t <a class="code" href="classHGCalCondObjectContainerBase.html#a44346b0f2afeb787ed26a6746f27f403">schemeCode</a>()<span class="keyword"> const</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;        <span class="keywordflow">return</span> m_numbering_code;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    }</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;</div>
+<div class="line"><a name="l00051"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainerBase.html#aa0452e359321443eb947e87c5a39f8ab">   51</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classHGCalCondObjectContainerBase.html#aa0452e359321443eb947e87c5a39f8ab">exists</a>(DetId <span class="keywordtype">id</span>)<span class="keyword"> const</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classHGCalCondObjectContainerBase.html#aa97421d4a9f316aed3adaa511aba1593">indexOf</a>(<span class="keywordtype">id</span>) != <a class="code" href="classHGCalCondObjectNumberingScheme.html#aed9e019026b3ff177bc23c80a058b173">HGCalCondObjectNumberingScheme::INVALID</a>;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    }</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keywordtype">size_t</span> <a class="code" href="classHGCalCondObjectContainerBase.html#aa97421d4a9f316aed3adaa511aba1593">indexOf</a>(DetId <span class="keywordtype">id</span>) <span class="keyword">const</span>;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    uint64_t m_numbering_code;</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    <span class="keyword">const</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a>* p_numbering; <span class="comment">// volatile</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;};</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">/** \class HGCalCondObjectContainer</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">  *</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">  * $Date: $</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">  * $Revision: $</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">  * \author J. Mans - Minnesota</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">  */</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="keyword">template</span> &lt;<span class="keyword">class</span> Payload&gt;</div>
+<div class="line"><a name="l00069"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainer.html">   69</a></span>&#160;<span class="keyword">class </span><a class="code" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a> : <span class="keyword">public</span> <a class="code" href="classHGCalCondObjectContainerBase.html">HGCalCondObjectContainerBase</a></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;{</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00072"></a><span class="lineno"><a class="line" href="structHGCalCondObjectContainer_1_1Item.html">   72</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structHGCalCondObjectContainer_1_1Item.html">Item</a> {</div>
+<div class="line"><a name="l00073"></a><span class="lineno"><a class="line" href="structHGCalCondObjectContainer_1_1Item.html#a0cca259b8300c306bf3401a78e7277aa">   73</a></span>&#160;        DetId <a class="code" href="structHGCalCondObjectContainer_1_1Item.html#a0cca259b8300c306bf3401a78e7277aa">id</a>;</div>
+<div class="line"><a name="l00074"></a><span class="lineno"><a class="line" href="structHGCalCondObjectContainer_1_1Item.html#af428754d44014ec39714175c73d75cc2">   74</a></span>&#160;        Payload <a class="code" href="structHGCalCondObjectContainer_1_1Item.html#af428754d44014ec39714175c73d75cc2">value</a>;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    };</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
+<div class="line"><a name="l00077"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainer.html#a36e365f3f8175f1bafb0059eafa0098a">   77</a></span>&#160;    <a class="code" href="classHGCalCondObjectContainer.html#a36e365f3f8175f1bafb0059eafa0098a">HGCalCondObjectContainer</a>(<span class="keyword">const</span> <a class="code" href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a>* scheme, uint64_t ischeme) : <a class="code" href="classHGCalCondObjectContainerBase.html">HGCalCondObjectContainerBase</a>(scheme, ischeme), m_payload(scheme-&gt;rangeFor(ischeme))</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    {</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    }</div>
+<div class="line"><a name="l00080"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainer.html#a8ea32c7cedacfb6424bf246b0ed1856d">   80</a></span>&#160;    <a class="code" href="classHGCalCondObjectContainer.html#a8ea32c7cedacfb6424bf246b0ed1856d">HGCalCondObjectContainer</a>() : <a class="code" href="classHGCalCondObjectContainerBase.html">HGCalCondObjectContainerBase</a>() { }</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;</div>
+<div class="line"><a name="l00082"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainer.html#a541bd28a943f2e0db936f1305182938b">   82</a></span>&#160;    <span class="keyword">const</span> <a class="code" href="structHGCalCondObjectContainer_1_1Item.html">Item</a>* <span class="keyword">get</span>(DetId id) <span class="keyword">const</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    {</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        <span class="keywordtype">size_t</span> i = <a class="code" href="classHGCalCondObjectContainerBase.html#aa97421d4a9f316aed3adaa511aba1593">indexOf</a>(<span class="keywordtype">id</span>);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        <span class="keywordflow">return</span> (i == <a class="code" href="classHGCalCondObjectNumberingScheme.html#aed9e019026b3ff177bc23c80a058b173">HGCalCondObjectNumberingScheme::INVALID</a>) ? (0) : (&amp;(m_payload[i]));</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    }</div>
+<div class="line"><a name="l00087"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainer.html#aa3062d28d80d223443efca6638008682">   87</a></span>&#160;    <span class="keywordtype">size_t</span> <a class="code" href="classHGCalCondObjectContainer.html#aa3062d28d80d223443efca6638008682">size</a>()<span class="keyword"> const</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;        <span class="keywordflow">return</span> m_payload.size();</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    }</div>
+<div class="line"><a name="l00091"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainer.html#a67ec3104f4ff401be44ce9a973f21423">   91</a></span>&#160;    <span class="keyword">const</span> <a class="code" href="structHGCalCondObjectContainer_1_1Item.html">Item</a>&amp; <span class="keyword">get</span>(<span class="keywordtype">size_t</span> i) <span class="keyword">const</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    {</div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;        <span class="keywordflow">return</span> m_payload[i];</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    }</div>
+<div class="line"><a name="l00095"></a><span class="lineno"><a class="line" href="classHGCalCondObjectContainer.html#ab9ca15553f3bf71115e7cdd4cc3ed901">   95</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classHGCalCondObjectContainer.html#ab9ca15553f3bf71115e7cdd4cc3ed901">set</a>(DetId <span class="keywordtype">id</span>, <span class="keyword">const</span> Payload&amp; value)</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    {</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        <span class="keywordtype">size_t</span> i = <a class="code" href="classHGCalCondObjectContainerBase.html#aa97421d4a9f316aed3adaa511aba1593">indexOf</a>(<span class="keywordtype">id</span>);</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;        <span class="keywordflow">if</span> (i != <a class="code" href="classHGCalCondObjectNumberingScheme.html#aed9e019026b3ff177bc23c80a058b173">HGCalCondObjectNumberingScheme::INVALID</a>) {</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;            m_payload[i].id = id;</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;            m_payload[i].value = value;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        }</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    }</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    std::vector&lt;Item&gt; m_payload;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;};</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="ttc" id="classHGCalCondObjectNumberingScheme_html_aed9e019026b3ff177bc23c80a058b173"><div class="ttname"><a href="classHGCalCondObjectNumberingScheme.html#aed9e019026b3ff177bc23c80a058b173">HGCalCondObjectNumberingScheme::INVALID</a></div><div class="ttdeci">static const size_t INVALID</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:11</div></div>
+<div class="ttc" id="classHGCalCondObjectContainer_html_a36e365f3f8175f1bafb0059eafa0098a"><div class="ttname"><a href="classHGCalCondObjectContainer.html#a36e365f3f8175f1bafb0059eafa0098a">HGCalCondObjectContainer::HGCalCondObjectContainer</a></div><div class="ttdeci">HGCalCondObjectContainer(const HGCalCondObjectNumberingScheme *scheme, uint64_t ischeme)</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:77</div></div>
 <div class="ttc" id="classHGCalCondObjectContainerBase_html_aa97421d4a9f316aed3adaa511aba1593"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#aa97421d4a9f316aed3adaa511aba1593">HGCalCondObjectContainerBase::indexOf</a></div><div class="ttdeci">size_t indexOf(DetId id) const </div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.cc:3</div></div>
-<div class="ttc" id="classHGCalCondObjectContainerBase_html_a14d90144186b97194c495f13f1fa9685"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#a14d90144186b97194c495f13f1fa9685">HGCalCondObjectContainerBase::HGCalCondObjectContainerBase</a></div><div class="ttdeci">HGCalCondObjectContainerBase()</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:26</div></div>
-<div class="ttc" id="classHGCalCondObjectContainerBase_html_aed2092342ba80ce38bd6ca78f445ae27"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#aed2092342ba80ce38bd6ca78f445ae27">HGCalCondObjectContainerBase::HGCalCondObjectContainerBase</a></div><div class="ttdeci">HGCalCondObjectContainerBase(const HGCalCondObjectNumberingScheme *scheme, uint64_t ischeme)</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:25</div></div>
-<div class="ttc" id="classHGCalCondObjectNumberingScheme_html_a12b6cd57219ec32e9f5b10bc19f56713"><div class="ttname"><a href="classHGCalCondObjectNumberingScheme.html#a12b6cd57219ec32e9f5b10bc19f56713">HGCalCondObjectNumberingScheme::denseIndexFor</a></div><div class="ttdeci">virtual size_t denseIndexFor(DetId rawDetId, uint64_t scheme) const </div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:13</div></div>
+<div class="ttc" id="classHGCalCondObjectContainerBase_html_a14d90144186b97194c495f13f1fa9685"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#a14d90144186b97194c495f13f1fa9685">HGCalCondObjectContainerBase::HGCalCondObjectContainerBase</a></div><div class="ttdeci">HGCalCondObjectContainerBase()</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:31</div></div>
+<div class="ttc" id="classHGCalCondObjectContainerBase_html_aed2092342ba80ce38bd6ca78f445ae27"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#aed2092342ba80ce38bd6ca78f445ae27">HGCalCondObjectContainerBase::HGCalCondObjectContainerBase</a></div><div class="ttdeci">HGCalCondObjectContainerBase(const HGCalCondObjectNumberingScheme *scheme, uint64_t ischeme)</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:30</div></div>
+<div class="ttc" id="classHGCalCondObjectNumberingScheme_html_a12b6cd57219ec32e9f5b10bc19f56713"><div class="ttname"><a href="classHGCalCondObjectNumberingScheme.html#a12b6cd57219ec32e9f5b10bc19f56713">HGCalCondObjectNumberingScheme::denseIndexFor</a></div><div class="ttdeci">virtual size_t denseIndexFor(DetId rawDetId, uint64_t scheme) const </div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:14</div></div>
 <div class="ttc" id="classHGCalCondObjectNumberingScheme_html_a3484069402b92ff56cd230c40b680d21"><div class="ttname"><a href="classHGCalCondObjectNumberingScheme.html#a3484069402b92ff56cd230c40b680d21">HGCalCondObjectNumberingScheme::rangeFor</a></div><div class="ttdeci">virtual size_t rangeFor(uint64_t scheme) const =0</div></div>
-<div class="ttc" id="classHGCalCondObjectContainerBase_html_aae88eedea2c63ba64d14e4d767d561fb"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#aae88eedea2c63ba64d14e4d767d561fb">HGCalCondObjectContainerBase::setNumberingScheme</a></div><div class="ttdeci">void setNumberingScheme(const HGCalCondObjectNumberingScheme *scheme)</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:28</div></div>
-<div class="ttc" id="classHGCalCondObjectContainerBase_html_a44346b0f2afeb787ed26a6746f27f403"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#a44346b0f2afeb787ed26a6746f27f403">HGCalCondObjectContainerBase::schemeCode</a></div><div class="ttdeci">uint64_t schemeCode() const </div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:31</div></div>
-<div class="ttc" id="classHGCalCondObjectContainer_html"><div class="ttname"><a href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a></div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:48</div></div>
-<div class="ttc" id="classHGCalCondObjectContainerBase_html_aa0452e359321443eb947e87c5a39f8ab"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#aa0452e359321443eb947e87c5a39f8ab">HGCalCondObjectContainerBase::exists</a></div><div class="ttdeci">bool exists(DetId id) const </div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:33</div></div>
-<div class="ttc" id="structHGCalCondObjectContainer_1_1Item_html"><div class="ttname"><a href="structHGCalCondObjectContainer_1_1Item.html">HGCalCondObjectContainer::Item</a></div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:50</div></div>
-<div class="ttc" id="classHGCalCondObjectContainerBase_html_a74fb441eab90ed1e3371d1975101a15a"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#a74fb441eab90ed1e3371d1975101a15a">HGCalCondObjectContainerBase::getNumberingScheme</a></div><div class="ttdeci">const HGCalCondObjectNumberingScheme * getNumberingScheme() const </div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:30</div></div>
-<div class="ttc" id="classHGCalCondObjectContainer_html_a8ea32c7cedacfb6424bf246b0ed1856d"><div class="ttname"><a href="classHGCalCondObjectContainer.html#a8ea32c7cedacfb6424bf246b0ed1856d">HGCalCondObjectContainer::HGCalCondObjectContainer</a></div><div class="ttdeci">HGCalCondObjectContainer()</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:57</div></div>
-<div class="ttc" id="classHGCalCondObjectContainerBase_html"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html">HGCalCondObjectContainerBase</a></div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:23</div></div>
-<div class="ttc" id="classHGCalCondObjectContainer_html_ab9ca15553f3bf71115e7cdd4cc3ed901"><div class="ttname"><a href="classHGCalCondObjectContainer.html#ab9ca15553f3bf71115e7cdd4cc3ed901">HGCalCondObjectContainer::set</a></div><div class="ttdeci">void set(DetId id, const Payload &amp;value)</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:62</div></div>
-<div class="ttc" id="structHGCalCondObjectContainer_1_1Item_html_af428754d44014ec39714175c73d75cc2"><div class="ttname"><a href="structHGCalCondObjectContainer_1_1Item.html#af428754d44014ec39714175c73d75cc2">HGCalCondObjectContainer::Item::value</a></div><div class="ttdeci">Payload value</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:52</div></div>
-<div class="ttc" id="classHGCalCondObjectContainer_html_aa3062d28d80d223443efca6638008682"><div class="ttname"><a href="classHGCalCondObjectContainer.html#aa3062d28d80d223443efca6638008682">HGCalCondObjectContainer::size</a></div><div class="ttdeci">size_t size() const </div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:60</div></div>
-<div class="ttc" id="structHGCalCondObjectContainer_1_1Item_html_a0cca259b8300c306bf3401a78e7277aa"><div class="ttname"><a href="structHGCalCondObjectContainer_1_1Item.html#a0cca259b8300c306bf3401a78e7277aa">HGCalCondObjectContainer::Item::id</a></div><div class="ttdeci">DetId id</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:51</div></div>
+<div class="ttc" id="classHGCalCondObjectContainerBase_html_aae88eedea2c63ba64d14e4d767d561fb"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#aae88eedea2c63ba64d14e4d767d561fb">HGCalCondObjectContainerBase::setNumberingScheme</a></div><div class="ttdeci">void setNumberingScheme(const HGCalCondObjectNumberingScheme *scheme)</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:33</div></div>
+<div class="ttc" id="classHGCalCondObjectContainerBase_html_a44346b0f2afeb787ed26a6746f27f403"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#a44346b0f2afeb787ed26a6746f27f403">HGCalCondObjectContainerBase::schemeCode</a></div><div class="ttdeci">uint64_t schemeCode() const </div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:46</div></div>
+<div class="ttc" id="classHGCalCondObjectContainer_html"><div class="ttname"><a href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a></div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:69</div></div>
+<div class="ttc" id="classHGCalCondObjectContainerBase_html_aa0452e359321443eb947e87c5a39f8ab"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#aa0452e359321443eb947e87c5a39f8ab">HGCalCondObjectContainerBase::exists</a></div><div class="ttdeci">bool exists(DetId id) const </div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:51</div></div>
+<div class="ttc" id="structHGCalCondObjectContainer_1_1Item_html"><div class="ttname"><a href="structHGCalCondObjectContainer_1_1Item.html">HGCalCondObjectContainer::Item</a></div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:72</div></div>
+<div class="ttc" id="classHGCalCondObjectContainerBase_html_a74fb441eab90ed1e3371d1975101a15a"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#a74fb441eab90ed1e3371d1975101a15a">HGCalCondObjectContainerBase::getNumberingScheme</a></div><div class="ttdeci">const HGCalCondObjectNumberingScheme * getNumberingScheme() const </div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:42</div></div>
+<div class="ttc" id="classHGCalCondObjectContainer_html_a8ea32c7cedacfb6424bf246b0ed1856d"><div class="ttname"><a href="classHGCalCondObjectContainer.html#a8ea32c7cedacfb6424bf246b0ed1856d">HGCalCondObjectContainer::HGCalCondObjectContainer</a></div><div class="ttdeci">HGCalCondObjectContainer()</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:80</div></div>
+<div class="ttc" id="classHGCalCondObjectContainerBase_html"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html">HGCalCondObjectContainerBase</a></div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:27</div></div>
+<div class="ttc" id="classHGCalCondObjectContainer_html_ab9ca15553f3bf71115e7cdd4cc3ed901"><div class="ttname"><a href="classHGCalCondObjectContainer.html#ab9ca15553f3bf71115e7cdd4cc3ed901">HGCalCondObjectContainer::set</a></div><div class="ttdeci">void set(DetId id, const Payload &amp;value)</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:95</div></div>
+<div class="ttc" id="structHGCalCondObjectContainer_1_1Item_html_af428754d44014ec39714175c73d75cc2"><div class="ttname"><a href="structHGCalCondObjectContainer_1_1Item.html#af428754d44014ec39714175c73d75cc2">HGCalCondObjectContainer::Item::value</a></div><div class="ttdeci">Payload value</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:74</div></div>
+<div class="ttc" id="classHGCalCondObjectContainer_html_aa3062d28d80d223443efca6638008682"><div class="ttname"><a href="classHGCalCondObjectContainer.html#aa3062d28d80d223443efca6638008682">HGCalCondObjectContainer::size</a></div><div class="ttdeci">size_t size() const </div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:87</div></div>
+<div class="ttc" id="structHGCalCondObjectContainer_1_1Item_html_a0cca259b8300c306bf3401a78e7277aa"><div class="ttname"><a href="structHGCalCondObjectContainer_1_1Item.html#a0cca259b8300c306bf3401a78e7277aa">HGCalCondObjectContainer::Item::id</a></div><div class="ttdeci">DetId id</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:73</div></div>
 <div class="ttc" id="classHGCalCondObjectNumberingScheme_html"><div class="ttname"><a href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a></div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:8</div></div>
-<div class="ttc" id="classHGCalCondObjectContainerBase_html_a3bcac38e7c735582f0e474fd5373c331"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#a3bcac38e7c735582f0e474fd5373c331">HGCalCondObjectContainerBase::setNumberingScheme</a></div><div class="ttdeci">void setNumberingScheme(const HGCalCondObjectNumberingScheme *scheme, uint64_t code)</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:29</div></div>
+<div class="ttc" id="classHGCalCondObjectContainerBase_html_a3bcac38e7c735582f0e474fd5373c331"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#a3bcac38e7c735582f0e474fd5373c331">HGCalCondObjectContainerBase::setNumberingScheme</a></div><div class="ttdeci">void setNumberingScheme(const HGCalCondObjectNumberingScheme *scheme, uint64_t code)</div><div class="ttdef"><b>Definition:</b> HGCalCondObjectContainer.h:37</div></div>
 <div class="ttc" id="classHGCalCondObjectNumberingScheme_html_aaa49e4a7ec05a5172936121564df76d1"><div class="ttname"><a href="classHGCalCondObjectNumberingScheme.html#aaa49e4a7ec05a5172936121564df76d1">HGCalCondObjectNumberingScheme::denseIndexFor</a></div><div class="ttdeci">virtual size_t denseIndexFor(uint32_t rawDetId, uint64_t scheme) const =0</div></div>
 </div><!-- fragment --></div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 8 2016 10:59:18 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
-<img class="footer" src="doxygen.png" alt="doxygen"/>
-</a> 1.8.5
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_669eb5eb474927b650502cea7dc4fc02.html">CondObjects</a></li><li class="navelem"><a class="el" href="dir_1037def022d7294f7ab68b71018e586e.html">interface</a></li><li class="navelem"><a class="el" href="HGCalCondObjectContainer_8h.html">HGCalCondObjectContainer.h</a></li>
+    <li class="footer">Generated on Tue Mar 8 2016 15:00:59 for HGCal Test Beam by
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
+  </ul>
+</div>
 </body>
 </html>

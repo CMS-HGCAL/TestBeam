@@ -1,9 +1,10 @@
 <map id="DataFormats/interface/SKIROCParameters.h" name="DataFormats/interface/SKIROCParameters.h">
 <area shape="rect" id="node2" href="$HGCalTBDataFrameContainers_8h.html" title="DataFormats/interface\l/HGCalTBDataFrameContainers.h" alt="" coords="445,97,667,138"/>
-<area shape="rect" id="node8" href="$HGCalTBRawToDigi_8cc.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.cc" alt="" coords="830,187,1049,229"/>
+<area shape="rect" id="node9" href="$HGCalTBRawToDigi_8cc.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.cc" alt="" coords="830,187,1049,229"/>
 <area shape="rect" id="node3" href="$HGCalTBDigiCollections_8h.html" title="DataFormats/interface\l/HGCalTBDigiCollections.h" alt="" coords="14,187,196,229"/>
-<area shape="rect" id="node5" href="$HGCalDigiDump_8cc.html" title="DataFormats/plugins\l/HGCalDigiDump.cc" alt="" coords="221,187,363,229"/>
-<area shape="rect" id="node6" href="$classes_8h.html" title="DataFormats/src/classes.h" alt="" coords="387,195,567,221"/>
-<area shape="rect" id="node7" href="$DigiPlotter_8cc.html" title="RawToDigi/plugins/DigiPlotter.cc" alt="" coords="591,195,805,221"/>
-<area shape="rect" id="node4" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="5,278,205,319"/>
+<area shape="rect" id="node6" href="$HGCalDigiDump_8cc.html" title="DataFormats/plugins\l/HGCalDigiDump.cc" alt="" coords="221,187,363,229"/>
+<area shape="rect" id="node7" href="$classes_8h.html" title="DataFormats/src/classes.h" alt="" coords="387,195,567,221"/>
+<area shape="rect" id="node8" href="$DigiPlotter_8cc.html" title="RawToDigi/plugins/DigiPlotter.cc" alt="" coords="591,195,805,221"/>
+<area shape="rect" id="node4" href="$HGCalTBRecHitProducer_8h.html" title="Reco/plugins/HGCalTBRecHit\lProducer.h" alt="" coords="5,278,205,319"/>
+<area shape="rect" id="node5" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="5,369,205,410"/>
 </map>

@@ -8,6 +8,13 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/search.js"></script>
 <script type="text/javascript">
@@ -23,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">30a87a65ccebed68aa15ee6f08890b740db76987</span>
+   &#160;<span id="projectnumber">850737e36235c1185ca84aaff7c206e970ed524a</span>
    </div>
   </td>
  </tr>
@@ -69,6 +76,20 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     </ul>
   </div>
 </div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('classes.html','');});
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -98,7 +119,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr><td valign="top"><a class="el" href="structDataFormats__HGCTB_1_1dictionary.html">dictionary</a> (<a class="el" href="namespaceDataFormats__HGCTB.html">DataFormats_HGCTB</a>)&#160;&#160;&#160;</td><td valign="top"><a class="el" href="classHGCalCondObjectTextIO.html">HGCalCondObjectTextIO</a>&#160;&#160;&#160;</td><td valign="top"><a class="el" href="classHGCalTBNumberingScheme.html">HGCalTBNumberingScheme</a>&#160;&#160;&#160;</td><td valign="top"><a class="el" href="classSKIROC2DataFrame_1_1Sample.html">SKIROC2DataFrame::Sample</a>&#160;&#160;&#160;</td></tr>
 <tr><td rowspan="2" valign="bottom"><a name="letter_H"></a><table border="0" cellspacing="0" cellpadding="0"><tr><td><div class="ah">&#160;&#160;H&#160;&#160;</div></td></tr></table>
 </td><td valign="top"><a class="el" href="classHGCalDataFrameContainer.html">HGCalDataFrameContainer</a>&#160;&#160;&#160;</td><td valign="top"><a class="el" href="classHGCalTBRecHit.html">HGCalTBRecHit</a>&#160;&#160;&#160;</td><td valign="top"><a class="el" href="structHGCalCondObjectContainer_1_1Item.html">HGCalCondObjectContainer::Item</a>&#160;&#160;&#160;</td><td valign="top"><a class="el" href="classSKIROC2DataFrame.html">SKIROC2DataFrame</a>&#160;&#160;&#160;</td></tr>
-<tr><td valign="top"><a class="el" href="classHGCalElectronicsMap.html">HGCalElectronicsMap</a>&#160;&#160;&#160;</td><td valign="top"><a class="el" href="classHGCalTBRecoAlgo.html">HGCalTBRecoAlgo</a>&#160;&#160;&#160;</td><td rowspan="2" valign="bottom"><a name="letter_M"></a><table border="0" cellspacing="0" cellpadding="0"><tr><td><div class="ah">&#160;&#160;M&#160;&#160;</div></td></tr></table>
+<tr><td valign="top"><a class="el" href="classHGCalElectronicsMap.html">HGCalElectronicsMap</a>&#160;&#160;&#160;</td><td valign="top"><a class="el" href="classHGCalTBRecHitProducer.html">HGCalTBRecHitProducer</a>&#160;&#160;&#160;</td><td rowspan="2" valign="bottom"><a name="letter_M"></a><table border="0" cellspacing="0" cellpadding="0"><tr><td><div class="ah">&#160;&#160;M&#160;&#160;</div></td></tr></table>
 </td><td></td></tr>
 <tr><td valign="top"><a class="el" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a>&#160;&#160;&#160;</td><td valign="top"><a class="el" href="classHGCalTBCellVertices.html">HGCalTBCellVertices</a>&#160;&#160;&#160;</td><td valign="top"><a class="el" href="classHGCalTBTopology.html">HGCalTBTopology</a>&#160;&#160;&#160;</td><td></td></tr>
 <tr><td></td><td></td><td></td><td valign="top"><a class="el" href="structHGCalElectronicsMap_1_1MapEntry.html">HGCalElectronicsMap::MapEntry</a>&#160;&#160;&#160;</td><td></td></tr>
@@ -106,11 +127,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </table>
 <div class="qindex"><a class="qindex" href="#letter_D">D</a>&#160;|&#160;<a class="qindex" href="#letter_H">H</a>&#160;|&#160;<a class="qindex" href="#letter_I">I</a>&#160;|&#160;<a class="qindex" href="#letter_M">M</a>&#160;|&#160;<a class="qindex" href="#letter_S">S</a></div>
 </div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 8 2016 10:59:21 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
-<img class="footer" src="doxygen.png" alt="doxygen"/>
-</a> 1.8.5
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">Generated on Tue Mar 8 2016 15:01:03 for HGCal Test Beam by
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
+  </ul>
+</div>
 </body>
 </html>

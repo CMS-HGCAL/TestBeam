@@ -8,6 +8,13 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/search.js"></script>
 <script type="text/javascript">
@@ -23,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">30a87a65ccebed68aa15ee6f08890b740db76987</span>
+   &#160;<span id="projectnumber">850737e36235c1185ca84aaff7c206e970ed524a</span>
    </div>
   </td>
  </tr>
@@ -66,6 +73,21 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="globals.html"><span>File&#160;Members</span></a></li>
     </ul>
   </div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('HGCalTBElectronicsId_8h_source.html','');});
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -80,11 +102,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<div id="nav-path" class="navpath">
-  <ul>
-<li class="navelem"><a class="el" href="dir_2171f7ec022c5423887b07c69b2f5b48.html">DataFormats</a></li><li class="navelem"><a class="el" href="dir_93f66be89f03ae0158622873e92c97cf.html">interface</a></li>  </ul>
-</div>
-</div><!-- top -->
 <div class="header">
   <div class="headertitle">
 <div class="title">HGCalTBElectronicsId.h</div>  </div>
@@ -97,59 +114,79 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &lt;stdint.h&gt;</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"></span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment">/** \class HGCalTBElectronicsId</span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment">  *  </span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment">  *</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="comment">  * [6:0]  ICHAN</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="comment">  * [10:7] ISKIROC</span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment">  * </span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment">  *</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="comment">  * $Date: $</span></div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="comment">  * $Revision: $</span></div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="comment">  * \author J. Mans - Minnesota</span></div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment">  */</span></div>
-<div class="line"><a name="l00016"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html">   16</a></span>&#160;<span class="keyword">class </span><a class="code" href="classHGCalTBElectronicsId.html">HGCalTBElectronicsId</a> {</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00018"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#a01c505210b304f03f6e2749474f46af4">   18</a></span>&#160;  <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#a01c505210b304f03f6e2749474f46af4">kIChanOffset</a>   = 0;</div>
-<div class="line"><a name="l00019"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#ac8dd68341243c034be18b7d53cbfa017">   19</a></span>&#160;  <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#ac8dd68341243c034be18b7d53cbfa017">kIChanMask</a>     = 0x7F;</div>
-<div class="line"><a name="l00020"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#ab70e1a8d1e7cebb0fe685477d1444abe">   20</a></span>&#160;  <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#ab70e1a8d1e7cebb0fe685477d1444abe">kISkiRocOffset</a> = 7;</div>
-<div class="line"><a name="l00021"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#a39deb366d5705db6a46a731588d47f5e">   21</a></span>&#160;  <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#a39deb366d5705db6a46a731588d47f5e">kISkiRocMask</a>   = 0xF;</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;  </div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;  <a class="code" href="classHGCalTBElectronicsId.html#a63040c12d928c2f28cb5df1b6483dcc7">HGCalTBElectronicsId</a>(<span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#a96cd8fc671d2464f9fce4cc01ffc149b">iskiroc</a>, <span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#a2644f9a945814b7102aa5c696f0d831d">ichan</a>);</div>
-<div class="line"><a name="l00024"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#a63040c12d928c2f28cb5df1b6483dcc7">   24</a></span>&#160;  <a class="code" href="classHGCalTBElectronicsId.html#a63040c12d928c2f28cb5df1b6483dcc7">HGCalTBElectronicsId</a>() : m_id(0) { }</div>
-<div class="line"><a name="l00025"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#aa260f8d8208cef2ac861b2cb94c51e0e">   25</a></span>&#160;  <a class="code" href="classHGCalTBElectronicsId.html#aa260f8d8208cef2ac861b2cb94c51e0e">HGCalTBElectronicsId</a>(uint32_t <a class="code" href="classHGCalTBElectronicsId.html#ae88178c35c1ffcf9d1608e4837de707c">rawId</a>) : m_id(rawId) { }</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;  </div>
-<div class="line"><a name="l00027"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#a2644f9a945814b7102aa5c696f0d831d">   27</a></span>&#160;  <span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#a2644f9a945814b7102aa5c696f0d831d">ichan</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> (m_id&amp;<a class="code" href="classHGCalTBElectronicsId.html#ac8dd68341243c034be18b7d53cbfa017">kIChanMask</a>); }</div>
-<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#a96cd8fc671d2464f9fce4cc01ffc149b">   28</a></span>&#160;  <span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#a96cd8fc671d2464f9fce4cc01ffc149b">iskiroc</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> (m_id&gt;&gt;<a class="code" href="classHGCalTBElectronicsId.html#ab70e1a8d1e7cebb0fe685477d1444abe">kISkiRocOffset</a>)&amp;<a class="code" href="classHGCalTBElectronicsId.html#a39deb366d5705db6a46a731588d47f5e">kISkiRocMask</a>; }</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;</div>
-<div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#ae88178c35c1ffcf9d1608e4837de707c">   30</a></span>&#160;  uint32_t <a class="code" href="classHGCalTBElectronicsId.html#ae88178c35c1ffcf9d1608e4837de707c">rawId</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> m_id; }</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;</div>
-<div class="line"><a name="l00032"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#a352558f3c0c0566436b5eebf40ef361a">   32</a></span>&#160;  <span class="keywordtype">bool</span> <a class="code" href="classHGCalTBElectronicsId.html#a352558f3c0c0566436b5eebf40ef361a">null</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> m_id==0; }</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
-<div class="line"><a name="l00034"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#a3068eb289668efdddcd3eee2baf8de3d">   34</a></span>&#160;  <span class="keyword">operator</span> uint32_t()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> m_id; }</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;  uint32_t m_id;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;};</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;std::ostream&amp; <a class="code" href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a>(std::ostream&amp;,<span class="keyword">const</span> <a class="code" href="classHGCalTBElectronicsId.html">HGCalTBElectronicsId</a>&amp; <span class="keywordtype">id</span>);</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;</div>
+<div class="line"><a name="l00016"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html">   16</a></span>&#160;<span class="keyword">class </span><a class="code" href="classHGCalTBElectronicsId.html">HGCalTBElectronicsId</a></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;{</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00019"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#a01c505210b304f03f6e2749474f46af4">   19</a></span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#a01c505210b304f03f6e2749474f46af4">kIChanOffset</a>   = 0;</div>
+<div class="line"><a name="l00020"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#ac8dd68341243c034be18b7d53cbfa017">   20</a></span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#ac8dd68341243c034be18b7d53cbfa017">kIChanMask</a>     = 0x7F;</div>
+<div class="line"><a name="l00021"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#ab70e1a8d1e7cebb0fe685477d1444abe">   21</a></span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#ab70e1a8d1e7cebb0fe685477d1444abe">kISkiRocOffset</a> = 7;</div>
+<div class="line"><a name="l00022"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#a39deb366d5705db6a46a731588d47f5e">   22</a></span>&#160;    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#a39deb366d5705db6a46a731588d47f5e">kISkiRocMask</a>   = 0xF;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <a class="code" href="classHGCalTBElectronicsId.html#a63040c12d928c2f28cb5df1b6483dcc7">HGCalTBElectronicsId</a>(<span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#a96cd8fc671d2464f9fce4cc01ffc149b">iskiroc</a>, <span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#a2644f9a945814b7102aa5c696f0d831d">ichan</a>);</div>
+<div class="line"><a name="l00025"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#a63040c12d928c2f28cb5df1b6483dcc7">   25</a></span>&#160;    <a class="code" href="classHGCalTBElectronicsId.html#a63040c12d928c2f28cb5df1b6483dcc7">HGCalTBElectronicsId</a>() : m_id(0) { }</div>
+<div class="line"><a name="l00026"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#aa260f8d8208cef2ac861b2cb94c51e0e">   26</a></span>&#160;    <a class="code" href="classHGCalTBElectronicsId.html#aa260f8d8208cef2ac861b2cb94c51e0e">HGCalTBElectronicsId</a>(uint32_t <a class="code" href="classHGCalTBElectronicsId.html#ae88178c35c1ffcf9d1608e4837de707c">rawId</a>) : m_id(rawId) { }</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
+<div class="line"><a name="l00028"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#a2644f9a945814b7102aa5c696f0d831d">   28</a></span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#a2644f9a945814b7102aa5c696f0d831d">ichan</a>()<span class="keyword"> const</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;        <span class="keywordflow">return</span> (m_id &amp; <a class="code" href="classHGCalTBElectronicsId.html#ac8dd68341243c034be18b7d53cbfa017">kIChanMask</a>);</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    }</div>
+<div class="line"><a name="l00032"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#a96cd8fc671d2464f9fce4cc01ffc149b">   32</a></span>&#160;    <span class="keywordtype">int</span> <a class="code" href="classHGCalTBElectronicsId.html#a96cd8fc671d2464f9fce4cc01ffc149b">iskiroc</a>()<span class="keyword"> const</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        <span class="keywordflow">return</span> (m_id &gt;&gt; <a class="code" href="classHGCalTBElectronicsId.html#ab70e1a8d1e7cebb0fe685477d1444abe">kISkiRocOffset</a>)&amp;<a class="code" href="classHGCalTBElectronicsId.html#a39deb366d5705db6a46a731588d47f5e">kISkiRocMask</a>;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    }</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;</div>
+<div class="line"><a name="l00037"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#ae88178c35c1ffcf9d1608e4837de707c">   37</a></span>&#160;    uint32_t <a class="code" href="classHGCalTBElectronicsId.html#ae88178c35c1ffcf9d1608e4837de707c">rawId</a>()<span class="keyword"> const</span></div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        <span class="keywordflow">return</span> m_id;</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    }</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="ttc" id="classHGCalTBElectronicsId_html_a01c505210b304f03f6e2749474f46af4"><div class="ttname"><a href="classHGCalTBElectronicsId.html#a01c505210b304f03f6e2749474f46af4">HGCalTBElectronicsId::kIChanOffset</a></div><div class="ttdeci">static const int kIChanOffset</div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:18</div></div>
-<div class="ttc" id="classHGCalTBElectronicsId_html_ac8dd68341243c034be18b7d53cbfa017"><div class="ttname"><a href="classHGCalTBElectronicsId.html#ac8dd68341243c034be18b7d53cbfa017">HGCalTBElectronicsId::kIChanMask</a></div><div class="ttdeci">static const int kIChanMask</div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:19</div></div>
-<div class="ttc" id="classHGCalTBElectronicsId_html_a352558f3c0c0566436b5eebf40ef361a"><div class="ttname"><a href="classHGCalTBElectronicsId.html#a352558f3c0c0566436b5eebf40ef361a">HGCalTBElectronicsId::null</a></div><div class="ttdeci">bool null() const </div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:32</div></div>
-<div class="ttc" id="classHGCalTBElectronicsId_html_aa260f8d8208cef2ac861b2cb94c51e0e"><div class="ttname"><a href="classHGCalTBElectronicsId.html#aa260f8d8208cef2ac861b2cb94c51e0e">HGCalTBElectronicsId::HGCalTBElectronicsId</a></div><div class="ttdeci">HGCalTBElectronicsId(uint32_t rawId)</div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:25</div></div>
-<div class="ttc" id="classHGCalTBElectronicsId_html_a2644f9a945814b7102aa5c696f0d831d"><div class="ttname"><a href="classHGCalTBElectronicsId.html#a2644f9a945814b7102aa5c696f0d831d">HGCalTBElectronicsId::ichan</a></div><div class="ttdeci">int ichan() const </div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:27</div></div>
-<div class="ttc" id="classHGCalTBElectronicsId_html_ab70e1a8d1e7cebb0fe685477d1444abe"><div class="ttname"><a href="classHGCalTBElectronicsId.html#ab70e1a8d1e7cebb0fe685477d1444abe">HGCalTBElectronicsId::kISkiRocOffset</a></div><div class="ttdeci">static const int kISkiRocOffset</div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:20</div></div>
-<div class="ttc" id="classHGCalTBElectronicsId_html_ae88178c35c1ffcf9d1608e4837de707c"><div class="ttname"><a href="classHGCalTBElectronicsId.html#ae88178c35c1ffcf9d1608e4837de707c">HGCalTBElectronicsId::rawId</a></div><div class="ttdeci">uint32_t rawId() const </div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:30</div></div>
-<div class="ttc" id="HGCalTBDetId_8h_html_afcfc2837562fc0ab7716680d5a09aa0b"><div class="ttname"><a href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a></div><div class="ttdeci">std::ostream &amp; operator&lt;&lt;(std::ostream &amp;, const HGCalTBDetId &amp;id)</div><div class="ttdef"><b>Definition:</b> HGCalTBDetId.cc:32</div></div>
-<div class="ttc" id="classHGCalTBElectronicsId_html_a63040c12d928c2f28cb5df1b6483dcc7"><div class="ttname"><a href="classHGCalTBElectronicsId.html#a63040c12d928c2f28cb5df1b6483dcc7">HGCalTBElectronicsId::HGCalTBElectronicsId</a></div><div class="ttdeci">HGCalTBElectronicsId()</div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:24</div></div>
-<div class="ttc" id="classHGCalTBElectronicsId_html_a96cd8fc671d2464f9fce4cc01ffc149b"><div class="ttname"><a href="classHGCalTBElectronicsId.html#a96cd8fc671d2464f9fce4cc01ffc149b">HGCalTBElectronicsId::iskiroc</a></div><div class="ttdeci">int iskiroc() const </div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:28</div></div>
+<div class="line"><a name="l00042"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#a352558f3c0c0566436b5eebf40ef361a">   42</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classHGCalTBElectronicsId.html#a352558f3c0c0566436b5eebf40ef361a">null</a>()<span class="keyword"> const</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        <span class="keywordflow">return</span> m_id == 0;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    }</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
+<div class="line"><a name="l00047"></a><span class="lineno"><a class="line" href="classHGCalTBElectronicsId.html#a3068eb289668efdddcd3eee2baf8de3d">   47</a></span>&#160;    <span class="keyword">operator</span> uint32_t()<span class="keyword"> const</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;        <span class="keywordflow">return</span> m_id;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    }</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    uint32_t m_id;</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;};</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;std::ostream&amp; <a class="code" href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a>(std::ostream&amp;, <span class="keyword">const</span> <a class="code" href="classHGCalTBElectronicsId.html">HGCalTBElectronicsId</a>&amp; <span class="keywordtype">id</span>);</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="ttc" id="classHGCalTBElectronicsId_html_a01c505210b304f03f6e2749474f46af4"><div class="ttname"><a href="classHGCalTBElectronicsId.html#a01c505210b304f03f6e2749474f46af4">HGCalTBElectronicsId::kIChanOffset</a></div><div class="ttdeci">static const int kIChanOffset</div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:19</div></div>
+<div class="ttc" id="classHGCalTBElectronicsId_html_ac8dd68341243c034be18b7d53cbfa017"><div class="ttname"><a href="classHGCalTBElectronicsId.html#ac8dd68341243c034be18b7d53cbfa017">HGCalTBElectronicsId::kIChanMask</a></div><div class="ttdeci">static const int kIChanMask</div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:20</div></div>
+<div class="ttc" id="classHGCalTBElectronicsId_html_a352558f3c0c0566436b5eebf40ef361a"><div class="ttname"><a href="classHGCalTBElectronicsId.html#a352558f3c0c0566436b5eebf40ef361a">HGCalTBElectronicsId::null</a></div><div class="ttdeci">bool null() const </div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:42</div></div>
+<div class="ttc" id="classHGCalTBElectronicsId_html_aa260f8d8208cef2ac861b2cb94c51e0e"><div class="ttname"><a href="classHGCalTBElectronicsId.html#aa260f8d8208cef2ac861b2cb94c51e0e">HGCalTBElectronicsId::HGCalTBElectronicsId</a></div><div class="ttdeci">HGCalTBElectronicsId(uint32_t rawId)</div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:26</div></div>
+<div class="ttc" id="classHGCalTBElectronicsId_html_a2644f9a945814b7102aa5c696f0d831d"><div class="ttname"><a href="classHGCalTBElectronicsId.html#a2644f9a945814b7102aa5c696f0d831d">HGCalTBElectronicsId::ichan</a></div><div class="ttdeci">int ichan() const </div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:28</div></div>
+<div class="ttc" id="classHGCalTBElectronicsId_html_ab70e1a8d1e7cebb0fe685477d1444abe"><div class="ttname"><a href="classHGCalTBElectronicsId.html#ab70e1a8d1e7cebb0fe685477d1444abe">HGCalTBElectronicsId::kISkiRocOffset</a></div><div class="ttdeci">static const int kISkiRocOffset</div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:21</div></div>
+<div class="ttc" id="classHGCalTBElectronicsId_html_ae88178c35c1ffcf9d1608e4837de707c"><div class="ttname"><a href="classHGCalTBElectronicsId.html#ae88178c35c1ffcf9d1608e4837de707c">HGCalTBElectronicsId::rawId</a></div><div class="ttdeci">uint32_t rawId() const </div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:37</div></div>
+<div class="ttc" id="HGCalTBDetId_8h_html_afcfc2837562fc0ab7716680d5a09aa0b"><div class="ttname"><a href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a></div><div class="ttdeci">std::ostream &amp; operator&lt;&lt;(std::ostream &amp;, const HGCalTBDetId &amp;id)</div><div class="ttdef"><b>Definition:</b> HGCalTBDetId.cc:37</div></div>
+<div class="ttc" id="classHGCalTBElectronicsId_html_a63040c12d928c2f28cb5df1b6483dcc7"><div class="ttname"><a href="classHGCalTBElectronicsId.html#a63040c12d928c2f28cb5df1b6483dcc7">HGCalTBElectronicsId::HGCalTBElectronicsId</a></div><div class="ttdeci">HGCalTBElectronicsId()</div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:25</div></div>
+<div class="ttc" id="classHGCalTBElectronicsId_html_a96cd8fc671d2464f9fce4cc01ffc149b"><div class="ttname"><a href="classHGCalTBElectronicsId.html#a96cd8fc671d2464f9fce4cc01ffc149b">HGCalTBElectronicsId::iskiroc</a></div><div class="ttdeci">int iskiroc() const </div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:32</div></div>
 <div class="ttc" id="classHGCalTBElectronicsId_html"><div class="ttname"><a href="classHGCalTBElectronicsId.html">HGCalTBElectronicsId</a></div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:16</div></div>
-<div class="ttc" id="classHGCalTBElectronicsId_html_a39deb366d5705db6a46a731588d47f5e"><div class="ttname"><a href="classHGCalTBElectronicsId.html#a39deb366d5705db6a46a731588d47f5e">HGCalTBElectronicsId::kISkiRocMask</a></div><div class="ttdeci">static const int kISkiRocMask</div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:21</div></div>
+<div class="ttc" id="classHGCalTBElectronicsId_html_a39deb366d5705db6a46a731588d47f5e"><div class="ttname"><a href="classHGCalTBElectronicsId.html#a39deb366d5705db6a46a731588d47f5e">HGCalTBElectronicsId::kISkiRocMask</a></div><div class="ttdeci">static const int kISkiRocMask</div><div class="ttdef"><b>Definition:</b> HGCalTBElectronicsId.h:22</div></div>
 </div><!-- fragment --></div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 8 2016 10:59:18 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
-<img class="footer" src="doxygen.png" alt="doxygen"/>
-</a> 1.8.5
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_2171f7ec022c5423887b07c69b2f5b48.html">DataFormats</a></li><li class="navelem"><a class="el" href="dir_93f66be89f03ae0158622873e92c97cf.html">interface</a></li><li class="navelem"><a class="el" href="HGCalTBElectronicsId_8h.html">HGCalTBElectronicsId.h</a></li>
+    <li class="footer">Generated on Tue Mar 8 2016 15:00:59 for HGCal Test Beam by
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
+  </ul>
+</div>
 </body>
 </html>

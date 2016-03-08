@@ -1,14 +1,15 @@
 <map id="Reco/plugins/HGCalTBRecHitProducer.cc" name="Reco/plugins/HGCalTBRecHitProducer.cc">
-<area shape="rect" id="node8" href="$HGCalTBRecHitCollections_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHitCollections.h" alt="" coords="1291,97,1491,138"/>
-<area shape="rect" id="node19" href="$HGCalTBDigiCollections_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDigiCollections.h" alt="" coords="1515,97,1711,138"/>
-<area shape="rect" id="node26" href="$HGCalCondObjects_8h.html" title="HGCal/CondObjects/interface\l/HGCalCondObjects.h" alt="" coords="1735,97,1931,138"/>
-<area shape="rect" id="node28" href="$HGCalCondObjectTextIO_8h.html" title="HGCal/CondObjects/interface\l/HGCalCondObjectTextIO.h" alt="" coords="2186,97,2381,138"/>
-<area shape="rect" id="node31" href="$HGCalTBNumberingScheme_8h.html" title="HGCal/CondObjects/interface\l/HGCalTBNumberingScheme.h" alt="" coords="1956,97,2161,138"/>
-<area shape="rect" id="node10" href="$HGCalTBRecHit_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHit.h" alt="" coords="1093,187,1288,229"/>
-<area shape="rect" id="node12" href="$HGCalTBDetId_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDetId.h" alt="" coords="1185,369,1380,410"/>
-<area shape="rect" id="node20" href="$HGCalTBDataFrameContainers_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDataFrameContainers.h" alt="" coords="1671,187,1893,229"/>
-<area shape="rect" id="node22" href="$SKIROC2DataFrame_8h.html" title="HGCal/DataFormats/interface\l/SKIROC2DataFrame.h" alt="" coords="1369,278,1564,319"/>
-<area shape="rect" id="node25" href="$SKIROCParameters_8h.html" title="HGCal/DataFormats/interface\l/SKIROCParameters.h" alt="" coords="1825,278,2020,319"/>
-<area shape="rect" id="node27" href="$HGCalCondObjectContainer_8h.html" title="HGCal/CondObjects/interface\l/HGCalCondObjectContainer.h" alt="" coords="1957,187,2160,229"/>
-<area shape="rect" id="node30" href="$HGCalElectronicsMap_8h.html" title="HGCal/CondObjects/interface\l/HGCalElectronicsMap.h" alt="" coords="2185,187,2380,229"/>
+<area shape="rect" id="node2" href="$HGCalTBRecHitProducer_8h.html" title="HGCal/Reco/plugins\l/HGCalTBRecHitProducer.h" alt="" coords="1187,97,1373,138"/>
+<area shape="rect" id="node9" href="$HGCalTBRecHitCollections_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHitCollections.h" alt="" coords="1291,187,1491,229"/>
+<area shape="rect" id="node20" href="$HGCalTBDigiCollections_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDigiCollections.h" alt="" coords="1515,187,1711,229"/>
+<area shape="rect" id="node27" href="$HGCalCondObjects_8h.html" title="HGCal/CondObjects/interface\l/HGCalCondObjects.h" alt="" coords="1735,187,1931,229"/>
+<area shape="rect" id="node29" href="$HGCalCondObjectTextIO_8h.html" title="HGCal/CondObjects/interface\l/HGCalCondObjectTextIO.h" alt="" coords="2186,187,2381,229"/>
+<area shape="rect" id="node32" href="$HGCalTBNumberingScheme_8h.html" title="HGCal/CondObjects/interface\l/HGCalTBNumberingScheme.h" alt="" coords="1956,187,2161,229"/>
+<area shape="rect" id="node11" href="$HGCalTBRecHit_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHit.h" alt="" coords="1093,278,1288,319"/>
+<area shape="rect" id="node13" href="$HGCalTBDetId_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDetId.h" alt="" coords="1185,459,1380,501"/>
+<area shape="rect" id="node21" href="$HGCalTBDataFrameContainers_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDataFrameContainers.h" alt="" coords="1671,278,1893,319"/>
+<area shape="rect" id="node23" href="$SKIROC2DataFrame_8h.html" title="HGCal/DataFormats/interface\l/SKIROC2DataFrame.h" alt="" coords="1369,369,1564,410"/>
+<area shape="rect" id="node26" href="$SKIROCParameters_8h.html" title="HGCal/DataFormats/interface\l/SKIROCParameters.h" alt="" coords="1825,369,2020,410"/>
+<area shape="rect" id="node28" href="$HGCalCondObjectContainer_8h.html" title="HGCal/CondObjects/interface\l/HGCalCondObjectContainer.h" alt="" coords="1957,278,2160,319"/>
+<area shape="rect" id="node31" href="$HGCalElectronicsMap_8h.html" title="HGCal/CondObjects/interface\l/HGCalElectronicsMap.h" alt="" coords="2185,278,2380,319"/>
 </map>

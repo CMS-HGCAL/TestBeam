@@ -8,6 +8,13 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/search.js"></script>
 <script type="text/javascript">
@@ -23,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">30a87a65ccebed68aa15ee6f08890b740db76987</span>
+   &#160;<span id="projectnumber">850737e36235c1185ca84aaff7c206e970ed524a</span>
    </div>
   </td>
  </tr>
@@ -66,6 +73,21 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="globals.html"><span>File&#160;Members</span></a></li>
     </ul>
   </div>
+</div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('HGCalTBRecHit_8h_source.html','');});
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -80,11 +102,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<div id="nav-path" class="navpath">
-  <ul>
-<li class="navelem"><a class="el" href="dir_2171f7ec022c5423887b07c69b2f5b48.html">DataFormats</a></li><li class="navelem"><a class="el" href="dir_93f66be89f03ae0158622873e92c97cf.html">interface</a></li>  </ul>
-</div>
-</div><!-- top -->
 <div class="header">
   <div class="headertitle">
 <div class="title">HGCalTBRecHit.h</div>  </div>
@@ -98,38 +115,46 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment"></span></div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment">/** \class HGCRecHit</span></div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="comment"> *  </span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="comment"> *</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="comment"> * \author Valeri Andreev</span></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment"> */</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;</div>
-<div class="line"><a name="l00013"></a><span class="lineno"><a class="line" href="classHGCalTBRecHit.html">   13</a></span>&#160;<span class="keyword">class </span><a class="code" href="classHGCalTBRecHit.html">HGCalTBRecHit</a> : <span class="keyword">public</span> CaloRecHit {</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00015"></a><span class="lineno"><a class="line" href="classHGCalTBRecHit.html#a2ffda5430a40c906b0a3e4fa0ae3ca1b">   15</a></span>&#160;  <span class="keyword">typedef</span> DetId <a class="code" href="classHGCalTBRecHit.html#a2ffda5430a40c906b0a3e4fa0ae3ca1b">key_type</a>;</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;  <a class="code" href="classHGCalTBRecHit.html#ab7cf3ae0bba4ba9524a83089747f789c">HGCalTBRecHit</a>();</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;  <span class="comment">// by default a recHit is greated with no flag</span></div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;  <a class="code" href="classHGCalTBRecHit.html#ab7cf3ae0bba4ba9524a83089747f789c">HGCalTBRecHit</a>(<span class="keyword">const</span> DetId&amp; <span class="keywordtype">id</span>, <span class="keywordtype">float</span> energy, <span class="keywordtype">float</span> time, uint32_t flags = 0);<span class="comment"></span></div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment">  /// get the id  </span></div>
-<div class="line"><a name="l00021"></a><span class="lineno"><a class="line" href="classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd">   21</a></span>&#160;<span class="comment"></span>  <a class="code" href="classHGCalTBDetId.html">HGCalTBDetId</a> <a class="code" href="classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd">id</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> <a class="code" href="classHGCalTBDetId.html">HGCalTBDetId</a>(detid());}<span class="comment"></span></div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment">  /////  bool isRecovered() const;</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"></span>};</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;</div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;std::ostream&amp; <a class="code" href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a>(std::ostream&amp; s, <span class="keyword">const</span> <a class="code" href="classHGCalTBRecHit.html">HGCalTBRecHit</a>&amp; hit);</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno"><a class="line" href="classHGCalTBRecHit.html">   13</a></span>&#160;<span class="keyword">class </span><a class="code" href="classHGCalTBRecHit.html">HGCalTBRecHit</a> : <span class="keyword">public</span> CaloRecHit</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;{</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00016"></a><span class="lineno"><a class="line" href="classHGCalTBRecHit.html#a2ffda5430a40c906b0a3e4fa0ae3ca1b">   16</a></span>&#160;    <span class="keyword">typedef</span> DetId <a class="code" href="classHGCalTBRecHit.html#a2ffda5430a40c906b0a3e4fa0ae3ca1b">key_type</a>;</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <a class="code" href="classHGCalTBRecHit.html#ab7cf3ae0bba4ba9524a83089747f789c">HGCalTBRecHit</a>();</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <span class="comment">// by default a recHit is greated with no flag</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    <a class="code" href="classHGCalTBRecHit.html#ab7cf3ae0bba4ba9524a83089747f789c">HGCalTBRecHit</a>(<span class="keyword">const</span> DetId&amp; <span class="keywordtype">id</span>, <span class="keywordtype">float</span> energy, <span class="keywordtype">float</span> time, uint32_t flags = 0);<span class="comment"></span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment">    /// get the id</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno"><a class="line" href="classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd">   22</a></span>&#160;<span class="comment"></span>    <a class="code" href="classHGCalTBDetId.html">HGCalTBDetId</a> <a class="code" href="classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd">id</a>()<span class="keyword"> const</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="keyword">    </span>{</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classHGCalTBDetId.html">HGCalTBDetId</a>(detid());</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    }<span class="comment"></span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment">    /////  bool isRecovered() const;</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"></span>};</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;std::ostream&amp; <a class="code" href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a>(std::ostream&amp; s, <span class="keyword">const</span> <a class="code" href="classHGCalTBRecHit.html">HGCalTBRecHit</a>&amp; hit);</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="classHGCalTBRecHit_html"><div class="ttname"><a href="classHGCalTBRecHit.html">HGCalTBRecHit</a></div><div class="ttdef"><b>Definition:</b> HGCalTBRecHit.h:13</div></div>
 <div class="ttc" id="classHGCalTBDetId_html"><div class="ttname"><a href="classHGCalTBDetId.html">HGCalTBDetId</a></div><div class="ttdef"><b>Definition:</b> HGCalTBDetId.h:12</div></div>
-<div class="ttc" id="HGCalTBDetId_8h_html_afcfc2837562fc0ab7716680d5a09aa0b"><div class="ttname"><a href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a></div><div class="ttdeci">std::ostream &amp; operator&lt;&lt;(std::ostream &amp;, const HGCalTBDetId &amp;id)</div><div class="ttdef"><b>Definition:</b> HGCalTBDetId.cc:32</div></div>
+<div class="ttc" id="HGCalTBDetId_8h_html_afcfc2837562fc0ab7716680d5a09aa0b"><div class="ttname"><a href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a></div><div class="ttdeci">std::ostream &amp; operator&lt;&lt;(std::ostream &amp;, const HGCalTBDetId &amp;id)</div><div class="ttdef"><b>Definition:</b> HGCalTBDetId.cc:37</div></div>
 <div class="ttc" id="classHGCalTBRecHit_html_ab7cf3ae0bba4ba9524a83089747f789c"><div class="ttname"><a href="classHGCalTBRecHit.html#ab7cf3ae0bba4ba9524a83089747f789c">HGCalTBRecHit::HGCalTBRecHit</a></div><div class="ttdeci">HGCalTBRecHit()</div><div class="ttdef"><b>Definition:</b> HGCalTBRecHit.cc:5</div></div>
 <div class="ttc" id="HGCalTBDetId_8h_html"><div class="ttname"><a href="HGCalTBDetId_8h.html">HGCalTBDetId.h</a></div></div>
-<div class="ttc" id="classHGCalTBRecHit_html_a1635cda50df835cd1ab96b68d1a4aabd"><div class="ttname"><a href="classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd">HGCalTBRecHit::id</a></div><div class="ttdeci">HGCalTBDetId id() const </div><div class="ttdoc">get the id </div><div class="ttdef"><b>Definition:</b> HGCalTBRecHit.h:21</div></div>
-<div class="ttc" id="classHGCalTBRecHit_html_a2ffda5430a40c906b0a3e4fa0ae3ca1b"><div class="ttname"><a href="classHGCalTBRecHit.html#a2ffda5430a40c906b0a3e4fa0ae3ca1b">HGCalTBRecHit::key_type</a></div><div class="ttdeci">DetId key_type</div><div class="ttdef"><b>Definition:</b> HGCalTBRecHit.h:15</div></div>
+<div class="ttc" id="classHGCalTBRecHit_html_a1635cda50df835cd1ab96b68d1a4aabd"><div class="ttname"><a href="classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd">HGCalTBRecHit::id</a></div><div class="ttdeci">HGCalTBDetId id() const </div><div class="ttdoc">get the id </div><div class="ttdef"><b>Definition:</b> HGCalTBRecHit.h:22</div></div>
+<div class="ttc" id="classHGCalTBRecHit_html_a2ffda5430a40c906b0a3e4fa0ae3ca1b"><div class="ttname"><a href="classHGCalTBRecHit.html#a2ffda5430a40c906b0a3e4fa0ae3ca1b">HGCalTBRecHit::key_type</a></div><div class="ttdeci">DetId key_type</div><div class="ttdef"><b>Definition:</b> HGCalTBRecHit.h:16</div></div>
 </div><!-- fragment --></div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 8 2016 10:59:19 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
-<img class="footer" src="doxygen.png" alt="doxygen"/>
-</a> 1.8.5
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="navelem"><a class="el" href="dir_2171f7ec022c5423887b07c69b2f5b48.html">DataFormats</a></li><li class="navelem"><a class="el" href="dir_93f66be89f03ae0158622873e92c97cf.html">interface</a></li><li class="navelem"><a class="el" href="HGCalTBRecHit_8h.html">HGCalTBRecHit.h</a></li>
+    <li class="footer">Generated on Tue Mar 8 2016 15:00:59 for HGCal Test Beam by
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
+  </ul>
+</div>
 </body>
 </html>

@@ -8,6 +8,13 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
+<script type="text/javascript">
+  $(document).ready(initResizable);
+  $(window).load(resizeHeight);
+</script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/search.js"></script>
 <script type="text/javascript">
@@ -23,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">30a87a65ccebed68aa15ee6f08890b740db76987</span>
+   &#160;<span id="projectnumber">850737e36235c1185ca84aaff7c206e970ed524a</span>
    </div>
   </td>
  </tr>
@@ -69,6 +76,20 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
     </ul>
   </div>
 </div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+$(document).ready(function(){initNavTree('hierarchy.html','');});
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -100,29 +121,33 @@ This inheritance list is sorted roughly, but not completely, alphabetically:</di
 <tr id="row_3_"><td class="entry"><img id="arr_3_" src="ftv2mnode.png" alt="o" width="16" height="22" onclick="toggleFolder('3_')"/><img src="ftv2cl.png" alt="C" width="24" height="22" /><b>DataFrameContainer</b></td><td class="desc"></td></tr>
 <tr id="row_3_0_" class="even"><td class="entry"><img src="ftv2vertline.png" alt="|" width="16" height="22" /><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalDataFrameContainer.html" target="_self">HGCalDataFrameContainer&lt; Digi &gt;</a></td><td class="desc"></td></tr>
 <tr id="row_3_1_"><td class="entry"><img src="ftv2vertline.png" alt="|" width="16" height="22" /><img src="ftv2lastnode.png" alt="\" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalDataFrameContainer.html" target="_self">HGCalDataFrameContainer&lt; SKIROC2DataFrame &gt;</a></td><td class="desc"></td></tr>
-<tr id="row_4_" class="even"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="structHGCalCondObjectContainer_1_1Item.html" target="_self">HGCalCondObjectContainer&lt; Payload &gt;::Item</a></td><td class="desc"></td></tr>
-<tr id="row_5_"><td class="entry"><img id="arr_5_" src="ftv2mnode.png" alt="o" width="16" height="22" onclick="toggleFolder('5_')"/><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalCondObjectContainerBase.html" target="_self">HGCalCondObjectContainerBase</a></td><td class="desc"></td></tr>
-<tr id="row_5_0_" class="even"><td class="entry"><img src="ftv2vertline.png" alt="|" width="16" height="22" /><img src="ftv2lastnode.png" alt="\" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalCondObjectContainer.html" target="_self">HGCalCondObjectContainer&lt; Payload &gt;</a></td><td class="desc"></td></tr>
-<tr id="row_6_"><td class="entry"><img id="arr_6_" src="ftv2mnode.png" alt="o" width="16" height="22" onclick="toggleFolder('6_')"/><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalCondObjectNumberingScheme.html" target="_self">HGCalCondObjectNumberingScheme</a></td><td class="desc"></td></tr>
-<tr id="row_6_0_" class="even"><td class="entry"><img src="ftv2vertline.png" alt="|" width="16" height="22" /><img src="ftv2lastnode.png" alt="\" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalTBNumberingScheme.html" target="_self">HGCalTBNumberingScheme</a></td><td class="desc"></td></tr>
-<tr id="row_7_"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalCondObjectTextIO.html" target="_self">HGCalCondObjectTextIO</a></td><td class="desc"></td></tr>
-<tr id="row_8_" class="even"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalElectronicsMap.html" target="_self">HGCalElectronicsMap</a></td><td class="desc"></td></tr>
-<tr id="row_9_"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="structHGCalElectronicsMap_1_1MapEntry.html" target="_self">HGCalElectronicsMap::MapEntry</a></td><td class="desc"></td></tr>
-<tr id="row_10_" class="even"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalTBCellVertices.html" target="_self">HGCalTBCellVertices</a></td><td class="desc"></td></tr>
-<tr id="row_11_"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalTBElectronicsId.html" target="_self">HGCalTBElectronicsId</a></td><td class="desc"></td></tr>
-<tr id="row_12_" class="even"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalTBRecoAlgo.html" target="_self">HGCalTBRecoAlgo</a></td><td class="desc">Basic reconstruction algorithm </td></tr>
-<tr id="row_13_"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalTBTopology.html" target="_self">HGCalTBTopology</a></td><td class="desc"></td></tr>
-<tr id="row_14_" class="even"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCRecHit.html" target="_self">HGCRecHit</a></td><td class="desc"></td></tr>
-<tr id="row_15_"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classSKIROC2DataFrame.html" target="_self">SKIROC2DataFrame</a></td><td class="desc"></td></tr>
-<tr id="row_16_" class="even"><td class="entry"><img src="ftv2lastnode.png" alt="\" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classSKIROC2DataFrame_1_1Sample.html" target="_self">SKIROC2DataFrame::Sample</a></td><td class="desc"></td></tr>
+<tr id="row_4_" class="even"><td class="entry"><img id="arr_4_" src="ftv2mnode.png" alt="o" width="16" height="22" onclick="toggleFolder('4_')"/><img src="ftv2cl.png" alt="C" width="24" height="22" /><b>EDProducer</b></td><td class="desc"></td></tr>
+<tr id="row_4_0_"><td class="entry"><img src="ftv2vertline.png" alt="|" width="16" height="22" /><img src="ftv2lastnode.png" alt="\" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalTBRecHitProducer.html" target="_self">HGCalTBRecHitProducer</a></td><td class="desc"></td></tr>
+<tr id="row_5_" class="even"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="structHGCalCondObjectContainer_1_1Item.html" target="_self">HGCalCondObjectContainer&lt; Payload &gt;::Item</a></td><td class="desc"></td></tr>
+<tr id="row_6_"><td class="entry"><img id="arr_6_" src="ftv2mnode.png" alt="o" width="16" height="22" onclick="toggleFolder('6_')"/><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalCondObjectContainerBase.html" target="_self">HGCalCondObjectContainerBase</a></td><td class="desc"></td></tr>
+<tr id="row_6_0_" class="even"><td class="entry"><img src="ftv2vertline.png" alt="|" width="16" height="22" /><img src="ftv2lastnode.png" alt="\" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalCondObjectContainer.html" target="_self">HGCalCondObjectContainer&lt; Payload &gt;</a></td><td class="desc"></td></tr>
+<tr id="row_7_"><td class="entry"><img id="arr_7_" src="ftv2mnode.png" alt="o" width="16" height="22" onclick="toggleFolder('7_')"/><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalCondObjectNumberingScheme.html" target="_self">HGCalCondObjectNumberingScheme</a></td><td class="desc"></td></tr>
+<tr id="row_7_0_" class="even"><td class="entry"><img src="ftv2vertline.png" alt="|" width="16" height="22" /><img src="ftv2lastnode.png" alt="\" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalTBNumberingScheme.html" target="_self">HGCalTBNumberingScheme</a></td><td class="desc"></td></tr>
+<tr id="row_8_"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalCondObjectTextIO.html" target="_self">HGCalCondObjectTextIO</a></td><td class="desc"></td></tr>
+<tr id="row_9_" class="even"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalElectronicsMap.html" target="_self">HGCalElectronicsMap</a></td><td class="desc"></td></tr>
+<tr id="row_10_"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="structHGCalElectronicsMap_1_1MapEntry.html" target="_self">HGCalElectronicsMap::MapEntry</a></td><td class="desc"></td></tr>
+<tr id="row_11_" class="even"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalTBCellVertices.html" target="_self">HGCalTBCellVertices</a></td><td class="desc"></td></tr>
+<tr id="row_12_"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalTBElectronicsId.html" target="_self">HGCalTBElectronicsId</a></td><td class="desc"></td></tr>
+<tr id="row_13_" class="even"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCalTBTopology.html" target="_self">HGCalTBTopology</a></td><td class="desc"></td></tr>
+<tr id="row_14_"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classHGCRecHit.html" target="_self">HGCRecHit</a></td><td class="desc"></td></tr>
+<tr id="row_15_" class="even"><td class="entry"><img src="ftv2node.png" alt="o" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classSKIROC2DataFrame.html" target="_self">SKIROC2DataFrame</a></td><td class="desc"></td></tr>
+<tr id="row_16_"><td class="entry"><img src="ftv2lastnode.png" alt="\" width="16" height="22" /><img src="ftv2cl.png" alt="C" width="24" height="22" /><a class="el" href="classSKIROC2DataFrame_1_1Sample.html" target="_self">SKIROC2DataFrame::Sample</a></td><td class="desc"></td></tr>
 </table>
 </div><!-- directory -->
 </div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated on Tue Mar 8 2016 10:59:21 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
-<img class="footer" src="doxygen.png" alt="doxygen"/>
-</a> 1.8.5
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">Generated on Tue Mar 8 2016 15:01:03 for HGCal Test Beam by
+    <a href="http://www.doxygen.org/index.html">
+    <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
+  </ul>
+</div>
 </body>
 </html>
