@@ -4,14 +4,15 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg)
 	: outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
 	  _digisToken(consumes<HGCalTBDigiCollection>(cfg.getParameter<edm::InputTag>("digiCollection")))
 {
-   produces <HGCalTBRecHitCollection>(outputCollectionName);
+	produces <HGCalTBRecHitCollection>(outputCollectionName);
 
 }
 
-void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iSetup){
+void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iSetup)
+{
 
 	std::auto_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection); //auto_ptr are automatically deleted when out of scope
-	
+
 	edm::Handle<HGCalTBDigiCollection> digisHandle;
 	event.getByToken(_digisToken, digisHandle);
 
@@ -28,15 +29,15 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 	HGCalCondGains adcToGeV;
 	HGCalCondPedestals pedestals;
 	HGCalCondObjectTextIO condIO(HGCalTBNumberingScheme::scheme());
-    //HGCalElectronicsMap emap;
+	//HGCalElectronicsMap emap;
 //    assert(io.load("mapfile.txt",emap)); ///\todo to be trasformed into exception
 	assert(condIO.load("pedestals.txt", pedestals));
-	assert(condIO.load("gains.txt", adcToGeV));	
-	///\todo check if reading the conditions from file some channels are not in the file!	  
+	assert(condIO.load("gains.txt", adcToGeV));
+	///\todo check if reading the conditions from file some channels are not in the file!
 #endif
 
 
-	for(auto digi_itr = digisHandle->begin(); digi_itr != digisHandle->end(); ++digi_itr){
+	for(auto digi_itr = digisHandle->begin(); digi_itr != digisHandle->end(); ++digi_itr) {
 #ifdef DEBUG
 		std::cout << "[RECHIT PRODUCER: digi]" << *digi_itr << std::endl;
 #endif
@@ -48,8 +49,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
 		// if there are more than 1 sample, we need to define a reconstruction algorithm
 		// now taking the first sample
-		for(unsigned int iSample = 0; iSample < nSamples; ++iSample){
-			
+		for(unsigned int iSample = 0; iSample < nSamples; ++iSample) {
+
 			float energy = (digi[iSample].adc() - pedestals.get(digi.detid())->value) * adcToGeV.get(digi.detid())->value;
 
 			HGCalTBRecHit recHit(digi.detid(), energy, digi[iSample].tdc()); ///\todo use time calibration!
@@ -57,10 +58,10 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 #ifdef DEBUG
 			std::cout << recHit << std::endl;
 #endif
-			if(iSample==0) rechits->push_back(recHit); ///\todo define an algorithm for the energy if more than 1 sample, code inefficient
+			if(iSample == 0) rechits->push_back(recHit); ///\todo define an algorithm for the energy if more than 1 sample, code inefficient
 		}
 	}
-    event.put(rechits, outputCollectionName);
-  }
-// Should there be a destructor ?? 
+	event.put(rechits, outputCollectionName);
+}
+// Should there be a destructor ??
 DEFINE_FWK_MODULE(HGCalTBRecHitProducer);

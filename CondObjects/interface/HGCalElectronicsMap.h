@@ -5,32 +5,36 @@
 #include <vector>
 
 /** \class HGCalElectronicsMap
-  *  
+  *
   * $Date: $
   * $Revision: $
   * \author J. Mans - Minnesota
   */
-class HGCalElectronicsMap {
+class HGCalElectronicsMap
+{
 public:
-  bool existsDetId(DetId did) const;
-  bool existsEId(uint32_t eid) const;
+	bool existsDetId(DetId did) const;
+	bool existsEId(uint32_t eid) const;
 
-  DetId eid2detId(uint32_t eid) const;
-  uint32_t detId2eid(DetId did) const;
+	DetId eid2detId(uint32_t eid) const;
+	uint32_t detId2eid(DetId did) const;
 
-  void insert(uint32_t, DetId did);
+	void insert(uint32_t, DetId did);
 
-  size_t size() const { return m_map.size(); }
-  uint32_t eidAt(size_t i) const;
-  DetId didAt(size_t i) const;
-  
-  struct MapEntry {
-    uint32_t eid;
-    uint32_t detid;
-    bool operator<(const MapEntry&) const;
-  };
+	size_t size() const
+	{
+		return m_map.size();
+	}
+	uint32_t eidAt(size_t i) const;
+	DetId didAt(size_t i) const;
+
+	struct MapEntry {
+		uint32_t eid;
+		uint32_t detid;
+		bool operator<(const MapEntry&) const;
+	};
 private:
-  std::vector<MapEntry> m_map; // ordered for eid2detid
+	std::vector<MapEntry> m_map; // ordered for eid2detid
 };
 
 

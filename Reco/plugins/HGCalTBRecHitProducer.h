@@ -1,7 +1,7 @@
 #ifndef HGCALTBRECHITPRODUCER_H
 #define HGCALTBRECHITPRODUCER_H
 /** \class HGCalTBRecHitProducer HGCalTBRecHitProducer HGCalTBRecHitProducer
-	\brief 
+	\brief
 
 	\author Shervin Nourbakhsh
  */
@@ -29,13 +29,14 @@
 #include <iostream>
 #endif
 
-class HGCalTBRecHitProducer : public edm::EDProducer{
+class HGCalTBRecHitProducer : public edm::EDProducer
+{
 
-      public:
-             HGCalTBRecHitProducer(const edm::ParameterSet&);
-             virtual void produce(edm::Event&, const edm::EventSetup&);             
-      private:
-              std::string outputCollectionName;     ///<label name of collection made by this producer
+public:
+	HGCalTBRecHitProducer(const edm::ParameterSet&);
+	virtual void produce(edm::Event&, const edm::EventSetup&);
+private:
+	std::string outputCollectionName;     ///<label name of collection made by this producer
 	edm::EDGetTokenT<HGCalTBDigiCollection> _digisToken;
 };
 

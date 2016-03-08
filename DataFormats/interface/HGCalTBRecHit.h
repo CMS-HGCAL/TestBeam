@@ -6,20 +6,24 @@
 #include <vector>
 
 /** \class HGCRecHit
- *  
+ *
  * \author Valeri Andreev
  */
 
-class HGCalTBRecHit : public CaloRecHit {
+class HGCalTBRecHit : public CaloRecHit
+{
 public:
-  typedef DetId key_type;
+	typedef DetId key_type;
 
-  HGCalTBRecHit();
-  // by default a recHit is greated with no flag
-  HGCalTBRecHit(const DetId& id, float energy, float time, uint32_t flags = 0);
-  /// get the id  
-  HGCalTBDetId id() const { return HGCalTBDetId(detid());}
-  /////  bool isRecovered() const;
+	HGCalTBRecHit();
+	// by default a recHit is greated with no flag
+	HGCalTBRecHit(const DetId& id, float energy, float time, uint32_t flags = 0);
+	/// get the id
+	HGCalTBDetId id() const
+	{
+		return HGCalTBDetId(detid());
+	}
+	/////  bool isRecovered() const;
 };
 
 std::ostream& operator<<(std::ostream& s, const HGCalTBRecHit& hit);

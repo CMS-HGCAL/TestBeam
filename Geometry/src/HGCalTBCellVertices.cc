@@ -22,7 +22,7 @@ HGCalTBCellVertices::HGCalTBCellVertices()
 }
 
 
-std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(int layer, int sensor_ix, int sensor_iv, int ix, int iv, int sensorsize) 
+std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(int layer, int sensor_ix, int sensor_iv, int ix, int iv, int sensorsize)
 {
 	bool ValidFlag   = Top.ix_iv_valid(layer, sensor_ix, sensor_iv, ix, iv, sensorsize);
 	double vertex_x_tmp = 0., vertex_y_tmp = 0.;
@@ -43,7 +43,7 @@ std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(i
 }
 
 
-std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int layer, int sensor_ix, int sensor_iv, int ix, int iv, int sensorsize) 
+std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int layer, int sensor_ix, int sensor_iv, int ix, int iv, int sensorsize)
 {
 	double centre_x_tmp = 0., centre_y_tmp = 0.;
 	bool ValidFlag   = Top.ix_iv_valid(layer, sensor_ix, sensor_iv, ix, iv, sensorsize);
