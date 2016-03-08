@@ -1,35 +1,4 @@
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/EventSetup.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ServiceRegistry/interface/Service.h"
-#include "FWCore/Framework/interface/ESHandle.h"
-
-#include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
-//#include "HGCal/DataFormats/interface/HGCalTBDetId.h"
-#include "HGCal/DataFormats/interface/HGCalTBDigiCollections.h"
-
-
-// here are defined objects containing pedestals and ADCtoGeV factors
-#include "HGCal/CondObjects/interface/HGCalCondObjects.h"
-#include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
-#include "HGCal/CondObjects/interface/HGCalTBNumberingScheme.h"
-#define DEBUG
-
-
-#ifdef DEBUG
-#include <iostream>
-#endif
-
-class HGCalTBRecHitProducer : public edm::EDProducer{
-
-      public:
-             HGCalTBRecHitProducer(const edm::ParameterSet&);
-             virtual void produce(edm::Event&, const edm::EventSetup&);             
-      private:
-              std::string outputCollectionName;     ///<label name of collection made by this producer
-	edm::EDGetTokenT<HGCalTBDigiCollection> _digisToken;
-};
+#include "HGCal/Reco/plugins/HGCalTBRecHitProducer.h"
 
 HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg)
 	: outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
@@ -76,6 +45,9 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
 		SKIROC2DataFrame digi(*digi_itr);
 		unsigned int nSamples = digi.samples();
+
+		// if there are more than 1 sample, we need to define a reconstruction algorithm
+		// now taking the first sample
 		for(unsigned int iSample = 0; iSample < nSamples; ++iSample){
 			
 			float energy = (digi[iSample].adc() - pedestals.get(digi.detid())->value) * adcToGeV.get(digi.detid())->value;
@@ -85,7 +57,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 #ifdef DEBUG
 			std::cout << recHit << std::endl;
 #endif
-			rechits->push_back(recHit);
+			if(iSample==0) rechits->push_back(recHit); ///\todo define an algorithm for the energy if more than 1 sample, code inefficient
 		}
 	}
     event.put(rechits, outputCollectionName);
