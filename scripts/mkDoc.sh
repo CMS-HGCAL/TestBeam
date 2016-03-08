@@ -35,7 +35,7 @@ git branch
 git pull
 git add *.html
 git add *.css *.js
-git add *.gif *.png
+git add -f *.gif *.png
 git add *.map
 git add *.md5
 git add search
