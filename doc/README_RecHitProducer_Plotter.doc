@@ -1,20 +1,10 @@
 /**
 \page testRecHits_ test recHits
-\verbatim
-scram project CMSSW_7_6_3_patch2
-cd CMSSW_7_6_3_patch2/src/
-cmsenv 
-git cms-init
-git clone git@github.com:CMS-HGCAL/TestBeam.git HGCal/
-git checkout HGCal_SensorGeometry
-scram b -j16
-\endverbatim
 
-To produce the fake Rechits(currently implemented for one sensor(128 cell) in one layer):
-cd Reco
-cmsRun test/produceRechitCollection_cfg.py
+See how to download the code here: \ref instructions_
 
-This produces a file test_RecHits_OneLayer_TB.root
+
+This produces a file test_output.root
 
 To read this and plot the hits in the sensor:
 \verbatim
