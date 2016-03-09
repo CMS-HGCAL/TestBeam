@@ -1,37 +1,4 @@
-#include "FWCore/Framework/interface/EDProducer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "DataFormats/Common/interface/Handle.h"
-#include "DataFormats/FEDRawData/interface/FEDRawDataCollection.h"
-
-#include "FWCore/Framework/interface/EventSetup.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
-
-#include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
-#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
-#include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
-#include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
-
-
-#include "HGCal/DataFormats/interface/SKIROCParameters.h"
-
-#include <iostream>
-
-class HGCalTBRawToDigi : public edm::EDProducer
-{
-public:
-	explicit HGCalTBRawToDigi(const edm::ParameterSet& ps);
-	virtual void produce(edm::Event& e, const edm::EventSetup& c);
-	virtual void beginJob();
-
-private:
-	edm::InputTag dataTag_;
-	int fedId_;
-	std::string mapfile_;
-	struct {
-		HGCalElectronicsMap emap_;
-	} essource_;
-
-};
+#include "HGCal/RawToDigi/plugins/HGCalTBRawToDigi.h"
 
 HGCalTBRawToDigi::HGCalTBRawToDigi(edm::ParameterSet const& conf):
 	dataTag_(conf.getParameter<edm::InputTag>("InputLabel")),
@@ -44,6 +11,7 @@ HGCalTBRawToDigi::HGCalTBRawToDigi(edm::ParameterSet const& conf):
 
 void HGCalTBRawToDigi::beginJob()
 {
+	///\todo this should be done by an ESProducer
 	HGCalCondObjectTextIO io(0); // don't need a numbering scheme for this
 
 	edm::FileInPath fip(mapfile_);

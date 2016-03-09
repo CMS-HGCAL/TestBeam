@@ -1,6 +1,6 @@
 #ifndef HGCALTBRECHITPRODUCER_H
 #define HGCALTBRECHITPRODUCER_H
-/** \class HGCalTBRecHitProducer HGCalTBRecHitProducer HGCalTBRecHitProducer
+/** \class Reco/plugins/HGCalTBRecHitProducer.h HGCalTBRecHitProducer HGCalTBRecHitProducer
 	\brief
 
 	\author Shervin Nourbakhsh

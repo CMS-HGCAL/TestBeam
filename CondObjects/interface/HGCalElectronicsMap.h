@@ -9,6 +9,10 @@
   * $Date: $
   * $Revision: $
   * \author J. Mans - Minnesota
+  *
+  * \brief provides the conversion between electronics Id to DetId
+  *
+  * 
   */
 class HGCalElectronicsMap
 {
