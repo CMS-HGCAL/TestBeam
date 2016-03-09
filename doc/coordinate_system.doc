@@ -1,0 +1,22 @@
+/**
+\page coordinates_ Coordinate system
+
+Two coordinate systems have been defined: 
+ - absolute coordinate system (lab frame)
+ - local coordinate system (dependent on the subdetector)
+
+The absolute coordinate system is identified by (x,y,z), the local system by (iu, iv, sensor_iU, sensor_iV, iLayer) where
+ - iLayer is the index of the silicon wafer layer, start counting from the one closer to the beam
+ - sensor_iU and sensor_iV are the coordinates of the silicon wafer in the layer
+ - iu and iv are the coordinates of the silicon cell within the wafer
+
+Conversion between the local system and the lab frame is done by HGCalTBCellVertices
+
+Sensors in odd and even layers are rotated around the \b y axis, the local coordinate system is \b NOT rotated, the relation between the local system and the lab frame are always the same.
+So the calibration pads in odd and even layers are in different (iu, iv) positions. This is taken into account by the conversion between electronic ID and detId in the HGCalTBRawToDigi 
+
+\image html coordinate.png 
+
+
+
+*/
