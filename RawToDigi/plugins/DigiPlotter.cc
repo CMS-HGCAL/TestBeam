@@ -71,7 +71,7 @@ private:
 	const static int cellx = 15;
 	const static int celly = 15;
 	int Layer = 1;
-	int Sensor_Ix = 0;
+	int Sensor_Iu = 0;
 	int Sensor_Iv = 0;
 	TH1F  *h_digi_layer_cell[NSAMPLES][cellx][celly];
 	char name[50], title[50];
@@ -109,14 +109,14 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
 		h_digi_layer[nsample]->SetName(name);
 		h_digi_layer[nsample]->SetTitle(title);
 		for(int iv = -7; iv < 8; iv++) {
-			for(int ix = -7; ix < 8; ix++) {
-				if(!IsCellValid.ix_iv_valid(Layer, Sensor_Ix, Sensor_Iv, ix, iv, sensorsize)) continue;
+			for(int iu = -7; iu < 8; iu++) {
+				if(!IsCellValid.iu_iv_valid(Layer, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize)) continue;
 //Some thought needs to be put in about the binning and limits of this 1D histogram, probably different for beam type Fermilab and cern.
-				sprintf(name, "Cell_X_%i_V_%i_Sample%i", ix, iv, nsample);
-				sprintf(title, "Digis for Cell_X_%i_V_%i Sample%i", ix, iv, nsample);
-				h_digi_layer_cell[nsample][ix + 7][iv + 7] = fs->make<TH1F>(name, title, 4096, 0., 4095.);
-				h_digi_layer_cell[nsample][ix + 7][iv + 7]->GetXaxis()->SetTitle("Digis[adc counts]");
-				CellXY = TheCell.GetCellCoordinates(Layer, Sensor_Ix, Sensor_Iv, ix, iv, sensorsize);
+				sprintf(name, "Cell_X_%i_V_%i_Sample%i", iu, iv, nsample);
+				sprintf(title, "Digis for Cell_X_%i_V_%i Sample%i", iu, iv, nsample);
+				h_digi_layer_cell[nsample][iu + 7][iv + 7] = fs->make<TH1F>(name, title, 4096, 0., 4095.);
+				h_digi_layer_cell[nsample][iu + 7][iv + 7]->GetXaxis()->SetTitle("Digis[adc counts]");
+				CellXY = TheCell.GetCellCoordinates(Layer, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize);
 				int NumberOfCellVertices = CellXY.size();
 				iii = 0;
 				if(NumberOfCellVertices == 4) {
@@ -135,7 +135,7 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
 					h_digi_layer[nsample]->AddBin(NumberOfCellVertices, FullHexX, FullHexY);
 				}
 
-			}//loop over ix
+			}//loop over iu
 		}//loop over iv
 	}//loop over nsamples
 }//contructor ends here
@@ -170,13 +170,13 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 			for(SKIROC2DigiCollection::const_iterator j = Coll.begin(); j != Coll.end(); j++) {
 				const SKIROC2DataFrame& SKI = *j ;
 
-				if(!IsCellValid.ix_iv_valid((SKI.detid()).layer(), (SKI.detid()).sensorIX(), (SKI.detid()).sensorIV(), (SKI.detid()).ix(), (SKI.detid()).iv(), sensorsize))  continue;
-				CellCentreXY = TheCell.GetCellCentreCoordinates((SKI.detid()).layer(), (SKI.detid()).sensorIX(), (SKI.detid()).sensorIV(), (SKI.detid()).ix(), (SKI.detid()).iv(), sensorsize);
-				double ixx = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
+				if(!IsCellValid.iu_iv_valid((SKI.detid()).layer(), (SKI.detid()).sensorIU(), (SKI.detid()).sensorIV(), (SKI.detid()).iu(), (SKI.detid()).iv(), sensorsize))  continue;
+				CellCentreXY = TheCell.GetCellCentreCoordinates((SKI.detid()).layer(), (SKI.detid()).sensorIU(), (SKI.detid()).sensorIV(), (SKI.detid()).iu(), (SKI.detid()).iv(), sensorsize);
+				double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
 				double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
 				for(int nsample = 0; nsample < SKI.samples(); nsample++) {
-					h_digi_layer[nsample]->Fill(ixx , iyy, SKI[nsample].adc());
-					h_digi_layer_cell[nsample][7 + (SKI.detid()).ix()][7 + (SKI.detid()).iv()]->Fill(SKI[nsample].adc());
+					h_digi_layer[nsample]->Fill(iux , iyy, SKI[nsample].adc());
+					h_digi_layer_cell[nsample][7 + (SKI.detid()).iu()][7 + (SKI.detid()).iv()]->Fill(SKI[nsample].adc());
 				}
 			}
 		}

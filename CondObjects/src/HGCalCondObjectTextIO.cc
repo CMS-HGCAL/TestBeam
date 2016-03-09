@@ -15,7 +15,7 @@ static HGCalTBDetId tb_detid_load(const char* buffer, int& ptr)
 }
 static void tb_detid_store(HGCalTBDetId id, FILE* f)
 {
-	fprintf(f, "%08x %5d %9d %9d %3d %3d %4d ", id.rawId(), id.layer()*id.zside(), id.sensorIX(), id.sensorIV(), id.ix(), id.iv(), id.cellType());
+	fprintf(f, "%08x %5d %9d %9d %3d %3d %4d ", id.rawId(), id.layer()*id.zside(), id.sensorIU(), id.sensorIV(), id.iu(), id.iv(), id.cellType());
 }
 
 bool HGCalCondObjectTextIO::load(const std::string& filename, HGCalCondObjectContainer<double>& cont)
@@ -70,7 +70,7 @@ bool HGCalCondObjectTextIO::store(const std::string& filename, const HGCalCondOb
 	if (f == 0) return false;
 
 	fprintf(f, "SCHEME_CODE %lu\n", cont.schemeCode());
-	fprintf(f, "#   CODE LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE\n");
+	fprintf(f, "#   CODE LAYER SENSOR_IU SENSOR_IV  IU  IV TYPE  VALUE\n");
 	for (size_t i = 0; i < cont.size(); i++) {
 		if (cont.get(i).id.null()) continue;
 		tb_detid_store(HGCalTBDetId(cont.get(i).id), f);
@@ -121,12 +121,12 @@ bool HGCalCondObjectTextIO::store(const std::string& filename, const HGCalElectr
 	FILE* f = fopen(filename.c_str(), "w");
 	if (f == 0) return false;
 
-	fprintf(f, "# SKIROC CHAN | LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE \n");
+	fprintf(f, "# SKIROC CHAN | LAYER SENSOR_IU SENSOR_IV  IU  IV TYPE \n");
 	for (size_t i = 0; i < emap.size(); i++) {
 		HGCalTBElectronicsId eid(emap.eidAt(i));
 		HGCalTBDetId did(emap.didAt(i));
 		fprintf(f, "  %6d %4d   %5d %9d %9d %3d %3d %4d\n", eid.iskiroc(), eid.ichan(),
-		        did.layer()*did.zside(), did.sensorIX(), did.sensorIV(), did.ix(), did.iv(), did.cellType());
+		        did.layer()*did.zside(), did.sensorIU(), did.sensorIV(), did.iu(), did.iv(), did.cellType());
 	}
 
 

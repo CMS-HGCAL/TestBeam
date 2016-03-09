@@ -71,7 +71,7 @@ private:
 	const static int cellx = 15;
 	const static int celly = 15;
 	int Layer = 1;
-	int Sensor_Ix = 0;
+	int Sensor_Iu = 0;
 	int Sensor_Iv = 0;
 	TH1F  *h_digi_layer_cell[cellx][celly];
 	char name[50], title[50];
@@ -115,14 +115,14 @@ RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig)
 	double FullHexY[FullHexVertices] = {0.};
 	int iii = 0;
 	for(int iv = -7; iv < 8; iv++) {
-		for(int ix = -7; ix < 8; ix++) {
-			if(!IsCellValid.ix_iv_valid(Layer, Sensor_Ix, Sensor_Iv, ix, iv, sensorsize)) continue;
+		for(int iu = -7; iu < 8; iu++) {
+			if(!IsCellValid.iu_iv_valid(Layer, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize)) continue;
 //Some thought needs to be put in about the binning and limits of this 1D histogram, probably different for beam type Fermilab and cern.
-			sprintf(name, "Cell_X_%i_V_%i", ix, iv);
-			sprintf(title, "Rechits for Cell_X_%i_V_%i", ix, iv);
-			h_digi_layer_cell[ix + 7][iv + 7] = fs->make<TH1F>(name, title, 100, 0., 40.);
-			h_digi_layer_cell[ix + 7][iv + 7]->GetXaxis()->SetTitle("RecHits[GeV]");
-			CellXY = TheCell.GetCellCoordinates(Layer, Sensor_Ix, Sensor_Iv, ix, iv, sensorsize);
+			sprintf(name, "Cell_X_%i_V_%i", iu, iv);
+			sprintf(title, "Rechits for Cell_X_%i_V_%i", iu, iv);
+			h_digi_layer_cell[iu + 7][iv + 7] = fs->make<TH1F>(name, title, 100, 0., 40.);
+			h_digi_layer_cell[iu + 7][iv + 7]->GetXaxis()->SetTitle("RecHits[GeV]");
+			CellXY = TheCell.GetCellCoordinates(Layer, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize);
 			int NumberOfCellVertices = CellXY.size();
 			iii = 0;
 			if(NumberOfCellVertices == 4) {
@@ -172,17 +172,17 @@ RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	event.getByToken(HGCalTBRecHitCollection_, Rechits);
 
 	for(auto RecHit : *Rechits) {
-		if(!IsCellValid.ix_iv_valid((RecHit.id()).layer(), (RecHit.id()).sensorIX(), (RecHit.id()).sensorIV(), (RecHit.id()).ix(), (RecHit.id()).iv(), sensorsize))  continue;
-//We now obtain the cartesian coordinates of the cell corresponding to an ix,iv. This may either be a full hex, a half hex or an invalid cell. If a cell is invalid based on the ix,iv index -123456 is returned for its x,y vertices
-		CellCentreXY = TheCell.GetCellCentreCoordinates((RecHit.id()).layer(), (RecHit.id()).sensorIX(), (RecHit.id()).sensorIV(), (RecHit.id()).ix(), (RecHit.id()).iv(), sensorsize);
+		if(!IsCellValid.iu_iv_valid((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize))  continue;
+//We now obtain the cartesian coordinates of the cell corresponding to an iu,iv. This may either be a full hex, a half hex or an invalid cell. If a cell is invalid based on the iu,iv index -123456 is returned for its x,y vertices
+		CellCentreXY = TheCell.GetCellCentreCoordinates((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize);
 //HARD CODED: Add/subtract delta = 0.0001 to x,y of a cell centre so the TH2Poly::Fill doesnt have a problem at the edges where the centre of a half-hex cell passes through the sennsor boundary line
-		double ixx = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
+		double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
 		double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
-		h_digi_layer->Fill(ixx , iyy, RecHit.energy());
+		h_digi_layer->Fill(iux , iyy, RecHit.energy());
 //The energy threshold for the occupancy has been hardcoded here. Need to decide what a good choice is. Maybe dynamic per cell depending on the pedestal
-		if(RecHit.energy() > 5) h_digi_layer_Occupancy->Fill(ixx , iyy);
-// There will be several array indices ix, iv that wont be filled due to it being invalid. Can think of alternate array filling.
-		h_digi_layer_cell[7 + (RecHit.id()).ix()][7 + (RecHit.id()).iv()]->Fill(RecHit.energy());
+		if(RecHit.energy() > 5) h_digi_layer_Occupancy->Fill(iux , iyy);
+// There will be several array indices iu, iv that wont be filled due to it being invalid. Can think of alternate array filling.
+		h_digi_layer_cell[7 + (RecHit.id()).iu()][7 + (RecHit.id()).iv()]->Fill(RecHit.energy());
 	}
 
 

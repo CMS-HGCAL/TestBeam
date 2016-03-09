@@ -40,15 +40,15 @@ public:
 	HGCalTBDetId();
 	/** Create cellid from raw id (0=invalid tower id) */
 	HGCalTBDetId(uint32_t rawid);
-	/** Constructor from layer, sensor_ix, sensor_iv, ix, iv, calibr cell numbers */
-	HGCalTBDetId(int lay, int sensor_ix, int sensor_iv, int ix, int iv, int cellType);
+	/** Constructor from layer, sensor_iu, sensor_iv, iu, iv, calibr cell numbers */
+	HGCalTBDetId(int lay, int sensor_iu, int sensor_iv, int iu, int iv, int cellType);
 	/** Constructor from a generic cell id */
 	HGCalTBDetId(const DetId& id);
 	/** Assignment from a generic cell id */
 	HGCalTBDetId& operator=(const DetId& id);
 
 	/// get the absolute value of the cell #'s
-	int ix() const
+	int iu() const
 	{
 		uint32_t v = id_;
 		return (v & kHGCalTBXSignMask) ? ((v & kHGCalTBXMask) - kHGCalTBXSignMask) : (v & kHGCalTBXMask);
@@ -60,7 +60,7 @@ public:
 	}
 
 	/// get the sensor #
-	int sensorIX() const
+	int sensorIU() const
 	{
 		uint32_t v = id_ >> kHGCalTBSensorXOffset;
 		return (v & kHGCalTBSensorXSignMask) ? (-(v & kHGCalTBSensorXMask)) : (v & kHGCalTBSensorXMask);

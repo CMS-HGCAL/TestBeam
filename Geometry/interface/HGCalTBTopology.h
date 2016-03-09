@@ -13,7 +13,7 @@ class HGCalTBTopology
 {
 public:
 	// valid sensorSizes are 128 and 256
-	bool ix_iv_valid(int layer, int sensor_ix, int sensor_iv, int ix, int iv, int sensorSize) const;
+	bool iu_iv_valid(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorSize) const;
 };
 
 

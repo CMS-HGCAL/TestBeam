@@ -22,36 +22,36 @@ HGCalTBCellVertices::HGCalTBCellVertices()
 }
 
 
-std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(int layer, int sensor_ix, int sensor_iv, int ix, int iv, int sensorsize)
+std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize)
 {
-	bool ValidFlag   = Top.ix_iv_valid(layer, sensor_ix, sensor_iv, ix, iv, sensorsize);
+	bool ValidFlag   = Top.iu_iv_valid(layer, sensor_iu, sensor_iv, iu, iv, sensorsize);
 	double vertex_x_tmp = 0., vertex_y_tmp = 0.;
 	Cell_co.clear();
 	if(ValidFlag) {
 		for(int iii = 0; iii < 6; iii++) { // May have to be generalized to deal with polygons of any size
-			vertex_x_tmp = x_co_FullHex[iii] + ix * x0 + iv * vx0;
+			vertex_x_tmp = x_co_FullHex[iii] + iu * x0 + iv * vx0;
 			vertex_y_tmp = y_co_FullHex[iii] + iv * vy0;
-//The general strategy is to translate starting from the central hexagonal cell to the ix,iv desired. If any vertex goes out of the sensor boundary its cordinates are not filled into the vector of pairs.
+//The general strategy is to translate starting from the central hexagonal cell to the iu,iv desired. If any vertex goes out of the sensor boundary its cordinates are not filled into the vector of pairs.
 			if(fabs(vertex_x_tmp) <= Xmax(iv, fabs(vertex_y_tmp)) + delta) Cell_co.push_back(std::make_pair(vertex_x_tmp, vertex_y_tmp));
 		}
 		return Cell_co;
 	} else {
-		Cell_co.push_back(std::make_pair(-123456, -123456)); //ix_iv_Valid() is sufficient to decide if a given ix,iv is a valid sensor index but this is done if some future need may arise.
+		Cell_co.push_back(std::make_pair(-123456, -123456)); //iu_iv_Valid() is sufficient to decide if a given iu,iv is a valid sensor index but this is done if some future need may arise.
 		return Cell_co;
 	}
 
 }
 
 
-std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int layer, int sensor_ix, int sensor_iv, int ix, int iv, int sensorsize)
+std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize)
 {
 	double centre_x_tmp = 0., centre_y_tmp = 0.;
-	bool ValidFlag   = Top.ix_iv_valid(layer, sensor_ix, sensor_iv, ix, iv, sensorsize);
+	bool ValidFlag   = Top.iu_iv_valid(layer, sensor_iu, sensor_iv, iu, iv, sensorsize);
 	if(ValidFlag) {
-		centre_x_tmp = ix * x0 + iv * vx0;
+		centre_x_tmp = iu * x0 + iv * vx0;
 		centre_y_tmp = iv * vy0;
 		return std::make_pair(centre_x_tmp, centre_y_tmp);
-	} else return std::make_pair(-123456, -123456); //ix_iv_Valid() is sufficient to decide if a given ix,iv is a valid sensor index but this is done if some future need may arise.
+	} else return std::make_pair(-123456, -123456); //iu_iv_Valid() is sufficient to decide if a given iu,iv is a valid sensor index but this is done if some future need may arise.
 
 }
 
@@ -63,7 +63,7 @@ double HGCalTBCellVertices::Xmax(int iv, double y)
 
 // To be added if for reconstruction it is useful to simply know if a cell is full hex, half hex or mouse-bitten
 /*
-void HGCalTBCellVertices::CellType(int ix, int iv, bool ValidFlag){
+void HGCalTBCellVertices::CellType(int iu, int iv, bool ValidFlag){
     bool HalfHex = false;
     x_max=0.;
     y_max=0.;

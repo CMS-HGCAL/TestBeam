@@ -35,7 +35,7 @@ size_t HGCalTBNumberingScheme::denseIndexFor(uint32_t rawDetId, uint64_t scheme)
 	if (scheme != 0) return HGCalCondObjectNumberingScheme::INVALID;
 
 	size_t idx = (id.layer() - 1) * CELLSLOTS_PER_SENSOR;
-	int linear = (id.ix() + 7) * 15 + id.iv() + 7;
+	int linear = (id.iu() + 7) * 15 + id.iv() + 7;
 	if (id.cellType() == HGCalTBDetId::kCellTypeCalibInner) {
 		if (id.iv() > 0) idx += 133;
 		else idx += 134;
