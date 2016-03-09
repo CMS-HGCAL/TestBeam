@@ -12,8 +12,13 @@ var hierarchy =
       [ "HGCalDataFrameContainer< SKIROC2DataFrame >", "classHGCalDataFrameContainer.html", null ]
     ] ],
     [ "EDProducer", null, [
+      [ "HGCalTBRawToDigi", "classHGCalTBRawToDigi.html", null ],
       [ "HGCalTBRecHitProducer", "classHGCalTBRecHitProducer.html", null ]
     ] ],
+    [ "ProducerSourceFromFiles", null, [
+      [ "HGCalTBTextSource", "classHGCalTBTextSource.html", null ]
+    ] ],
+    [ "HGCal", "classHGCal.html", null ],
     [ "HGCalCondObjectContainer< Payload >::Item", "structHGCalCondObjectContainer_1_1Item.html", null ],
     [ "HGCalCondObjectContainerBase", "classHGCalCondObjectContainerBase.html", [
       [ "HGCalCondObjectContainer< Payload >", "classHGCalCondObjectContainer.html", null ]
@@ -28,6 +33,7 @@ var hierarchy =
     [ "HGCalTBElectronicsId", "classHGCalTBElectronicsId.html", null ],
     [ "HGCalTBTopology", "classHGCalTBTopology.html", null ],
     [ "HGCRecHit", "classHGCRecHit.html", null ],
+    [ "Reco", "classReco.html", null ],
     [ "SKIROC2DataFrame", "classSKIROC2DataFrame.html", null ],
     [ "SKIROC2DataFrame::Sample", "classSKIROC2DataFrame_1_1Sample.html", null ]
 ];

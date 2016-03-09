@@ -30,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">850737e36235c1185ca84aaff7c206e970ed524a</span>
+   &#160;<span id="projectnumber">d9b9f808fa79e6565229d91caccf60746f479bd7</span>
    </div>
   </td>
  </tr>
@@ -107,6 +107,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li><a href="#index_v"><span>v</span></a></li>
       <li><a href="#index_w"><span>w</span></a></li>
       <li><a href="#index_z"><span>z</span></a></li>
+      <li><a href="#index_0x7e"><span>~</span></a></li>
     </ul>
   </div>
 </div><!-- top -->
@@ -178,7 +179,10 @@ $(document).ready(function(){initNavTree('functions.html','');});
 : <a class="el" href="classHGCalDataFrameContainer.html#a895b88363d37af2b94e390f6c59d5011">HGCalDataFrameContainer&lt; Digi &gt;</a>
 </li>
 <li>begin()
-: <a class="el" href="classSKIROC2DataFrame.html#a60ec42b695f8c6187b7f5895ec626240">SKIROC2DataFrame</a>
+: <a class="el" href="classSKIROC2DataFrame.html#a5f45e0858b60a88a27dc340b1b343663">SKIROC2DataFrame</a>
+</li>
+<li>beginJob()
+: <a class="el" href="classHGCalTBRawToDigi.html#ac328b38f99c32230c5f3286cf92e0dcb">HGCalTBRawToDigi</a>
 </li>
 </ul>
 
@@ -221,6 +225,9 @@ $(document).ready(function(){initNavTree('functions.html','');});
 <li>eidAt()
 : <a class="el" href="classHGCalElectronicsMap.html#a60180206b6f95743d9f4d8ab6f0e7554">HGCalElectronicsMap</a>
 </li>
+<li>emap_
+: <a class="el" href="classHGCalTBRawToDigi.html#a4025efecb104070ef9473bb6a6f149bb">HGCalTBRawToDigi</a>
+</li>
 <li>end()
 : <a class="el" href="classSKIROC2DataFrame.html#a9c42b5bdf1538d7f00f71709c621e583">SKIROC2DataFrame</a>
 </li>
@@ -237,6 +244,9 @@ $(document).ready(function(){initNavTree('functions.html','');});
 
 
 <h3><a class="anchor" id="index_f"></a>- f -</h3><ul>
+<li>fillDescriptions()
+: <a class="el" href="classHGCalTBTextSource.html#a5cdc5df071e38d7b957d3b53e562a053">HGCalTBTextSource</a>
+</li>
 <li>FLAG_WORDS
 : <a class="el" href="classSKIROC2DataFrame.html#a6468895308758ae430d739f4c635853d">SKIROC2DataFrame</a>
 </li>
@@ -251,10 +261,10 @@ $(document).ready(function(){initNavTree('functions.html','');});
 : <a class="el" href="classHGCalCondObjectContainer.html#a541bd28a943f2e0db936f1305182938b">HGCalCondObjectContainer&lt; Payload &gt;</a>
 </li>
 <li>GetCellCentreCoordinates()
-: <a class="el" href="classHGCalTBCellVertices.html#aeb4aa8cb2deeaf0070c7ab9de5baa53d">HGCalTBCellVertices</a>
+: <a class="el" href="classHGCalTBCellVertices.html#aed0760ad737a9c3501f149db45f6281c">HGCalTBCellVertices</a>
 </li>
 <li>GetCellCoordinates()
-: <a class="el" href="classHGCalTBCellVertices.html#a6cb77528a755ab2a2269ed89d673a183">HGCalTBCellVertices</a>
+: <a class="el" href="classHGCalTBCellVertices.html#a01444a1e987023638b70ed2c5e8cc809">HGCalTBCellVertices</a>
 </li>
 <li>getNumberingScheme()
 : <a class="el" href="classHGCalCondObjectContainerBase.html#a74fb441eab90ed1e3371d1975101a15a">HGCalCondObjectContainerBase</a>
@@ -282,16 +292,22 @@ $(document).ready(function(){initNavTree('functions.html','');});
 : <a class="el" href="classHGCalTBCellVertices.html#a9492ae3553020ee577fdb71e5c9541a0">HGCalTBCellVertices</a>
 </li>
 <li>HGCalTBDetId()
-: <a class="el" href="classHGCalTBDetId.html#a3ef4a176ffe6ff7101bcebf4e058de0f">HGCalTBDetId</a>
+: <a class="el" href="classHGCalTBDetId.html#aefd803c4de936e25e4e92231b06c58d8">HGCalTBDetId</a>
 </li>
 <li>HGCalTBElectronicsId()
-: <a class="el" href="classHGCalTBElectronicsId.html#a63040c12d928c2f28cb5df1b6483dcc7">HGCalTBElectronicsId</a>
+: <a class="el" href="classHGCalTBElectronicsId.html#a27bdc7ef8ec925204bfc02951f1fa647">HGCalTBElectronicsId</a>
+</li>
+<li>HGCalTBRawToDigi()
+: <a class="el" href="classHGCalTBRawToDigi.html#abe0a9985ec0ec5ed8e249c3a290f1da5">HGCalTBRawToDigi</a>
 </li>
 <li>HGCalTBRecHit()
 : <a class="el" href="classHGCalTBRecHit.html#a74bcedd7843671f81bcaecd8b91aa25b">HGCalTBRecHit</a>
 </li>
 <li>HGCalTBRecHitProducer()
 : <a class="el" href="classHGCalTBRecHitProducer.html#aba69efef867685d90b37f72252eded89">HGCalTBRecHitProducer</a>
+</li>
+<li>HGCalTBTextSource()
+: <a class="el" href="classHGCalTBTextSource.html#af1506e04cf3367e11dd60a84814b9513">HGCalTBTextSource</a>
 </li>
 </ul>
 
@@ -323,14 +339,14 @@ $(document).ready(function(){initNavTree('functions.html','');});
 <li>iskiroc()
 : <a class="el" href="classHGCalTBElectronicsId.html#a96cd8fc671d2464f9fce4cc01ffc149b">HGCalTBElectronicsId</a>
 </li>
+<li>iu()
+: <a class="el" href="classHGCalTBDetId.html#ab5a6af71cd8cbea35bfefce4ee2874ff">HGCalTBDetId</a>
+</li>
+<li>iu_iv_valid()
+: <a class="el" href="classHGCalTBTopology.html#a465bc2e64c12d39fecd45af97233c96c">HGCalTBTopology</a>
+</li>
 <li>iv()
 : <a class="el" href="classHGCalTBDetId.html#aa71ccb38c9414d17c436532a14ed7cd9">HGCalTBDetId</a>
-</li>
-<li>ix()
-: <a class="el" href="classHGCalTBDetId.html#a3d4a02a1906bf35168c158c2b59c5360">HGCalTBDetId</a>
-</li>
-<li>ix_iv_valid()
-: <a class="el" href="classHGCalTBTopology.html#a13524aa107df12d68afd16a5f34d092e">HGCalTBTopology</a>
 </li>
 </ul>
 
@@ -465,7 +481,8 @@ $(document).ready(function(){initNavTree('functions.html','');});
 
 <h3><a class="anchor" id="index_p"></a>- p -</h3><ul>
 <li>produce()
-: <a class="el" href="classHGCalTBRecHitProducer.html#aaf7ac7c1f01c8dc36dca0161bfb465ab">HGCalTBRecHitProducer</a>
+: <a class="el" href="classHGCalTBRawToDigi.html#a3f062f6c2577ca23b62fa21fd0ecdaf3">HGCalTBRawToDigi</a>
+, <a class="el" href="classHGCalTBRecHitProducer.html#aaf7ac7c1f01c8dc36dca0161bfb465ab">HGCalTBRecHitProducer</a>
 </li>
 <li>push_back()
 : <a class="el" href="classHGCalDataFrameContainer.html#ab069d1355bf76eabf1f6fd1dc23e002b">HGCalDataFrameContainer&lt; Digi &gt;</a>
@@ -498,11 +515,11 @@ $(document).ready(function(){initNavTree('functions.html','');});
 <li>schemeCode()
 : <a class="el" href="classHGCalCondObjectContainerBase.html#a44346b0f2afeb787ed26a6746f27f403">HGCalCondObjectContainerBase</a>
 </li>
+<li>sensorIU()
+: <a class="el" href="classHGCalTBDetId.html#adfb8a4d2f5cde66bbb9579a260a59b1e">HGCalTBDetId</a>
+</li>
 <li>sensorIV()
 : <a class="el" href="classHGCalTBDetId.html#a84b841d948eb10bf7d1eb77923d0e848">HGCalTBDetId</a>
-</li>
-<li>sensorIX()
-: <a class="el" href="classHGCalTBDetId.html#a2bc5772f5035b4b4e8a3d649a672921f">HGCalTBDetId</a>
 </li>
 <li>set()
 : <a class="el" href="classHGCalCondObjectContainer.html#ab9ca15553f3bf71115e7cdd4cc3ed901">HGCalCondObjectContainer&lt; Payload &gt;</a>
@@ -562,12 +579,19 @@ $(document).ready(function(){initNavTree('functions.html','');});
 : <a class="el" href="classHGCalTBDetId.html#a668b51191f737702e392a8ada0df20f9">HGCalTBDetId</a>
 </li>
 </ul>
+
+
+<h3><a class="anchor" id="index_0x7e"></a>- ~ -</h3><ul>
+<li>~HGCalTBTextSource()
+: <a class="el" href="classHGCalTBTextSource.html#adefa0c4b3ac029abfc35887e280357ec">HGCalTBTextSource</a>
+</li>
+</ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Mar 8 2016 15:01:03 for HGCal Test Beam by
+    <li class="footer">Generated on Wed Mar 9 2016 16:49:28 for HGCal Test Beam by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

@@ -4,6 +4,7 @@ var NAVTREE =
     [ "Running the RECO chain starting from a fake SKIROC2 output file:", "index.html#RECO_", null ],
     [ "Running the DQM plotting", "index.html#DQM_", null ],
     [ "To be updated:", "index.html#OBSOLETE_", null ],
+    [ "Coordinate system", "coordinates_.html", null ],
     [ "GIT SHORT instructions", "GIT_.html", null ],
     [ "Instructions", "instructions_.html", null ],
     [ "test recHits", "testRecHits_.html", null ],
@@ -37,7 +38,8 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"DigiPlotter_8cc.html"
+"DigiPlotter_8cc.html",
+"namespaceSKIROC.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

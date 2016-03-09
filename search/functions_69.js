@@ -7,7 +7,7 @@ var searchData=
   ['isforward',['isForward',['../classHGCalTBDetId.html#ae1c67838e9c9c02e87e8adf528a81da2',1,'HGCalTBDetId']]],
   ['ishgcal',['isHGCal',['../classHGCalTBDetId.html#a84c204487de5d640a061f1085a980c1f',1,'HGCalTBDetId']]],
   ['iskiroc',['iskiroc',['../classHGCalTBElectronicsId.html#a96cd8fc671d2464f9fce4cc01ffc149b',1,'HGCalTBElectronicsId']]],
-  ['iv',['iv',['../classHGCalTBDetId.html#aa71ccb38c9414d17c436532a14ed7cd9',1,'HGCalTBDetId']]],
-  ['ix',['ix',['../classHGCalTBDetId.html#a3d4a02a1906bf35168c158c2b59c5360',1,'HGCalTBDetId']]],
-  ['ix_5fiv_5fvalid',['ix_iv_valid',['../classHGCalTBTopology.html#a13524aa107df12d68afd16a5f34d092e',1,'HGCalTBTopology']]]
+  ['iu',['iu',['../classHGCalTBDetId.html#ab5a6af71cd8cbea35bfefce4ee2874ff',1,'HGCalTBDetId']]],
+  ['iu_5fiv_5fvalid',['iu_iv_valid',['../classHGCalTBTopology.html#a465bc2e64c12d39fecd45af97233c96c',1,'HGCalTBTopology']]],
+  ['iv',['iv',['../classHGCalTBDetId.html#aa71ccb38c9414d17c436532a14ed7cd9',1,'HGCalTBDetId']]]
 ];

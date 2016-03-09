@@ -1,9 +1,10 @@
 <map id="CondObjects/interface/HGCalElectronicsMap.h" name="CondObjects/interface/HGCalElectronicsMap.h">
-<area shape="rect" id="node2" href="$HGCalCondObjectTextIO_8h.html" title="CondObjects/interface\l/HGCalCondObjectTextIO.h" alt="" coords="297,97,484,138"/>
-<area shape="rect" id="node8" href="$HGCalElectronicsMap_8cc.html" title="CondObjects/src/HGCalElectronics\lMap.cc" alt="" coords="508,97,737,138"/>
-<area shape="rect" id="node5" href="$HGCalTBRawToDigi_8cc.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.cc" alt="" coords="665,187,884,229"/>
-<area shape="rect" id="node3" href="$HGCalCondObjectTextIO_8cc.html" title="CondObjects/src/HGCalCond\lObjectTextIO.cc" alt="" coords="5,187,200,229"/>
-<area shape="rect" id="node4" href="$testHGCalCondObjectTextIO_8cc.html" title="CondObjects/test/testHGCal\lCondObjectTextIO.cc" alt="" coords="225,187,415,229"/>
-<area shape="rect" id="node6" href="$HGCalTBRecHitProducer_8h.html" title="Reco/plugins/HGCalTBRecHit\lProducer.h" alt="" coords="440,187,640,229"/>
-<area shape="rect" id="node7" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="440,278,640,319"/>
+<area shape="rect" id="node2" href="$HGCalCondObjectTextIO_8h.html" title="CondObjects/interface\l/HGCalCondObjectTextIO.h" alt="" coords="296,97,483,138"/>
+<area shape="rect" id="node9" href="$HGCalElectronicsMap_8cc.html" title="CondObjects/src/HGCalElectronics\lMap.cc" alt="" coords="507,97,736,138"/>
+<area shape="rect" id="node5" href="$HGCalTBRawToDigi_8h.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.h" alt="" coords="663,187,883,229"/>
+<area shape="rect" id="node3" href="$HGCalCondObjectTextIO_8cc.html" title="CondObjects/src/HGCalCond\lObjectTextIO.cc" alt="" coords="220,187,415,229"/>
+<area shape="rect" id="node4" href="$testHGCalCondObjectTextIO_8cc.html" title="CondObjects/test/testHGCal\lCondObjectTextIO.cc" alt="" coords="5,187,195,229"/>
+<area shape="rect" id="node7" href="$HGCalTBRecHitProducer_8h.html" title="Reco/plugins/HGCalTBRecHit\lProducer.h" alt="" coords="439,187,639,229"/>
+<area shape="rect" id="node6" href="$HGCalTBRawToDigi_8cc.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.cc" alt="" coords="663,278,883,319"/>
+<area shape="rect" id="node8" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="439,278,639,319"/>
 </map>

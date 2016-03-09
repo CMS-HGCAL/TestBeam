@@ -30,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">850737e36235c1185ca84aaff7c206e970ed524a</span>
+   &#160;<span id="projectnumber">d9b9f808fa79e6565229d91caccf60746f479bd7</span>
    </div>
   </td>
  </tr>
@@ -102,18 +102,28 @@ $(document).ready(function(){initNavTree('todo.html','');});
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><dl class="reflist">
-<dt><a class="anchor" id="_todo000008"></a>Member <a class="el" href="classHGCalTBRecHitProducer.html#aaf7ac7c1f01c8dc36dca0161bfb465ab">HGCalTBRecHitProducer::produce</a>  (edm::Event &amp;, const edm::EventSetup &amp;)</dt>
+<dt><a class="anchor" id="_todo000002"></a>Member <a class="el" href="classHGCalTBRawToDigi.html#ac328b38f99c32230c5f3286cf92e0dcb">HGCalTBRawToDigi::beginJob</a>  ()</dt>
+<dd>this should be done by an ESProducer  </dd>
+<dt><a class="anchor" id="_todo000003"></a>Member <a class="el" href="classHGCalTBRawToDigi.html#a3f062f6c2577ca23b62fa21fd0ecdaf3">HGCalTBRawToDigi::produce</a>  (edm::Event &amp;e, const edm::EventSetup &amp;c)</dt>
+<dd>Exception if 0????  </dd>
+<dt><a class="anchor" id="_todo000009"></a>Member <a class="el" href="classHGCalTBRecHitProducer.html#aaf7ac7c1f01c8dc36dca0161bfb465ab">HGCalTBRecHitProducer::produce</a>  (edm::Event &amp;, const edm::EventSetup &amp;)</dt>
 <dd><p class="startdd">check if reading the conditions from file some channels are not in the file! </p>
 <p>use time calibration! </p>
-<p class="enddd">define an algorithm for the energy if more than 1 sample, code inefficient </p>
+<p class="enddd">define an algorithm for the energy if more than 1 sample, code inefficient  </p>
 </dd>
+<dt><a class="anchor" id="_todo000004"></a>Class <a class="el" href="classHGCalTBTextSource.html">HGCalTBTextSource</a>  </dt>
+<dd><p class="startdd">replace c-like scanf with c++ versions </p>
+<p class="enddd">change run and fed IDs (now are hardcoded)  </p>
+</dd>
+<dt><a class="anchor" id="_todo000005"></a>Member <a class="el" href="classHGCalTBTextSource.html#af1506e04cf3367e11dd60a84814b9513">HGCalTBTextSource::HGCalTBTextSource</a>  (const edm::ParameterSet &amp;pset, edm::InputSourceDescription const &amp;desc)</dt>
+<dd>check and read from file? </dd>
 </dl>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Mar 8 2016 15:01:02 for HGCal Test Beam by
+    <li class="footer">Generated on Wed Mar 9 2016 16:49:27 for HGCal Test Beam by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

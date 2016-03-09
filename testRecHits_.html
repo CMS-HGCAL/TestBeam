@@ -30,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">850737e36235c1185ca84aaff7c206e970ed524a</span>
+   &#160;<span id="projectnumber">d9b9f808fa79e6565229d91caccf60746f479bd7</span>
    </div>
   </td>
  </tr>
@@ -106,7 +106,7 @@ $(document).ready(function(){initNavTree('testRecHits_.html','');});
 <p>To read this and plot the hits in the sensor: </p>
 <pre class="fragment">cmsRun test/analyzeRechitCollection_cfg.py
 </pre><p>This produces a file test_RecHitPlotter_OneLayer_TB.root which has the hits plotted in the cells of the hexagonal sensor.</p>
-<p>The Geometry is in: HGCal/Geometry where the class <a class="el" href="classHGCalTBCellVertices.html">HGCalTBCellVertices</a> has the method <a class="el" href="classHGCalTBCellVertices.html#a6cb77528a755ab2a2269ed89d673a183">HGCalTBCellVertices::GetCellCoordinates</a> that returns the x,y vertices of a cell given ix,iv. Currently only full and half hexagons are implemented for 128 cell sensors. The function std::pair&lt;double,double&gt; GetCellCentreCoordinates(int ix, int iv, int sensorsize) returns the x,y co-ordinates of a cell given ix,iv. This is useful in filling the full sensor histogram divided in bins shaped as cells for the plots. The former function is needed to set up this histogram.</p>
+<p>The Geometry is in: HGCal/Geometry where the class <a class="el" href="classHGCalTBCellVertices.html">HGCalTBCellVertices</a> has the method <a class="el" href="classHGCalTBCellVertices.html#a01444a1e987023638b70ed2c5e8cc809" title="returns the coordinates of each vertex of cell in the lab frame (x,y) ">HGCalTBCellVertices::GetCellCoordinates</a> that returns the x,y vertices of a cell given ix,iv. Currently only full and half hexagons are implemented for 128 cell sensors. The function std::pair&lt;double,double&gt; GetCellCentreCoordinates(int ix, int iv, int sensorsize) returns the x,y co-ordinates of a cell given ix,iv. This is useful in filling the full sensor histogram divided in bins shaped as cells for the plots. The former function is needed to set up this histogram.</p>
 <p>In the same Geometry area the class <a class="el" href="classHGCalTBTopology.html">HGCalTBTopology</a> has a function bool ix_iv_valid(int ix, int iv, int sensorSize) that can say if the the values correspond to a cell with within a sensor(currently 128 cell)</p>
 <p>Please Note that at the mouse-bitten corners the cells are represented as half hexagons and not pentagons yet. </p>
 </div></div><!-- contents -->
@@ -114,7 +114,7 @@ $(document).ready(function(){initNavTree('testRecHits_.html','');});
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Mar 8 2016 15:01:02 for HGCal Test Beam by
+    <li class="footer">Generated on Wed Mar 9 2016 16:49:27 for HGCal Test Beam by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>

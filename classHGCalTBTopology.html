@@ -30,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">850737e36235c1185ca84aaff7c206e970ed524a</span>
+   &#160;<span id="projectnumber">d9b9f808fa79e6565229d91caccf60746f479bd7</span>
    </div>
   </td>
  </tr>
@@ -117,21 +117,23 @@ $(document).ready(function(){initNavTree('classHGCalTBTopology.html','');});
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a13524aa107df12d68afd16a5f34d092e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHGCalTBTopology.html#a13524aa107df12d68afd16a5f34d092e">ix_iv_valid</a> (int layer, int sensor_ix, int sensor_iv, int ix, int iv, int sensorSize) const </td></tr>
-<tr class="separator:a13524aa107df12d68afd16a5f34d092e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a465bc2e64c12d39fecd45af97233c96c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHGCalTBTopology.html#a465bc2e64c12d39fecd45af97233c96c">iu_iv_valid</a> (int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorSize) const </td></tr>
+<tr class="separator:a465bc2e64c12d39fecd45af97233c96c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Reference: <a href="https://indico.cern.ch/event/456955/">https://indico.cern.ch/event/456955/</a></p>
 <dl class="section rcs"><dt>Date:</dt><dd></dd></dl>
 <dl class="section rcs"><dt>Revision:</dt><dd></dd></dl>
 <dl class="section author"><dt>Author</dt><dd>J. Mans - Minnesota </dd></dl>
+
+<p>Definition at line <a class="el" href="HGCalTBTopology_8h_source.html#l00012">12</a> of file <a class="el" href="HGCalTBTopology_8h_source.html">HGCalTBTopology.h</a>.</p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="a13524aa107df12d68afd16a5f34d092e"></a>
+<a class="anchor" id="a465bc2e64c12d39fecd45af97233c96c"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool HGCalTBTopology::ix_iv_valid </td>
+          <td class="memname">bool HGCalTBTopology::iu_iv_valid </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>layer</em>, </td>
@@ -140,7 +142,7 @@ Public Member Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>sensor_ix</em>, </td>
+          <td class="paramname"><em>sensor_iu</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -152,7 +154,7 @@ Public Member Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>ix</em>, </td>
+          <td class="paramname"><em>iu</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -174,13 +176,15 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Referenced by <a class="el" href="classHGCalTBCellVertices.html#aeb4aa8cb2deeaf0070c7ab9de5baa53d">HGCalTBCellVertices::GetCellCentreCoordinates()</a>, and <a class="el" href="classHGCalTBCellVertices.html#a6cb77528a755ab2a2269ed89d673a183">HGCalTBCellVertices::GetCellCoordinates()</a>.</p>
+<p>Definition at line <a class="el" href="HGCalTBTopology_8cc_source.html#l00004">4</a> of file <a class="el" href="HGCalTBTopology_8cc_source.html">HGCalTBTopology.cc</a>.</p>
+
+<p>Referenced by <a class="el" href="HGCalTBCellVertices_8cc_source.html#l00046">HGCalTBCellVertices::GetCellCentreCoordinates()</a>, and <a class="el" href="HGCalTBCellVertices_8cc_source.html#l00025">HGCalTBCellVertices::GetCellCoordinates()</a>.</p>
 
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>Geometry/interface/<a class="el" href="HGCalTBTopology_8h_source.html">HGCalTBTopology.h</a></li>
-<li>Geometry/src/<a class="el" href="HGCalTBTopology_8cc.html">HGCalTBTopology.cc</a></li>
+<li>Geometry/src/<a class="el" href="HGCalTBTopology_8cc_source.html">HGCalTBTopology.cc</a></li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -188,7 +192,7 @@ Public Member Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="classHGCalTBTopology.html">HGCalTBTopology</a></li>
-    <li class="footer">Generated on Tue Mar 8 2016 15:01:03 for HGCal Test Beam by
+    <li class="footer">Generated on Wed Mar 9 2016 16:49:27 for HGCal Test Beam by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.5 </li>
   </ul>
