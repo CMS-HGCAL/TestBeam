@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iomanip>
 #define PI 3.14159265
+#define TEST_BEAM_LAYER_ROTATION -PI/2
 using namespace std;
 
 HGCalTBTopology Top;
@@ -32,7 +33,7 @@ std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(i
 			vertex_x_tmp = x_co_FullHex[iii] + iu * x0 + iv * vx0;
 			vertex_y_tmp = y_co_FullHex[iii] + iv * vy0;
 //The general strategy is to translate starting from the central hexagonal cell to the iu,iv desired. If any vertex goes out of the sensor boundary its cordinates are not filled into the vector of pairs.
-			if(fabs(vertex_x_tmp) <= Xmax(iv, fabs(vertex_y_tmp)) + delta) Cell_co.push_back(std::make_pair(vertex_x_tmp, vertex_y_tmp));
+			if(fabs(vertex_x_tmp) <= Xmax(iv, fabs(vertex_y_tmp)) + delta) Cell_co.push_back(RotateLayer(std::make_pair(vertex_x_tmp, vertex_y_tmp), TEST_BEAM_LAYER_ROTATION, layer));
 		}
 		return Cell_co;
 	} else {
@@ -50,7 +51,7 @@ std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int laye
 	if(ValidFlag) {
 		centre_x_tmp = iu * x0 + iv * vx0;
 		centre_y_tmp = iv * vy0;
-		return std::make_pair(centre_x_tmp, centre_y_tmp);
+		return RotateLayer(std::make_pair(centre_x_tmp, centre_y_tmp), TEST_BEAM_LAYER_ROTATION, layer);
 	} else return std::make_pair(-123456, -123456); //iu_iv_Valid() is sufficient to decide if a given iu,iv is a valid sensor index but this is done if some future need may arise.
 
 }
@@ -59,6 +60,15 @@ double HGCalTBCellVertices::Xmax(int iv, double y)
 {
 	if(fabs(iv) <= 3) return 11 * x_a * a;
 	else return (11 * a - y) / (1 / (2 * x_a));
+}
+
+std::pair<double, double> HGCalTBCellVertices::RotateLayer(std::pair<double, double> Vertex, double Angle, int Layer){
+          int sign = 1;// rotation is clockwise for odd layers and anti-clockwise for even layers
+          if((Layer % 2) == 1) sign = 1;
+          else sign = -1;           
+          double X_new = (Vertex.first)*cos(sign*Angle) - (Vertex.second)*sin(sign*Angle);
+          double Y_new = (Vertex.first)*sin(sign*Angle) - (Vertex.second)*cos(sign*Angle);
+          return std::make_pair(-X_new, Y_new);// The negative sign for the x coordinate is to account for the TB cartesian coordinate system.
 }
 
 // To be added if for reconstruction it is useful to simply know if a cell is full hex, half hex or mouse-bitten

@@ -36,12 +36,14 @@ private:
 
 	std::vector<double> x_co_FullHex, y_co_FullHex; // stores the initial x,y coordinates of a hexagonal cell
 	std::vector<std::pair<double, double>> Cell_co;
-// Translation in x,v co-ordinates in terms of cartesian x,y.
+// Translation in u,v co-ordinates in terms of TB cartesian -x,y.
 	double  x0 = 2 * x_a * a; //Translation in Cartesian x for 1 unit of iu
 	double vx0 = x_a * a; // Cartesian x component of translation for 1 unit of iv
 	double vy0 = vy_a * a; // Cartesian y component of translation for 1 unit of iv
 
-	double Xmax(int v, double y);// returns the max x value for a cell to be in the gven sensor
+	double Xmax(int iv, double y);// returns the max x value for a cell to be in the given sensor
+
+	std::pair<double,double> RotateLayer(std::pair<double,double>, double Angle, int layer);  
 
 };
 

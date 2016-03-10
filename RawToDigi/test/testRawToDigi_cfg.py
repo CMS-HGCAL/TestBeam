@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("unpack")
-process.load('HGCal.RawToDigi.hgcaldigis_cfi')
+process.load('HGCal.RawToDigi.hgcaltbdigis_cfi')
 
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(2), ### maybe this should be read from the file
@@ -22,6 +22,6 @@ process.out = cms.OutputModule("PoolOutputModule",
                 fileName = cms.untracked.string("test_Digis_OneLayer_TB.root")
         )
 
-process.p =cms.Path(process.dumpRaw*process.hgcaldigis*process.dumpDigi*process.plot)
+process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.plot)
 
 process.outpath = cms.EndPath(process.out)
