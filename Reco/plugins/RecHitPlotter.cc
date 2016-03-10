@@ -128,7 +128,7 @@ RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig)
 				sprintf(title, "RecHits for Cell_u_%i_v_%i Layer%i", iu, iv, nlayers + 1);
 				h_RecHit_layer_cell[nlayers][iu + 7][iv + 7] = fs->make<TH1F>(name, title, 100, 0., 100.); // need to finalize binning
 				h_RecHit_layer_cell[nlayers][iu + 7][iv + 7]->GetXaxis()->SetTitle("RecHits[GeV]");
-				CellXY = TheCell.GetCellCoordinates(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize);
+				CellXY = TheCell.GetCellCoordinatesForPlots(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize);
 				int NumberOfCellVertices = CellXY.size();
 				iii = 0;
 				if(NumberOfCellVertices == 4) {
@@ -185,7 +185,7 @@ RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 		if(!IsCellValid.iu_iv_valid((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize))  continue;
 		int n_layer = (RecHit.id()).layer();
 //We now obtain the cartesian coordinates of the cell corresponding to an iu,iv. This may either be a full hex, a half hex or an invalid cell. If a cell is invalid based on the iu,iv index -123456 is returned for its x,y vertices
-		CellCentreXY = TheCell.GetCellCentreCoordinates((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize);
+		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize);
 //HARD CODED: Add/subtract delta = 0.0001 to x,y of a cell centre so the TH2Poly::Fill doesnt have a problem at the edges where the centre of a half-hex cell passes through the sennsor boundary line
 		double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
 		double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);

@@ -117,7 +117,7 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
 					sprintf(title, "Digis for Cell_u_%i_v_%i Sample%i Layer%i", iu, iv, nsample, nlayers + 1);
 					h_digi_layer_cell[nsample][nlayers][iu + 7][iv + 7] = fs->make<TH1F>(name, title, 4096, 0., 4095.);
 					h_digi_layer_cell[nsample][nlayers][iu + 7][iv + 7]->GetXaxis()->SetTitle("Digis[adc counts]");
-					CellXY = TheCell.GetCellCoordinates(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize);
+					CellXY = TheCell.GetCellCoordinatesForPlots(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize);
 					int NumberOfCellVertices = CellXY.size();
 					iii = 0;
 					if(NumberOfCellVertices == 4) {
@@ -179,7 +179,7 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				int n_cell_iv = (SKI.detid()).iv();
 				if(DEBUG) cout << endl << " Layer = " << n_layer << " Sensor IU = " << n_sensor_IU << " Sensor IV = " << n_sensor_IV << " Cell iu = " << n_cell_iu << " Cell iu = " << n_cell_iv << endl;
 				if(!IsCellValid.iu_iv_valid(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize))  continue;
-				CellCentreXY = TheCell.GetCellCentreCoordinates(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize);
+				CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize);
 				double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
 				double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
 				for(int nsample = 0; nsample < SKI.samples(); nsample++) {
