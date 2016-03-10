@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">f53bd5bcd8c66dca5f67baab1f30554eadb7b475</span>
+   &#160;<span id="projectnumber">79132f004e01119fa99b03256cdbbf22b057683f</span>
    </div>
   </td>
  </tr>
@@ -89,6 +89,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="textblock"><p>Download instructions: <a class="el" href="instructions_.html">Instructions</a></p>
 <h1><a class="anchor" id="RECO_"></a>
 Running the RECO chain starting from a fake SKIROC2 output file:</h1>
+<p>The <a class="el" href="namespaceSKIROC.html">SKIROC</a> channel mapping on to the individual cells of a sensor is in:</p>
+<ul>
+<li>Condformats/data/map_FNAL.txt</li>
+</ul>
 <p>Fake calibration files are:</p>
 <ul>
 <li>pedestals.txt</li>
@@ -97,7 +101,41 @@ Running the RECO chain starting from a fake SKIROC2 output file:</h1>
 <pre class="fragment">cmsRun test_cfg.py
 </pre><h1><a class="anchor" id="DQM_"></a>
 Running the DQM plotting</h1>
-<pre class="fragment"></pre><p><a class="el" href="coordinates_.html">Coordinate system</a></p>
+<p>Currently the DQM worflow kicks in post the creation of Digis and also after the creation of RecHits.</p>
+<ul>
+<li>Post Digi we can monitor:<ul>
+<li>adc counts in each cell of a sensor per sample, per layer(summed over the events).</li>
+<li>1D adc distributions per cell(per layer, per sample).</li>
+</ul>
+</li>
+<li>Post RecHit we can monitor:<ul>
+<li>RecHits(GeV) in each cell of a sensor, per layer(summed over the events).</li>
+<li>The Occupancy(defined as RecHits above a certain threshold) in each cell of a sensor, per layer(summed over the events).</li>
+<li>1D RecHits distributions per cell(per layer, per sample).</li>
+<li>1D RecHits distributions summed over all cells in a layer(per layer).</li>
+</ul>
+</li>
+</ul>
+<p>On executing: </p>
+<pre class="fragment">cmsRun test_cfg.py
+</pre><p>a root file <b>test_DigiAndRechitPlotter_TB.root</b> is produced. This file has two directories namely</p>
+<ul>
+<li><b>hgcaltbdigisplotter:</b> with the Digi-&gt;DQM workflow</li>
+<li><b>hgcaltbrechitsplotter:</b> with the RecHits to DQM workflow</li>
+</ul>
+<p>In the Digi-&gt;DQM workflow the following histograms may be found:</p>
+<ul>
+<li>(TH2Poly) FullLayer_Sample::M_Layer::N is the cumulative(over events) adc count in cells of the sensor in the #N layer for the #M sample.</li>
+<li>(TH1F) Cell_u_::P_v_::Q_Sample::M_Layer::N is the 1D adc spectrum for the sample #M in a cell in layer #N marked by u=#P and v=#Q in the local(u,v) co-ordinate system of the cells in a sensor(Not to be confused with the Sensor_U, Sensor_V used to identify sensors in a layer).</li>
+</ul>
+<p>In the RecHits-&gt;DQM workflow the following histograms may be found:</p>
+<ul>
+<li>(TH2Poly) FullLayer_RecHits_Layer::N is the cumulative(over events) RecHits in cells of the sensor in the #N layer</li>
+<li>(TH2Poly) FullLayer_Occupancy_Layer::N is the cumulative Occupancy(as defined above) in cells of the sensor in the #N layer</li>
+<li>(TH1F) Cell_RecHits_u_::P_v_::Q_Layer::N is the 1D RecHits spectrum for a cell in layer #N marked by u=#P and v=#Q in the local(u,v) co-ordinate system of the cells in a sensor</li>
+<li>(TH1F) FullLayer_RecHits_Layer::N_Summed same as above but summed over all cells in a sensor.</li>
+</ul>
+<p><a class="el" href="coordinates_.html">Coordinate system</a></p>
 <p>Git instructions: <a class="el" href="GIT_.html">GIT SHORT instructions</a></p>
 <h1><a class="anchor" id="OBSOLETE_"></a>
 To be updated:</h1>
@@ -105,7 +143,7 @@ To be updated:</h1>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 9 2016 16:54:11 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Mar 10 2016 15:42:45 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

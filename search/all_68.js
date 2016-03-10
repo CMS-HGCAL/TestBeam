@@ -14,7 +14,6 @@ var searchData=
   ['hgcalcondobjecttextio_2eh',['HGCalCondObjectTextIO.h',['../HGCalCondObjectTextIO_8h.html',1,'']]],
   ['hgcalcondpedestals',['HGCalCondPedestals',['../HGCalCondObjects_8h.html#a3d8efa6b791fb3d691810ac2a7e721be',1,'HGCalCondObjects.h']]],
   ['hgcaldataframecontainer',['HGCalDataFrameContainer',['../classHGCalDataFrameContainer.html',1,'HGCalDataFrameContainer&lt; Digi &gt;'],['../classHGCalDataFrameContainer.html#a8369389deb461b3e08abf38f84505cf7',1,'HGCalDataFrameContainer::HGCalDataFrameContainer()']]],
-  ['hgcaldataframecontainer_3c_20skiroc2dataframe_20_3e',['HGCalDataFrameContainer&lt; SKIROC2DataFrame &gt;',['../classHGCalDataFrameContainer.html',1,'']]],
   ['hgcaldigidump_2ecc',['HGCalDigiDump.cc',['../HGCalDigiDump_8cc.html',1,'']]],
   ['hgcalelectronicsmap',['HGCalElectronicsMap',['../classHGCalElectronicsMap.html',1,'']]],
   ['hgcalelectronicsmap_2ecc',['HGCalElectronicsMap.cc',['../HGCalElectronicsMap_8cc.html',1,'']]],

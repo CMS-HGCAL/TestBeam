@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">f53bd5bcd8c66dca5f67baab1f30554eadb7b475</span>
+   &#160;<span id="projectnumber">79132f004e01119fa99b03256cdbbf22b057683f</span>
    </div>
   </td>
  </tr>
@@ -96,101 +96,119 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &lt;iostream&gt;</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &lt;iomanip&gt;</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno"><a class="line" href="HGCalTBCellVertices_8cc.html#a598a3330b3c21701223ee0ca14316eca">    6</a></span>&#160;<span class="preprocessor">#define PI 3.14159265</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor"></span><span class="keyword">using namespace </span>std;</div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;</div>
-<div class="line"><a name="l00009"></a><span class="lineno"><a class="line" href="HGCalTBCellVertices_8cc.html#af554e93263c7de33f2f018d37ded4f78">    9</a></span>&#160;<a class="code" href="classHGCalTBTopology.html">HGCalTBTopology</a> <a class="code" href="HGCalTBCellVertices_8cc.html#af554e93263c7de33f2f018d37ded4f78">Top</a>;</div>
-<div class="line"><a name="l00010"></a><span class="lineno"><a class="line" href="HGCalTBCellVertices_8cc.html#a9ea1a8f5ef3e6d20b362385e1288c72c">   10</a></span>&#160;<span class="keywordtype">double</span> <a class="code" href="HGCalTBCellVertices_8cc.html#a9ea1a8f5ef3e6d20b362385e1288c72c">delta</a> = 0.00001;<span class="comment">//needed for comparing two doubles while deciding if the cell is within a sensor</span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;</div>
-<div class="line"><a name="l00012"></a><span class="lineno"><a class="line" href="classHGCalTBCellVertices.html#a9492ae3553020ee577fdb71e5c9541a0">   12</a></span>&#160;<a class="code" href="classHGCalTBCellVertices.html#a9492ae3553020ee577fdb71e5c9541a0">HGCalTBCellVertices::HGCalTBCellVertices</a>()</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;{</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="comment">// Initialize the co-ordinates of a hexagonal cell of side a centred at 0,0 with the top vertex numbered as the first with clockwise increments.</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;    <span class="keywordtype">double</span> x1[] = {0., x_a * a, x_a * a, 0., -x_a * a, -x_a * a};</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="keywordtype">double</span> y1[] = {a,  y_a * a, -y_a * a, -a, -y_a * a, y_a * a};</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <span class="keywordflow">for</span>(<span class="keywordtype">int</span> iii = 0; iii &lt; 6; iii++) { <span class="comment">// May have to be generalized to deal with polygons of any size</span></div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;        x_co_FullHex.push_back(x1[iii]);</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;        y_co_FullHex.push_back(y1[iii]);</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    }</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;}</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;</div>
+<div class="line"><a name="l00007"></a><span class="lineno"><a class="line" href="HGCalTBCellVertices_8cc.html#a388022887e31a2875f06771ed4d6e664">    7</a></span>&#160;<span class="preprocessor"></span><span class="preprocessor">#define TEST_BEAM_LAYER_ROTATION -PI/2</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor"></span><span class="keyword">using namespace </span>std;</div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;</div>
+<div class="line"><a name="l00010"></a><span class="lineno"><a class="line" href="HGCalTBCellVertices_8cc.html#af554e93263c7de33f2f018d37ded4f78">   10</a></span>&#160;<a class="code" href="classHGCalTBTopology.html">HGCalTBTopology</a> <a class="code" href="HGCalTBCellVertices_8cc.html#af554e93263c7de33f2f018d37ded4f78">Top</a>;</div>
+<div class="line"><a name="l00011"></a><span class="lineno"><a class="line" href="HGCalTBCellVertices_8cc.html#a9ea1a8f5ef3e6d20b362385e1288c72c">   11</a></span>&#160;<span class="keywordtype">double</span> <a class="code" href="HGCalTBCellVertices_8cc.html#a9ea1a8f5ef3e6d20b362385e1288c72c">delta</a> = 0.00001;<span class="comment">//needed for comparing two doubles while deciding if the cell is within a sensor</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;</div>
+<div class="line"><a name="l00013"></a><span class="lineno"><a class="line" href="classHGCalTBCellVertices.html#a9492ae3553020ee577fdb71e5c9541a0">   13</a></span>&#160;<a class="code" href="classHGCalTBCellVertices.html#a9492ae3553020ee577fdb71e5c9541a0">HGCalTBCellVertices::HGCalTBCellVertices</a>()</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;{</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment">// Initialize the co-ordinates of a hexagonal cell of side a centred at 0,0 with the top vertex numbered as the first with clockwise increments.</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="keywordtype">double</span> x1[] = {0., x_a * a, x_a * a, 0., -x_a * a, -x_a * a};</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <span class="keywordtype">double</span> y1[] = {a,  y_a * a, -y_a * a, -a, -y_a * a, y_a * a};</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <span class="keywordflow">for</span>(<span class="keywordtype">int</span> iii = 0; iii &lt; 6; iii++) { <span class="comment">// May have to be generalized to deal with polygons of any size</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;        x_co_FullHex.push_back(x1[iii]);</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;        y_co_FullHex.push_back(y1[iii]);</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    }</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;}</div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;</div>
-<div class="line"><a name="l00025"></a><span class="lineno"><a class="line" href="classHGCalTBCellVertices.html#a01444a1e987023638b70ed2c5e8cc809">   25</a></span>&#160;std::vector&lt;std::pair&lt;double, double&gt;&gt; <a class="code" href="classHGCalTBCellVertices.html#a01444a1e987023638b70ed2c5e8cc809">HGCalTBCellVertices::GetCellCoordinates</a>(<span class="keywordtype">int</span> layer, <span class="keywordtype">int</span> sensor_iu, <span class="keywordtype">int</span> sensor_iv, <span class="keywordtype">int</span> iu, <span class="keywordtype">int</span> iv, <span class="keywordtype">int</span> sensorsize)</div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;{</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;    <span class="keywordtype">bool</span> ValidFlag   = <a class="code" href="HGCalTBCellVertices_8cc.html#af554e93263c7de33f2f018d37ded4f78">Top</a>.<a class="code" href="classHGCalTBTopology.html#a465bc2e64c12d39fecd45af97233c96c">iu_iv_valid</a>(layer, sensor_iu, sensor_iv, iu, iv, sensorsize);</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    <span class="keywordtype">double</span> vertex_x_tmp = 0., vertex_y_tmp = 0.;</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    Cell_co.clear();</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    <span class="keywordflow">if</span>(ValidFlag) {</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> iii = 0; iii &lt; 6; iii++) { <span class="comment">// May have to be generalized to deal with polygons of any size</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;            vertex_x_tmp = x_co_FullHex[iii] + iu * x0 + iv * vx0;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;            vertex_y_tmp = y_co_FullHex[iii] + iv * vy0;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment">//The general strategy is to translate starting from the central hexagonal cell to the iu,iv desired. If any vertex goes out of the sensor boundary its cordinates are not filled into the vector of pairs.</span></div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;            <span class="keywordflow">if</span>(fabs(vertex_x_tmp) &lt;= Xmax(iv, fabs(vertex_y_tmp)) + <a class="code" href="HGCalTBCellVertices_8cc.html#a9ea1a8f5ef3e6d20b362385e1288c72c">delta</a>) Cell_co.push_back(std::make_pair(vertex_x_tmp, vertex_y_tmp));</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        }</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;        <span class="keywordflow">return</span> Cell_co;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        Cell_co.push_back(std::make_pair(-123456, -123456)); <span class="comment">//iu_iv_Valid() is sufficient to decide if a given iu,iv is a valid sensor index but this is done if some future need may arise.</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        <span class="keywordflow">return</span> Cell_co;</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    }</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;}</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
-<div class="line"><a name="l00046"></a><span class="lineno"><a class="line" href="classHGCalTBCellVertices.html#aed0760ad737a9c3501f149db45f6281c">   46</a></span>&#160;std::pair&lt;double, double&gt; <a class="code" href="classHGCalTBCellVertices.html#aed0760ad737a9c3501f149db45f6281c">HGCalTBCellVertices::GetCellCentreCoordinates</a>(<span class="keywordtype">int</span> layer, <span class="keywordtype">int</span> sensor_iu, <span class="keywordtype">int</span> sensor_iv, <span class="keywordtype">int</span> iu, <span class="keywordtype">int</span> iv, <span class="keywordtype">int</span> sensorsize)</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;{</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    <span class="keywordtype">double</span> centre_x_tmp = 0., centre_y_tmp = 0.;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="keywordtype">bool</span> ValidFlag   = <a class="code" href="HGCalTBCellVertices_8cc.html#af554e93263c7de33f2f018d37ded4f78">Top</a>.<a class="code" href="classHGCalTBTopology.html#a465bc2e64c12d39fecd45af97233c96c">iu_iv_valid</a>(layer, sensor_iu, sensor_iv, iu, iv, sensorsize);</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keywordflow">if</span>(ValidFlag) {</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        centre_x_tmp = iu * x0 + iv * vx0;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        centre_y_tmp = iv * vy0;</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <span class="keywordflow">return</span> std::make_pair(centre_x_tmp, centre_y_tmp);</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    } <span class="keywordflow">else</span> <span class="keywordflow">return</span> std::make_pair(-123456, -123456); <span class="comment">//iu_iv_Valid() is sufficient to decide if a given iu,iv is a valid sensor index but this is done if some future need may arise.</span></div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;}</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="keywordtype">double</span> HGCalTBCellVertices::Xmax(<span class="keywordtype">int</span> iv, <span class="keywordtype">double</span> y)</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;{</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    <span class="keywordflow">if</span>(fabs(iv) &lt;= 3) <span class="keywordflow">return</span> 11 * x_a * a;</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">return</span> (11 * a - y) / (1 / (2 * x_a));</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;}</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">// To be added if for reconstruction it is useful to simply know if a cell is full hex, half hex or mouse-bitten</span></div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">void HGCalTBCellVertices::CellType(int iu, int iv, bool ValidFlag){</span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">    bool HalfHex = false;</span></div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">    x_max=0.;</span></div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment">    y_max=0.;</span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">   }</span></div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment">*/</span></div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">// To be added after finalizing what all we need to see printed out.</span></div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment">std::ostream&amp; operator&lt;&lt;(std::ostream&amp; s, const HGCalTBCellVertices&amp; vertices, int type) {</span></div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment">  if(type == 1){</span></div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment">    return s &lt;&lt; &quot;This cell is a full hexagon&quot;&lt;&lt;endl;</span></div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment">    for(int iii=0;iii&lt;6;iii++)</span></div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment">       return s&lt;&lt;&quot; Vertex 1 x co-ordinate = &quot;&lt;&lt;vertices.HX[iii]&lt;&lt;&quot; y co-ordinate = &quot;&lt;&lt;vertices.Hy[iii]&lt;&lt;endl;</span></div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment">    }</span></div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">  else if(type == 2){</span></div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment">      return s &lt;&lt; &quot;This cell is a half hexagon&quot;&lt;&lt;endl;</span></div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment">      for(int iii=0;iii&lt;4;iii++)</span></div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment">       return s&lt;&lt;&quot; Vertex 1 x co-ordinate = &quot;&lt;&lt;vertices.HX[iii]&lt;&lt;&quot; y co-ordinate = &quot;&lt;&lt;vertices.Hy[iii]&lt;&lt;endl;</span></div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment">     }</span></div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment">}</span></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;</div>
+<div class="line"><a name="l00026"></a><span class="lineno"><a class="line" href="classHGCalTBCellVertices.html#a12a20c91b43bc8c9263346cff8fefa04">   26</a></span>&#160;std::vector&lt;std::pair&lt;double, double&gt;&gt; <a class="code" href="classHGCalTBCellVertices.html#a12a20c91b43bc8c9263346cff8fefa04">HGCalTBCellVertices::GetCellCoordinates</a>(<span class="keywordtype">int</span> layer, <span class="keywordtype">int</span> sensor_iu, <span class="keywordtype">int</span> sensor_iv, <span class="keywordtype">int</span> iu, <span class="keywordtype">int</span> iv, <span class="keywordtype">int</span> sensorsize, <span class="keywordtype">bool</span> flipX)</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;{</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    <span class="keywordtype">bool</span> ValidFlag   = <a class="code" href="HGCalTBCellVertices_8cc.html#af554e93263c7de33f2f018d37ded4f78">Top</a>.<a class="code" href="classHGCalTBTopology.html#a465bc2e64c12d39fecd45af97233c96c">iu_iv_valid</a>(layer, sensor_iu, sensor_iv, iu, iv, sensorsize);</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <span class="keywordtype">double</span> vertex_x_tmp = 0., vertex_y_tmp = 0.;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;    Cell_co.clear();</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keywordflow">if</span>(ValidFlag) {</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        <span class="keywordflow">for</span>(<span class="keywordtype">int</span> iii = 0; iii &lt; 6; iii++) { <span class="comment">// May have to be generalized to deal with polygons of any size</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;            vertex_x_tmp = x_co_FullHex[iii] + iu * x0 + iv * vx0;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;            vertex_y_tmp = y_co_FullHex[iii] + iv * vy0;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment">//The general strategy is to translate starting from the central hexagonal cell to the iu,iv desired. If any vertex goes out of the sensor boundary its cordinates are not filled into the vector of pairs.</span></div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;            <span class="keywordflow">if</span>(fabs(vertex_x_tmp) &lt;= Xmax(iv, fabs(vertex_y_tmp)) + <a class="code" href="HGCalTBCellVertices_8cc.html#a9ea1a8f5ef3e6d20b362385e1288c72c">delta</a>){</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;                <span class="keyword">auto</span> point = RotateLayer(std::make_pair(vertex_x_tmp, vertex_y_tmp), <a class="code" href="HGCalTBCellVertices_8cc.html#a388022887e31a2875f06771ed4d6e664">TEST_BEAM_LAYER_ROTATION</a>, layer);</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;                <span class="keywordflow">if</span>(flipX==<span class="keyword">true</span>) point.first=-point.first;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;                Cell_co.push_back(point);</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;            }</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;        }</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;        <span class="keywordflow">return</span> Cell_co;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        Cell_co.push_back(std::make_pair(-123456, -123456)); <span class="comment">//iu_iv_Valid() is sufficient to decide if a given iu,iv is a valid sensor index but this is done if some future need may arise.</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        <span class="keywordflow">return</span> Cell_co;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    }</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;}</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;</div>
+<div class="line"><a name="l00051"></a><span class="lineno"><a class="line" href="classHGCalTBCellVertices.html#a2c68ababab900196b11f96b74a7d48c5">   51</a></span>&#160;    std::pair&lt;double, double&gt; <a class="code" href="classHGCalTBCellVertices.html#a2c68ababab900196b11f96b74a7d48c5">HGCalTBCellVertices::GetCellCentreCoordinates</a>(<span class="keywordtype">int</span> layer, <span class="keywordtype">int</span> sensor_iu, <span class="keywordtype">int</span> sensor_iv, <span class="keywordtype">int</span> iu, <span class="keywordtype">int</span> iv, <span class="keywordtype">int</span> sensorsize, <span class="keywordtype">bool</span> flipX)</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;{</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;    <span class="keywordtype">double</span> centre_x_tmp = 0., centre_y_tmp = 0.;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="keywordtype">bool</span> ValidFlag   = <a class="code" href="HGCalTBCellVertices_8cc.html#af554e93263c7de33f2f018d37ded4f78">Top</a>.<a class="code" href="classHGCalTBTopology.html#a465bc2e64c12d39fecd45af97233c96c">iu_iv_valid</a>(layer, sensor_iu, sensor_iv, iu, iv, sensorsize);</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keywordflow">if</span>(ValidFlag) {</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        centre_x_tmp = iu * x0 + iv * vx0;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        centre_y_tmp = iv * vy0;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <span class="keyword">auto</span> point = RotateLayer(std::make_pair(centre_x_tmp, centre_y_tmp), <a class="code" href="HGCalTBCellVertices_8cc.html#a388022887e31a2875f06771ed4d6e664">TEST_BEAM_LAYER_ROTATION</a>, layer);</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;        <span class="keywordflow">if</span>(flipX==<span class="keyword">true</span>) point.first = - point.first;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="keywordflow">return</span> point;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    } <span class="keywordflow">else</span> <span class="keywordflow">return</span> std::make_pair(-123456, -123456); <span class="comment">//iu_iv_Valid() is sufficient to decide if a given iu,iv is a valid sensor index but this is done if some future need may arise.</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;}</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="keywordtype">double</span> HGCalTBCellVertices::Xmax(<span class="keywordtype">int</span> iv, <span class="keywordtype">double</span> y)</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;{</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keywordflow">if</span>(fabs(iv) &lt;= 3) <span class="keywordflow">return</span> 11 * x_a * a;</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keywordflow">else</span> <span class="keywordflow">return</span> (11 * a - y) / (1 / (2 * x_a));</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;}</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;std::pair&lt;double, double&gt; HGCalTBCellVertices::RotateLayer(std::pair&lt;double, double&gt; Vertex, <span class="keywordtype">double</span> Angle, <span class="keywordtype">int</span> Layer)</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;{</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keywordtype">int</span> sign = 1;<span class="comment">// rotation is clockwise for odd layers and anti-clockwise for even layers</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordflow">if</span>((Layer % 2) == 1) sign = 1;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="keywordflow">else</span> sign = -1;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keywordtype">double</span> X_new = (Vertex.first) * cos(sign * Angle) - (Vertex.second) * sin(sign * Angle);</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordtype">double</span> Y_new = (Vertex.first) * sin(sign * Angle) - (Vertex.second) * cos(sign * Angle);</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    <span class="keywordflow">return</span> std::make_pair(-X_new, Y_new);<span class="comment">// The negative sign for the x coordinate is to account for the TB cartesian coordinate system.</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;}</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment">// To be added if for reconstruction it is useful to simply know if a cell is full hex, half hex or mouse-bitten</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">/*</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment">void HGCalTBCellVertices::CellType(int iu, int iv, bool ValidFlag){</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment">    bool HalfHex = false;</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment">    x_max=0.;</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment">    y_max=0.;</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment">   }</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment">// To be added after finalizing what all we need to see printed out.</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">/*</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment">std::ostream&amp; operator&lt;&lt;(std::ostream&amp; s, const HGCalTBCellVertices&amp; vertices, int type) {</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment">  if(type == 1){</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment">    return s &lt;&lt; &quot;This cell is a full hexagon&quot;&lt;&lt;endl;</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment">    for(int iii=0;iii&lt;6;iii++)</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment">       return s&lt;&lt;&quot; Vertex 1 x co-ordinate = &quot;&lt;&lt;vertices.HX[iii]&lt;&lt;&quot; y co-ordinate = &quot;&lt;&lt;vertices.Hy[iii]&lt;&lt;endl;</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment">    }</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment">  else if(type == 2){</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment">      return s &lt;&lt; &quot;This cell is a half hexagon&quot;&lt;&lt;endl;</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment">      for(int iii=0;iii&lt;4;iii++)</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment">       return s&lt;&lt;&quot; Vertex 1 x co-ordinate = &quot;&lt;&lt;vertices.HX[iii]&lt;&lt;&quot; y co-ordinate = &quot;&lt;&lt;vertices.Hy[iii]&lt;&lt;endl;</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment">     }</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment">}</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment">*/</span></div>
 <div class="ttc" id="classHGCalTBTopology_html"><div class="ttname"><a href="classHGCalTBTopology.html">HGCalTBTopology</a></div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTopology_8h_source.html#l00012">HGCalTBTopology.h:12</a></div></div>
-<div class="ttc" id="HGCalTBCellVertices_8cc_html_a9ea1a8f5ef3e6d20b362385e1288c72c"><div class="ttname"><a href="HGCalTBCellVertices_8cc.html#a9ea1a8f5ef3e6d20b362385e1288c72c">delta</a></div><div class="ttdeci">double delta</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBCellVertices_8cc_source.html#l00010">HGCalTBCellVertices.cc:10</a></div></div>
+<div class="ttc" id="HGCalTBCellVertices_8cc_html_a9ea1a8f5ef3e6d20b362385e1288c72c"><div class="ttname"><a href="HGCalTBCellVertices_8cc.html#a9ea1a8f5ef3e6d20b362385e1288c72c">delta</a></div><div class="ttdeci">double delta</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBCellVertices_8cc_source.html#l00011">HGCalTBCellVertices.cc:11</a></div></div>
+<div class="ttc" id="classHGCalTBCellVertices_html_a2c68ababab900196b11f96b74a7d48c5"><div class="ttname"><a href="classHGCalTBCellVertices.html#a2c68ababab900196b11f96b74a7d48c5">HGCalTBCellVertices::GetCellCentreCoordinates</a></div><div class="ttdeci">std::pair&lt; double, double &gt; GetCellCentreCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize, bool flipX=false)</div><div class="ttdoc">returns the coordinates of each vertex of cell in the lab frame (x,y) </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBCellVertices_8cc_source.html#l00051">HGCalTBCellVertices.cc:51</a></div></div>
 <div class="ttc" id="classHGCalTBTopology_html_a465bc2e64c12d39fecd45af97233c96c"><div class="ttname"><a href="classHGCalTBTopology.html#a465bc2e64c12d39fecd45af97233c96c">HGCalTBTopology::iu_iv_valid</a></div><div class="ttdeci">bool iu_iv_valid(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorSize) const </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTopology_8cc_source.html#l00004">HGCalTBTopology.cc:4</a></div></div>
-<div class="ttc" id="classHGCalTBCellVertices_html_a9492ae3553020ee577fdb71e5c9541a0"><div class="ttname"><a href="classHGCalTBCellVertices.html#a9492ae3553020ee577fdb71e5c9541a0">HGCalTBCellVertices::HGCalTBCellVertices</a></div><div class="ttdeci">HGCalTBCellVertices()</div><div class="ttdoc">Constructor from cell iu &amp;amp; iv, valid sensorSizes are 128 and 256. </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBCellVertices_8cc_source.html#l00012">HGCalTBCellVertices.cc:12</a></div></div>
-<div class="ttc" id="classHGCalTBCellVertices_html_aed0760ad737a9c3501f149db45f6281c"><div class="ttname"><a href="classHGCalTBCellVertices.html#aed0760ad737a9c3501f149db45f6281c">HGCalTBCellVertices::GetCellCentreCoordinates</a></div><div class="ttdeci">std::pair&lt; double, double &gt; GetCellCentreCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize)</div><div class="ttdoc">returns the center of the cell in absolute coordinates: (x,y) </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBCellVertices_8cc_source.html#l00046">HGCalTBCellVertices.cc:46</a></div></div>
+<div class="ttc" id="classHGCalTBCellVertices_html_a9492ae3553020ee577fdb71e5c9541a0"><div class="ttname"><a href="classHGCalTBCellVertices.html#a9492ae3553020ee577fdb71e5c9541a0">HGCalTBCellVertices::HGCalTBCellVertices</a></div><div class="ttdeci">HGCalTBCellVertices()</div><div class="ttdoc">Constructor from cell iu &amp;amp; iv, valid sensorSizes are 128 and 256. </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBCellVertices_8cc_source.html#l00013">HGCalTBCellVertices.cc:13</a></div></div>
+<div class="ttc" id="HGCalTBCellVertices_8cc_html_a388022887e31a2875f06771ed4d6e664"><div class="ttname"><a href="HGCalTBCellVertices_8cc.html#a388022887e31a2875f06771ed4d6e664">TEST_BEAM_LAYER_ROTATION</a></div><div class="ttdeci">#define TEST_BEAM_LAYER_ROTATION</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBCellVertices_8cc_source.html#l00007">HGCalTBCellVertices.cc:7</a></div></div>
 <div class="ttc" id="HGCalTBCellVertices_8h_html"><div class="ttname"><a href="HGCalTBCellVertices_8h.html">HGCalTBCellVertices.h</a></div></div>
-<div class="ttc" id="classHGCalTBCellVertices_html_a01444a1e987023638b70ed2c5e8cc809"><div class="ttname"><a href="classHGCalTBCellVertices.html#a01444a1e987023638b70ed2c5e8cc809">HGCalTBCellVertices::GetCellCoordinates</a></div><div class="ttdeci">std::vector&lt; std::pair&lt; double, double &gt; &gt; GetCellCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize)</div><div class="ttdoc">returns the coordinates of each vertex of cell in the lab frame (x,y) </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBCellVertices_8cc_source.html#l00025">HGCalTBCellVertices.cc:25</a></div></div>
-<div class="ttc" id="HGCalTBCellVertices_8cc_html_af554e93263c7de33f2f018d37ded4f78"><div class="ttname"><a href="HGCalTBCellVertices_8cc.html#af554e93263c7de33f2f018d37ded4f78">Top</a></div><div class="ttdeci">HGCalTBTopology Top</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBCellVertices_8cc_source.html#l00009">HGCalTBCellVertices.cc:9</a></div></div>
+<div class="ttc" id="classHGCalTBCellVertices_html_a12a20c91b43bc8c9263346cff8fefa04"><div class="ttname"><a href="classHGCalTBCellVertices.html#a12a20c91b43bc8c9263346cff8fefa04">HGCalTBCellVertices::GetCellCoordinates</a></div><div class="ttdeci">std::vector&lt; std::pair&lt; double, double &gt; &gt; GetCellCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize, bool flipX=false)</div><div class="ttdoc">returns the coordinates of each vertex of cell in the lab frame (x,y) </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBCellVertices_8cc_source.html#l00026">HGCalTBCellVertices.cc:26</a></div></div>
+<div class="ttc" id="HGCalTBCellVertices_8cc_html_af554e93263c7de33f2f018d37ded4f78"><div class="ttname"><a href="HGCalTBCellVertices_8cc.html#af554e93263c7de33f2f018d37ded4f78">Top</a></div><div class="ttdeci">HGCalTBTopology Top</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBCellVertices_8cc_source.html#l00010">HGCalTBCellVertices.cc:10</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Mar 9 2016 16:54:07 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Mar 10 2016 15:42:41 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

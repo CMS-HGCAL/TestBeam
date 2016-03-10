@@ -6,7 +6,6 @@ var searchData=
   ['hgcalcondobjectnumberingscheme',['HGCalCondObjectNumberingScheme',['../classHGCalCondObjectNumberingScheme.html',1,'']]],
   ['hgcalcondobjecttextio',['HGCalCondObjectTextIO',['../classHGCalCondObjectTextIO.html',1,'']]],
   ['hgcaldataframecontainer',['HGCalDataFrameContainer',['../classHGCalDataFrameContainer.html',1,'']]],
-  ['hgcaldataframecontainer_3c_20skiroc2dataframe_20_3e',['HGCalDataFrameContainer&lt; SKIROC2DataFrame &gt;',['../classHGCalDataFrameContainer.html',1,'']]],
   ['hgcalelectronicsmap',['HGCalElectronicsMap',['../classHGCalElectronicsMap.html',1,'']]],
   ['hgcaltbcellvertices',['HGCalTBCellVertices',['../classHGCalTBCellVertices.html',1,'']]],
   ['hgcaltbdetid',['HGCalTBDetId',['../classHGCalTBDetId.html',1,'']]],
