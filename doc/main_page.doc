@@ -5,6 +5,8 @@
 Download instructions: \ref instructions_
 
 \section RECO_ Running the RECO chain starting from a fake SKIROC2 output file:
+The SKIROC channel mapping on to the individual cells of a sensor is in:
+ - Condformats/data/map_FNAL.txt
 
 Fake calibration files are:
  - pedestals.txt
@@ -15,10 +17,36 @@ cmsRun test_cfg.py
 \endverbatim
 
 
-\section DQM_ Running the DQM plotting 
-\verbatim
+\section DQM_ Running the DQM plotting
+ 
+Currently the DQM worflow kicks in post the creation of Digis and also after the creation of RecHits.
+ - Post Digi we can monitor:
+    - adc counts in each cell of a sensor per sample, per layer(summed over the events).
+    - 1D adc distributions per cell(per layer, per sample).
+ - Post RecHit we can monitor:
+    -  RecHits(GeV) in each cell of a sensor, per layer(summed over the events).
+    -  The Occupancy(defined as RecHits above a certain threshold) in each cell of a sensor, per layer(summed over the events).
+    -  1D RecHits distributions per cell(per layer, per sample).
+    -  1D RecHits distributions summed over all cells in a layer(per layer).
 
+On executing:
+\verbatim
+cmsRun test_cfg.py
 \endverbatim
+
+a root file \b test_DigiAndRechitPlotter_TB.root is produced. This file has two directories namely 
+ - \b hgcaltbdigisplotter: with the Digi->DQM workflow 
+ - \b hgcaltbrechitsplotter: with the RecHits to DQM workflow
+
+In the Digi->DQM workflow the following histograms may be found:
+ - (TH2Poly) FullLayer_Sample#M_Layer#N is the cumulative(over events) adc count in cells of the sensor in the #N layer for the #M sample.
+ - (TH1F) Cell_u_#P_v_#Q_Sample#M_Layer#N is the 1D adc spectrum for the sample #M in a cell in layer #N marked by u=#P and v=#Q in the local(u,v) co-ordinate system of the cells in a sensor(Not to be confused with the Sensor_U, Sensor_V used to identify sensors in a layer).
+
+In the RecHits->DQM workflow the following histograms may be found:
+ - (TH2Poly) FullLayer_RecHits_Layer#N is the cumulative(over events) RecHits in cells of the sensor in the #N layer
+ - (TH2Poly) FullLayer_Occupancy_Layer#N is the cumulative Occupancy(as defined above) in cells of the sensor in the #N layer
+ - (TH1F) Cell_RecHits_u_#P_v_#Q_Layer#N is the 1D RecHits spectrum for a cell in layer #N marked by u=#P and v=#Q in the local(u,v) co-ordinate system of the cells in a sensor
+ - (TH1F) FullLayer_RecHits_Layer#N_Summed same as above but summed over all cells in a sensor.
 
 \ref coordinates_
 
