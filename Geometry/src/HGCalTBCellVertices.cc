@@ -62,13 +62,14 @@ double HGCalTBCellVertices::Xmax(int iv, double y)
 	else return (11 * a - y) / (1 / (2 * x_a));
 }
 
-std::pair<double, double> HGCalTBCellVertices::RotateLayer(std::pair<double, double> Vertex, double Angle, int Layer){
-          int sign = 1;// rotation is clockwise for odd layers and anti-clockwise for even layers
-          if((Layer % 2) == 1) sign = 1;
-          else sign = -1;           
-          double X_new = (Vertex.first)*cos(sign*Angle) - (Vertex.second)*sin(sign*Angle);
-          double Y_new = (Vertex.first)*sin(sign*Angle) - (Vertex.second)*cos(sign*Angle);
-          return std::make_pair(-X_new, Y_new);// The negative sign for the x coordinate is to account for the TB cartesian coordinate system.
+std::pair<double, double> HGCalTBCellVertices::RotateLayer(std::pair<double, double> Vertex, double Angle, int Layer)
+{
+	int sign = 1;// rotation is clockwise for odd layers and anti-clockwise for even layers
+	if((Layer % 2) == 1) sign = 1;
+	else sign = -1;
+	double X_new = (Vertex.first) * cos(sign * Angle) - (Vertex.second) * sin(sign * Angle);
+	double Y_new = (Vertex.first) * sin(sign * Angle) - (Vertex.second) * cos(sign * Angle);
+	return std::make_pair(-X_new, Y_new);// The negative sign for the x coordinate is to account for the TB cartesian coordinate system.
 }
 
 // To be added if for reconstruction it is useful to simply know if a cell is full hex, half hex or mouse-bitten

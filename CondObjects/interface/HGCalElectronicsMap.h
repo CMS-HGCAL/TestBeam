@@ -12,7 +12,7 @@
   *
   * \brief provides the conversion between electronics Id to DetId
   *
-  * 
+  *
   */
 class HGCalElectronicsMap
 {

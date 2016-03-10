@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-/** 
+/**
  * \class HGCalTBTextSource HGCal/RawToDigi/plugins/HGCalTBTextSource.h
  *
  * \brief convert data from txt file to FEDRawData

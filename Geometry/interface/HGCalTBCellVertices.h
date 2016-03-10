@@ -6,7 +6,7 @@
 #include <vector>
 
 /**
- * \class HGCal/Geometry/interface/HGCalTBCellVertices.h 
+ * \class HGCal/Geometry/interface/HGCalTBCellVertices.h
  *
  * \brief This class implements the local coordinate system
  *
@@ -14,14 +14,14 @@
  * The orientation of the axis is \b iu
  *
  * \author Rajdeep Mohan Chatterjee, Shervin Nourbakhsh
- * 
+ *
  */
 
 class HGCalTBCellVertices
 {
 public:
 
-	HGCalTBCellVertices();	///< Constructor from cell \b iu & \b iv, valid sensorSizes are 128 and 256 
+	HGCalTBCellVertices();	///< Constructor from cell \b iu & \b iv, valid sensorSizes are 128 and 256
 
 	std::vector<std::pair<double, double>> GetCellCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize); ///< returns the coordinates of each vertex of cell in the lab frame \b (x,y)
 
@@ -43,7 +43,7 @@ private:
 
 	double Xmax(int iv, double y);// returns the max x value for a cell to be in the given sensor
 
-	std::pair<double,double> RotateLayer(std::pair<double,double>, double Angle, int layer);  
+	std::pair<double, double> RotateLayer(std::pair<double, double>, double Angle, int layer);
 
 };
 

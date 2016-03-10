@@ -16,7 +16,7 @@
 
 #include <iostream>
 
-/** 
+/**
  * \class HGCal/RawToDigi/plugins/HGCalTBRawToDigi.h HGCalTBRawToDigi.h HGCalTBRawToDigi
  * \brief Produces a digi collection starting from FEDRawData
  */
