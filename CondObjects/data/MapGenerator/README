@@ -1,0 +1,6 @@
+The channels of the "upper", SK1 and "lower" SK2 Skiroc chips are listed in the two txt files.
+To generate the El. Id to Det. Id map:
+g++ Mapping.cpp -o Mapping
+./Mapping
+
+This should write out the Map file map_FNAL.txt in CondObjects/data

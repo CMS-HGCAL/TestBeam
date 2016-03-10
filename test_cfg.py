@@ -4,7 +4,9 @@ import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("unpack")
 process.load('HGCal.RawToDigi.hgcaltbdigis_cfi')
+process.load('HGCal.RawToDigi.hgcaltbdigisplotter_cfi')
 process.load('HGCal.Reco.hgcaltbrechitproducer_cfi')
+process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
 
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(2), ### maybe this should be read from the file
@@ -33,6 +35,11 @@ process.output = cms.OutputModule("PoolOutputModule",
 #                                 SelectEvents = SelectEventsPSet
                                  )
 
-process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi * process.hgcaltbrechits)
+process.TFileService = cms.Service("TFileService", fileName = cms.string("test_DigiAndRechitPlotter_TB.root") )
+
+
+process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter*process.hgcaltbrechits*process.hgcaltbrechitsplotter)
+
+
 process.end = cms.EndPath(process.output)
 

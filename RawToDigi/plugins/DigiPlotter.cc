@@ -57,22 +57,22 @@ class DigiPlotter : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       virtual void beginJob() override;
               void analyze(const edm::Event& , const edm::EventSetup&) override; 
       virtual void endJob() override;
-
       // ----------member data ---------------------------
+      bool DEBUG = 1; 
       HGCalTBTopology IsCellValid;
       HGCalTBCellVertices TheCell;
-     int sensorsize = 128;// The geometry for a 256 cell sensor hasnt been implemted yet. Need a picture to do this.
-     std::vector<std::pair<double,double>> CellXY;
-     std::pair<double,double> CellCentreXY;
-     std::vector<std::pair<double,double>>::const_iterator it;
-     const static int NSAMPLES = 2;
-      TH2Poly *h_digi_layer[NSAMPLES];
+      int sensorsize = 128;// The geometry for a 256 cell sensor hasnt been implemted yet. Need a picture to do this.
+      std::vector<std::pair<double,double>> CellXY;
+      std::pair<double,double> CellCentreXY;
+      std::vector<std::pair<double,double>>::const_iterator it;
+      const static int NSAMPLES = 2;
+      const static int NLAYERS  = 4; 
+      TH2Poly *h_digi_layer[NSAMPLES][NLAYERS];
       const static int cellx = 15;
       const static int celly = 15;  
-      int Layer = 1;
       int Sensor_Ix = 0;
       int Sensor_Iv = 0;
-      TH1F  *h_digi_layer_cell[NSAMPLES][cellx][celly];
+      TH1F  *h_digi_layer_cell[NSAMPLES][NLAYERS][cellx][celly];
       char name[50], title[50];
 };
 
@@ -101,42 +101,44 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
    double FullHexY[FullHexVertices]={0.};
    int iii=0;
  for(int nsample=0; nsample< NSAMPLES; nsample++){
+    for(int nlayers=0; nlayers< NLAYERS; nlayers++){
 //Booking a "hexagonal" histograms to display the sum of Digis for NSAMPLES, in 1 SKIROC in 1 layer. To include all layers soon. Also the 1D Digis per cell in a sensor is booked here for NSAMPLES.
-     sprintf(name,"FullLayer_Sample%i",nsample);
-     sprintf(title,"Sum of adc counts Sample%i",nsample);
-     h_digi_layer[nsample] = fs->make<TH2Poly>();
-     h_digi_layer[nsample]->SetName(name);
-     h_digi_layer[nsample]->SetTitle(title);
-     for(int iv=-7;iv<8;iv++){
-         for(int ix=-7;ix<8;ix++){
-             if(!IsCellValid.ix_iv_valid(Layer, Sensor_Ix, Sensor_Iv, ix,iv,sensorsize)) continue;
+        sprintf(name,"FullLayer_Sample%i_Layer%i",nsample, nlayers+1);   
+        sprintf(title,"Sum of adc counts Sample%i Layer%i",nsample, nlayers+1);
+        h_digi_layer[nsample][nlayers] = fs->make<TH2Poly>();   
+        h_digi_layer[nsample][nlayers]->SetName(name);
+        h_digi_layer[nsample][nlayers]->SetTitle(title);
+        for(int iv=-7;iv<8;iv++){
+            for(int ix=-7;ix<8;ix++){
+                if(!IsCellValid.ix_iv_valid(nlayers, Sensor_Ix, Sensor_Iv, ix,iv,sensorsize)) continue;
 //Some thought needs to be put in about the binning and limits of this 1D histogram, probably different for beam type Fermilab and cern.
-               sprintf(name,"Cell_X_%i_V_%i_Sample%i",ix,iv,nsample);
-               sprintf(title,"Digis for Cell_X_%i_V_%i Sample%i",ix,iv,nsample);
-               h_digi_layer_cell[nsample][ix+7][iv+7] = fs->make<TH1F>(name,title,4096,0.,4095.);
-               h_digi_layer_cell[nsample][ix+7][iv+7]->GetXaxis()->SetTitle("Digis[adc counts]");        
-               CellXY = TheCell.GetCellCoordinates(Layer, Sensor_Ix, Sensor_Iv, ix, iv, sensorsize);
-               int NumberOfCellVertices = CellXY.size();
-               iii = 0;
-               if(NumberOfCellVertices == 4){
-               for(it=CellXY.begin();it != CellXY.end();it++){
-                   HalfHexX[iii] =  it->first;
-                   HalfHexY[iii++] =  it->second;
-                  }
+                   sprintf(name,"Cell_u_%i_v_%i_Sample%i_Layer%i", ix, iv, nsample, nlayers+1);
+                   sprintf(title,"Digis for Cell_u_%i_v_%i Sample%i Layer%i", ix, iv, nsample, nlayers+1);
+                   h_digi_layer_cell[nsample][nlayers][ix+7][iv+7] = fs->make<TH1F>(name,title,4096,0.,4095.);
+                   h_digi_layer_cell[nsample][nlayers][ix+7][iv+7]->GetXaxis()->SetTitle("Digis[adc counts]");        
+                   CellXY = TheCell.GetCellCoordinates(nlayers, Sensor_Ix, Sensor_Iv, ix, iv, sensorsize);
+                   int NumberOfCellVertices = CellXY.size();
+                   iii = 0;
+                   if(NumberOfCellVertices == 4){
+                      for(it=CellXY.begin();it != CellXY.end();it++){
+                          HalfHexX[iii] =  it->first;
+                          HalfHexY[iii++] =  it->second;
+                         }
 //Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
-               h_digi_layer[nsample]->AddBin(NumberOfCellVertices,HalfHexX, HalfHexY);
-              }
-             else if(NumberOfCellVertices == 6){
-                    iii=0;
-                    for(it=CellXY.begin();it != CellXY.end();it++){
-                    FullHexX[iii] =  it->first;
-                    FullHexY[iii++] =  it->second;
-                        }
-                    h_digi_layer[nsample]->AddBin(NumberOfCellVertices,FullHexX, FullHexY);
-                   }
+                      h_digi_layer[nsample][nlayers]->AddBin(NumberOfCellVertices,HalfHexX, HalfHexY);
+                     }
+                else if(NumberOfCellVertices == 6){
+                        iii=0;
+                        for(it=CellXY.begin();it != CellXY.end();it++){
+                            FullHexX[iii] =  it->first;
+                            FullHexY[iii++] =  it->second;
+                           }
+                        h_digi_layer[nsample][nlayers]->AddBin(NumberOfCellVertices,FullHexX, FullHexY);
+                       }
 
-             }//loop over ix
-        }//loop over iv
+               }//loop over ix
+           }//loop over iv
+        }//loop over nlayers   
      }//loop over nsamples
 }//contructor ends here
 
@@ -169,14 +171,19 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
              cout << "SKIROC2 Digis: " << i->provenance()->branchName() << endl;
              for(SKIROC2DigiCollection::const_iterator j=Coll.begin(); j!=Coll.end(); j++){
                   const SKIROC2DataFrame& SKI = *j ;
-
-                  if(!IsCellValid.ix_iv_valid((SKI.detid()).layer(), (SKI.detid()).sensorIX(),(SKI.detid()).sensorIV(), (SKI.detid()).ix(), (SKI.detid()).iv(), sensorsize))  continue;  
-                  CellCentreXY = TheCell.GetCellCentreCoordinates((SKI.detid()).layer(), (SKI.detid()).sensorIX(),(SKI.detid()).sensorIV(), (SKI.detid()).ix(), (SKI.detid()).iv(), sensorsize);
+                  int n_layer = (SKI.detid()).layer();
+                  int n_sensor_IX = (SKI.detid()).sensorIX();
+                  int n_sensor_IV = (SKI.detid()).sensorIV();
+                  int n_cell_ix = (SKI.detid()).ix();
+                  int n_cell_iv = (SKI.detid()).iv();
+                  if(DEBUG) cout<<endl<<" Layer = "<<n_layer<<" Sensor IX = "<<n_sensor_IX<<" Sensor IV = "<<n_sensor_IV<<" Cell ix = "<<n_cell_ix<<" Cell ix = "<<n_cell_iv<<endl;  
+                  if(!IsCellValid.ix_iv_valid(n_layer, n_sensor_IX, n_sensor_IV, n_cell_ix, n_cell_iv, sensorsize))  continue;  
+                  CellCentreXY = TheCell.GetCellCentreCoordinates(n_layer, n_sensor_IX, n_sensor_IV, n_cell_ix, n_cell_iv, sensorsize);
                   double ixx = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
                   double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
                   for(int nsample=0;nsample < SKI.samples();nsample++){
-                      h_digi_layer[nsample]->Fill(ixx , iyy,SKI[nsample].adc());
-                      h_digi_layer_cell[nsample][7 + (SKI.detid()).ix()][7 + (SKI.detid()).iv()]->Fill(SKI[nsample].adc());     
+                      h_digi_layer[nsample][n_layer-1]->Fill(ixx , iyy,SKI[nsample].adc());
+                      h_digi_layer_cell[nsample][n_layer-1][7 + n_cell_ix][7 + n_cell_iv]->Fill(SKI[nsample].adc());     
                     }
                  }
             } 
