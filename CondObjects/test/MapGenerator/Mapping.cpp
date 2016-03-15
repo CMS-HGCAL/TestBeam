@@ -2,17 +2,17 @@
 #include <fstream>
 #include <stdlib.h>
 using namespace std;
-
+ofstream fs;
 bool ix_iv_valid(int ix, int iv, int sensorSize);
 void swap(int (&a)[69], int (&b)[69], int (&c)[69], int size);
-
+void Print_Map_Line(int sk, int channel, int layer, int sensor_iu, int sensor_iv, int cell_iu, int cell_iv, int type);
 
 main(){
-
   const int size = 69;
-  ofstream fs;
   ifstream Channel_SKIROC1("Channel_Numbers_SKIROC1.txt");// Mapping of the first SKIROC(upper half in the u,v system)
   ifstream Channel_SKIROC2("Channel_Numbers_SKIROC2.txt");// Mapping of the first SKIROC(lower half in the u,v system)
+  fs.open("/afs/cern.ch/work/r/rchatter/CMSSW_7_6_3_patch2/src/HGCal/CondObjects/data/map_FNAL_1.txt");
+
   if(!Channel_SKIROC1) {
         cout << "Unable to open file Channel_Numbers_SKIROC1.txt";
         exit(1); // terminate with error
@@ -22,106 +22,88 @@ main(){
         exit(1); // terminate with error
     }
   int sensorsize = 128;
-  int Layer = 1;
-  int SKIROC = 1;
 //////Hard Coded entries for the calibration pads////////////
   int Channel_SK1_Calib = 0;
   int Channel_SK2_Calib = 0;
 //Calib pad 1, closer to the central full-hex
-  int IX_1_Calib = -1;
+  int IU_1_Calib = -1;
   int IV_1_Calib = 2;
 //Calib pad 2, farther from the central full-hex w.r.t Calb pad 1
-  int IX_2_Calib = 2;
+  int IU_2_Calib = 2;
   int IV_2_Calib = -4;
 ////////////////////////////////////////////////////////////
 
-  int Channel_1[69]={0};
-  int IX_1[69]={0};
-  int IV_1[69]={0};
-  int Channel_2[69]={0};
-  int IX_2[69]={0};
-  int IV_2[69]={0};
+  int Channel_1[size]={0};
+  int IU_1[size]={0};
+  int IV_1[size]={0};
+  int Channel_2[size]={0};
+  int IU_2[size]={0};
+  int IV_2[size]={0};
   int iterator = 1;
-  fs.open("/afs/cern.ch/work/r/rchatter/CMSSW_7_6_3_patch2/src/HGCal/CondObjects/data/map_FNAL.txt");
+//Print the heading
   fs<<"# "<<"SKIROC"<<" "<<"CHANNEL"<<" | "<<"LAYER"<<" "<<"SENSOR_IX"<<" "<<"SENSOR_IV"<<" "<<"IX"<<" "<<"IV"<<" "<<"TYPE"<<endl;
-//  fs<<"Layer"<<"\t"<<"SKIROC"<<"\t"<<"Channel"<<"\t"<<"ix"<<"\t"<<"iv"<<endl;
-  SKIROC = 1;
+//filling the El ID -> Det ID association for SKIROC 1
   for(int vvv=0;vvv<8;vvv++){
-     for(int iii=-7;iii<8;iii++){
-        if(!ix_iv_valid(iii,vvv,sensorsize)) continue;
-        if(vvv == 0 && iii > 0) continue;
+     for(int uuu=-7;uuu<8;uuu++){
+        if(!ix_iv_valid(uuu,vvv,sensorsize)) continue;
+        if(vvv == 0 && uuu > 0) continue;
         Channel_SKIROC1>>Channel_1[iterator] ;
-        IX_1[iterator] = iii;
+        IU_1[iterator] = uuu;
         IV_1[iterator++] = vvv;
        }
     }
 
-cout<<endl<<" Iterator1 = "<<iterator<<endl;
-
-  SKIROC = 2;
+//filling the El ID -> Det ID association for SKIROC 1
   iterator = 1;
   for(int vvv=0;vvv> -8;vvv--){ 
-     for(int iii=-7;iii<8;iii++){
-        if(!ix_iv_valid(iii,vvv,sensorsize)) continue;
-        if(vvv == 0 && iii <= 0) continue;
+     for(int uuu=-7;uuu<8;uuu++){
+        if(!ix_iv_valid(uuu,vvv,sensorsize)) continue;
+        if(vvv == 0 && uuu <= 0) continue;
         Channel_SKIROC2>>Channel_2[iterator];
-        IX_2[iterator] = iii;
+        IU_2[iterator] = uuu;
         IV_2[iterator++] = vvv;
        }
     }
 
+////////Sort by SKIROC channel number///////////
+   swap(Channel_1,IU_1,IV_1,67);
+   swap(Channel_2,IU_2,IV_2,66);
+////////////////////////////////////////////////
 
-   swap(Channel_1,IX_1,IV_1,67);
-   swap(Channel_2,IX_2,IV_2,66);
-   SKIROC = 1;
-   int sensor_ix = 0;
+
+//////////Currently we have only one sensor per layer, cell type to be implemeted////////////////////
+   int sensor_iu = 0;
    int sensor_iv = 0;
    int type = 0;   
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-  for(int sk =1; sk<=2;sk++){
-     if(sk == 1) fs<<"\t"<<sk<<"\t"<<Channel_SK1_Calib<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<IX_1_Calib<<"\t"<<IV_1_Calib<<"\t"<<type<<endl;
-     if(sk == 2) fs<<"\t"<<sk<<"\t"<<Channel_SK2_Calib<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<IX_2_Calib<<"\t"<<IV_2_Calib<<"\t"<<type<<endl;
-    for(int iii = 1; iii<=67; iii++){
-     if(sk == 2 && iii > 66) continue;
-     if(sk == 1) fs<<"\t"<<sk<<"\t"<<Channel_1[iii]<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<IX_1[iii]<<"\t"<<IV_1[iii]<<"\t"<<type<<endl;
-     else fs<<"\t"<<sk<<"\t"<<Channel_2[iii]<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<IX_2[iii]<<"\t"<<IV_2[iii]<<"\t"<<type<<endl;
+//Print the El ID -> Det ID map
+// Due to layer rotation a cell marked u,v in odd layers goes to (u+v),-v in even layer. The logic used in this scheme is that the relative orientation of axes do not change on layer inversion in alternate layers. The ElID->DetID mapping is consistently flipped accordingly.
+int hike = 0;
+for(int ILayer=1;ILayer<=4;ILayer++){
+   hike = 2*(ILayer - 1);
+   for(int sk = 1; sk <= 2; sk++){
+       if((ILayer % 2) == 1){
+          if(sk == 1) Print_Map_Line(sk + hike,Channel_SK1_Calib,ILayer,sensor_iu,sensor_iv,IU_1_Calib,IV_1_Calib,type);
+          if(sk == 2) Print_Map_Line(sk + hike,Channel_SK2_Calib,ILayer,sensor_iu,sensor_iv,IU_2_Calib,IV_2_Calib,type);;
        }
-   }
-
-Layer = 2;
-  for(int sk =1; sk<=2;sk++){
-     if(sk == 1) fs<<"\t"<<sk<<"\t"<<Channel_SK1_Calib<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<-IX_1_Calib<<"\t"<<IV_1_Calib<<"\t"<<type<<endl;
-     if(sk == 2) fs<<"\t"<<sk<<"\t"<<Channel_SK2_Calib<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<-IX_2_Calib<<"\t"<<IV_2_Calib<<"\t"<<type<<endl;
-    for(int iii = 1; iii<=67; iii++){
-     if(sk == 2 && iii > 66) continue;
-     if(sk == 1) fs<<"\t"<<sk<<"\t"<<Channel_1[iii]<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<-IX_1[iii]<<"\t"<<IV_1[iii]<<"\t"<<type<<endl;
-     else fs<<"\t"<<sk<<"\t"<<Channel_2[iii]<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<-IX_2[iii]<<"\t"<<IV_2[iii]<<"\t"<<type<<endl;
-       }
-   }
-
-Layer = 3;
-  for(int sk =1; sk<=2;sk++){
-     if(sk == 1) fs<<"\t"<<sk<<"\t"<<Channel_SK1_Calib<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<IX_1_Calib<<"\t"<<IV_1_Calib<<"\t"<<type<<endl;
-     if(sk == 2) fs<<"\t"<<sk<<"\t"<<Channel_SK2_Calib<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<IX_2_Calib<<"\t"<<IV_2_Calib<<"\t"<<type<<endl;
-    for(int iii = 1; iii<=67; iii++){
-     if(sk == 2 && iii > 66) continue;
-     if(sk == 1) fs<<"\t"<<sk<<"\t"<<Channel_1[iii]<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<IX_1[iii]<<"\t"<<IV_1[iii]<<"\t"<<type<<endl;
-     else fs<<"\t"<<sk<<"\t"<<Channel_2[iii]<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<IX_2[iii]<<"\t"<<IV_2[iii]<<"\t"<<type<<endl;
-       }
-   }
-
-Layer = 4;
-  for(int sk =1; sk<=2;sk++){
-    if(sk == 1) fs<<"\t"<<sk<<"\t"<<Channel_SK1_Calib<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<-IX_1_Calib<<"\t"<<IV_1_Calib<<"\t"<<type<<endl;
-     if(sk == 2) fs<<"\t"<<sk<<"\t"<<Channel_SK2_Calib<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<-IX_2_Calib<<"\t"<<IV_2_Calib<<"\t"<<type<<endl;
-    for(int iii = 1; iii<=67; iii++){
-     if(sk == 2 && iii > 66) continue;
-     if(sk == 1) fs<<"\t"<<sk<<"\t"<<Channel_1[iii]<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<-IX_1[iii]<<"\t"<<IV_1[iii]<<"\t"<<type<<endl;
-     else fs<<"\t"<<sk<<"\t"<<Channel_2[iii]<<"\t"<<Layer<<"\t"<<sensor_ix<<"\t"<<sensor_iv<<"\t"<<-IX_2[iii]<<"\t"<<IV_2[iii]<<"\t"<<type<<endl;
-       }
-   }
-
+       else{
+            if(sk == 1) Print_Map_Line(sk + hike,Channel_SK1_Calib,ILayer,sensor_iu,sensor_iv,(IU_1_Calib+IV_1_Calib),-IV_1_Calib,type);
+            if(sk == 2) Print_Map_Line(sk + hike,Channel_SK2_Calib,ILayer,sensor_iu,sensor_iv,(IU_2_Calib+IV_2_Calib),-IV_2_Calib,type);
+           } 
+       for(int iii = 1; iii <= 67; iii++){
+           if(sk == 2 && iii > 66) continue;
+           if((ILayer % 2) == 1){ 
+              if(sk == 1) Print_Map_Line(sk + hike,Channel_1[iii],ILayer,sensor_iu,sensor_iv,IU_1[iii],IV_1[iii],type);
+              if(sk == 2) Print_Map_Line(sk + hike,Channel_2[iii],ILayer,sensor_iu,sensor_iv,IU_2[iii],IV_2[iii],type);
+             }
+           else{
+                if(sk == 1) Print_Map_Line(sk + hike,Channel_1[iii],ILayer,sensor_iu,sensor_iv,(IU_1[iii]+IV_1[iii]),-IV_1[iii],type);
+                if(sk == 2) Print_Map_Line(sk + hike,Channel_2[iii],ILayer,sensor_iu,sensor_iv,(IU_2[iii]+IV_2[iii]),-IV_2[iii],type);
+               } 
+           }// loop over the channels per SKIROC ends here
+        }// loop over 2 SKIROCs per layer ends here
+ }// loop over layer ends here
 
 
 }//main ends here
@@ -153,6 +135,13 @@ void swap(int (&a)[69], int (&b)[69], int (&c)[69], int size){
               a[iii] = a[jjj]; b[iii] = b[jjj]; c[iii] = c[jjj]; 
               a[jjj] = tmp1; b[jjj] = tmp2; c[jjj] = tmp3;
             }
-          }
-       }
+          }// loop over jjj ends here
+       }// loop over iii ends here
    }
+
+void Print_Map_Line(int sk, int channel, int layer, int sensor_iu, int sensor_iv, int cell_iu, int cell_iv, int type){
+     fs<<"\t"<<sk<<"\t"<<channel<<"\t"<<layer<<"\t"<<sensor_iu<<"\t"<<sensor_iv<<"\t"<<cell_iu<<"\t"<<cell_iv<<"\t"<<type<<endl;
+    }
+
+
+
