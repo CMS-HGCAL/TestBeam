@@ -66,9 +66,10 @@ private:
 	std::vector<std::pair<double, double>> CellXY;
 	std::pair<double, double> CellCentreXY;
 	std::vector<std::pair<double, double>>::const_iterator it;
-	const static int NSAMPLES = 2;
+	const static int NSAMPLES = 1;
 	const static int NLAYERS  = 4;
 	TH2Poly *h_digi_layer[NSAMPLES][NLAYERS];
+        TH1F    *h_digi_layer_summed[NSAMPLES][NLAYERS];
 	const static int cellx = 15;
 	const static int celly = 15;
 	int Sensor_Iu = 0;
@@ -105,10 +106,14 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
 		for(int nlayers = 0; nlayers < NLAYERS; nlayers++) {
 //Booking a "hexagonal" histograms to display the sum of Digis for NSAMPLES, in 1 SKIROC in 1 layer. To include all layers soon. Also the 1D Digis per cell in a sensor is booked here for NSAMPLES.
 			sprintf(name, "FullLayer_Sample%i_Layer%i", nsample, nlayers + 1);
-			sprintf(title, "Sum of adc counts Sample%i Layer%i", nsample, nlayers + 1);
+			sprintf(title, "Sum of adc counts per cell for Sample%i Layer%i", nsample, nlayers + 1);
 			h_digi_layer[nsample][nlayers] = fs->make<TH2Poly>();
 			h_digi_layer[nsample][nlayers]->SetName(name);
 			h_digi_layer[nsample][nlayers]->SetTitle(title);
+			sprintf(name, "FullLayer_Sample%i_Layer%i_summed", nsample, nlayers + 1);
+                        sprintf(title, "Sum of adc counts for all cells in Sample%i Layer%i", nsample, nlayers + 1);
+                        h_digi_layer_summed[nsample][nlayers] = fs->make<TH1F>(name, title, 4096, 0., 4095.);
+                        h_digi_layer_summed[nsample][nlayers]->GetXaxis()->SetTitle("Digis[adc counts]");
 			for(int iv = -7; iv < 8; iv++) {
 				for(int iu = -7; iu < 8; iu++) {
 					if(!IsCellValid.iu_iv_valid(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize)) continue;
@@ -184,6 +189,7 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
 				for(int nsample = 0; nsample < SKI.samples(); nsample++) {
 					h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample].adc());
+					h_digi_layer_summed[nsample][n_layer - 1]->Fill(SKI[nsample].adc());
 					h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample].adc());
 				}
 			}
