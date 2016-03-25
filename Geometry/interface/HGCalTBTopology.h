@@ -17,5 +17,4 @@ public:
         double Cell_Area(int cell_type) const;//returns area in cm*cm  
 };
 
-
 #endif

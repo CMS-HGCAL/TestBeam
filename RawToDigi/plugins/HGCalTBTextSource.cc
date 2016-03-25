@@ -1,4 +1,6 @@
+#include <iostream>
 #include "HGCal/RawToDigi/plugins/HGCalTBTextSource.h"
+using namespace std;
 
 bool HGCalTBTextSource::readLines()
 {
@@ -29,6 +31,7 @@ void HGCalTBTextSource::produce(edm::Event & e)
 	for (std::vector<std::string>::const_iterator i = m_lines.begin(); i != m_lines.end(); i++) {
 		uint32_t a, b;
 		sscanf(i->c_str(), "%x %x", &a, &b);
+                cout<<endl<<"a = "<<a<<" b = "<<b<<endl;
 		skiwords.push_back(uint16_t(b >> 16));
 		skiwords.push_back(uint16_t(b));
 	}
