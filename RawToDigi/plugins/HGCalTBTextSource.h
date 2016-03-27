@@ -7,6 +7,7 @@
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 
 #include <stdio.h>
+#include <iostream>
 
 /**
  * \class HGCalTBTextSource HGCal/RawToDigi/plugins/HGCalTBTextSource.h
@@ -21,11 +22,11 @@ class HGCalTBTextSource : public edm::ProducerSourceFromFiles
 
 public:
 	explicit HGCalTBTextSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :  edm::ProducerSourceFromFiles(pset, desc, true),
-		m_file(0),
-		m_run(pset.getUntrackedParameter<int>("run", 101)) /// \todo check and read from file?
+    m_file(0),
+    m_run(pset.getUntrackedParameter<int>("run", 101)) /// \todo check and read from file?
 	{
 
-		m_sourceId = pset.getUntrackedParameter<int>("fed", 1000); /// \todo check and read from file?
+	  //		m_sourceId = pset.getUntrackedParameter<int>("fed", 1000); /// \todo check and read from file?
 		produces<FEDRawDataCollection>();
 	}
 
@@ -53,8 +54,9 @@ private:
 		}
 		if (feof(m_file)) return false;
 		if (!readLines()) return false;
-
-		m_event++; /// \todo get eventID from file?
+		//std::string m_lines.front()
+		  //		m_event++; /// \todo get eventID from file?
+		std::cout << m_run << std::endl;
 		id = edm::EventID(m_run, 1, m_event);
 		// time is a hack
 		edm::TimeValue_t present_time = presentTime(); ///\todo take time from file? how to define the time?

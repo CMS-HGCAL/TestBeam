@@ -1,16 +1,45 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBTextSource.h"
+//#define DEBUG
+
+#ifdef DEBUG
+#include <iostream>
+#endif
 
 bool HGCalTBTextSource::readLines()
 {
 	m_lines.clear();
 	char buffer[1024];
+
+	unsigned int length, bcid;
+
+	if(feof(m_file)) return false;
+
+	// read the first line
+	buffer[0] = 0;
+	fgets(buffer, 1000, m_file);
+	if( sscanf(buffer, "**** Trig=%d RunId=%u", &m_event, &m_run) != 2) return false;
+
+	// read the second line
+	fgets(buffer, 1000, m_file);
+	sscanf(buffer, "*** Trig=%d ChipId=%d Len=%u BCID=%u RunId=%u", &m_event, &m_sourceId, &length, &bcid, &m_run);
+
+	fgets(buffer, 1000, m_file);
+	assert(strstr(buffer, "START")!=NULL);
 	while (!feof(m_file)) {
-		buffer[0] = 0;
-		fgets(buffer, 1000, m_file);
-		if (strstr(buffer, "DONE")) break; // done with this event!
-		if (buffer[0] != '0' && buffer[1] != 'x') continue;
-		m_lines.push_back(buffer);
+	  buffer[0] = 0;
+	  fgets(buffer, 1000, m_file);
+	  if (strstr(buffer, "END") || strstr(buffer,"***")!=NULL ) break; // done with this event!
+	  assert(buffer[1]=='x');
+#ifdef DEBUG
+	  std::cout << m_event << "\t" << buffer; // buffer has a \n
+#endif
+	  
+	  m_lines.push_back(buffer);
 	}
+
+
+
+
 	return !m_lines.empty();
 }
 

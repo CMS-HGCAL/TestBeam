@@ -2,7 +2,7 @@
 
 HGCalTBRawToDigi::HGCalTBRawToDigi(edm::ParameterSet const& conf):
 	dataTag_(conf.getParameter<edm::InputTag>("InputLabel")),
-	fedId_(conf.getUntrackedParameter<int>("fedId")),
+	fedIds_(conf.getUntrackedParameter<std::vector<int> >("fedIds")),
 	mapfile_(conf.getUntrackedParameter<std::string>("electronicsMap"))
 {
 	produces<SKIROC2DigiCollection>();
@@ -28,8 +28,11 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 
 	std::auto_ptr<SKIROC2DigiCollection> digis(0);
 	//
-	const FEDRawData& fed = rawraw->FEDData(fedId_);
-	if (fed.size() != 0) { /// \todo Exception if 0????
+
+	for(auto fedId_ : fedIds_){
+	  int skiroc = fedId_;
+	  const FEDRawData& fed = rawraw->FEDData(fedId_);
+	  if(fed.size() == 0) continue; // empty FEDs are allowed: not in the readout for example
 
 		// we can figure out the number of samples from the size of the raw data
 		int nsamples = fed.size() / (sizeof(uint16_t) * SKIROC::NCHANNELS * 2); // 2 is for ADC and TDC
@@ -37,7 +40,6 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 		const uint16_t* pdata = (const uint16_t*)(fed.data());
 
 		// we start from the back...
-		int skiroc = 1; // currently we don't have a way to tell these apart
 		int ptr = fed.size() / sizeof(uint16_t) - 1;
 
 		printf("Starting on SKIROC %x\n", pdata[ptr]);
@@ -58,9 +60,8 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 				}
 			}
 		}
-
-
 	}
+
 
 	// put it into the event
 	e.put(digis);
