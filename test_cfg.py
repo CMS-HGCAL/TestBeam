@@ -1,17 +1,15 @@
 import FWCore.ParameterSet.Config as cms
 
-
-
 process = cms.Process("unpack")
 process.load('HGCal.RawToDigi.hgcaltbdigis_cfi')
 process.load('HGCal.RawToDigi.hgcaltbdigisplotter_cfi')
-process.load('HGCal.Reco.hgcaltbrechitproducer_cfi')
-process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
+#process.load('HGCal.Reco.hgcaltbrechitproducer_cfi')
+#process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
 
 process.source = cms.Source("HGCalTBTextSource",
-                            run=cms.untracked.int32(-1), ### maybe this should be read from the file
+                            run=cms.untracked.int32(1), ### maybe this should be read from the file
 #                            fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
-                            fileNames=cms.untracked.vstring("file:SKIROC_RO.txt", "file:SKIROC_RO.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+                            fileNames=cms.untracked.vstring("file:HGC_Output_51.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
 )
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
@@ -35,12 +33,14 @@ process.output = cms.OutputModule("PoolOutputModule",
 #                                 SelectEvents = SelectEventsPSet
                                  )
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("test_DigiAndRechitPlotter_TB.root") )
+process.TFileService = cms.Service("TFileService", fileName = cms.string("test_DigiAndRechitPlotter_TB_New.root") )
 
 
-process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter*process.hgcaltbrechits*process.hgcaltbrechitsplotter)
-#process.p =cms.Path()
+#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter*process.hgcaltbrechits*process.hgcaltbrechitsplotter)
 
+#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter)
+
+process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.hgcaltbdigisplotter)
 
 process.end = cms.EndPath(process.output)
 

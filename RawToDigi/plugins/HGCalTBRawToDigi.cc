@@ -1,4 +1,6 @@
+#include <iostream>
 #include "HGCal/RawToDigi/plugins/HGCalTBRawToDigi.h"
+using namespace std;
 
 HGCalTBRawToDigi::HGCalTBRawToDigi(edm::ParameterSet const& conf):
 	dataTag_(conf.getParameter<edm::InputTag>("InputLabel")),
@@ -43,25 +45,27 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 
 		// we start from the back...
 		int ptr = fed.size() / sizeof(uint16_t) - 1;
-
+/*
 		printf("Starting on SKIROC %x\n", pdata[ptr]);
 		ptr--; // now we are pointing at a relatively-useless header word
 		ptr--; // now we are pointing at the first TDC word
-
-		for (int ichan = 0; ichan < SKIROC::NCHANNELS; ichan++) {
-			HGCalTBElectronicsId eid(skiroc, ichan);
-			if (!essource_.emap_.existsEId(eid.rawId())) {
-				std::cout << "We do not have a mapping for " << eid << std::endl;
-			} else {
-				HGCalTBDetId did = essource_.emap_.eid2detId(eid);
-				digis->addDataFrame(did);
-				for (int is = 0; is < SKIROC::MAXSAMPLES; is++) {
-					int ptrtdc = ptr - ichan - 128 * is;
-					int ptradc = ptr - ichan - 64 - 128 * is;
-					digis->backDataFrame().setSample(is, pdata[ptradc], pdata[ptrtdc]);
+*/
+                for (int ski = 2; ski >= 1; ski--) {
+			for (int ichan = 0; ichan < SKIROC::NCHANNELS; ichan++) {
+				HGCalTBElectronicsId eid(ski, ichan);
+				if (!essource_.emap_.existsEId(eid.rawId())) {
+					std::cout << "We do not have a mapping for " << eid << std::endl;
+				} else {
+					HGCalTBDetId did = essource_.emap_.eid2detId(eid);
+					digis->addDataFrame(did);
+					int ptradc1 = ptr - ichan - 128 * (2 - ski);
+					int ptradc2 = ptr - ichan - 64 - 128 * (2 - ski);
+//					digis->backDataFrame().setSample(0, pdata[ptradc1], pdata[ptradc2]);// Only one sample hardcoded as 0
+                                        digis->backDataFrame().setSample(0, pdata[ptradc2], pdata[ptradc1]);  
 				}
 			}
-		}
+                 }
+
 	}
 
 

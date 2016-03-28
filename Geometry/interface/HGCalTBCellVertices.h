@@ -2,6 +2,7 @@
 #define HGCAL_GEOMETRY_HGCALTBCELLVERTICES_H
 
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
+#include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
 #include "math.h"
 #include <vector>
 
@@ -40,7 +41,7 @@ public:
 
 //  void CellType(int iu, int v, bool ValidFlag);// 1 for full hex, 2 for half hex and 3 for the pentagons(to be implemented later)
 private:
-	double a = 0.64; // Size in terms of 1 unit of x/y co-ordinates of a cell side which is 0.064 cm
+	double a = HGCAL_TB_CELL::FULL_CELL_SIDE; // Size in terms of 1 unit of x/y co-ordinates of a cell side which is 0.064 cm
 	double x_a = sqrt(3) / 2; // cosine pi/6
 	double y_a = 1 / 2.; // sine pi/6
 	double vy_a = 3. / 2;

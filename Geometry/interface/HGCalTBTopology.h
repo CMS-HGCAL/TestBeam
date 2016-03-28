@@ -14,7 +14,7 @@ class HGCalTBTopology
 public:
 	// valid sensorSizes are 128 and 256
 	bool iu_iv_valid(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorSize) const;
+        double Cell_Area(int cell_type) const;//returns area in cm*cm  
 };
-
 
 #endif

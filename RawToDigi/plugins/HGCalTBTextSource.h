@@ -5,11 +5,8 @@
 
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-
-#include <fstream>
 #include <iostream>
-
-#define DEBUG
+#include <stdio.h>
 
 /**
  * \class HGCalTBTextSource HGCal/RawToDigi/plugins/HGCalTBTextSource.h
