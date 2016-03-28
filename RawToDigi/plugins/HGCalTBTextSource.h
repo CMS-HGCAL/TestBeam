@@ -6,8 +6,10 @@
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 
-#include <stdio.h>
+#include <fstream>
 #include <iostream>
+
+#define DEBUG
 
 /**
  * \class HGCalTBTextSource HGCal/RawToDigi/plugins/HGCalTBTextSource.h
@@ -22,41 +24,51 @@ class HGCalTBTextSource : public edm::ProducerSourceFromFiles
 
 public:
 	explicit HGCalTBTextSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :  edm::ProducerSourceFromFiles(pset, desc, true),
-    m_file(0),
-    m_run(pset.getUntrackedParameter<int>("run", 101)) /// \todo check and read from file?
+		//m_file(0),
+		m_run(0)
 	{
 
 	  //		m_sourceId = pset.getUntrackedParameter<int>("fed", 1000); /// \todo check and read from file?
 		produces<FEDRawDataCollection>();
+		if (fileNames().size()<1){
+			throw cms::Exception("No input files") << "";
+		}
+		_fileName_itr = fileNames().begin();
+		openFile();
 	}
 
 	virtual ~HGCalTBTextSource()
 	{
-		if (m_file != 0) fclose(m_file);
-		m_file = 0;
 	}
 
 	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
+	void openFile(){
+		std::string name = *_fileName_itr;
+		if (name.find("file:") == 0) name = name.substr(5);
+#ifdef DEBUG
+		std::cout << "[DEBUG] Opening file: " << name << std::endl;
+#endif
+		
+		m_file.open(name);
+		if (m_file.fail()) {
+			throw cms::Exception("FileNotFound") << "Unable to open file " << *_fileName_itr;
+		}
+	}
+
 	virtual bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&)
 	{
 
-		if (!(fileNames().size())) return false; // need a file...
-		if (m_file == 0) {
-			std::string name = fileNames()[0].c_str(); /// \todo FIX in order to take several files
-			if (name.find("file:") == 0) name = name.substr(5);
-			m_file = fopen(name.c_str(), "r");
-			if (m_file == 0) {
-				throw cms::Exception("FileNotFound") << "Unable to open file " << name;
-			}
-			m_event = 0;
-		}
-		if (feof(m_file)) return false;
-		if (!readLines()) return false;
-		//std::string m_lines.front()
-		  //		m_event++; /// \todo get eventID from file?
-		std::cout << m_run << std::endl;
+		if(m_file.eof()){
+			// reached end of file
+			m_file.close();
+			_fileName_itr++;
+			if(_fileName_itr!=fileNames().end()) openFile();
+			else return false;
+		} 
+
+		if(!readLines()) return false;
 		id = edm::EventID(m_run, 1, m_event);
 		// time is a hack
 		edm::TimeValue_t present_time = presentTime(); ///\todo take time from file? how to define the time?
@@ -69,7 +81,9 @@ private:
 	bool readLines();
 
 	std::vector<std::string> m_lines;
-	FILE* m_file;
+	std::vector<std::string>::const_iterator _fileName_itr;
+	std::ifstream m_file;
 	int m_event, m_run;
 	int m_sourceId;
+	unsigned int  m_time;
 };

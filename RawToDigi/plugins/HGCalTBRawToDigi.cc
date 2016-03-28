@@ -26,17 +26,19 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 	edm::Handle<FEDRawDataCollection> rawraw;
 	e.getByLabel(dataTag_, rawraw);
 
-	std::auto_ptr<SKIROC2DigiCollection> digis(0);
+	std::auto_ptr<SKIROC2DigiCollection> digis = std::auto_ptr<SKIROC2DigiCollection>(new SKIROC2DigiCollection(SKIROC::MAXSAMPLES)); // 2 because TDC and ADC
 	//
 
 	for(auto fedId_ : fedIds_){
 	  int skiroc = fedId_;
+	  std::cout << skiroc << std::endl;
 	  const FEDRawData& fed = rawraw->FEDData(fedId_);
 	  if(fed.size() == 0) continue; // empty FEDs are allowed: not in the readout for example
 
 		// we can figure out the number of samples from the size of the raw data
-		int nsamples = fed.size() / (sizeof(uint16_t) * SKIROC::NCHANNELS * 2); // 2 is for ADC and TDC
-		digis = std::auto_ptr<SKIROC2DigiCollection>(new SKIROC2DigiCollection(nsamples));
+		//int nsamples = fed.size() / (sizeof(uint16_t) * SKIROC::NCHANNELS * 2); // 2 is for ADC and TDC
+		//assert(nsamples>0);
+		
 		const uint16_t* pdata = (const uint16_t*)(fed.data());
 
 		// we start from the back...
@@ -53,7 +55,7 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 			} else {
 				HGCalTBDetId did = essource_.emap_.eid2detId(eid);
 				digis->addDataFrame(did);
-				for (int is = 0; is < nsamples; is++) {
+				for (int is = 0; is < SKIROC::MAXSAMPLES; is++) {
 					int ptrtdc = ptr - ichan - 128 * is;
 					int ptradc = ptr - ichan - 64 - 128 * is;
 					digis->backDataFrame().setSample(is, pdata[ptradc], pdata[ptrtdc]);
