@@ -36,6 +36,7 @@
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
+#include "HGCal/DataFormats/interface/SKIROCParameters.h"
 
 //
 // class declaration
@@ -66,15 +67,14 @@ private:
 	std::vector<std::pair<double, double>> CellXY;
 	std::pair<double, double> CellCentreXY;
 	std::vector<std::pair<double, double>>::const_iterator it;
-	const static int NSAMPLES = 1;
-	const static int NLAYERS  = 4;
-	TH2Poly *h_digi_layer[NSAMPLES][NLAYERS];
-        TH1F    *h_digi_layer_summed[NSAMPLES][NLAYERS];
+
+	TH2Poly *h_digi_layer[SKIROC::MAXSAMPLES][SKIROC::NLAYERS];
+        TH1F    *h_digi_layer_summed[SKIROC::MAXSAMPLES][SKIROC::NLAYERS];
 	const static int cellx = 15;
 	const static int celly = 15;
 	int Sensor_Iu = 0;
 	int Sensor_Iv = 0;
-	TH1F  *h_digi_layer_cell[NSAMPLES][NLAYERS][cellx][celly];
+	TH1F  *h_digi_layer_cell[SKIROC::MAXSAMPLES][SKIROC::NLAYERS][cellx][celly];
 	char name[50], title[50];
 };
 
@@ -102,9 +102,9 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
 	double FullHexX[FullHexVertices] = {0.};
 	double FullHexY[FullHexVertices] = {0.};
 	int iii = 0;
-	for(int nsample = 0; nsample < NSAMPLES; nsample++) {
-		for(int nlayers = 0; nlayers < NLAYERS; nlayers++) {
-//Booking a "hexagonal" histograms to display the sum of Digis for NSAMPLES, in 1 SKIROC in 1 layer. To include all layers soon. Also the 1D Digis per cell in a sensor is booked here for NSAMPLES.
+	for(int nsample = 0; nsample < SKIROC::MAXSAMPLES; nsample++) {
+		for(unsigned int nlayers = 0; nlayers < SKIROC::NLAYERS; nlayers++) {
+//Booking a "hexagonal" histograms to display the sum of Digis for SKIROC::MAXSAMPLES, in 1 SKIROC in 1 layer. To include all layers soon. Also the 1D Digis per cell in a sensor is booked here for SKIROC::MAXSAMPLES.
 			sprintf(name, "FullLayer_Sample%i_Layer%i", nsample, nlayers + 1);
 			sprintf(title, "Sum of adc counts per cell for Sample%i Layer%i", nsample, nlayers + 1);
 			h_digi_layer[nsample][nlayers] = fs->make<TH2Poly>();

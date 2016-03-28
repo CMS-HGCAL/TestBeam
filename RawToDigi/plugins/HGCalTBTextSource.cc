@@ -1,24 +1,44 @@
-#include <iostream>
 #include "HGCal/RawToDigi/plugins/HGCalTBTextSource.h"
-using namespace std;
+//#define DEBUG
+
+#ifdef DEBUG
+#include <iostream>
+#endif
+
 
 bool HGCalTBTextSource::readLines()
 {
-        int counter = 0;
 	m_lines.clear();
 	char buffer[1024];
-	while (!feof(m_file)) {
-		buffer[0] = 0;
-		fgets(buffer, 1000, m_file);
-                counter++; 
-//                if (strstr(buffer, "CHIP")) counter++;
-//                if (counter == 2) break; // done with this event(2 SKIROCS)
-//		if (strstr(buffer, "DONE")) break; // done with this event!
-//		if (buffer[0] != '0' && buffer[1] != 'x') continue;
-                if (buffer[0] != ' ') continue;
-                if (strstr(buffer, "  0  0x")) continue;
-		m_lines.push_back(buffer);
-                if(counter == 132) break; 
+	unsigned int triggerID=0;
+
+	//unsigned int length, bcid;
+#ifdef DEBUG
+	std::cout << "[DEBUG] Readline" << std::endl;
+#endif
+
+	if(m_file.peek()!='C'){
+		//cms::LogError("InputSource") << "Input file format does not match: reading character #" << m_file.peek() << "#";
+		throw cms::Exception("MismatchInputSource") << "#" << m_file.peek() << "#";
+	}
+
+	// read the first line
+	buffer[0] = 0;
+	m_file.getline(buffer, 1000);
+	if( sscanf(buffer, "CHIP %u TRIG: %x TIME: %x RUN: %u", &m_sourceId, &triggerID, &m_time, &m_run) != 4) return false;
+	//std::cout << triggerID << "\t" << (triggerID & 0xF0000000) << std::endl;
+
+	assert( (triggerID & 0xF0000000) == 0x80000000 ); // check if the skiroc is fine 
+	m_event  = ((triggerID>>12)&0x00000FFF); // extract the trigger number
+	
+	while ( m_file.peek()!='C' && m_file.good()) {
+	  buffer[0] = 0;
+	  m_file.getline(buffer, 1000);
+//	  assert(buffer[1]=='x');
+#ifdef DEBUG
+	  std::cout << m_sourceId << "\t" << m_event << "\t" << buffer << "\n"; // buffer has a \n
+#endif	  
+	  m_lines.push_back(buffer);
 	}
 
 	return !m_lines.empty();
