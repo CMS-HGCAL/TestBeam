@@ -59,7 +59,7 @@ private:
 	void analyze(const edm::Event& , const edm::EventSetup&) override;
 	virtual void endJob() override;
 	// ----------member data ---------------------------
-	bool DEBUG = 1;
+	bool DEBUG = 0;
 	HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
 	int sensorsize = 128;// The geometry for a 256 cell sensor hasnt been implemted yet. Need a picture to do this.
@@ -187,11 +187,12 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize);
 				double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
 				double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
-				for(int nsample = 0; nsample < SKI.samples(); nsample++) {
+//				for(int nsample = 0; nsample < SKI.samples(); nsample++) {
+  				int nsample = 0;
 					h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample].adc());
 					h_digi_layer_summed[nsample][n_layer - 1]->Fill(SKI[nsample].adc());
 					h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample].adc());
-				}
+//				}
 			}
 		}
 	} else {

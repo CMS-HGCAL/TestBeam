@@ -4,14 +4,21 @@ using namespace std;
 
 bool HGCalTBTextSource::readLines()
 {
+        int counter = 0;
 	m_lines.clear();
 	char buffer[1024];
 	while (!feof(m_file)) {
 		buffer[0] = 0;
 		fgets(buffer, 1000, m_file);
-		if (strstr(buffer, "DONE")) break; // done with this event!
-		if (buffer[0] != '0' && buffer[1] != 'x') continue;
+                counter++; 
+//                if (strstr(buffer, "CHIP")) counter++;
+//                if (counter == 2) break; // done with this event(2 SKIROCS)
+//		if (strstr(buffer, "DONE")) break; // done with this event!
+//		if (buffer[0] != '0' && buffer[1] != 'x') continue;
+                if (buffer[0] != ' ') continue;
+                if (strstr(buffer, "  0  0x")) continue;
 		m_lines.push_back(buffer);
+                if(counter == 132) break; 
 	}
 	return !m_lines.empty();
 }
@@ -31,7 +38,6 @@ void HGCalTBTextSource::produce(edm::Event & e)
 	for (std::vector<std::string>::const_iterator i = m_lines.begin(); i != m_lines.end(); i++) {
 		uint32_t a, b;
 		sscanf(i->c_str(), "%x %x", &a, &b);
-                cout<<endl<<"a = "<<a<<" b = "<<b<<endl;
 		skiwords.push_back(uint16_t(b >> 16));
 		skiwords.push_back(uint16_t(b));
 	}
