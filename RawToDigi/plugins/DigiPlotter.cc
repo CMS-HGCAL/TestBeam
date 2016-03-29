@@ -22,6 +22,7 @@
 #include <iostream>
 #include "TH2Poly.h"
 #include "TH1F.h"
+#include "TProfile.h"
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
@@ -70,6 +71,7 @@ private:
 	const static int NLAYERS  = 4;
 	TH2Poly *h_digi_layer[NSAMPLES][NLAYERS];
         TH1F    *h_digi_layer_summed[NSAMPLES][NLAYERS];
+        TProfile    *h_digi_layer_profile[NSAMPLES][NLAYERS];
 	const static int cellx = 15;
 	const static int celly = 15;
 	int Sensor_Iu = 0;
@@ -114,6 +116,13 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
                         sprintf(title, "Sum of adc counts for all cells in Sample%i Layer%i", nsample, nlayers + 1);
                         h_digi_layer_summed[nsample][nlayers] = fs->make<TH1F>(name, title, 4096, 0., 4095.);
                         h_digi_layer_summed[nsample][nlayers]->GetXaxis()->SetTitle("Digis[adc counts]");
+                        sprintf(name, "FullLayer_Sample%i_Layer%i_profile", nsample, nlayers + 1);
+                        sprintf(title, "profile of adc counts for all cells in Sample%i Layer%i", nsample, nlayers + 1);
+                        h_digi_layer_profile[nsample][nlayers] = fs->make<TProfile>(name, title,128, 0, 127,0., 4095.);
+                        h_digi_layer_profile[nsample][nlayers]->GetXaxis()->SetTitle("Channel #");
+                        h_digi_layer_profile[nsample][nlayers]->GetYaxis()->SetTitle("ADC counts");
+
+
 			for(int iv = -7; iv < 8; iv++) {
 				for(int iu = -7; iu < 8; iu++) {
 					if(!IsCellValid.iu_iv_valid(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize)) continue;
@@ -169,10 +178,13 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	using namespace std;
 	std::vector<edm::Handle<SKIROC2DigiCollection> > ski;
 	event.getManyByType(ski);
+//        int Event = event.id().event();
 	if(!ski.empty()) {
 
 		std::vector<edm::Handle<SKIROC2DigiCollection> >::iterator i;
+                int counter=0;
 		for(i = ski.begin(); i != ski.end(); i++) {
+                       
 			const SKIROC2DigiCollection& Coll = *(*i);
 			cout << "SKIROC2 Digis: " << i->provenance()->branchName() << endl;
 			for(SKIROC2DigiCollection::const_iterator j = Coll.begin(); j != Coll.end(); j++) {
@@ -187,12 +199,11 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize);
 				double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
 				double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
-//				for(int nsample = 0; nsample < SKI.samples(); nsample++) {
-  				int nsample = 0;
+                                        int nsample = 0;
 					h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample].adc());
+                                        h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter++,SKI[nsample].adc(),1);
 					h_digi_layer_summed[nsample][n_layer - 1]->Fill(SKI[nsample].adc());
 					h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample].adc());
-//				}
 			}
 		}
 	} else {

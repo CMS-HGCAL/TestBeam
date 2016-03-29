@@ -9,7 +9,7 @@ process.load('HGCal.RawToDigi.hgcaltbdigisplotter_cfi')
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(1), ### maybe this should be read from the file
 #                            fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
-                            fileNames=cms.untracked.vstring("file:HGC_Output_51.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+                            fileNames=cms.untracked.vstring("file:HGC_Output_52.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
 )
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
