@@ -9,7 +9,7 @@ process.load('HGCal.RawToDigi.hgcaltbdigisplotter_cfi')
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(1), ### maybe this should be read from the file
 #                            fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
-                            fileNames=cms.untracked.vstring("file:Electron_Runs_2932016/HGC_Output_2051.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+                            fileNames=cms.untracked.vstring("file:/afs/cern.ch/work/s/sixie/public/releases/run2/hgc/CMSSW_7_6_3_patch2/src/Electron_Runs_2932016/HGC_Output_2051.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
 )
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
@@ -36,11 +36,9 @@ process.output = cms.OutputModule("PoolOutputModule",
 process.TFileService = cms.Service("TFileService", fileName = cms.string("test_DigiAndRechitPlotter_TB_2051_ModPed.root") )
 
 
-#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter*process.hgcaltbrechits*process.hgcaltbrechitsplotter)
 
-#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter)
-process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.hgcaltbdigisplotter*process.hgcaltbdigisplotter_new*process.hgcaltbdigisntupler)
-#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.hgcaltbdigisplotter_ped)
+process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.hgcaltbdigisntupler)
+
 
 process.end = cms.EndPath(process.output)
 
