@@ -58,7 +58,7 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 					int ptradc1 = ptr - ichan - 128 * (2 - ski);
 					int ptradc2 = ptr - ichan - 64 - 128 * (2 - ski);
 //					digis->backDataFrame().setSample(0, pdata[ptradc1], pdata[ptradc2]);// Only one sample hardcoded as 0
-                                        digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF),gray_to_binary( pdata[ptradc2] & 0xFFF));  
+                                        digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF),gray_to_binary( pdata[ptradc2] & 0xFFF)); 
 				}
 			}
                  }
