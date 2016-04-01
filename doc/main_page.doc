@@ -48,6 +48,25 @@ In the RecHits->DQM workflow the following histograms may be found:
  - (TH1F) Cell_RecHits_u_#P_v_#Q_Layer#N is the 1D RecHits spectrum for a cell in layer #N marked by u=#P and v=#Q in the local(u,v) co-ordinate system of the cells in a sensor
  - (TH1F) FullLayer_RecHits_Layer#N_Summed same as above but summed over all cells in a sensor.
 
+
+\section DQM_ Making the DQM ntuples
+ 
+A user friendly ntuple can be produced for making plots quickly, and runs at the same stage as the DigiPlotter above. 
+ - It contains information on:
+    - adc counts in each cell of a sensor per sample, per layer(summed over the events).
+    - X,Y coordinates for each cell
+    - the cell with maximal ADC count
+    - centroid position based on distribution of ADC counts
+    - cell type (whether it's an edge or calibration cell)
+    
+On executing:
+\verbatim
+cmsRun test_cfg_ntupler.py 
+\endverbatim
+
+a root file \b test_DigiAndRechitNtuple.root is produced. This file has a directory named
+ - \b hgcaltbdigisntupler: contains the TTree HGCTBTree
+
 \ref coordinates_
 
 Git instructions: \ref GIT_
