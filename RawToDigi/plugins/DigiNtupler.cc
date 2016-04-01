@@ -63,7 +63,7 @@ private:
 	void analyze(const edm::Event& , const edm::EventSetup&) override;
 	virtual void endJob() override;
 	// ----------member data ---------------------------
-	bool DEBUG = true;
+	bool DEBUG = false;
 	HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
 	int sensorsize = 128;// The geometry for a 256 cell sensor hasnt been implemted yet. Need a picture to do this.
@@ -85,14 +85,19 @@ private:
         uint eventNum;
         float XData[128];
         float YData[128];
+        float UData[128];
+        float VData[128];
         float ADCData[128];
         float ADCHighData[128];
+        int channelNum[128];
+        uint maxChannelIndex;
         float maxADC;
         float maxX;
         float maxY;
         float ped1;
         float ped2;
-        float ADCSum;
+        float ADCSum1;
+        float ADCSum2;
         float centroidX;
         float centroidY;
 	int cellTypeCode[128]; // 0->unknown; 1->half; 2->calibration; 3->full size non calibration
@@ -170,7 +175,6 @@ DigiNtupler::DigiNtupler(const edm::ParameterSet& iConfig)
 
   //create ntuple here
   outputTree = fs->make<TTree>("HGCTBTree", "HGCTBTree");
-  std::cout << "create1\n";
 
 }//contructor ends here
 
@@ -192,15 +196,30 @@ DigiNtupler::~DigiNtupler()
 void
 DigiNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
 {
-  std::cout << "here1\n";
   eventNum = event.id().event();
   using namespace edm;
   using namespace std;
   std::vector<edm::Handle<SKIROC2DigiCollection> > ski;
   event.getManyByType(ski);
   //        int Event = event.id().event();
+  
+  //initialize maps
+  std::map<std::pair<int,int>, float> ADCMAP;
+  std::map<std::pair<int,int>, std::pair<float,float> > XYMAP;
+
+  //initialize output
+  ADCSum1 = 0;
+  ADCSum2 = 0;
+  centroidX = -999;
+  centroidY = -999;
+  maxADC = -1;
+  maxX = -999;
+  maxY = -999;
+  ped1 = -999;
+  ped2 = -999;
+  maxChannelIndex = 0;
+
   if(!ski.empty()) {
-    std::cout << "here2\n";
     std::vector<edm::Handle<SKIROC2DigiCollection> >::iterator i;
     double Average_Pedestal_Per_Event1 = 0, Average_Pedestal_Per_Event2 = 0;
     int Cell_counter1 = 0, Cell_counter2 = 0;
@@ -227,7 +246,7 @@ DigiNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	if((iux <= -0.25 && iux >= -3.25) && (iyy <= -0.25 && iyy>= -5.25 )){
 	  Cell_counter1++;
 	  Average_Pedestal_Per_Event1 += SKI_1[nsample].adc();
-	  //Sum_Hist_cells_SKI1[event.id().event() - 1]->Fill(SKI_1[nsample].adc()); 
+	  Sum_Hist_cells_SKI1[event.id().event() - 1]->Fill(SKI_1[nsample].adc()); 
 	}
 
 	if((iux >= 0.25 && iux <= 3.25) && (iyy <= -0.25 && iyy>= -5.25 )){
@@ -246,6 +265,8 @@ DigiNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	int n_sensor_IV = (SKI.detid()).sensorIV();
 	int n_cell_iu = (SKI.detid()).iu();
 	int n_cell_iv = (SKI.detid()).iv(); 
+	std::pair<int,int> uvpair (n_cell_iu, n_cell_iv);
+
 	if((n_cell_iu == -1 && n_cell_iv == 2) || (n_cell_iu == 2 && n_cell_iv == -4)) flag_calib =1; 
 	if(DEBUG) cout << endl << " Layer = " << n_layer << " Sensor IU = " << n_sensor_IU << " Sensor IV = " << n_sensor_IV << " Cell iu = " << n_cell_iu << " Cell iu = " << n_cell_iv << endl;
 	if(!IsCellValid.iu_iv_valid(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize))  continue;
@@ -253,8 +274,9 @@ DigiNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
 	double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
 	int nsample = 0;
-	cout<<endl<<" X= "<<iux<<" Y= "<<iyy<<" cell type= "<<(SKI.detid()).cellType()<<endl;      
 
+	//map of iu,iv --> X,Y
+	XYMAP[uvpair] = pair<float,float>(iux,iyy);
 
 	//Get cell Type
 	int nCellVertex = TheCell.GetCellCoordinatesForPlots(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize).size();
@@ -271,11 +293,19 @@ DigiNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	    ADCData[channelIndex] = 0.5*(SKI[nsample].adc() - (Average_Pedestal_Per_Event1/(Cell_counter1)));
 	    XData[channelIndex] = iux;
 	    YData[channelIndex] = iyy;
+	    UData[channelIndex] = n_cell_iu;
+	    VData[channelIndex] = n_cell_iv;
+	    channelNum[channelIndex] = channelIndex;
+	    ADCMAP [uvpair] = ADCData[channelIndex];
 	  }
 	  else if((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50)) {
 	    ADCData[channelIndex] = 0.5*(SKI[nsample].adc() - (Average_Pedestal_Per_Event2/(Cell_counter2)));
 	    XData[channelIndex] = iux;
-	    YData[channelIndex] = iyy;					  
+	    YData[channelIndex] = iyy;	
+	    UData[channelIndex] = n_cell_iu;
+	    VData[channelIndex] = n_cell_iv;	    
+	    channelNum[channelIndex] = channelIndex;
+	    ADCMAP [uvpair] = ADCData[channelIndex];			  
 	  }					    
 	}
 	else{
@@ -283,11 +313,19 @@ DigiNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	    ADCData[channelIndex] = (SKI[nsample].adc() - (Average_Pedestal_Per_Event1/(Cell_counter1)));
 	    XData[channelIndex] = iux;
 	    YData[channelIndex] = iyy;
+	    UData[channelIndex] = n_cell_iu;
+	    VData[channelIndex] = n_cell_iv;	    
+	    channelNum[channelIndex] = channelIndex;
+	    ADCMAP [uvpair] = ADCData[channelIndex];	   
 	  }
 	  else if((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50)) {
 	    ADCData[channelIndex] = (SKI[nsample].adc() - (Average_Pedestal_Per_Event2/(Cell_counter2)));
 	    XData[channelIndex] = iux;
 	    YData[channelIndex] = iyy;
+	    UData[channelIndex] = n_cell_iu;
+	    VData[channelIndex] = n_cell_iv;	    
+	    channelNum[channelIndex] = channelIndex;
+	    ADCMAP [uvpair] = ADCData[channelIndex];	    
 	  }					   
 	}
 		
@@ -308,19 +346,77 @@ DigiNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
   float max = -999.;
   float tmpX = -999.;
   float tmpY = -999.;
+  // int tmpU = -9;
+  // int tmpV = -9;
   for (int ii = 0; ii<128; ii++)
     {
       if(ADCData[ii] > max) 
 	{
+	  maxChannelIndex = ii;
 	  max = ADCData[ii];
 	  tmpX = XData[ii];
 	  tmpY = YData[ii];
+	  // tmpU = UData[ii];
+	  // tmpV = VData[ii];
 	}
     }
 
   maxADC = max;
   maxX   = tmpX;
   maxY   = tmpY;	
+
+  //***********************************************************
+  //Add energy of cluster around the max energy cell
+  //***********************************************************
+
+  for (int ii = 0; ii<128; ii++) {
+
+    //include only good cells
+    if (cellTypeCode[ii] != 3) continue;
+
+    //first circle around the max
+    if (sqrt( pow(XData[ii] - maxX,2) + pow(YData[ii]-maxY,2)) < 1.2) {
+      // std::cout << ii << " : " << UData[ii] << " : " << VData[ii] << " : "
+      // 		 << XData[ii] - maxX << " , " << YData[ii]-maxY << " : " 
+      // 		 << sqrt( pow(XData[ii] - maxX,2) + pow(YData[ii]-maxY,2)) << " : "
+      // 		 << ADCData[ii] << "\n";
+      ADCSum1 += ADCData[ii];
+    }
+    
+    //2nd circle around the max
+    if (sqrt( pow(XData[ii] - maxX,2) + pow(YData[ii]-maxY,2)) < 2.3) {
+      // std::cout << ii << " : " << UData[ii] << " : " << VData[ii] << " : "
+      // 		<< XData[ii] - maxX << " , " << YData[ii]-maxY << " : " 
+      // 		<< sqrt( pow(XData[ii] - maxX,2) + pow(YData[ii]-maxY,2)) << " : "
+      // 		<< ADCData[ii] << "\n";
+      ADCSum2 += ADCData[ii];
+    }            
+  }
+  //std::cout << "ADCSUM " << ADCSum1 << "\n";
+
+
+  //***********************************************************
+  //Compute Centroid of the Shower
+  //***********************************************************
+  double tmpCentroidX = 0;
+  double tmpCentroidY = 0;
+
+  for (int ii = 0; ii<128; ii++) {
+
+    //include only good cells
+    if (cellTypeCode[ii] != 3) continue;
+
+    //first circle around the max
+    if (sqrt( pow(XData[ii] - maxX,2) + pow(YData[ii]-maxY,2)) < 1.2) {
+      tmpCentroidX += XData[ii]*ADCData[ii];
+      tmpCentroidY += YData[ii]*ADCData[ii];
+    }
+       
+  }
+  centroidX = tmpCentroidX / ADCSum1;
+  centroidY = tmpCentroidY / ADCSum1;
+
+
 
   //fill ntuple here
   outputTree->Fill();
@@ -335,15 +431,22 @@ DigiNtupler::beginJob()
   outputTree->Branch("event", &eventNum,"event/i");
   outputTree->Branch("X", XData,"X[128]/F"); 
   outputTree->Branch("Y", YData,"Y[128]/F"); 
+  outputTree->Branch("U", UData,"U[128]/F"); 
+  outputTree->Branch("V", VData,"V[128]/F"); 
   outputTree->Branch("ADC", ADCData,"ADC[128]/F"); 
-  outputTree->Branch("ADCHigh", ADCHighData,"ADCHigh[128]/F"); 
+  outputTree->Branch("ADCHigh", ADCHighData,"ADCHigh[128]/F");
+  outputTree->Branch("maxChannelIndex", &maxChannelIndex,"maxChannelIndex/i"); 
   outputTree->Branch("maxADC", &maxADC,"maxADC/F"); 
+  outputTree->Branch("ADCSum1", &ADCSum1,"ADCSum1/F"); 
+  outputTree->Branch("ADCSum2", &ADCSum2,"ADCSum2/F"); 
+  outputTree->Branch("centroidX", &centroidX,"centroidX/F"); 
+  outputTree->Branch("centroidY", &centroidY,"centroidY/F"); 
   outputTree->Branch("maxX", &maxX,"maxX/F"); 
   outputTree->Branch("maxY", &maxY,"maxY/F"); 
   outputTree->Branch("ped1", &ped1,"ped1/F"); 
   outputTree->Branch("ped2", &ped2,"ped2/F"); 
+  outputTree->Branch("channelNum", channelNum,"channelNum[128]/I"); 
   outputTree->Branch("cellTypeCode", cellTypeCode,"cellTypeCode[128]/i"); 
-
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
