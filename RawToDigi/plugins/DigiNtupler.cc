@@ -100,6 +100,9 @@ private:
         float ADCSum2;
         float centroidX;
         float centroidY;
+        float sigmaX;
+        float sigmaY;
+
 	int cellTypeCode[128]; // 0->unknown; 1->half; 2->calibration; 3->full size non calibration
 };
 
@@ -400,9 +403,7 @@ DigiNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
   //***********************************************************
   double tmpCentroidX = 0;
   double tmpCentroidY = 0;
-
   for (int ii = 0; ii<128; ii++) {
-
     //include only good cells
     if (cellTypeCode[ii] != 3) continue;
 
@@ -410,11 +411,28 @@ DigiNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
     if (sqrt( pow(XData[ii] - maxX,2) + pow(YData[ii]-maxY,2)) < 1.2) {
       tmpCentroidX += XData[ii]*ADCData[ii];
       tmpCentroidY += YData[ii]*ADCData[ii];
-    }
-       
+    }       
   }
   centroidX = tmpCentroidX / ADCSum1;
   centroidY = tmpCentroidY / ADCSum1;
+
+  //***********************************************************
+  //Compute Shower Width
+  //***********************************************************
+  double tmpResidualX = 0;
+  double tmpResidualY = 0;
+  for (int ii = 0; ii<128; ii++) {
+    //include only good cells
+    if (cellTypeCode[ii] != 3) continue;
+
+    //first circle around the max
+    if (sqrt( pow(XData[ii] - maxX,2) + pow(YData[ii]-maxY,2)) < 1.2) {
+      tmpResidualX += pow((XData[ii] - centroidX),2)*ADCData[ii];
+      tmpResidualY += pow((YData[ii] - centroidY),2)*ADCData[ii];
+    }       
+  }
+  sigmaX = sqrt( tmpResidualX / ADCSum1 );
+  sigmaY = sqrt( tmpResidualY / ADCSum1 );
 
 
 
@@ -443,6 +461,8 @@ DigiNtupler::beginJob()
   outputTree->Branch("centroidY", &centroidY,"centroidY/F"); 
   outputTree->Branch("maxX", &maxX,"maxX/F"); 
   outputTree->Branch("maxY", &maxY,"maxY/F"); 
+  outputTree->Branch("sigmaX", &sigmaX,"sigmaX/F"); 
+  outputTree->Branch("sigmaY", &sigmaY,"sigmaY/F"); 
   outputTree->Branch("ped1", &ped1,"ped1/F"); 
   outputTree->Branch("ped2", &ped2,"ped2/F"); 
   outputTree->Branch("channelNum", channelNum,"channelNum[128]/I"); 
