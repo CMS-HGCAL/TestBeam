@@ -35,7 +35,7 @@ std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(i
 //The general strategy is to translate starting from the central hexagonal cell to the iu,iv desired. If any vertex goes out of the sensor boundary its cordinates are not filled into the vector of pairs.
 			if(fabs(vertex_x_tmp) <= Xmax(iv, fabs(vertex_y_tmp)) + delta){
 				auto point = RotateLayer(std::make_pair(vertex_x_tmp, vertex_y_tmp), TEST_BEAM_LAYER_ROTATION);
-				if(flipX==true) point.first=-point.first;
+//				if(flipX==true) point.first=-point.first;
 				Cell_co.push_back(point);
 			}
 		}
@@ -56,7 +56,7 @@ std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(i
 		centre_x_tmp = iu * x0 + iv * vx0;
 		centre_y_tmp = iv * vy0;
 		auto point = RotateLayer(std::make_pair(centre_x_tmp, centre_y_tmp), TEST_BEAM_LAYER_ROTATION);
-		if(flipX==true) point.first = - point.first;
+//		if(flipX==true) point.first = - point.first;
 		return point;
 	} else return std::make_pair(-123456, -123456); //iu_iv_Valid() is sufficient to decide if a given iu,iv is a valid sensor index but this is done if some future need may arise.
 

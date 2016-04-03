@@ -22,6 +22,7 @@
 #include <iostream>
 #include "TH2Poly.h"
 #include "TH1F.h"
+#include "TProfile.h"
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
@@ -69,7 +70,9 @@ private:
 	std::vector<std::pair<double, double>>::const_iterator it;
 
 	TH2Poly *h_digi_layer[SKIROC::MAXSAMPLES][SKIROC::NLAYERS];
-        TH1F    *h_digi_layer_summed[SKIROC::MAXSAMPLES][SKIROC::NLAYERS];
+	TH1F    *h_digi_layer_summed[SKIROC::MAXSAMPLES][SKIROC::NLAYERS];
+	TProfile    *h_digi_layer_profile[SKIROC::MAXSAMPLES][SKIROC::NLAYERS];
+
 	const static int cellx = 15;
 	const static int celly = 15;
 	int Sensor_Iu = 0;
@@ -104,24 +107,39 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
 	int iii = 0;
 	for(int nsample = 0; nsample < SKIROC::MAXSAMPLES; nsample++) {
 		for(unsigned int nlayers = 0; nlayers < SKIROC::NLAYERS; nlayers++) {
-//Booking a "hexagonal" histograms to display the sum of Digis for SKIROC::MAXSAMPLES, in 1 SKIROC in 1 layer. To include all layers soon. Also the 1D Digis per cell in a sensor is booked here for SKIROC::MAXSAMPLES.
-			sprintf(name, "FullLayer_Sample%i_Layer%i", nsample, nlayers + 1);
-			sprintf(title, "Sum of adc counts per cell for Sample%i Layer%i", nsample, nlayers + 1);
+//Booking a "hexagonal" histograms to display the sum of Digis for NSAMPLES, in 1 SKIROC in 1 layer. To include all layers soon. Also the 1D Digis per cell in a sensor is booked here for NSAMPLES.
+			sprintf(name, "FullLayer_ADC%i_Layer%i", nsample, nlayers + 1);
+			sprintf(title, "Sum of adc counts per cell for ADC%i Layer%i", nsample, nlayers + 1);
 			h_digi_layer[nsample][nlayers] = fs->make<TH2Poly>();
 			h_digi_layer[nsample][nlayers]->SetName(name);
 			h_digi_layer[nsample][nlayers]->SetTitle(title);
-			sprintf(name, "FullLayer_Sample%i_Layer%i_summed", nsample, nlayers + 1);
-                        sprintf(title, "Sum of adc counts for all cells in Sample%i Layer%i", nsample, nlayers + 1);
+			sprintf(name, "FullLayer_ADC%i_Layer%i_summed", nsample, nlayers + 1);
+                        sprintf(title, "Sum of adc counts for all cells in ADC%i Layer%i", nsample, nlayers + 1);
                         h_digi_layer_summed[nsample][nlayers] = fs->make<TH1F>(name, title, 4096, 0., 4095.);
                         h_digi_layer_summed[nsample][nlayers]->GetXaxis()->SetTitle("Digis[adc counts]");
+                        sprintf(name, "FullLayer_ADC%i_Layer%i_profile", nsample, nlayers + 1);
+                        sprintf(title, "profile of adc counts for all cells in ADC%i Layer%i", nsample, nlayers + 1);
+                        h_digi_layer_profile[nsample][nlayers] = fs->make<TProfile>(name, title,128, 0, 127,0., 4095.);
+                        h_digi_layer_profile[nsample][nlayers]->GetXaxis()->SetTitle("Channel #");
+                        h_digi_layer_profile[nsample][nlayers]->GetYaxis()->SetTitle("ADC counts");
+
+
 			for(int iv = -7; iv < 8; iv++) {
 				for(int iu = -7; iu < 8; iu++) {
 					if(!IsCellValid.iu_iv_valid(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize)) continue;
 //Some thought needs to be put in about the binning and limits of this 1D histogram, probably different for beam type Fermilab and cern.
-					sprintf(name, "Cell_u_%i_v_%i_Sample%i_Layer%i", iu, iv, nsample, nlayers + 1);
-					sprintf(title, "Digis for Cell_u_%i_v_%i Sample%i Layer%i", iu, iv, nsample, nlayers + 1);
+					sprintf(name, "Cell_u_%i_v_%i_ADC%i_Layer%i", iu, iv, nsample, nlayers + 1);
+					sprintf(title, "Digis for Cell_u_%i_v_%i ADC%i Layer%i", iu, iv, nsample, nlayers + 1);
 					h_digi_layer_cell[nsample][nlayers][iu + 7][iv + 7] = fs->make<TH1F>(name, title, 4096, 0., 4095.);
 					h_digi_layer_cell[nsample][nlayers][iu + 7][iv + 7]->GetXaxis()->SetTitle("Digis[adc counts]");
+/*
+                                        for(int eee = 0; eee< 512; eee++){
+                                            sprintf(name, "Cell_u_%i_v_%i_ADC%i_Layer%i_Event%i", iu, iv, nsample, nlayers + 1,eee);
+                                            sprintf(title, "Digis for Cell_u_%i_v_%i ADC%i Layer%i Event %i", iu, iv, nsample, nlayers + 1, eee);
+                                            h_digi_layer_cell_event[nsample][nlayers][iu + 7][iv + 7][eee] = fs->make<TH1F>(name, title, 4096, 0., 4095.);
+                                            h_digi_layer_cell_event[nsample][nlayers][iu + 7][iv + 7][eee]->GetXaxis()->SetTitle("Digis[adc counts]");                 
+                                           }
+*/
 					CellXY = TheCell.GetCellCoordinatesForPlots(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize);
 					int NumberOfCellVertices = CellXY.size();
 					iii = 0;
@@ -169,10 +187,13 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	using namespace std;
 	std::vector<edm::Handle<SKIROC2DigiCollection> > ski;
 	event.getManyByType(ski);
+//        int Event = event.id().event();
 	if(!ski.empty()) {
 
 		std::vector<edm::Handle<SKIROC2DigiCollection> >::iterator i;
+                int counter1=0, counter2=0;
 		for(i = ski.begin(); i != ski.end(); i++) {
+                       
 			const SKIROC2DigiCollection& Coll = *(*i);
 			cout << "SKIROC2 Digis: " << i->provenance()->branchName() << endl;
 			for(SKIROC2DigiCollection::const_iterator j = Coll.begin(); j != Coll.end(); j++) {
@@ -187,12 +208,18 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize);
 				double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
 				double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
-//				for(int nsample = 0; nsample < SKI.samples(); nsample++) {
-  				int nsample = 0;
+                                        int nsample = 0;
 					h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample].adc());
+                                        h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter1++,SKI[nsample].adc(),1);
 					h_digi_layer_summed[nsample][n_layer - 1]->Fill(SKI[nsample].adc());
 					h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample].adc());
-//				}
+//                                        h_digi_layer_cell_event[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv][event.id().event() - 1]->Fill(SKI[nsample].adc());
+                                        nsample = 1;
+                                        h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample-1].tdc());
+                                        h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter2++,SKI[nsample-1].tdc(),1);
+                                        h_digi_layer_summed[nsample][n_layer - 1]->Fill(SKI[nsample-1].tdc());
+                                        h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample-1].tdc());
+//                                        h_digi_layer_cell_event[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv][event.id().event() - 1]->Fill(SKI[nsample-1].tdc());  
 			}
 		}
 	} else {

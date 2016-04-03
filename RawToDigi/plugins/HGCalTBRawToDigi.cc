@@ -2,6 +2,8 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBRawToDigi.h"
 using namespace std;
 
+unsigned int gray_to_binary (unsigned int gray);
+
 HGCalTBRawToDigi::HGCalTBRawToDigi(edm::ParameterSet const& conf):
 	dataTag_(conf.getParameter<edm::InputTag>("InputLabel")),
 	fedIds_(conf.getUntrackedParameter<std::vector<int> >("fedIds")),
@@ -61,7 +63,7 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 					int ptradc1 = ptr - ichan - 128 * (2 - ski);
 					int ptradc2 = ptr - ichan - 64 - 128 * (2 - ski);
 //					digis->backDataFrame().setSample(0, pdata[ptradc1], pdata[ptradc2]);// Only one sample hardcoded as 0
-                                        digis->backDataFrame().setSample(0, pdata[ptradc2], pdata[ptradc1]);  
+                                        digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF),gray_to_binary( pdata[ptradc2] & 0xFFF)); 
 				}
 			}
                  }
@@ -72,6 +74,24 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 	// put it into the event
 	e.put(digis);
 }
+
+unsigned int gray_to_binary (unsigned int gray){
+
+  unsigned int result = gray & (1 << 11);
+  result |= (gray ^ (result >> 1)) & (1 << 10);
+  result |= (gray ^ (result >> 1)) & (1 << 9);
+  result |= (gray ^ (result >> 1)) & (1 << 8);
+  result |= (gray ^ (result >> 1)) & (1 << 7);
+  result |= (gray ^ (result >> 1)) & (1 << 6);
+  result |= (gray ^ (result >> 1)) & (1 << 5);
+  result |= (gray ^ (result >> 1)) & (1 << 4);
+  result |= (gray ^ (result >> 1)) & (1 << 3);
+  result |= (gray ^ (result >> 1)) & (1 << 2);
+  result |= (gray ^ (result >> 1)) & (1 << 1);
+  result |= (gray ^ (result >> 1)) & (1 << 0);
+  return result;
+}
+
 
 #include "FWCore/PluginManager/interface/ModuleDef.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
