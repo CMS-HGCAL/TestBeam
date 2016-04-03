@@ -69,7 +69,7 @@ private:
 	std::vector<std::pair<double, double>> CellXY;
 	std::pair<double, double> CellCentreXY;
 	std::vector<std::pair<double, double>>::const_iterator it;
-	const static int NLAYERS  = 4;
+	const static int NLAYERS  = 1;
 	TH2Poly *h_RecHit_layer[NLAYERS];
 	TH1F    *h_RecHit_layer_summed[NLAYERS];
 	TH2Poly *h_RecHit_layer_Occupancy[NLAYERS];
@@ -115,7 +115,7 @@ RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig)
 		h_RecHit_layer[nlayers]->SetTitle(title);
 		sprintf(name, "FullLayer_RecHits_Layer%i_Summed", nlayers + 1);
 		sprintf(title, "Sum of RecHits Layer%i Summed over the cells", nlayers + 1);
-		h_RecHit_layer_summed[nlayers] = fs->make<TH1F>(name, title, 100, 0., 100.);
+		h_RecHit_layer_summed[nlayers] = fs->make<TH1F>(name, title, 200, -100., 100.);
 		h_RecHit_layer_summed[nlayers]->GetXaxis()->SetTitle("RecHits[GeV]");
 		sprintf(name, "FullLayer_Occupancy_Layer%i", nlayers + 1);
 		sprintf(title, "Sum of Occupancy Layer%i", nlayers + 1);
@@ -128,7 +128,7 @@ RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig)
 //Some thought needs to be put in about the binning and limits of this 1D histogram, probably different for beam type Fermilab and cern.
 				sprintf(name, "Cell_RecHits_u_%i_v_%i_Layer%i", iu, iv, nlayers + 1);
 				sprintf(title, "RecHits for Cell_u_%i_v_%i Layer%i", iu, iv, nlayers + 1);
-				h_RecHit_layer_cell[nlayers][iu + 7][iv + 7] = fs->make<TH1F>(name, title, 100, 0., 100.); // need to finalize binning
+				h_RecHit_layer_cell[nlayers][iu + 7][iv + 7] = fs->make<TH1F>(name, title, 200, -100., 100.); // need to finalize binning
 				h_RecHit_layer_cell[nlayers][iu + 7][iv + 7]->GetXaxis()->SetTitle("RecHits[GeV]");
 				CellXY = TheCell.GetCellCoordinatesForPlots(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize);
 				int NumberOfCellVertices = CellXY.size();
