@@ -18,7 +18,7 @@ static void tb_detid_store(HGCalTBDetId id, FILE* f)
 	fprintf(f, "%08x %5d %9d %9d %3d %3d %4d ", id.rawId(), id.layer()*id.zside(), id.sensorIU(), id.sensorIV(), id.iu(), id.iv(), id.cellType());
 }
 
-bool HGCalCondObjectTextIO::load(const std::string& filename, HGCalCondObjectContainer<double>& cont)
+bool HGCalCondObjectTextIO::load(const std::string& filename, HGCalCondObjectContainer<float>& cont)
 {
 	FILE* f = fopen(filename.c_str(), "r");
 	if (f == 0) {
@@ -37,7 +37,7 @@ bool HGCalCondObjectTextIO::load(const std::string& filename, HGCalCondObjectCon
 		return false;
 	}
 	// clear the container
-	cont = HGCalCondObjectContainer<double>(p_scheme, code);
+	cont = HGCalCondObjectContainer<float>(p_scheme, code);
 
 	while (!feof(f)) {
 		buffer[0] = 0;
@@ -57,14 +57,14 @@ bool HGCalCondObjectTextIO::load(const std::string& filename, HGCalCondObjectCon
 		HGCalTBDetId id = tb_detid_load(process, ptr);
 		if (!id.null()) {
 			process += ptr;
-			double value = atof(process);
+			float value = atof(process);
 			cont.set(id, value);
 		}
 	}
 	fclose(f);
 	return true;
 }
-bool HGCalCondObjectTextIO::store(const std::string& filename, const HGCalCondObjectContainer<double>& cont)
+bool HGCalCondObjectTextIO::store(const std::string& filename, const HGCalCondObjectContainer<float>& cont)
 {
 	FILE* f = fopen(filename.c_str(), "w");
 	if (f == 0) return false;

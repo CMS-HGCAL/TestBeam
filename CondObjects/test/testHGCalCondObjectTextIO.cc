@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (!valuefile_in.empty()) {
-		HGCalCondObjectContainer<double> values;
+		HGCalCondObjectContainer<float> values;
 		printf("Reading single values from '%s'...", valuefile_in.c_str());
 		fflush(stdout);
 		bool ok = io.load(valuefile_in, values);
