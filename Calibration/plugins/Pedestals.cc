@@ -35,7 +35,6 @@
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/CondObjects/interface/HGCalTBNumberingScheme.h"
 
-#include <iostream>
 #include <cassert>
 
 //
@@ -164,10 +163,8 @@ Pedestals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 	// now I have the pedestal average, I have to print them
 	for(const auto pedestal : pedestals){
 		float pedestal_mean = pedestal.second.sum/pedestal.second.n;
-		std::cerr << "[CIAO] " << std::endl;	
 		pedestals_cond.set(pedestal.first, pedestal_mean);
 		noise_cond.set(pedestal.first, sqrt(pedestal.second.sum2/pedestal.second.n - (pedestal_mean * pedestal_mean)));
-		std::cout << pedestal.first << "\t" << pedestal_mean << "\t" << pedestals_cond.get(pedestal.first) << std::endl;
 	}
 	condIO.store("newPedestals.txt", pedestals_cond);
 	condIO.store("newNoise.txt", noise_cond);
