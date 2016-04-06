@@ -5,11 +5,14 @@ using namespace std;
 bool ix_iv_valid(int ix, int iv, int sensorSize);
 
 void Pedestal_Writer(){
-
-     TFile* F = new TFile("test_DigiAndRechitPlotter_TB_8272.root");
+     TCanvas *c1 = new TCanvas("c1", "c1", 800,600);
+     TFile* F = new TFile("test_8272_HighGain.root");
      F->cd("hgcaltbdigisplotter");
+     double channels[128];   
+     double Mean[128];
+     double RMS[128];
      char name[100];
-     int nsample =1;
+     int nsample = 1;
      int Code = 0;
      int Type = 0;
      int Layer = 1;
@@ -19,21 +22,25 @@ void Pedestal_Writer(){
      TH1F* h[1000];
      int counter = 0;
      ofstream fs;
-     fs.open("/home/rchatter/shervinTest/CMSSW_7_6_3_patch2/src/HGCal/Ped_HighGain_Test_8272.txt");
+//     fs.open("/home/rchatter/shervinTest/CMSSW_7_6_3_patch2/src/HGCal/Ped_HighGain_8272_Mean.txt");
+     fs.open("/home/rchatter/shervinTest/CMSSW_7_6_3_patch2/src/HGCal/Ped_HighGain_8272_RMS.txt");
+
      fs<<"SCHEME_CODE 0"<<endl;
      fs<<"# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE"<<endl;
 
-
+     int Counter = 0;
      for(int iv = -7; iv < 8; iv++) {
          for(int iu = -7; iu < 8; iu++) {
              if(!ix_iv_valid(iu,iv,sensorsize)) continue;
              sprintf(name, "Cell_u_%i_v_%i_ADC%i_Layer%i", iu, iv, nsample, Layer);
              cout<<endl<<name<<endl;
              h[counter] = (TH1F*) F->FindObjectAny(name);
-             fs<<" "<<Code<<" "<<Layer<<" "<<SENSOR_IX<<" "<<SENSOR_IV<<" "<<iu<<" "<<iv<<" "<<" "<<Type<<" "<<h[counter]->GetMean()<<endl;
+//             fs<<" "<<Code<<" "<<Layer<<" "<<SENSOR_IX<<" "<<SENSOR_IV<<" "<<iu<<" "<<iv<<" "<<" "<<Type<<" "<<h[counter]->GetMean()<<endl;
+             fs<<" "<<Code<<" "<<Layer<<" "<<SENSOR_IX<<" "<<SENSOR_IV<<" "<<iu<<" "<<iv<<" "<<" "<<Type<<" "<<h[counter]->GetRMS()<<endl;
+
+               }
 //             cout<<endl<<Code<<"\t"<<Layer<<"\t"<<SENSOR_IX<<"\t"<<SENSOR_IV<<"\t"<<iu<<"\t"<<iv<<"\t"<<h[counter++]->GetMean()<<endl;
             }
-         } 
      fs.close();
 }
 

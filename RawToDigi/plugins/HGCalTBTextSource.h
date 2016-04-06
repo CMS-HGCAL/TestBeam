@@ -70,4 +70,5 @@ private:
 	FILE* m_file;
 	int m_event, m_run;
 	int m_sourceId;
+        unsigned int  m_time;
 };

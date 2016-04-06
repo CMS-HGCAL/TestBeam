@@ -7,6 +7,7 @@ bool HGCalTBTextSource::readLines()
         int counter = 0;
 	m_lines.clear();
 	char buffer[1024];
+//        unsigned int triggerID=0;
 	while (!feof(m_file)) {
 		buffer[0] = 0;
 		fgets(buffer, 1000, m_file);
@@ -15,6 +16,13 @@ bool HGCalTBTextSource::readLines()
 //                if (counter == 2) break; // done with this event(2 SKIROCS)
 //		if (strstr(buffer, "DONE")) break; // done with this event!
 //		if (buffer[0] != '0' && buffer[1] != 'x') continue;
+/*		
+	        if(counter == 1){
+                   sscanf(buffer, "CHIP %u TRIG: %x TIME: %x RUN: %u", &m_sourceId, &triggerID, &m_time, &m_run);
+                   cout<<endl<<" time= "<<m_time<<endl;
+                   continue;
+                   } 	 
+*/
                 if (buffer[0] != ' ') continue;
                 if (strstr(buffer, "  0  0x")) continue;
 		m_lines.push_back(buffer);

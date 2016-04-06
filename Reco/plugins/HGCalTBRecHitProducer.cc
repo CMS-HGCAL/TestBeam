@@ -1,4 +1,6 @@
 #include "HGCal/Reco/plugins/HGCalTBRecHitProducer.h"
+#include <iostream>
+using namespace std;
 
 HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg)
 	: outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
@@ -31,8 +33,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 	HGCalCondObjectTextIO condIO(HGCalTBNumberingScheme::scheme());
 	//HGCalElectronicsMap emap;
 //    assert(io.load("mapfile.txt",emap)); ///\todo to be trasformed into exception
-	assert(condIO.load("pedestals.txt", pedestals));
-	assert(condIO.load("gains.txt", adcToGeV));
+	assert(condIO.load("Ped_LowGain_Test_8272.txt", pedestals));
+	assert(condIO.load("Gain_Test.txt", adcToGeV));
 	///\todo check if reading the conditions from file some channels are not in the file!
 #endif
 
@@ -45,15 +47,17 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 //------------------------------ this part should go into HGCalTBRecoAlgo class
 
 		SKIROC2DataFrame digi(*digi_itr);
-		unsigned int nSamples = digi.samples();
+		unsigned int nSamples = 1;
 
 		// if there are more than 1 sample, we need to define a reconstruction algorithm
 		// now taking the first sample
 		for(unsigned int iSample = 0; iSample < nSamples; ++iSample) {
 
-			float energy = (digi[iSample].adc() - pedestals.get(digi.detid())->value) * adcToGeV.get(digi.detid())->value;
-
-			HGCalTBRecHit recHit(digi.detid(), energy, digi[iSample].tdc()); ///\todo use time calibration!
+//			float energy = (digi[iSample].adc() - pedestals.get(digi.detid())->value) * adcToGeV.get(digi.detid())->value;
+//                        float energy = (digi[iSample].adc() - pedestals.get(digi.detid())->value);
+                        float energy = (digi[iSample].adc() - pedestals.get(digi.detid())->value);
+                        if((digi.detid()).cellType() == 1) cout<<endl<<" Pedestal= "<<pedestals.get(digi.detid())->value;
+			HGCalTBRecHit recHit(digi.detid(), energy, 0.); ///\todo use time calibration!
 
 #ifdef DEBUG
 			std::cout << recHit << std::endl;

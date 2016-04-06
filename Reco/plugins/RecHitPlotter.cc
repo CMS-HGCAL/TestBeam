@@ -197,7 +197,7 @@ RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 //The energy threshold for the occupancy has been hardcoded here. Need to decide what a good choice is. Maybe dynamic per cell depending on the pedestal
 		if(RecHit.energy() > 5) h_RecHit_layer_Occupancy[n_layer - 1]->Fill(iux , iyy, 1./n_cell_area);
 // There will be several array indices iu, iv that wont be filled due to it being invalid. Can think of alternate array filling.
-		h_RecHit_layer_cell[n_layer - 1][7 + (RecHit.id()).iu()][7 + (RecHit.id()).iv()]->Fill(RecHit.energy());
+		if((RecHit.id()).cellType() == 0 && (iux > 0 && iyy > 0) &&  RecHit.energy() < 20. ) h_RecHit_layer_cell[n_layer - 1][7 + (RecHit.id()).iu()][7 + (RecHit.id()).iv()]->Fill(RecHit.energy());
 	}
 
 

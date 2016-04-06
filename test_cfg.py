@@ -3,13 +3,13 @@ import FWCore.ParameterSet.Config as cms
 process = cms.Process("unpack")
 process.load('HGCal.RawToDigi.hgcaltbdigis_cfi')
 process.load('HGCal.RawToDigi.hgcaltbdigisplotter_cfi')
-#process.load('HGCal.Reco.hgcaltbrechitproducer_cfi')
-#process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
+process.load('HGCal.Reco.hgcaltbrechitproducer_cfi')
+process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
 
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(1), ### maybe this should be read from the file
-#                            fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
-                            fileNames=cms.untracked.vstring("file:Electron_Runs_2932016/HGC_Output_2051.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+#                          fileNames=cms.untracked.vstring("file:Proton_Runs_0242016/HGC_Output_8272.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+                          fileNames=cms.untracked.vstring("file:Proton_Runs_0442016/HGC_Output_20498.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
 )
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
@@ -33,14 +33,23 @@ process.output = cms.OutputModule("PoolOutputModule",
 #                                 SelectEvents = SelectEventsPSet
                                  )
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("test_DigiAndRechitPlotter_TB_2051_ModPed.root") )
+#process.TFileService = cms.Service("TFileService", fileName = cms.string("test_DigiAndRechitPlotter_TB_8308_RecHits_ADClt20_FullHex_Xgt0_Ygt0.root") )
+process.TFileService = cms.Service("TFileService", fileName = cms.string("test_Proton_20498_Cluster.root") )
+#process.TFileService = cms.Service("TFileService", fileName = cms.string("test_8272_HighGain.root") )
 
 
-#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter*process.hgcaltbrechits*process.hgcaltbrechitsplotter)
-
+#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbrechits*process.hgcaltbrechitsplotter*process.hgcaltbrechitsplotter_new)
+process.p =cms.Path(process.hgcaltbdigis*process.dumpDigi*process.hgcaltbrechitshighgain*process.hgcaltbrechitsplotter_highgain_new)
+#process.p =cms.Path(process.hgcaltbdigis*process.dumpDigi)
+#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbrechitslowgain*process.hgcaltbrechitsplotter_lowgain_new)
+#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbrechits*process.hgcaltbrechitsplotter*process.hgcaltbrechitsplotter_lowgain_new)
+#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbrechits*process.hgcaltbrechitsplotter)
 #process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter)
-process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.hgcaltbdigisplotter*process.hgcaltbdigisplotter_new)
-#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.hgcaltbdigisplotter_ped)
+#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
+#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.hgcaltbdigisplotter_new)
+#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.hgcaltbdigisplotter_highgain_new)
+#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.hgcaltbdigisplotter_ped_profile)
+#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.hgcaltbdigisplotter_HighGain_ped_profile);
+
 
 process.end = cms.EndPath(process.output)
-
