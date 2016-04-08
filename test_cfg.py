@@ -39,7 +39,7 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string("test_P
 
 
 #process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbrechits*process.hgcaltbrechitsplotter*process.hgcaltbrechitsplotter_new)
-process.p =cms.Path(process.hgcaltbdigis*process.dumpDigi*process.hgcaltbrechitshighgain*process.hgcaltbrechitsplotter_highgain_new)
+process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechitshighgain*process.hgcaltbrechitsplotter_highgain_new)
 #process.p =cms.Path(process.hgcaltbdigis*process.dumpDigi)
 #process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbrechitslowgain*process.hgcaltbrechitsplotter_lowgain_new)
 #process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbrechits*process.hgcaltbrechitsplotter*process.hgcaltbrechitsplotter_lowgain_new)

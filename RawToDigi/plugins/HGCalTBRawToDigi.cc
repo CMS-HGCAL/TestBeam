@@ -1,8 +1,11 @@
 #include <iostream>
+#include <fstream>
+
 #include "HGCal/RawToDigi/plugins/HGCalTBRawToDigi.h"
 using namespace std;
 
 unsigned int gray_to_binary (unsigned int gray);
+ofstream fs;
 
 HGCalTBRawToDigi::HGCalTBRawToDigi(edm::ParameterSet const& conf):
 	dataTag_(conf.getParameter<edm::InputTag>("InputLabel")),
@@ -22,6 +25,8 @@ void HGCalTBRawToDigi::beginJob()
 	if (!io.load(fip.fullPath(), essource_.emap_)) {
 		throw cms::Exception("Unable to load electronics map");
 	}
+        fs.open("Output_Test.txt");
+        fs<<"# SKI CHANNEL ADC1 ADC2 "<<endl;
 }
 
 void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
@@ -31,7 +36,8 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 	e.getByLabel(dataTag_, rawraw);
 
 	std::auto_ptr<SKIROC2DigiCollection> digis(0);
-	//
+	
+        fs<<endl<<" Results for Event number "<<e.id().event()<<endl;
 	const FEDRawData& fed = rawraw->FEDData(fedId_);
 	if (fed.size() != 0) { /// \todo Exception if 0????
 
@@ -59,6 +65,7 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 					int ptradc2 = ptr - ichan - 64 - 128 * (2 - ski);
 //					digis->backDataFrame().setSample(0, pdata[ptradc1], pdata[ptradc2]);// Only one sample hardcoded as 0
                                         digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF),gray_to_binary( pdata[ptradc2] & 0xFFF)); 
+                                        fs<<" "<<ski<<" "<<ichan<<" "<<gray_to_binary(pdata[ptradc1] & 0xFFF)<<" "<<gray_to_binary( pdata[ptradc2] & 0xFFF)<<endl;
 				}
 			}
                  }

@@ -272,7 +272,6 @@ Sum_Cluster_ADC->Fill(ADC_TMP);
 void
 RecHitPlotter_LowGain_New::beginJob()
 {
-
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
