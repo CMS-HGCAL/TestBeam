@@ -23,6 +23,7 @@
 #include "TH2Poly.h"
 #include "TProfile.h"
 #include "TH1F.h"
+#include "TH2F.h"
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
@@ -36,7 +37,9 @@
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
-
+#include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
+#include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
+#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 //
 // class declaration
 //
@@ -66,16 +69,24 @@ private:
 	edm::EDGetToken HGCalTBRecHitCollection_;
 	HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
+        std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_2.txt";
+        struct {
+                HGCalElectronicsMap emap_;
+        } essource_;
 	int sensorsize = 128;// The geometry for a 256 cell sensor hasnt been implemted yet. Need a picture to do this.
 	std::vector<std::pair<double, double>> CellXY;
 	std::pair<double, double> CellCentreXY;
 	std::vector<std::pair<double, double>>::const_iterator it;
+//TH2D *Covar_hist =  new TH2D("Covar_hist","Covar_hist",nphistar_bins-1,phistar_var,nphistar_bins-1,phistar_var);
+//TH2D *Correl_hist =  new TH2D("Correl_hist","Correl_hist",nphistar_bins-1,phistar_var,nphistar_bins-1,phistar_var);
+
 	const static int NLAYERS  = 1;
 	TH2Poly *h_RecHit_layer[NLAYERS][5000];
 	const static int cellx = 15;
 	const static int celly = 15;
 	int Sensor_Iu = 0;
 	int Sensor_Iv = 0;
+        double ADC_Chan[128][5000];
         TH1F    *h_RecHit_layer_summed[NLAYERS];
 	TH1F  *h_RecHit_layer_cell[NLAYERS][cellx][celly];
         TH1F* Sum_Cluster_ADC;
@@ -246,7 +257,9 @@ if(ADC_TMP > 5.){
                 CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize);
                 double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
                 double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-
+                uint32_t EID = essource_.emap_.detId2eid(RecHit.id());
+                HGCalTBElectronicsId eid(EID);
+                ADC_Chan[64*(eid.iskiroc()-1) + eid.ichan()][event.id().event()] = RecHit.energy();
                 if(((RecHit.id()).cellType() == 0 ) ){
 //                  if((RecHit.id()).cellType() == 0){ 
                      if((iux < (iux_Max+2)  && iux > (iux_Max -2)) && (iyy < (iyy_Max +2) && iyy > (iyy_Max -2)) && RecHit.energy() > 6.  ){
@@ -255,6 +268,7 @@ if(ADC_TMP > 5.){
                      if((iux <= 0.25 && iyy>= -0.25 ) || (iux < -0.5) ){
                           h_RecHit_layer[n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (RecHit.energy() - (Average_Pedestal_Per_Event1_Full/(Cell_counter1_Full))) );
                           h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energy()- (Average_Pedestal_Per_Event1_Full/(Cell_counter1_Full)));
+//                          if(DoCommonMode) ADC_Chan[64*(eid.iskiroc()-1) + eid.ichan()][event.id().event()] = RecHit.energy() - (Average_Pedestal_Per_Event1_Full/(Cell_counter1_Full));
 //                          Sum_Cluster_ADC->Fill(RecHit.energy()- (Average_Pedestal_Per_Event1_Full/(Cell_counter1_Full)));
 //                          CG_X->Fill(iux); 
 //                          CG_Y->Fill(iyy);
@@ -262,6 +276,7 @@ if(ADC_TMP > 5.){
                      else if((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50)){
                           h_RecHit_layer[n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (RecHit.energy() - (Average_Pedestal_Per_Event2_Full/(Cell_counter2_Full))) );
                           h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energy()- (Average_Pedestal_Per_Event2_Full/(Cell_counter2_Full)));
+//                          if(DoCommonMode) ADC_Chan[64*(eid.iskiroc()-1) + eid.ichan()][event.id().event()] = RecHit.energy() - (Average_Pedestal_Per_Event2_Full/(Cell_counter2_Full));
 //                          Sum_Cluster_ADC->Fill(RecHit.energy()- (Average_Pedestal_Per_Event2_Full/(Cell_counter2_Full)));
 //                          CG_X->Fill(iux);
 //                          CG_Y->Fill(iyy);
@@ -273,10 +288,12 @@ if(ADC_TMP > 5.){
                      if((iux <= 0.25 && iyy>= -0.25 ) || (iux < -0.5) ){
                          h_RecHit_layer[n_layer - 1][event.id().event()]->Fill(iux , iyy, RecHit.energy() - (Average_Pedestal_Per_Event1_Half/Cell_counter1_Half) );
                          h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energy() - (Average_Pedestal_Per_Event1_Half/Cell_counter1_Half));
+//                         if(DoCommonMode) ADC_Chan[64*(eid.iskiroc()-1) + eid.ichan()][event.id().event()] = RecHit.energy() - (Average_Pedestal_Per_Event1_Half/Cell_counter1_Half);
                        }
                      if((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50) ){
                           h_RecHit_layer[n_layer - 1][event.id().event()]->Fill(iux , iyy, RecHit.energy() - (Average_Pedestal_Per_Event2_Half/Cell_counter2_Half) );
                           h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energy() - (Average_Pedestal_Per_Event2_Half/Cell_counter2_Half)); 
+//                          if(DoCommonMode) ADC_Chan[64*(eid.iskiroc()-1) + eid.ichan()][event.id().event()] = RecHit.energy() - (Average_Pedestal_Per_Event2_Half/Cell_counter2_Half);
                         }
 
                   }
@@ -284,6 +301,8 @@ if(ADC_TMP > 5.){
 	}
 
 if(Sum_Cluster_Tmp > 6.) Sum_Cluster_ADC->Fill(Sum_Cluster_Tmp);
+
+
 }//analyze method ends here
 
 
@@ -291,7 +310,11 @@ if(Sum_Cluster_Tmp > 6.) Sum_Cluster_ADC->Fill(Sum_Cluster_Tmp);
 void
 RecHitPlotter_HighGain_New::beginJob()
 {
-
+HGCalCondObjectTextIO io(0);
+  edm::FileInPath fip(mapfile_);
+   if (!io.load(fip.fullPath(), essource_.emap_)) {
+     throw cms::Exception("Unable to load electronics map");
+      }
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
