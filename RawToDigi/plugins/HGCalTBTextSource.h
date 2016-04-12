@@ -70,11 +70,10 @@ private:
 
 		if(!readLines()) return false;
 		id = edm::EventID(m_run, 1, m_event);
-		// time is a hack
-		edm::TimeValue_t present_time = presentTime(); ///\todo take time from file? how to define the time?
-		unsigned long time_between_events = timeBetweenEvents();
 
-		time = present_time + time_between_events;
+		// time is a hack
+		time = (edm::TimeValue_t) m_time;
+
 		return true;
 	}
 	virtual void produce(edm::Event & e);

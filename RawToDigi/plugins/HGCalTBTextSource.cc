@@ -1,7 +1,12 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBTextSource.h"
 //#define DEBUG
+#define DEBUGTIME
 
 #ifdef DEBUG
+#include <iostream>
+#endif
+
+#ifdef DEBUGTIME
 #include <iostream>
 #endif
 
@@ -25,18 +30,23 @@ bool HGCalTBTextSource::readLines()
 	// read the first line
 	buffer[0] = 0;
 	m_file.getline(buffer, 1000);
-	if( sscanf(buffer, "CHIP %u TRIG: %x TIME: %x RUN: %u", &m_sourceId, &triggerID, &m_time, &m_run) != 4) return false;
+	if( sscanf(buffer, "CHIP %u TRIG: %x TIME: %x RUN: %u EV: %u", &m_sourceId, &triggerID, &m_time, &m_run, &m_event) != 5) return false;
+	++m_event;
 	//std::cout << triggerID << "\t" << (triggerID & 0xF0000000) << std::endl;
 
+	m_time = m_time >> 2;
+#ifdef DEBUGTIME
+	std::cout << m_run << "\t" << m_event << "\t" << m_time << "\n";
+#endif
+
 	assert( (triggerID & 0xF0000000) == 0x80000000 ); // check if the skiroc is fine 
-	m_event  = ((triggerID>>12)&0x00000FFF); // extract the trigger number
 	
 	while ( m_file.peek()!='C' && m_file.good()) {
 	  buffer[0] = 0;
 	  m_file.getline(buffer, 1000);
 //	  assert(buffer[1]=='x');
 #ifdef DEBUG
-	  std::cout << m_sourceId << "\t" << m_event << "\t" << buffer << "\n"; // buffer has a \n
+	  std::cout << m_sourceId << "\t" << m_event << "\t" << m_time << "\t" << buffer << "\n"; // buffer has a \n
 #endif	  
 	  m_lines.push_back(buffer);
 	}
