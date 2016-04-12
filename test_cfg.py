@@ -9,7 +9,7 @@ process.load('HGCal.Calibration.pedestals_cfi')
 
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(1), ### maybe this should be read from the file
-                            fileNames=cms.untracked.vstring("file:Electron_Runs_2932016/HGC_Output_2051.txt") ### here a vector is provided
+                            fileNames=cms.untracked.vstring("file:Proton_Runs_0242016/HGC_Output_8272.txt") ### here a vector is provided
 )
 
 
