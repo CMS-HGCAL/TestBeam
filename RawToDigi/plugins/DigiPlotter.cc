@@ -36,8 +36,10 @@
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
+#include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
+#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
-#include "HGCal/DataFormats/interface/SKIROCParameters.h"
 
 //
 // class declaration
@@ -64,20 +66,26 @@ private:
 	bool DEBUG = 0;
 	HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
+        std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_2.txt";
+        struct {
+                HGCalElectronicsMap emap_;
+        } essource_;
 	int sensorsize = 128;// The geometry for a 256 cell sensor hasnt been implemted yet. Need a picture to do this.
 	std::vector<std::pair<double, double>> CellXY;
 	std::pair<double, double> CellCentreXY;
 	std::vector<std::pair<double, double>>::const_iterator it;
-
-	TH2Poly *h_digi_layer[SKIROC::MAXSAMPLES][SKIROC::NLAYERS];
-	TH1F    *h_digi_layer_summed[SKIROC::MAXSAMPLES][SKIROC::NLAYERS];
-	TProfile    *h_digi_layer_profile[SKIROC::MAXSAMPLES][SKIROC::NLAYERS];
-
+	const static int NSAMPLES = 2;
+	const static int NLAYERS  = 1;
+	TH2Poly *h_digi_layer[NSAMPLES][NLAYERS];
+        TH1F    *h_digi_layer_summed[NSAMPLES][NLAYERS];
+        TProfile    *h_digi_layer_profile[NSAMPLES][NLAYERS];
 	const static int cellx = 15;
 	const static int celly = 15;
 	int Sensor_Iu = 0;
 	int Sensor_Iv = 0;
-	TH1F  *h_digi_layer_cell[SKIROC::MAXSAMPLES][SKIROC::NLAYERS][cellx][celly];
+	TH1F  *h_digi_layer_cell[NSAMPLES][NLAYERS][cellx][celly];
+        TH1F  *h_digi_layer_channel[2][64][2]; 
+//        TH1F  *h_digi_layer_cell_event[NSAMPLES][NLAYERS][cellx][celly][512];
 	char name[50], title[50];
 };
 
@@ -105,8 +113,17 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
 	double FullHexX[FullHexVertices] = {0.};
 	double FullHexY[FullHexVertices] = {0.};
 	int iii = 0;
-	for(int nsample = 0; nsample < SKIROC::MAXSAMPLES; nsample++) {
-		for(unsigned int nlayers = 0; nlayers < SKIROC::NLAYERS; nlayers++) {
+        for(int ISkiroc = 1;ISkiroc<=2;ISkiroc++){
+            for(int Channel=0; Channel<64;Channel++){
+               for(int iii=0; iii<2;iii++){
+               sprintf(name, "Ski_%i_Channel_%i_ADC%i",ISkiroc,Channel,iii);
+                  sprintf(title, "Ski %i Channel %i ADC%i",ISkiroc,Channel,iii);
+                  h_digi_layer_channel[ISkiroc-1][Channel][iii] = fs->make<TH1F>(name, title, 4096, 0., 4095.);
+                 }
+              }       
+           }
+	for(int nsample = 0; nsample < NSAMPLES; nsample++) {
+		for(int nlayers = 0; nlayers < NLAYERS; nlayers++) {
 //Booking a "hexagonal" histograms to display the sum of Digis for NSAMPLES, in 1 SKIROC in 1 layer. To include all layers soon. Also the 1D Digis per cell in a sensor is booked here for NSAMPLES.
 			sprintf(name, "FullLayer_ADC%i_Layer%i", nsample, nlayers + 1);
 			sprintf(title, "Sum of adc counts per cell for ADC%i Layer%i", nsample, nlayers + 1);
@@ -195,7 +212,7 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 		for(i = ski.begin(); i != ski.end(); i++) {
                        
 			const SKIROC2DigiCollection& Coll = *(*i);
-			cout << "SKIROC2 Digis: " << i->provenance()->branchName() << endl;
+//			cout << "SKIROC2 Digis: " << i->provenance()->branchName() << endl;
 			for(SKIROC2DigiCollection::const_iterator j = Coll.begin(); j != Coll.end(); j++) {
 				const SKIROC2DataFrame& SKI = *j ;
 				int n_layer = (SKI.detid()).layer();
@@ -203,6 +220,8 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				int n_sensor_IV = (SKI.detid()).sensorIV();
 				int n_cell_iu = (SKI.detid()).iu();
 				int n_cell_iv = (SKI.detid()).iv();
+                                uint32_t EID = essource_.emap_.detId2eid(SKI.detid());
+                                HGCalTBElectronicsId eid(EID);
 				if(DEBUG) cout << endl << " Layer = " << n_layer << " Sensor IU = " << n_sensor_IU << " Sensor IV = " << n_sensor_IV << " Cell iu = " << n_cell_iu << " Cell iu = " << n_cell_iv << endl;
 				if(!IsCellValid.iu_iv_valid(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize))  continue;
 				CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize);
@@ -212,13 +231,16 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 					h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample].adc());
                                         h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter1++,SKI[nsample].adc(),1);
 					h_digi_layer_summed[nsample][n_layer - 1]->Fill(SKI[nsample].adc());
-					h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample].adc());
+                                        h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][nsample]->Fill(SKI[nsample].adc());
+                                            h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample].adc());
 //                                        h_digi_layer_cell_event[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv][event.id().event() - 1]->Fill(SKI[nsample].adc());
                                         nsample = 1;
                                         h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample-1].tdc());
                                         h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter2++,SKI[nsample-1].tdc(),1);
                                         h_digi_layer_summed[nsample][n_layer - 1]->Fill(SKI[nsample-1].tdc());
-                                        h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample-1].tdc());
+                                        if((SKI.detid()).cellType() != 4) h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample-1].tdc());
+//                                        if(((SKI.detid()).cellType() != 4) && (eid.ichan() == 0) ) cout<<endl<<"SKIROC=  "<<eid.iskiroc()<<" Chan= "<<eid.ichan()<<" u= "<<n_cell_iu<<" v = "<<n_cell_iv<<endl;
+                                        h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][nsample]->Fill(SKI[nsample-1].tdc());
 //                                        h_digi_layer_cell_event[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv][event.id().event() - 1]->Fill(SKI[nsample-1].tdc());  
 			}
 		}
@@ -233,7 +255,11 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 void
 DigiPlotter::beginJob()
 {
-
+  HGCalCondObjectTextIO io(0);
+  edm::FileInPath fip(mapfile_);
+   if (!io.load(fip.fullPath(), essource_.emap_)) {
+     throw cms::Exception("Unable to load electronics map");
+      }
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
