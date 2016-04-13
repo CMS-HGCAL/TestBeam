@@ -70,9 +70,9 @@ private:
 	std::vector<std::pair<double, double>>::const_iterator it;
 	const static int NSAMPLES = 2;
 	const static int NLAYERS  = 1;
-	TH2Poly *h_digi_layer[NSAMPLES][NLAYERS][1024];
+	TH2Poly *h_digi_layer[NSAMPLES][NLAYERS][6000]; ///\todo put the fs make in the analyze method, not the constructor
  //       TH2Poly *h_digi_layer_Raw[NSAMPLES][NLAYERS][512]; 
-        TH1F* Sum_Hist_cells_SKI1[1024]; 
+        TH1F* Sum_Hist_cells_SKI1[6000]; 
 	const static int cellx = 15;
 	const static int celly = 15;
 	int Sensor_Iu = 0;
@@ -106,7 +106,7 @@ DigiPlotter_New::DigiPlotter_New(const edm::ParameterSet& iConfig)
 	int iii = 0;
 	for(int nsample = 0; nsample < NSAMPLES; nsample++) {
 		for(int nlayers = 0; nlayers < NLAYERS; nlayers++) {
-                    for(int eee = 0; eee< 1024; eee++){
+                    for(int eee = 0; eee< 6000; eee++){
 //Booking a "hexagonal" histograms to display the sum of Digis for NSAMPLES, in 1 SKIROC in 1 layer. To include all layers soon. Also the 1D Digis per cell in a sensor is booked here for NSAMPLES.
 			sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", nsample, nlayers + 1,eee);
 			sprintf(title, "Sum of adc counts per cell for ADC%i Layer%i Event%i", nsample, nlayers + 1,eee);
@@ -125,10 +125,6 @@ DigiPlotter_New::DigiPlotter_New(const edm::ParameterSet& iConfig)
                         Sum_Hist_cells_SKI1[eee] = fs->make<TH1F>(name,title,4096, 0 , 4095);
 			for(int iv = -7; iv < 8; iv++) {
 				for(int iu = -7; iu < 8; iu++) {
-/*
-                                        for(int eee = 0; eee< 512; eee++){
-                                           }
-*/
 					CellXY = TheCell.GetCellCoordinatesForPlots(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize);
 					int NumberOfCellVertices = CellXY.size();
 					iii = 0;
