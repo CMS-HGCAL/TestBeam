@@ -23,13 +23,21 @@ public:
 		static const int MASK_ADCTDC = 0x0FFF;
 		static const int MASK_HIT = 0x1000;
 		static const int MASK_GAIN = 0x2000;
-		int adc() const
+		static const unsigned int ADCLOW_SHIFT = 1;
+		static const unsigned int ADCHIGH_SHIFT = 1;
+		static const unsigned int TDC_SHIFT = 2;
+		int adcLow() const // adc values in 12 bits, so no reason to use unsigned types
 		{
-			return frame_[i_] & MASK_ADCTDC;
+			return frame_[i_ + ADCLOW_SHIFT] & MASK_ADCTDC;
 		}
+		int adcHigh() const
+		{
+			return frame_[i_ + ADCHIGH_SHIFT] & MASK_ADCTDC;
+		}
+
 		int tdc() const
 		{
-			return frame_[i_ + 1] & MASK_ADCTDC;
+			return frame_[i_ + TDC_SHIFT] & MASK_ADCTDC;
 		}
 	private:
 		const edm::DataFrame& frame_;
@@ -82,7 +90,7 @@ public:
 		return Sample(m_data, i * WORDS_PER_SAMPLE + HEADER_WORDS);
 	}
 	/// set the sample contents
-	void setSample(edm::DataFrame::size_type isample, int adc, int tdc);
+	void setSample(edm::DataFrame::size_type isample, int adcLow, int adcHigh, int tdc);
 	/// get the flag word
 	uint16_t flags() const
 	{

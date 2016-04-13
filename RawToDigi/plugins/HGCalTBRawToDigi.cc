@@ -1,6 +1,6 @@
-#include <iostream>
+//#include <iostream>
 #include "HGCal/RawToDigi/plugins/HGCalTBRawToDigi.h"
-using namespace std;
+
 
 unsigned int gray_to_binary (unsigned int gray);
 
@@ -34,10 +34,9 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 	//
 
 	for(auto fedId_ : fedIds_){
-	  int skiroc = fedId_;
-	  std::cout << skiroc << std::endl;
+
 	  const FEDRawData& fed = rawraw->FEDData(fedId_);
-	  if(fed.size() == 0) continue; // empty FEDs are allowed: not in the readout for example
+	  if(fed.size() == 0) continue; // empty FEDs are allowed: for example when one FED is not in the readout for a particular run
 
 		// we can figure out the number of samples from the size of the raw data
 		//int nsamples = fed.size() / (sizeof(uint16_t) * SKIROC::NCHANNELS * 2); // 2 is for ADC and TDC
@@ -52,7 +51,7 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 		ptr--; // now we are pointing at a relatively-useless header word
 		ptr--; // now we are pointing at the first TDC word
 */
-                for (int ski = 2; ski >= 1; ski--) {
+		for (int ski = 2; ski >= 1; ski--) { // starting from 2 because then we are going back reading two samples
 			for (int ichan = 0; ichan < SKIROC::NCHANNELS; ichan++) {
 				HGCalTBElectronicsId eid(ski, ichan);
 				if (!essource_.emap_.existsEId(eid.rawId())) {
@@ -62,11 +61,10 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 					digis->addDataFrame(did);
 					int ptradc1 = ptr - ichan - 128 * (2 - ski);
 					int ptradc2 = ptr - ichan - 64 - 128 * (2 - ski);
-//					digis->backDataFrame().setSample(0, pdata[ptradc1], pdata[ptradc2]);// Only one sample hardcoded as 0
-                                        digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF),gray_to_binary( pdata[ptradc2] & 0xFFF)); 
+					digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF),gray_to_binary( pdata[ptradc2] & 0xFFF), 0);  ///\todo TDC value hardcoded to 0 because not in the readout
 				}
 			}
-                 }
+		}
 
 	}
 

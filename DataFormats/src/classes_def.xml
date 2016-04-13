@@ -1,6 +1,6 @@
 <lcgdict>
-  <class name="HGCalTBRecHit" ClassVersion="-1">
-   <version ClassVersion="-1" checksum="522709000"/>
+  <class name="HGCalTBRecHit" ClassVersion="0">
+   <version ClassVersion="0" checksum="3094752182"/>
   </class>
   <class name="std::vector<HGCalTBRecHit>"/>
   <class name="edm::SortedCollection<HGCalTBRecHit,edm::StrictWeakOrdering<HGCalTBRecHit> >"/>

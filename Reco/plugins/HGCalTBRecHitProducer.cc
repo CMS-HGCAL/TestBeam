@@ -2,7 +2,11 @@
 
 HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg)
 	: outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
-	  _digisToken(consumes<HGCalTBDigiCollection>(cfg.getParameter<edm::InputTag>("digiCollection")))
+	  _digisToken(consumes<HGCalTBDigiCollection>(cfg.getParameter<edm::InputTag>("digiCollection"))),
+	  _pedestalLow_filename(cfg.getParameter<std::string>("pedestalLow")),
+	  _pedestalHigh_filename(cfg.getParameter<std::string>("pedestalHigh")),
+	  _gainsLow_filename(cfg.getParameter<std::string>("gainLow")),
+	  _gainsHigh_filename(cfg.getParameter<std::string>("gainHigh"))
 {
 	produces <HGCalTBRecHitCollection>(outputCollectionName);
 
@@ -26,13 +30,15 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 	//iSetup.get<HGCalCondGains>().get(adcToGeVHandle);
 	HGCalCondGains adcToGeV = iSetup.get<HGCalCondGains>();
 #else
-	HGCalCondGains adcToGeV;
-	HGCalCondPedestals pedestals;
+	HGCalCondGains adcToGeV_low, adcToGeV_high;
+	HGCalCondPedestals pedestals_low, pedestals_high;
 	HGCalCondObjectTextIO condIO(HGCalTBNumberingScheme::scheme());
 	//HGCalElectronicsMap emap;
 //    assert(io.load("mapfile.txt",emap)); ///\todo to be trasformed into exception
-	assert(condIO.load("pedestals.txt", pedestals));
-	assert(condIO.load("gains.txt", adcToGeV));
+	assert(condIO.load(_pedestalLow_filename, pedestals_low));
+	assert(condIO.load(_pedestalHigh_filename, pedestals_high));
+	assert(condIO.load(_gainsLow_filename, adcToGeV_low));
+	assert(condIO.load(_gainsHigh_filename, adcToGeV_high));
 	///\todo check if reading the conditions from file some channels are not in the file!
 #endif
 
@@ -51,9 +57,10 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 		// now taking the first sample
 		for(unsigned int iSample = 0; iSample < nSamples; ++iSample) {
 
-			float energy = (digi[iSample].adc() - pedestals.get(digi.detid())->value) * adcToGeV.get(digi.detid())->value;
+			float energyLow = (digi[iSample].adcHigh() - pedestals_low.get(digi.detid())->value) * adcToGeV_low.get(digi.detid())->value;
+			float energyHigh = (digi[iSample].adcHigh() - pedestals_high.get(digi.detid())->value) * adcToGeV_high.get(digi.detid())->value;
 
-			HGCalTBRecHit recHit(digi.detid(), energy, digi[iSample].tdc()); ///\todo use time calibration!
+			HGCalTBRecHit recHit(digi.detid(), energyLow, energyHigh, digi[iSample].tdc()); ///\todo use time calibration!
 
 #ifdef DEBUG
 			std::cout << recHit << std::endl;

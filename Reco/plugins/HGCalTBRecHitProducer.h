@@ -38,6 +38,8 @@ public:
 private:
 	std::string outputCollectionName;     ///<label name of collection made by this producer
 	edm::EDGetTokenT<HGCalTBDigiCollection> _digisToken;
+	std::string _pedestalLow_filename, _pedestalHigh_filename;
+	std::string _gainsLow_filename, _gainsHigh_filename;
 };
 
 

@@ -203,41 +203,41 @@ DigiPlotter_New::analyze(const edm::Event& event, const edm::EventSetup& setup)
                                 int nsample = 0;
 
                                 if(SKI_1.detid().cellType() == 1 || SKI_1.detid().cellType() == 4){
-                                    Average_Pedestal_Calib_Cell_Event1 += SKI_1[nsample].adc();
+                                    Average_Pedestal_Calib_Cell_Event1 += SKI_1[nsample].adcLow();
                                     Cell_counter1_Calib_Cell1++;
                                   };
 
 
                                 if(((iux <= 0.25 && iyy>= -0.25 ) || (iux < -0.5)) && ((SKI_1.detid().cellType() == 2) || SKI_1.detid().cellType() == 3) ){
-                                    Average_Pedestal_Half_Cell_Event1 += SKI_1[nsample].adc();         
+                                    Average_Pedestal_Half_Cell_Event1 += SKI_1[nsample].adcLow();         
                                     Cell_counter1_Half_Cell1++;
                                   };
          
                                  if(((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50)) && ((SKI_1.detid().cellType() == 2) || SKI_1.detid().cellType() == 3 )  ){ 
-                                    Average_Pedestal_Half_Cell_Event2 += SKI_1[nsample].adc();
+                                    Average_Pedestal_Half_Cell_Event2 += SKI_1[nsample].adcLow();
                                     Cell_counter1_Half_Cell2++;
                                   };
                                 if(((iux <= 0.25 && iyy>= -0.25 ) || (iux < -0.5 && iyy < 0)) && SKI_1.detid().cellType() == 0){
                                    Cell_counter1++;
-                                   Average_Pedestal_Per_Event1 += SKI_1[nsample].adc();
-                                   Sum_Hist_cells_SKI1[event.id().event() - 1]->Fill(SKI_1[nsample].adc()); 
+                                   Average_Pedestal_Per_Event1 += SKI_1[nsample].adcLow();
+                                   Sum_Hist_cells_SKI1[event.id().event() - 1]->Fill(SKI_1[nsample].adcLow()); 
                                   }
 
                                 if(((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50 && iyy < 0) ) && SKI_1.detid().cellType() == 0){
                                    Cell_counter2++;
-                                   Average_Pedestal_Per_Event2 += SKI_1[nsample].adc();
+                                   Average_Pedestal_Per_Event2 += SKI_1[nsample].adcLow();
                                   }
 
 /* 
                                 if((iux <= -0.25 && iux >= -3.25) && (iyy <= -0.25 && iyy>= -5.25 ) && SKI_1.detid().cellType() == 0){
                                    Cell_counter1++;
-                                   Average_Pedestal_Per_Event1 += SKI_1[nsample].adc();
-                                   Sum_Hist_cells_SKI1[event.id().event() - 1]->Fill(SKI_1[nsample].adc()); 
+                                   Average_Pedestal_Per_Event1 += SKI_1[nsample].adcLow();
+                                   Sum_Hist_cells_SKI1[event.id().event() - 1]->Fill(SKI_1[nsample].adcLow()); 
                                   }
 
                                 if((iux >= 0.25 && iux <= 3.25) && (iyy <= -0.25 && iyy>= -5.25 ) && SKI_1.detid().cellType() == 0){
                                    Cell_counter2++;
-                                   Average_Pedestal_Per_Event2 += SKI_1[nsample].adc();
+                                   Average_Pedestal_Per_Event2 += SKI_1[nsample].adcLow();
                                   }
 */
 
@@ -260,37 +260,37 @@ DigiPlotter_New::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
                                         int nsample = 0;
 /*
-					if(flag_calib == 1) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, 0.5*(SKI[nsample].adc() - 2*(Average_Pedestal_Per_Event/Cell_counter)));
-                                        else h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adc() - (Average_Pedestal_Per_Event/Cell_counter)) );
+					if(flag_calib == 1) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, 0.5*(SKI[nsample].adcLow() - 2*(Average_Pedestal_Per_Event/Cell_counter)));
+                                        else h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Average_Pedestal_Per_Event/Cell_counter)) );
 */
                                         if(flag_calib == 1){
-//                                          h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, 0.5*(SKI[nsample].adc() - 2*(Sum_Hist_cells_SKI1[event.id().event() - 1]->GetMean())));
-//                                          h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, 0.5*(SKI[nsample].adc()));
+//                                          h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, 0.5*(SKI[nsample].adcLow() - 2*(Sum_Hist_cells_SKI1[event.id().event() - 1]->GetMean())));
+//                                          h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, 0.5*(SKI[nsample].adcLow()));
                                             
-                                            if((iux <= 0.25 && iyy>= -0.25 ) || (iux < -0.5) ) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, 0.5*(SKI[nsample].adc() - (Average_Pedestal_Calib_Cell_Event1/(Cell_counter1_Calib_Cell1))));
-                                            else if((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50)) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, 0.5*(SKI[nsample].adc() - (Average_Pedestal_Calib_Cell_Event1/(Cell_counter1_Calib_Cell1))));
+                                            if((iux <= 0.25 && iyy>= -0.25 ) || (iux < -0.5) ) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, 0.5*(SKI[nsample].adcLow() - (Average_Pedestal_Calib_Cell_Event1/(Cell_counter1_Calib_Cell1))));
+                                            else if((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50)) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, 0.5*(SKI[nsample].adcLow() - (Average_Pedestal_Calib_Cell_Event1/(Cell_counter1_Calib_Cell1))));
 
                                           }
                                         else{
-//                                             h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adc() - (Sum_Hist_cells_SKI1[event.id().event() - 1]->GetMean())) );
-//                                             h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adc()) );
-//                                            if((iux <0.25 && iyy>= -0.25 ) || (iux < -0.25) ) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adc() - (Average_Pedestal_Per_Event1/(Cell_counter1))) );
-                                            if(SKI.detid().cellType() == 3 && event.id().event() == 34) cout<<endl<<" iux= "<<iux<<" iyy= "<<iyy<<" ADC = "<<SKI[nsample].adc()<<" Ped= "<< Average_Pedestal_Half_Cell_Event1/(Cell_counter1_Half_Cell1)<<endl;
+//                                             h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Sum_Hist_cells_SKI1[event.id().event() - 1]->GetMean())) );
+//                                             h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow()) );
+//                                            if((iux <0.25 && iyy>= -0.25 ) || (iux < -0.25) ) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Average_Pedestal_Per_Event1/(Cell_counter1))) );
+                                            if(SKI.detid().cellType() == 3 && event.id().event() == 34) cout<<endl<<" iux= "<<iux<<" iyy= "<<iyy<<" ADC = "<<SKI[nsample].adcLow()<<" Ped= "<< Average_Pedestal_Half_Cell_Event1/(Cell_counter1_Half_Cell1)<<endl;
                                             if((iux <= 0.25 && iyy>= -0.25 ) || (iux < -0.5) ){
-                                               if( SKI.detid().cellType() == 0 || SKI.detid().cellType() == 5) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adc() - (Average_Pedestal_Per_Event1/(Cell_counter1))) );
-                                               if(SKI.detid().cellType() == 2 || SKI.detid().cellType() == 3) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adc() - (Average_Pedestal_Half_Cell_Event1/(Cell_counter1_Half_Cell1))) ); 
-                                               if(SKI.detid().cellType() == 1 || SKI.detid().cellType() == 4) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adc() - (Average_Pedestal_Calib_Cell_Event1/(Cell_counter1_Calib_Cell1))) );
+                                               if( SKI.detid().cellType() == 0 || SKI.detid().cellType() == 5) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Average_Pedestal_Per_Event1/(Cell_counter1))) );
+                                               if(SKI.detid().cellType() == 2 || SKI.detid().cellType() == 3) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Average_Pedestal_Half_Cell_Event1/(Cell_counter1_Half_Cell1))) ); 
+                                               if(SKI.detid().cellType() == 1 || SKI.detid().cellType() == 4) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Average_Pedestal_Calib_Cell_Event1/(Cell_counter1_Calib_Cell1))) );
                                               }
                                             else if((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50)){
-                                                    if( SKI.detid().cellType() == 0 || SKI.detid().cellType() == 5) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adc() - (Average_Pedestal_Per_Event2/(Cell_counter2))) );
-                                                    if(SKI.detid().cellType() == 2 || SKI.detid().cellType() == 3) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adc() - (Average_Pedestal_Half_Cell_Event2/(Cell_counter1_Half_Cell2))) );
+                                                    if( SKI.detid().cellType() == 0 || SKI.detid().cellType() == 5) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Average_Pedestal_Per_Event2/(Cell_counter2))) );
+                                                    if(SKI.detid().cellType() == 2 || SKI.detid().cellType() == 3) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Average_Pedestal_Half_Cell_Event2/(Cell_counter1_Half_Cell2))) );
 
                                                    }
 
                                             }
 
                                         nsample = 1;
-                                        h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample-1].tdc() - Sum_Hist_cells_SKI1[event.id().event() - 1]->GetMean()));
+                                        h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample-1].adcHigh() - Sum_Hist_cells_SKI1[event.id().event() - 1]->GetMean()));
 			}
 		}
 	} else {

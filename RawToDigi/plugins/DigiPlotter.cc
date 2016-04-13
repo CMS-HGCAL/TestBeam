@@ -228,20 +228,20 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
 				double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
                                         int nsample = 0;
-					h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample].adc());
-                                        h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter1++,SKI[nsample].adc(),1);
-					h_digi_layer_summed[nsample][n_layer - 1]->Fill(SKI[nsample].adc());
-                                        h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][nsample]->Fill(SKI[nsample].adc());
-                                            h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample].adc());
-//                                        h_digi_layer_cell_event[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv][event.id().event() - 1]->Fill(SKI[nsample].adc());
+					h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample].adcLow());
+                                        h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter1++,SKI[nsample].adcLow(),1);
+					h_digi_layer_summed[nsample][n_layer - 1]->Fill(SKI[nsample].adcLow());
+                                        h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][nsample]->Fill(SKI[nsample].adcLow());
+                                            h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample].adcLow());
+//                                        h_digi_layer_cell_event[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv][event.id().event() - 1]->Fill(SKI[nsample].adcLow());
                                         nsample = 1;
-                                        h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample-1].tdc());
-                                        h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter2++,SKI[nsample-1].tdc(),1);
-                                        h_digi_layer_summed[nsample][n_layer - 1]->Fill(SKI[nsample-1].tdc());
-                                        if((SKI.detid()).cellType() != 4) h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample-1].tdc());
+                                        h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample-1].adcHigh());
+                                        h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter2++,SKI[nsample-1].adcHigh(),1);
+                                        h_digi_layer_summed[nsample][n_layer - 1]->Fill(SKI[nsample-1].adcHigh());
+                                        if((SKI.detid()).cellType() != 4) h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample-1].adcHigh());
 //                                        if(((SKI.detid()).cellType() != 4) && (eid.ichan() == 0) ) cout<<endl<<"SKIROC=  "<<eid.iskiroc()<<" Chan= "<<eid.ichan()<<" u= "<<n_cell_iu<<" v = "<<n_cell_iv<<endl;
-                                        h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][nsample]->Fill(SKI[nsample-1].tdc());
-//                                        h_digi_layer_cell_event[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv][event.id().event() - 1]->Fill(SKI[nsample-1].tdc());  
+                                        h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][nsample]->Fill(SKI[nsample-1].adcHigh());
+//                                        h_digi_layer_cell_event[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv][event.id().event() - 1]->Fill(SKI[nsample-1].adcHigh());  
 			}
 		}
 	} else {

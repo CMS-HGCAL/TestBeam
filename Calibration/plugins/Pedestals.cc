@@ -40,6 +40,7 @@
 //
 // class declaration
 //
+/// \todo calculated and define pedestals for all gains
 
 // If the analyzer does not use TFileService, please remove
 // the template argument to the base class so the class inherits
@@ -149,8 +150,8 @@ Pedestals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 		// now sum the values from different events
 		for(unsigned int iSample = 0; iSample < nSamples; ++iSample) {
-			thisPedestal_itr->second.sum += digi[iSample].adc();
-			thisPedestal_itr->second.sum2 += digi[iSample].adc() * digi[iSample].adc();
+			thisPedestal_itr->second.sum += digi[iSample].adcLow();
+			thisPedestal_itr->second.sum2 += digi[iSample].adcLow() * digi[iSample].adcLow();
 			++(thisPedestal_itr->second.n);
 #ifdef DEBUG
 		std::cout << "[PEDESTAL PRODUCER: digi]" << *digi_itr << std::endl;
