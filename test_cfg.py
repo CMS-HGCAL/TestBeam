@@ -7,10 +7,10 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 process.load('HGCal.StandardSequences.LocalReco_cff')
 
 process.load('HGCal.Calibration.pedestals_cfi')
-#process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
+process.load('HGCal.RawToDigi.hgcaltbdigisplotter_cfi')
+process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
 
 process.source = cms.Source("HGCalTBTextSource",
-                            run=cms.untracked.int32(1), ### maybe this should be read from the file
                             fileNames=cms.untracked.vstring("file:Proton_Runs_0242016/HGC_Output_8272.txt") ### here a vector is provided
 )
 
@@ -43,10 +43,9 @@ process.dumpDigi = cms.EDAnalyzer("HGCalDigiDump")
 
 #============================================================ Sequences
 process.debugRawSeq = cms.Sequence(process.dumpRaw)
-process.RawToDigiSeq = cms.Sequence(process.hgcaltbdigis)
 process.DQMSeq = cms.Sequence(process.hgcaltbdigisplotter * process.hgcaltbdigisplotter_new)
 
-#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter*process.hgcaltbrechits*process.hgcaltbrechitsplotter)
+#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter*process.LocalRecoSeq * process.hgcaltbrechitsplotter)
 
 #process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter)
 
