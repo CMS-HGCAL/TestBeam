@@ -4,17 +4,23 @@
 
 Download instructions: \ref instructions_
 
-\section RECO_ Running the RECO chain starting from a fake SKIROC2 output file:
-The SKIROC channel mapping on to the individual cells of a sensor is in:
- - Condformats/data/map_FNAL.txt
+\section INPUTS_ Input files:
+ - channel mapping: file that contains the conversion between electronicID (SKIROC chip number) to detector ID (DetId)
+   - \verbatim HGCal/CondObjects/data/map_FNAL_2.txt \endverbatim
+ - pedestals: pedestal values measured from pedestal run with dedicated analysis (see PEDESTAL_ANALYSIS_)
+   - \verbatim HGCal/CondObjects/data/Ped_HighGain_8272_Mean.txt \endverbatim
+ - gains: ADCtoGeV conversion factors measured with dedicated analysis (see ADCTOGEV_)
+   - \verbatim N/A yet \endverbatim
 
-Fake calibration files are:
- - pedestals.txt
- - gains.txt
+Pedestals and ADCtoGeV should be provided for both high gain ADC and low gain ADC.
+Now only pedestals for high gain is available. Default values if files are not provided are:
+ - 0 for pedestals
+ - 1 for ADCtoGeV
 
-\verbatim
-cmsRun test_cfg.py
-\endverbatim
+\section RECO_ Reconstruction sequence
+The reconstruction sequences are defined in StandardSequences/python
+ - RawToDigiSeq
+ - LocalRecoSeq
 
 
 \section DQM_ Running the DQM plotting

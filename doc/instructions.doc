@@ -5,7 +5,7 @@ Please make sure you have your github account, you have properly added your priv
 
 Download the code:
 \verbatim
-RELEASE=CMSSW_7_6_3_patch2
+RELEASE=CMSSW_8_0_1
 scram project ${RELEASE}
 cd ${RELEASE}/src/
 cmsenv 
