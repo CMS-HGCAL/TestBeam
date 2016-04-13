@@ -1,10 +1,12 @@
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process("unpack")
-process.load('HGCal.RawToDigi.hgcaltbdigis_cfi')
-process.load('HGCal.RawToDigi.hgcaltbdigisplotter_cfi')
+
+#============================================================ Loading standard sequences
+process.load('HGCal.StandardSequences.RawToDigi_cff')
+process.load('HGCal.StandardSequences.LocalReco_cff')
+
 process.load('HGCal.Calibration.pedestals_cfi')
-#process.load('HGCal.Reco.hgcaltbrechitproducer_cfi')
 #process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
 
 process.source = cms.Source("HGCalTBTextSource",
