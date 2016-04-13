@@ -58,8 +58,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 			
 			float pedestal_low_value = (pedestals_low.size() > 0) ? pedestals_low.get(digi.detid())->value : 0;
 			float pedestal_high_value = (pedestals_high.size() > 0) ? pedestals_high.get(digi.detid())->value : 0;
-			float adcToGeV_low_value = (adcToGeV_low.size() > 0) ? adcToGeV_low.get(digi.detid())->value : 0;
-			float adcToGeV_high_value = (adcToGeV_high.size() > 0) ? adcToGeV_high.get(digi.detid())->value : 0;
+			float adcToGeV_low_value = (adcToGeV_low.size() > 0) ? adcToGeV_low.get(digi.detid())->value : 1;
+			float adcToGeV_high_value = (adcToGeV_high.size() > 0) ? adcToGeV_high.get(digi.detid())->value : 1;
 
 			float energyLow = digi[iSample].adcLow() - pedestal_low_value * adcToGeV_low_value;
 			float energyHigh = digi[iSample].adcHigh() - pedestal_high_value * adcToGeV_high_value;
