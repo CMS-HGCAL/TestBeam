@@ -66,6 +66,8 @@ void HGCalTBTextSource::produce(edm::Event & e)
 		uint32_t a, b;
 		sscanf(i->c_str(), "%x %x", &a, &b);
 		if(a==0) continue; // skip the first line because it is the trigger number
+
+// two words of 16bits for ADC high gain and low gain
 		skiwords.push_back(uint16_t(b >> 16));
 		skiwords.push_back(uint16_t(b));
 	}
@@ -84,7 +86,6 @@ void HGCalTBTextSource::fillDescriptions(edm::ConfigurationDescriptions& descrip
 {
 	edm::ParameterSetDescription desc;
 	desc.setComment("TEST");
-	desc.addUntracked<int>("run", 101);
 	desc.addUntracked<std::vector<std::string> >("fileNames");
 	descriptions.add("source", desc);
 }

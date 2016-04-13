@@ -16,8 +16,7 @@
  *
  * \brief convert data from txt file to FEDRawData
  *
- * \todo replace c-like scanf with c++ versions
- * \todo change run and fed IDs (now are hardcoded)
+ * \todo efficiency not tested, many improvements can be done
  */
 class HGCalTBTextSource : public edm::ProducerSourceFromFiles
 {
@@ -28,7 +27,6 @@ public:
 		m_run(0)
 	{
 
-	  //		m_sourceId = pset.getUntrackedParameter<int>("fed", 1000); /// \todo check and read from file?
 		produces<FEDRawDataCollection>();
 		if (fileNames().size()<1){
 			throw cms::Exception("No input files") << "";
