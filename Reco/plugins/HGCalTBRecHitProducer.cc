@@ -35,13 +35,12 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 	HGCalCondObjectTextIO condIO(HGCalTBNumberingScheme::scheme());
 	//HGCalElectronicsMap emap;
 //    assert(io.load("mapfile.txt",emap)); ///\todo to be trasformed into exception
-	assert(condIO.load(_pedestalLow_filename, pedestals_low));
-	assert(condIO.load(_pedestalHigh_filename, pedestals_high));
-	assert(condIO.load(_gainsLow_filename, adcToGeV_low));
-	assert(condIO.load(_gainsHigh_filename, adcToGeV_high));
+	if(_pedestalLow_filename!="") assert(condIO.load(_pedestalLow_filename, pedestals_low));
+	if(_pedestalHigh_filename!="") 	assert(condIO.load(_pedestalHigh_filename, pedestals_high));
+	if(_gainsLow_filename!="") 	assert(condIO.load(_gainsLow_filename, adcToGeV_low));
+	if(_gainsHigh_filename!="") 	assert(condIO.load(_gainsHigh_filename, adcToGeV_high));
 	///\todo check if reading the conditions from file some channels are not in the file!
 #endif
-
 
 	for(auto digi_itr = digisHandle->begin(); digi_itr != digisHandle->end(); ++digi_itr) {
 #ifdef DEBUG
@@ -56,9 +55,14 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 		// if there are more than 1 sample, we need to define a reconstruction algorithm
 		// now taking the first sample
 		for(unsigned int iSample = 0; iSample < nSamples; ++iSample) {
+			
+			float pedestal_low_value = (pedestals_low.size() > 0) ? pedestals_low.get(digi.detid())->value : 0;
+			float pedestal_high_value = (pedestals_high.size() > 0) ? pedestals_high.get(digi.detid())->value : 0;
+			float adcToGeV_low_value = (adcToGeV_low.size() > 0) ? adcToGeV_low.get(digi.detid())->value : 0;
+			float adcToGeV_high_value = (adcToGeV_high.size() > 0) ? adcToGeV_high.get(digi.detid())->value : 0;
 
-			float energyLow = (digi[iSample].adcHigh() - pedestals_low.get(digi.detid())->value) * adcToGeV_low.get(digi.detid())->value;
-			float energyHigh = (digi[iSample].adcHigh() - pedestals_high.get(digi.detid())->value) * adcToGeV_high.get(digi.detid())->value;
+			float energyLow = digi[iSample].adcLow() - pedestal_low_value * adcToGeV_low_value;
+			float energyHigh = digi[iSample].adcHigh() - pedestal_high_value * adcToGeV_high_value;
 
 			HGCalTBRecHit recHit(digi.detid(), energyLow, energyHigh, digi[iSample].tdc()); ///\todo use time calibration!
 
