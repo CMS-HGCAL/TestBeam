@@ -22,7 +22,7 @@
 #include "HGCal/CondObjects/interface/HGCalCondObjects.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/CondObjects/interface/HGCalTBNumberingScheme.h"
-#define DEBUG
+//#define DEBUG
 
 
 #ifdef DEBUG
