@@ -1,6 +1,6 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBTextSource.h"
 //#define DEBUG
-#define DEBUGTIME
+//#define DEBUGTIME
 
 #ifdef DEBUG
 #include <iostream>
