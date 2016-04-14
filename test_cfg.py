@@ -43,9 +43,9 @@ process.dumpDigi = cms.EDAnalyzer("HGCalDigiDump")
 
 #============================================================ Sequences
 process.debugRawSeq = cms.Sequence(process.dumpRaw)
-process.DQMSeq = cms.Sequence(process.hgcaltbdigisplotter * process.hgcaltbdigisplotter_new)
+process.DQMSeq = cms.Sequence(process.hgcaltbdigisplotter * process.hgcaltbdigisplotter_new * process.hgcaltbrechitsplotter)
 
-#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter*process.LocalRecoSeq * process.hgcaltbrechitsplotter)
+#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter*process.LocalRecoSeq r)
 
 #process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter)
 
