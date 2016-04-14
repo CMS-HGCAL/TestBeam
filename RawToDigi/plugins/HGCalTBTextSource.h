@@ -11,12 +11,17 @@
 
 //#define DEBUG
 
+/* now we have only 2 layers */
+#define MAXSKIROCS 2 
+
 /**
  * \class HGCalTBTextSource HGCal/RawToDigi/plugins/HGCalTBTextSource.h
  *
  * \brief convert data from txt file to FEDRawData
  *
  * \todo efficiency not tested, many improvements can be done
+ * FED ID is set to the first chipID, this has to be fixed: maybe the FED ID can be read from the file or the filename
+ * The number of skiroc chips is hard coded, but should be set by cfg file based on the setup
  */
 class HGCalTBTextSource : public edm::ProducerSourceFromFiles
 {
@@ -71,16 +76,21 @@ private:
 
 		// time is a hack
 		time = (edm::TimeValue_t) m_time;
-
+		#ifdef DEBUGTIME
+		std::cout << m_time << "\t" << time << std::endl;
+#endif
 		return true;
 	}
 	virtual void produce(edm::Event & e);
 	bool readLines();
 
-	std::vector<std::string> m_lines;
+	void parseAddSkiword(std::vector<uint16_t>& skiwords, std::string);
+
+//	std::vector<std::pair<int, std::vector<std::string> > > m_lines;
+	std::vector<uint16_t> m_skiwords;
 	std::vector<std::string>::const_iterator _fileName_itr;
 	std::ifstream m_file;
-	int m_event, m_run;
-	int m_sourceId;
-	unsigned int  m_time;
+	int m_event, m_run, m_event_tmp, m_run_tmp;
+	int m_sourceId, m_sourceId_tmp;
+	unsigned int  m_time, m_time_tmp;
 };
