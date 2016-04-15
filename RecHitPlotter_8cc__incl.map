@@ -1,7 +1,8 @@
 <map id="Reco/plugins/RecHitPlotter.cc" name="Reco/plugins/RecHitPlotter.cc">
-<area shape="rect" id="node12" href="$HGCalTBRecHitCollections_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHitCollections.h" alt="" coords="1707,81,1907,122"/>
-<area shape="rect" id="node16" href="$HGCalTBDetId_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDetId.h" alt="" coords="1547,262,1743,303"/>
-<area shape="rect" id="node14" href="$HGCalTBRecHit_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHit.h" alt="" coords="1142,171,1337,213"/>
-<area shape="rect" id="node23" href="$HGCalTBCellVertices_8h.html" title="HGCal/Geometry/interface\l/HGCalTBCellVertices.h" alt="" coords="1982,81,2159,122"/>
-<area shape="rect" id="node24" href="$HGCalTBTopology_8h.html" title="HGCal/Geometry/interface\l/HGCalTBTopology.h" alt="" coords="2119,171,2296,213"/>
+<area shape="rect" href="$HGCalTBRecHitCollections_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHitCollections.h" alt="" coords="1704,80,1901,123"/>
+<area shape="rect" href="$HGCalTBRecHit_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHit.h" alt="" coords="1993,171,2191,213"/>
+<area shape="rect" href="$HGCalTBDetId_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDetId.h" alt="" coords="1537,261,1735,304"/>
+<area shape="rect" href="$HGCalTBCellVertices_8h.html" title="HGCal/Geometry/interface\l/HGCalTBCellVertices.h" alt="" coords="2301,80,2480,123"/>
+<area shape="rect" href="$HGCalTBTopology_8h.html" title="HGCal/Geometry/interface\l/HGCalTBTopology.h" alt="" coords="2215,171,2393,213"/>
+<area shape="rect" href="$HGCalTBCellParameters_8h.html" title="HGCal/Geometry/interface\l/HGCalTBCellParameters.h" alt="" coords="2468,171,2652,213"/>
 </map>

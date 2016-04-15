@@ -1,8 +1,9 @@
 <map id="DataFormats/interface/HGCalTBRecHit.h" name="DataFormats/interface/HGCalTBRecHit.h">
-<area shape="rect" id="node2" href="$HGCalTBRecHitCollections_8h.html" title="DataFormats/interface\l/HGCalTBRecHitCollections.h" alt="" coords="244,97,444,138"/>
-<area shape="rect" id="node7" href="$HGCalTBRecHit_8cc.html" title="DataFormats/src/HGCalTBRec\lHit.cc" alt="" coords="519,97,724,138"/>
-<area shape="rect" id="node3" href="$DigiPlotter_8cc.html" title="RawToDigi/plugins/DigiPlotter.cc" alt="" coords="5,195,219,221"/>
-<area shape="rect" id="node6" href="$RecHitPlotter_8cc.html" title="Reco/plugins/RecHitPlotter.cc" alt="" coords="469,195,667,221"/>
-<area shape="rect" id="node4" href="$HGCalTBRecHitProducer_8h.html" title="Reco/plugins/HGCalTBRecHit\lProducer.h" alt="" coords="244,187,444,229"/>
-<area shape="rect" id="node5" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="244,278,444,319"/>
+<area shape="rect" href="$HGCalTBRecHitCollections_8h.html" title="DataFormats/interface\l/HGCalTBRecHitCollections.h" alt="" coords="379,96,576,138"/>
+<area shape="rect" href="$DigiPlotter_8cc.html" title="RawToDigi/plugins/DigiPlotter.cc" alt="" coords="5,194,219,221"/>
+<area shape="rect" href="$DigiPlotter__New_8cc.html" title="RawToDigi/plugins/DigiPlotter\l_New.cc" alt="" coords="243,186,440,229"/>
+<area shape="rect" href="$RecHitPlotter_8cc.html" title="Reco/plugins/RecHitPlotter.cc" alt="" coords="685,194,883,221"/>
+<area shape="rect" href="$HGCalTBRecHit_8cc.html" title="DataFormats/src/HGCalTBRec\lHit.cc" alt="" coords="651,96,853,138"/>
+<area shape="rect" href="$HGCalTBRecHitProducer_8h.html" title="Reco/plugins/HGCalTBRecHit\lProducer.h" alt="" coords="464,186,661,229"/>
+<area shape="rect" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="464,277,661,320"/>
 </map>

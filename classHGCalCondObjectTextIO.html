@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">79132f004e01119fa99b03256cdbbf22b057683f</span>
+   &#160;<span id="projectnumber">f4878a3158ca8c739cac98aec099ffd117de64f7</span>
    </div>
   </td>
  </tr>
@@ -98,10 +98,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ab690038bb28773a4249a1beedd69b22e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHGCalCondObjectTextIO.html#ab690038bb28773a4249a1beedd69b22e">HGCalCondObjectTextIO</a> (const <a class="el" href="classHGCalCondObjectNumberingScheme.html">HGCalCondObjectNumberingScheme</a> *scheme)</td></tr>
 <tr class="separator:ab690038bb28773a4249a1beedd69b22e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad842e405528f2ac32610b8924221e92e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHGCalCondObjectTextIO.html#ad842e405528f2ac32610b8924221e92e">load</a> (const std::string &amp;filename, <a class="el" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a>&lt; double &gt; &amp;)</td></tr>
-<tr class="separator:ad842e405528f2ac32610b8924221e92e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad80870136cf62af22737d58d0ffffe96"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHGCalCondObjectTextIO.html#ad80870136cf62af22737d58d0ffffe96">store</a> (const std::string &amp;filename, const <a class="el" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a>&lt; double &gt; &amp;)</td></tr>
-<tr class="separator:ad80870136cf62af22737d58d0ffffe96"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64086616df2622e834f417928acbe157"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHGCalCondObjectTextIO.html#a64086616df2622e834f417928acbe157">load</a> (const std::string &amp;filename, <a class="el" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a>&lt; float &gt; &amp;)</td></tr>
+<tr class="memdesc:a64086616df2622e834f417928acbe157"><td class="mdescLeft">&#160;</td><td class="mdescRight">load conditions from file  <a href="#a64086616df2622e834f417928acbe157">More...</a><br/></td></tr>
+<tr class="separator:a64086616df2622e834f417928acbe157"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17551389a0d5a0992755797bef0c50ad"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHGCalCondObjectTextIO.html#a17551389a0d5a0992755797bef0c50ad">store</a> (const std::string &amp;filename, const <a class="el" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a>&lt; float &gt; &amp;)</td></tr>
+<tr class="memdesc:a17551389a0d5a0992755797bef0c50ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">saves condition to file  <a href="#a17551389a0d5a0992755797bef0c50ad">More...</a><br/></td></tr>
+<tr class="separator:a17551389a0d5a0992755797bef0c50ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c18cc41ed01b19593737f28817e3d73"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHGCalCondObjectTextIO.html#a7c18cc41ed01b19593737f28817e3d73">load</a> (const std::string &amp;filename, <a class="el" href="classHGCalElectronicsMap.html">HGCalElectronicsMap</a> &amp;)</td></tr>
 <tr class="separator:a7c18cc41ed01b19593737f28817e3d73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2408bb038904ebbbcab2e1bcde19c21c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classHGCalCondObjectTextIO.html#a2408bb038904ebbbcab2e1bcde19c21c">store</a> (const std::string &amp;filename, const <a class="el" href="classHGCalElectronicsMap.html">HGCalElectronicsMap</a> &amp;)</td></tr>
@@ -110,9 +112,10 @@ Public Member Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section rcs"><dt>Date:</dt><dd></dd></dl>
 <dl class="section rcs"><dt>Revision:</dt><dd></dd></dl>
-<dl class="section author"><dt>Author</dt><dd>J. Mans - Minnesota </dd></dl>
+<dl class="section author"><dt>Author</dt><dd>J. Mans - Minnesota</dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000002">Todo:</a></b></dt><dd>load and store are <a class="el" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a> not templated.... so now takes only floats!!! </dd></dl>
 
-<p>Definition at line <a class="el" href="HGCalCondObjectTextIO_8h_source.html#l00014">14</a> of file <a class="el" href="HGCalCondObjectTextIO_8h_source.html">HGCalCondObjectTextIO.h</a>.</p>
+<p>Definition at line <a class="el" href="HGCalCondObjectTextIO_8h_source.html#l00016">16</a> of file <a class="el" href="HGCalCondObjectTextIO_8h_source.html">HGCalCondObjectTextIO.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="ab690038bb28773a4249a1beedd69b22e"></a>
 <div class="memitem">
@@ -136,12 +139,12 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="HGCalCondObjectTextIO_8h_source.html#l00017">17</a> of file <a class="el" href="HGCalCondObjectTextIO_8h_source.html">HGCalCondObjectTextIO.h</a>.</p>
+<p>Definition at line <a class="el" href="HGCalCondObjectTextIO_8h_source.html#l00019">19</a> of file <a class="el" href="HGCalCondObjectTextIO_8h_source.html">HGCalCondObjectTextIO.h</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="ad842e405528f2ac32610b8924221e92e"></a>
+<a class="anchor" id="a64086616df2622e834f417928acbe157"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -154,7 +157,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a>&lt; double &gt; &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a>&lt; float &gt; &amp;&#160;</td>
           <td class="paramname"><em>cont</em>&#160;</td>
         </tr>
         <tr>
@@ -165,11 +168,13 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>load conditions from file </p>
+
 <p>Definition at line <a class="el" href="HGCalCondObjectTextIO_8cc_source.html#l00021">21</a> of file <a class="el" href="HGCalCondObjectTextIO_8cc_source.html">HGCalCondObjectTextIO.cc</a>.</p>
 
 <p>References <a class="el" href="HGCalCondObjectContainer_8h_source.html#l00095">HGCalCondObjectContainer&lt; Payload &gt;::set()</a>.</p>
 
-<p>Referenced by <a class="el" href="HGCalTBRawToDigi_8cc_source.html#l00012">HGCalTBRawToDigi::beginJob()</a>, <a class="el" href="testHGCalCondObjectTextIO_8cc_source.html#l00008">main()</a>, and <a class="el" href="HGCalTBRecHitProducer_8cc_source.html#l00011">HGCalTBRecHitProducer::produce()</a>.</p>
+<p>Referenced by <a class="el" href="HGCalTBRawToDigi_8cc_source.html#l00016">HGCalTBRawToDigi::beginJob()</a>, <a class="el" href="testHGCalCondObjectTextIO_8cc_source.html#l00008">main()</a>, and <a class="el" href="HGCalTBRecHitProducer_8cc_source.html#l00015">HGCalTBRecHitProducer::produce()</a>.</p>
 
 </div>
 </div>
@@ -203,7 +208,7 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ad80870136cf62af22737d58d0ffffe96"></a>
+<a class="anchor" id="a17551389a0d5a0992755797bef0c50ad"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -216,7 +221,7 @@ Public Member Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a>&lt; double &gt; &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a>&lt; float &gt; &amp;&#160;</td>
           <td class="paramname"><em>cont</em>&#160;</td>
         </tr>
         <tr>
@@ -226,6 +231,8 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>saves condition to file </p>
 
 <p>Definition at line <a class="el" href="HGCalCondObjectTextIO_8cc_source.html#l00067">67</a> of file <a class="el" href="HGCalCondObjectTextIO_8cc_source.html">HGCalCondObjectTextIO.cc</a>.</p>
 
@@ -272,7 +279,7 @@ Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 10 2016 15:42:44 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Apr 15 2016 02:12:58 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

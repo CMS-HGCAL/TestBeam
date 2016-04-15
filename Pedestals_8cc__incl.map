@@ -1,0 +1,12 @@
+<map id="Calibration/plugins/Pedestals.cc" name="Calibration/plugins/Pedestals.cc">
+<area shape="rect" href="$HGCalTBDigiCollections_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDigiCollections.h" alt="" coords="1171,96,1368,139"/>
+<area shape="rect" href="$HGCalCondObjects_8h.html" title="HGCal/CondObjects/interface\l/HGCalCondObjects.h" alt="" coords="1392,96,1589,139"/>
+<area shape="rect" href="$HGCalCondObjectTextIO_8h.html" title="HGCal/CondObjects/interface\l/HGCalCondObjectTextIO.h" alt="" coords="1843,96,2040,139"/>
+<area shape="rect" href="$HGCalTBNumberingScheme_8h.html" title="HGCal/CondObjects/interface\l/HGCalTBNumberingScheme.h" alt="" coords="1613,96,1819,139"/>
+<area shape="rect" href="$HGCalTBDataFrameContainers_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDataFrameContainers.h" alt="" coords="1183,187,1407,230"/>
+<area shape="rect" href="$SKIROC2DataFrame_8h.html" title="HGCal/DataFormats/interface\l/SKIROC2DataFrame.h" alt="" coords="1209,278,1407,320"/>
+<area shape="rect" href="$SKIROCParameters_8h.html" title="HGCal/DataFormats/interface\l/SKIROCParameters.h" alt="" coords="1431,278,1628,320"/>
+<area shape="rect" href="$HGCalTBDetId_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDetId.h" alt="" coords="1236,368,1433,411"/>
+<area shape="rect" href="$HGCalCondObjectContainer_8h.html" title="HGCal/CondObjects/interface\l/HGCalCondObjectContainer.h" alt="" coords="1576,187,1779,230"/>
+<area shape="rect" href="$HGCalElectronicsMap_8h.html" title="HGCal/CondObjects/interface\l/HGCalElectronicsMap.h" alt="" coords="1880,187,2077,230"/>
+</map>

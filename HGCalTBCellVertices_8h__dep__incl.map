@@ -1,5 +1,6 @@
 <map id="Geometry/interface/HGCalTBCellVertices.h" name="Geometry/interface/HGCalTBCellVertices.h">
-<area shape="rect" id="node2" href="$HGCalTBCellVertices_8cc.html" title="Geometry/src/HGCalTBCell\lVertices.cc" alt="" coords="5,97,189,138"/>
-<area shape="rect" id="node3" href="$DigiPlotter_8cc.html" title="RawToDigi/plugins/DigiPlotter.cc" alt="" coords="214,104,428,131"/>
-<area shape="rect" id="node4" href="$RecHitPlotter_8cc.html" title="Reco/plugins/RecHitPlotter.cc" alt="" coords="453,104,651,131"/>
+<area shape="rect" href="$HGCalTBCellVertices_8cc.html" title="Geometry/src/HGCalTBCell\lVertices.cc" alt="" coords="5,96,189,139"/>
+<area shape="rect" href="$DigiPlotter_8cc.html" title="RawToDigi/plugins/DigiPlotter.cc" alt="" coords="213,104,427,131"/>
+<area shape="rect" href="$DigiPlotter__New_8cc.html" title="RawToDigi/plugins/DigiPlotter\l_New.cc" alt="" coords="451,96,648,139"/>
+<area shape="rect" href="$RecHitPlotter_8cc.html" title="Reco/plugins/RecHitPlotter.cc" alt="" coords="672,104,869,131"/>
 </map>

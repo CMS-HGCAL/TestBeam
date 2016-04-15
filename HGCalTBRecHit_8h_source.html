@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">79132f004e01119fa99b03256cdbbf22b057683f</span>
+   &#160;<span id="projectnumber">f4878a3158ca8c739cac98aec099ffd117de64f7</span>
    </div>
   </td>
  </tr>
@@ -97,9 +97,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="HGCalTBDetId_8h.html">HGCal/DataFormats/interface/HGCalTBDetId.h</a>&quot;</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment">/** \class HGCRecHit</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment">/** \class HGCalTBRecHit</span></div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="comment"> *</span></div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="comment"> * \author Valeri Andreev</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="comment"> * \author Jeremy Mans</span></div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment"> */</span></div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;</div>
 <div class="line"><a name="l00013"></a><span class="lineno"><a class="line" href="classHGCalTBRecHit.html">   13</a></span>&#160;<span class="keyword">class </span><a class="code" href="classHGCalTBRecHit.html">HGCalTBRecHit</a> : <span class="keyword">public</span> CaloRecHit</div>
@@ -109,29 +109,43 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;</div>
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <a class="code" href="classHGCalTBRecHit.html#ab7cf3ae0bba4ba9524a83089747f789c">HGCalTBRecHit</a>();</div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <span class="comment">// by default a recHit is greated with no flag</span></div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    <a class="code" href="classHGCalTBRecHit.html#ab7cf3ae0bba4ba9524a83089747f789c">HGCalTBRecHit</a>(<span class="keyword">const</span> DetId&amp; <span class="keywordtype">id</span>, <span class="keywordtype">float</span> energy, <span class="keywordtype">float</span> time, uint32_t flags = 0);<span class="comment"></span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    <a class="code" href="classHGCalTBRecHit.html#ab7cf3ae0bba4ba9524a83089747f789c">HGCalTBRecHit</a>(<span class="keyword">const</span> DetId&amp; <span class="keywordtype">id</span>, <span class="keywordtype">float</span> <a class="code" href="classHGCalTBRecHit.html#a3e9a14ab856cc84db22cd5c9c0c348e3">energyLow</a>, <span class="keywordtype">float</span> <a class="code" href="classHGCalTBRecHit.html#ae7d0e6e3d4725d3d63a162d55b6735d2">energyHigh</a>, <span class="keywordtype">float</span> time, uint32_t flags = 0); <span class="comment">// when constructing from digis using 2 gains for the ADC</span><span class="comment"></span></div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment">    /// get the id</span></div>
 <div class="line"><a name="l00022"></a><span class="lineno"><a class="line" href="classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd">   22</a></span>&#160;<span class="comment"></span>    <a class="code" href="classHGCalTBDetId.html">HGCalTBDetId</a> <a class="code" href="classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd">id</a>()<span class="keyword"> const</span></div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="keyword">    </span>{</div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classHGCalTBDetId.html">HGCalTBDetId</a>(detid());</div>
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;    }<span class="comment"></span></div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment">    /////  bool isRecovered() const;</span></div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"></span>};</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;std::ostream&amp; <a class="code" href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a>(std::ostream&amp; s, <span class="keyword">const</span> <a class="code" href="classHGCalTBRecHit.html">HGCalTBRecHit</a>&amp; hit);</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno"><a class="line" href="classHGCalTBRecHit.html#a79f8eda5b5daa45b65d88373d03a603b">   27</a></span>&#160;<span class="comment"></span>    <span class="keywordtype">float</span> <a class="code" href="classHGCalTBRecHit.html#a79f8eda5b5daa45b65d88373d03a603b">_energyLow</a>, <a class="code" href="classHGCalTBRecHit.html#a2f1b8a58785553f24217c911509d3caf">_energyHigh</a>;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;    </div>
+<div class="line"><a name="l00029"></a><span class="lineno"><a class="line" href="classHGCalTBRecHit.html#a3e9a14ab856cc84db22cd5c9c0c348e3">   29</a></span>&#160;    <span class="keywordtype">float</span> <a class="code" href="classHGCalTBRecHit.html#a3e9a14ab856cc84db22cd5c9c0c348e3">energyLow</a>(){ </div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classHGCalTBRecHit.html#a79f8eda5b5daa45b65d88373d03a603b">_energyLow</a>;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    };</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;</div>
+<div class="line"><a name="l00033"></a><span class="lineno"><a class="line" href="classHGCalTBRecHit.html#ae7d0e6e3d4725d3d63a162d55b6735d2">   33</a></span>&#160;    <span class="keywordtype">float</span> <a class="code" href="classHGCalTBRecHit.html#ae7d0e6e3d4725d3d63a162d55b6735d2">energyHigh</a>(){</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classHGCalTBRecHit.html#a2f1b8a58785553f24217c911509d3caf">_energyHigh</a>;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    };</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;};</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;std::ostream&amp; <a class="code" href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a>(std::ostream&amp; s, <span class="keyword">const</span> <a class="code" href="classHGCalTBRecHit.html">HGCalTBRecHit</a>&amp; hit);</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="ttc" id="classHGCalTBRecHit_html_a2f1b8a58785553f24217c911509d3caf"><div class="ttname"><a href="classHGCalTBRecHit.html#a2f1b8a58785553f24217c911509d3caf">HGCalTBRecHit::_energyHigh</a></div><div class="ttdeci">float _energyHigh</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8h_source.html#l00027">HGCalTBRecHit.h:27</a></div></div>
 <div class="ttc" id="classHGCalTBRecHit_html"><div class="ttname"><a href="classHGCalTBRecHit.html">HGCalTBRecHit</a></div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8h_source.html#l00013">HGCalTBRecHit.h:13</a></div></div>
+<div class="ttc" id="classHGCalTBRecHit_html_a3e9a14ab856cc84db22cd5c9c0c348e3"><div class="ttname"><a href="classHGCalTBRecHit.html#a3e9a14ab856cc84db22cd5c9c0c348e3">HGCalTBRecHit::energyLow</a></div><div class="ttdeci">float energyLow()</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8h_source.html#l00029">HGCalTBRecHit.h:29</a></div></div>
 <div class="ttc" id="classHGCalTBDetId_html"><div class="ttname"><a href="classHGCalTBDetId.html">HGCalTBDetId</a></div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBDetId_8h_source.html#l00012">HGCalTBDetId.h:12</a></div></div>
 <div class="ttc" id="HGCalTBDetId_8h_html_afcfc2837562fc0ab7716680d5a09aa0b"><div class="ttname"><a href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a></div><div class="ttdeci">std::ostream &amp; operator&lt;&lt;(std::ostream &amp;, const HGCalTBDetId &amp;id)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBDetId_8cc_source.html#l00037">HGCalTBDetId.cc:37</a></div></div>
+<div class="ttc" id="classHGCalTBRecHit_html_ae7d0e6e3d4725d3d63a162d55b6735d2"><div class="ttname"><a href="classHGCalTBRecHit.html#ae7d0e6e3d4725d3d63a162d55b6735d2">HGCalTBRecHit::energyHigh</a></div><div class="ttdeci">float energyHigh()</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8h_source.html#l00033">HGCalTBRecHit.h:33</a></div></div>
 <div class="ttc" id="classHGCalTBRecHit_html_ab7cf3ae0bba4ba9524a83089747f789c"><div class="ttname"><a href="classHGCalTBRecHit.html#ab7cf3ae0bba4ba9524a83089747f789c">HGCalTBRecHit::HGCalTBRecHit</a></div><div class="ttdeci">HGCalTBRecHit()</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8cc_source.html#l00005">HGCalTBRecHit.cc:5</a></div></div>
 <div class="ttc" id="HGCalTBDetId_8h_html"><div class="ttname"><a href="HGCalTBDetId_8h.html">HGCalTBDetId.h</a></div></div>
+<div class="ttc" id="classHGCalTBRecHit_html_a79f8eda5b5daa45b65d88373d03a603b"><div class="ttname"><a href="classHGCalTBRecHit.html#a79f8eda5b5daa45b65d88373d03a603b">HGCalTBRecHit::_energyLow</a></div><div class="ttdeci">float _energyLow</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8h_source.html#l00027">HGCalTBRecHit.h:27</a></div></div>
 <div class="ttc" id="classHGCalTBRecHit_html_a1635cda50df835cd1ab96b68d1a4aabd"><div class="ttname"><a href="classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd">HGCalTBRecHit::id</a></div><div class="ttdeci">HGCalTBDetId id() const </div><div class="ttdoc">get the id </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8h_source.html#l00022">HGCalTBRecHit.h:22</a></div></div>
 <div class="ttc" id="classHGCalTBRecHit_html_a2ffda5430a40c906b0a3e4fa0ae3ca1b"><div class="ttname"><a href="classHGCalTBRecHit.html#a2ffda5430a40c906b0a3e4fa0ae3ca1b">HGCalTBRecHit::key_type</a></div><div class="ttdeci">DetId key_type</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8h_source.html#l00016">HGCalTBRecHit.h:16</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 10 2016 15:42:41 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Apr 15 2016 02:12:54 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

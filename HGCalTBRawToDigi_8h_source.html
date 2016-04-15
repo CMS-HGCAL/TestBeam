@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">79132f004e01119fa99b03256cdbbf22b057683f</span>
+   &#160;<span id="projectnumber">f4878a3158ca8c739cac98aec099ffd117de64f7</span>
    </div>
   </td>
  </tr>
@@ -123,7 +123,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;</div>
 <div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">private</span>:</div>
 <div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    edm::InputTag dataTag_;</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    <span class="keywordtype">int</span> fedId_;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    std::vector&lt;int&gt; fedIds_;</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    std::string mapfile_;</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="keyword">struct </span>{</div>
 <div class="line"><a name="l00037"></a><span class="lineno"><a class="line" href="classHGCalTBRawToDigi.html#a4025efecb104070ef9473bb6a6f149bb">   37</a></span>&#160;        <a class="code" href="classHGCalElectronicsMap.html">HGCalElectronicsMap</a> <a class="code" href="classHGCalTBRawToDigi.html#a4025efecb104070ef9473bb6a6f149bb">emap_</a>;</div>
@@ -132,19 +132,19 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;};</div>
 <div class="ttc" id="HGCalCondObjectTextIO_8h_html"><div class="ttname"><a href="HGCalCondObjectTextIO_8h.html">HGCalCondObjectTextIO.h</a></div></div>
 <div class="ttc" id="classHGCalTBRawToDigi_html_a4025efecb104070ef9473bb6a6f149bb"><div class="ttname"><a href="classHGCalTBRawToDigi.html#a4025efecb104070ef9473bb6a6f149bb">HGCalTBRawToDigi::emap_</a></div><div class="ttdeci">HGCalElectronicsMap emap_</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRawToDigi_8h_source.html#l00037">HGCalTBRawToDigi.h:37</a></div></div>
-<div class="ttc" id="classHGCalTBRawToDigi_html_a3f062f6c2577ca23b62fa21fd0ecdaf3"><div class="ttname"><a href="classHGCalTBRawToDigi.html#a3f062f6c2577ca23b62fa21fd0ecdaf3">HGCalTBRawToDigi::produce</a></div><div class="ttdeci">virtual void produce(edm::Event &amp;e, const edm::EventSetup &amp;c)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRawToDigi_8cc_source.html#l00023">HGCalTBRawToDigi.cc:23</a></div></div>
+<div class="ttc" id="classHGCalTBRawToDigi_html_a3f062f6c2577ca23b62fa21fd0ecdaf3"><div class="ttname"><a href="classHGCalTBRawToDigi.html#a3f062f6c2577ca23b62fa21fd0ecdaf3">HGCalTBRawToDigi::produce</a></div><div class="ttdeci">virtual void produce(edm::Event &amp;e, const edm::EventSetup &amp;c)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRawToDigi_8cc_source.html#l00027">HGCalTBRawToDigi.cc:27</a></div></div>
 <div class="ttc" id="SKIROCParameters_8h_html"><div class="ttname"><a href="SKIROCParameters_8h.html">SKIROCParameters.h</a></div></div>
 <div class="ttc" id="HGCalTBElectronicsId_8h_html"><div class="ttname"><a href="HGCalTBElectronicsId_8h.html">HGCalTBElectronicsId.h</a></div></div>
 <div class="ttc" id="HGCalTBDataFrameContainers_8h_html"><div class="ttname"><a href="HGCalTBDataFrameContainers_8h.html">HGCalTBDataFrameContainers.h</a></div></div>
 <div class="ttc" id="classHGCalTBRawToDigi_html"><div class="ttname"><a href="classHGCalTBRawToDigi.html">HGCalTBRawToDigi</a></div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRawToDigi_8h_source.html#l00025">HGCalTBRawToDigi.h:25</a></div></div>
-<div class="ttc" id="classHGCalTBRawToDigi_html_abe0a9985ec0ec5ed8e249c3a290f1da5"><div class="ttname"><a href="classHGCalTBRawToDigi.html#abe0a9985ec0ec5ed8e249c3a290f1da5">HGCalTBRawToDigi::HGCalTBRawToDigi</a></div><div class="ttdeci">HGCalTBRawToDigi(const edm::ParameterSet &amp;ps)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRawToDigi_8cc_source.html#l00003">HGCalTBRawToDigi.cc:3</a></div></div>
+<div class="ttc" id="classHGCalTBRawToDigi_html_abe0a9985ec0ec5ed8e249c3a290f1da5"><div class="ttname"><a href="classHGCalTBRawToDigi.html#abe0a9985ec0ec5ed8e249c3a290f1da5">HGCalTBRawToDigi::HGCalTBRawToDigi</a></div><div class="ttdeci">HGCalTBRawToDigi(const edm::ParameterSet &amp;ps)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRawToDigi_8cc_source.html#l00007">HGCalTBRawToDigi.cc:7</a></div></div>
 <div class="ttc" id="HGCalElectronicsMap_8h_html"><div class="ttname"><a href="HGCalElectronicsMap_8h.html">HGCalElectronicsMap.h</a></div></div>
 <div class="ttc" id="classHGCalElectronicsMap_html"><div class="ttname"><a href="classHGCalElectronicsMap.html">HGCalElectronicsMap</a></div><div class="ttdoc">provides the conversion between electronics Id to DetId </div><div class="ttdef"><b>Definition:</b> <a href="HGCalElectronicsMap_8h_source.html#l00017">HGCalElectronicsMap.h:17</a></div></div>
-<div class="ttc" id="classHGCalTBRawToDigi_html_ac328b38f99c32230c5f3286cf92e0dcb"><div class="ttname"><a href="classHGCalTBRawToDigi.html#ac328b38f99c32230c5f3286cf92e0dcb">HGCalTBRawToDigi::beginJob</a></div><div class="ttdeci">virtual void beginJob()</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRawToDigi_8cc_source.html#l00012">HGCalTBRawToDigi.cc:12</a></div></div>
+<div class="ttc" id="classHGCalTBRawToDigi_html_ac328b38f99c32230c5f3286cf92e0dcb"><div class="ttname"><a href="classHGCalTBRawToDigi.html#ac328b38f99c32230c5f3286cf92e0dcb">HGCalTBRawToDigi::beginJob</a></div><div class="ttdeci">virtual void beginJob()</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRawToDigi_8cc_source.html#l00016">HGCalTBRawToDigi.cc:16</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 10 2016 15:42:41 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Apr 15 2016 02:12:54 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

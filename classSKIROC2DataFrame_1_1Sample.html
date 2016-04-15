@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">79132f004e01119fa99b03256cdbbf22b057683f</span>
+   &#160;<span id="projectnumber">f4878a3158ca8c739cac98aec099ffd117de64f7</span>
    </div>
   </td>
  </tr>
@@ -103,8 +103,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ad7ab0e1f56859ca77f0753a4007e658c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSKIROC2DataFrame_1_1Sample.html#ad7ab0e1f56859ca77f0753a4007e658c">Sample</a> (const edm::DataFrame &amp;frame, edm::DataFrame::size_type i)</td></tr>
 <tr class="separator:ad7ab0e1f56859ca77f0753a4007e658c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa89bb9e101c5f45edf9c87f80d674489"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSKIROC2DataFrame_1_1Sample.html#aa89bb9e101c5f45edf9c87f80d674489">adc</a> () const </td></tr>
-<tr class="separator:aa89bb9e101c5f45edf9c87f80d674489"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2a351f17dcf8b18d2147f42c89ab928"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSKIROC2DataFrame_1_1Sample.html#aa2a351f17dcf8b18d2147f42c89ab928">adcLow</a> () const </td></tr>
+<tr class="separator:aa2a351f17dcf8b18d2147f42c89ab928"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4856d9e3b6061ae31b7790dc85fc4d13"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSKIROC2DataFrame_1_1Sample.html#a4856d9e3b6061ae31b7790dc85fc4d13">adcHigh</a> () const </td></tr>
+<tr class="separator:a4856d9e3b6061ae31b7790dc85fc4d13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a37605868a311f97da31977f8320bda4a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSKIROC2DataFrame_1_1Sample.html#a37605868a311f97da31977f8320bda4a">tdc</a> () const </td></tr>
 <tr class="separator:a37605868a311f97da31977f8320bda4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -116,6 +118,12 @@ Static Public Attributes</h2></td></tr>
 <tr class="separator:ac443398a11b3b266a62d7704c0b3de60"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af8a855f0e2dcb71f06d2691b76110032"><td class="memItemLeft" align="right" valign="top">static const int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSKIROC2DataFrame_1_1Sample.html#af8a855f0e2dcb71f06d2691b76110032">MASK_GAIN</a> = 0x2000</td></tr>
 <tr class="separator:af8a855f0e2dcb71f06d2691b76110032"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd471df5b45a69896d8cfdd48b613f5a"><td class="memItemLeft" align="right" valign="top">static const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSKIROC2DataFrame_1_1Sample.html#afd471df5b45a69896d8cfdd48b613f5a">ADCLOW_SHIFT</a> = 1</td></tr>
+<tr class="separator:afd471df5b45a69896d8cfdd48b613f5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a149777263c55bcbdd624386af53211d9"><td class="memItemLeft" align="right" valign="top">static const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSKIROC2DataFrame_1_1Sample.html#a149777263c55bcbdd624386af53211d9">ADCHIGH_SHIFT</a> = 1</td></tr>
+<tr class="separator:a149777263c55bcbdd624386af53211d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6cb251f6c57bfaaf135dd6ed583d6342"><td class="memItemLeft" align="right" valign="top">static const unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSKIROC2DataFrame_1_1Sample.html#a6cb251f6c57bfaaf135dd6ed583d6342">TDC_SHIFT</a> = 2</td></tr>
+<tr class="separator:a6cb251f6c57bfaaf135dd6ed583d6342"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock">
@@ -158,7 +166,7 @@ Static Public Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
-<a class="anchor" id="aa89bb9e101c5f45edf9c87f80d674489"></a>
+<a class="anchor" id="a4856d9e3b6061ae31b7790dc85fc4d13"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -166,7 +174,7 @@ Static Public Attributes</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">int SKIROC2DataFrame::Sample::adc </td>
+          <td class="memname">int SKIROC2DataFrame::Sample::adcHigh </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -179,9 +187,36 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="SKIROC2DataFrame_8h_source.html#l00026">26</a> of file <a class="el" href="SKIROC2DataFrame_8h_source.html">SKIROC2DataFrame.h</a>.</p>
+<p>Definition at line <a class="el" href="SKIROC2DataFrame_8h_source.html#l00033">33</a> of file <a class="el" href="SKIROC2DataFrame_8h_source.html">SKIROC2DataFrame.h</a>.</p>
 
-<p>References <a class="el" href="SKIROC2DataFrame_8h_source.html#l00023">MASK_ADCTDC</a>.</p>
+<p>References <a class="el" href="SKIROC2DataFrame_8h_source.html#l00027">ADCHIGH_SHIFT</a>, and <a class="el" href="SKIROC2DataFrame_8h_source.html#l00023">MASK_ADCTDC</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="aa2a351f17dcf8b18d2147f42c89ab928"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int SKIROC2DataFrame::Sample::adcLow </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="SKIROC2DataFrame_8h_source.html#l00029">29</a> of file <a class="el" href="SKIROC2DataFrame_8h_source.html">SKIROC2DataFrame.h</a>.</p>
+
+<p>References <a class="el" href="SKIROC2DataFrame_8h_source.html#l00026">ADCLOW_SHIFT</a>, and <a class="el" href="SKIROC2DataFrame_8h_source.html#l00023">MASK_ADCTDC</a>.</p>
 
 </div>
 </div>
@@ -206,13 +241,61 @@ Static Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="SKIROC2DataFrame_8h_source.html#l00030">30</a> of file <a class="el" href="SKIROC2DataFrame_8h_source.html">SKIROC2DataFrame.h</a>.</p>
+<p>Definition at line <a class="el" href="SKIROC2DataFrame_8h_source.html#l00038">38</a> of file <a class="el" href="SKIROC2DataFrame_8h_source.html">SKIROC2DataFrame.h</a>.</p>
 
-<p>References <a class="el" href="SKIROC2DataFrame_8h_source.html#l00023">MASK_ADCTDC</a>.</p>
+<p>References <a class="el" href="SKIROC2DataFrame_8h_source.html#l00023">MASK_ADCTDC</a>, and <a class="el" href="SKIROC2DataFrame_8h_source.html#l00028">TDC_SHIFT</a>.</p>
 
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
+<a class="anchor" id="a149777263c55bcbdd624386af53211d9"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned int SKIROC2DataFrame::Sample::ADCHIGH_SHIFT = 1</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="SKIROC2DataFrame_8h_source.html#l00027">27</a> of file <a class="el" href="SKIROC2DataFrame_8h_source.html">SKIROC2DataFrame.h</a>.</p>
+
+<p>Referenced by <a class="el" href="SKIROC2DataFrame_8h_source.html#l00033">adcHigh()</a>, and <a class="el" href="SKIROC2DataFrame_8cc_source.html#l00007">SKIROC2DataFrame::setSample()</a>.</p>
+
+</div>
+</div>
+<a class="anchor" id="afd471df5b45a69896d8cfdd48b613f5a"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned int SKIROC2DataFrame::Sample::ADCLOW_SHIFT = 1</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="SKIROC2DataFrame_8h_source.html#l00026">26</a> of file <a class="el" href="SKIROC2DataFrame_8h_source.html">SKIROC2DataFrame.h</a>.</p>
+
+<p>Referenced by <a class="el" href="SKIROC2DataFrame_8h_source.html#l00029">adcLow()</a>, and <a class="el" href="SKIROC2DataFrame_8cc_source.html#l00007">SKIROC2DataFrame::setSample()</a>.</p>
+
+</div>
+</div>
 <a class="anchor" id="ae5b4e0b7b5670175776a54ee2af78c18"></a>
 <div class="memitem">
 <div class="memproto">
@@ -233,7 +316,7 @@ Static Public Attributes</h2></td></tr>
 
 <p>Definition at line <a class="el" href="SKIROC2DataFrame_8h_source.html#l00023">23</a> of file <a class="el" href="SKIROC2DataFrame_8h_source.html">SKIROC2DataFrame.h</a>.</p>
 
-<p>Referenced by <a class="el" href="SKIROC2DataFrame_8h_source.html#l00026">adc()</a>, and <a class="el" href="SKIROC2DataFrame_8h_source.html#l00030">tdc()</a>.</p>
+<p>Referenced by <a class="el" href="SKIROC2DataFrame_8h_source.html#l00033">adcHigh()</a>, <a class="el" href="SKIROC2DataFrame_8h_source.html#l00029">adcLow()</a>, and <a class="el" href="SKIROC2DataFrame_8h_source.html#l00038">tdc()</a>.</p>
 
 </div>
 </div>
@@ -281,13 +364,37 @@ Static Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a6cb251f6c57bfaaf135dd6ed583d6342"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const unsigned int SKIROC2DataFrame::Sample::TDC_SHIFT = 2</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="SKIROC2DataFrame_8h_source.html#l00028">28</a> of file <a class="el" href="SKIROC2DataFrame_8h_source.html">SKIROC2DataFrame.h</a>.</p>
+
+<p>Referenced by <a class="el" href="SKIROC2DataFrame_8cc_source.html#l00007">SKIROC2DataFrame::setSample()</a>, and <a class="el" href="SKIROC2DataFrame_8h_source.html#l00038">tdc()</a>.</p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>DataFormats/interface/<a class="el" href="SKIROC2DataFrame_8h_source.html">SKIROC2DataFrame.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 10 2016 15:42:45 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Apr 15 2016 02:13:00 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

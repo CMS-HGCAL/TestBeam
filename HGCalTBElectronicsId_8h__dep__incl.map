@@ -1,6 +1,8 @@
 <map id="DataFormats/interface/HGCalTBElectronicsId.h" name="DataFormats/interface/HGCalTBElectronicsId.h">
-<area shape="rect" id="node2" href="$HGCalCondObjectTextIO_8cc.html" title="CondObjects/src/HGCalCond\lObjectTextIO.cc" alt="" coords="5,97,200,138"/>
-<area shape="rect" id="node3" href="$HGCalTBElectronicsId_8cc.html" title="DataFormats/src/HGCalTBElectronics\lId.cc" alt="" coords="225,97,471,138"/>
-<area shape="rect" id="node4" href="$HGCalTBRawToDigi_8h.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.h" alt="" coords="495,97,715,138"/>
-<area shape="rect" id="node5" href="$HGCalTBRawToDigi_8cc.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.cc" alt="" coords="495,187,715,229"/>
+<area shape="rect" href="$HGCalCondObjectTextIO_8cc.html" title="CondObjects/src/HGCalCond\lObjectTextIO.cc" alt="" coords="5,96,200,139"/>
+<area shape="rect" href="$HGCalTBElectronicsId_8cc.html" title="DataFormats/src/HGCalTBElectronics\lId.cc" alt="" coords="224,96,469,139"/>
+<area shape="rect" href="$DigiPlotter_8cc.html" title="RawToDigi/plugins/DigiPlotter.cc" alt="" coords="493,104,707,131"/>
+<area shape="rect" href="$DigiPlotter__New_8cc.html" title="RawToDigi/plugins/DigiPlotter\l_New.cc" alt="" coords="731,96,928,139"/>
+<area shape="rect" href="$HGCalTBRawToDigi_8h.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.h" alt="" coords="952,96,1171,139"/>
+<area shape="rect" href="$HGCalTBRawToDigi_8cc.html" title="RawToDigi/plugins/HGCalTBRaw\lToDigi.cc" alt="" coords="952,187,1171,230"/>
 </map>

@@ -1,6 +1,7 @@
 <map id="CondObjects/interface/HGCalTBNumberingScheme.h" name="CondObjects/interface/HGCalTBNumberingScheme.h">
-<area shape="rect" id="node2" href="$HGCalTBNumberingScheme_8cc.html" title="CondObjects/src/HGCalTBNumbering\lScheme.cc" alt="" coords="5,97,248,138"/>
-<area shape="rect" id="node3" href="$testHGCalCondObjectTextIO_8cc.html" title="CondObjects/test/testHGCal\lCondObjectTextIO.cc" alt="" coords="273,97,463,138"/>
-<area shape="rect" id="node4" href="$HGCalTBRecHitProducer_8h.html" title="Reco/plugins/HGCalTBRecHit\lProducer.h" alt="" coords="488,97,688,138"/>
-<area shape="rect" id="node5" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="488,187,688,229"/>
+<area shape="rect" href="$Pedestals_8cc.html" title="Calibration/plugins\l/Pedestals.cc" alt="" coords="5,96,136,139"/>
+<area shape="rect" href="$HGCalTBNumberingScheme_8cc.html" title="CondObjects/src/HGCalTBNumbering\lScheme.cc" alt="" coords="160,96,405,139"/>
+<area shape="rect" href="$testHGCalCondObjectTextIO_8cc.html" title="CondObjects/test/testHGCal\lCondObjectTextIO.cc" alt="" coords="429,96,619,139"/>
+<area shape="rect" href="$HGCalTBRecHitProducer_8h.html" title="Reco/plugins/HGCalTBRecHit\lProducer.h" alt="" coords="643,96,840,139"/>
+<area shape="rect" href="$HGCalTBRecHitProducer_8cc.html" title="Reco/plugins/HGCalTBRecHit\lProducer.cc" alt="" coords="643,187,840,230"/>
 </map>

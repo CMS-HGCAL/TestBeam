@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">79132f004e01119fa99b03256cdbbf22b057683f</span>
+   &#160;<span id="projectnumber">f4878a3158ca8c739cac98aec099ffd117de64f7</span>
    </div>
   </td>
  </tr>
@@ -114,8 +114,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="HGCalCondObjects_8h.html">HGCal/CondObjects/interface/HGCalCondObjects.h</a>&quot;</span></div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="HGCalCondObjectTextIO_8h.html">HGCal/CondObjects/interface/HGCalCondObjectTextIO.h</a>&quot;</span></div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="HGCalTBNumberingScheme_8h.html">HGCal/CondObjects/interface/HGCalTBNumberingScheme.h</a>&quot;</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno"><a class="line" href="HGCalTBRecHitProducer_8h.html#ad72dbcf6d0153db1b8d8a58001feed83">   25</a></span>&#160;<span class="preprocessor">#define DEBUG</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor"></span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment">//#define DEBUG</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;</div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#ifdef DEBUG</span></div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#include &lt;iostream&gt;</span></div>
@@ -130,23 +130,25 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="keyword">private</span>:</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    std::string outputCollectionName;     <span class="comment">///&lt;label name of collection made by this producer</span></div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"></span>    edm::EDGetTokenT&lt;HGCalTBDigiCollection&gt; _digisToken;</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;};</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    std::string _pedestalLow_filename, _pedestalHigh_filename;</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    std::string _gainsLow_filename, _gainsHigh_filename;</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;};</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="ttc" id="HGCalCondObjectTextIO_8h_html"><div class="ttname"><a href="HGCalCondObjectTextIO_8h.html">HGCalCondObjectTextIO.h</a></div></div>
 <div class="ttc" id="HGCalTBRecHitCollections_8h_html"><div class="ttname"><a href="HGCalTBRecHitCollections_8h.html">HGCalTBRecHitCollections.h</a></div></div>
 <div class="ttc" id="HGCalTBNumberingScheme_8h_html"><div class="ttname"><a href="HGCalTBNumberingScheme_8h.html">HGCalTBNumberingScheme.h</a></div></div>
 <div class="ttc" id="classHGCalTBRecHitProducer_html_aba69efef867685d90b37f72252eded89"><div class="ttname"><a href="classHGCalTBRecHitProducer.html#aba69efef867685d90b37f72252eded89">HGCalTBRecHitProducer::HGCalTBRecHitProducer</a></div><div class="ttdeci">HGCalTBRecHitProducer(const edm::ParameterSet &amp;)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHitProducer_8cc_source.html#l00003">HGCalTBRecHitProducer.cc:3</a></div></div>
-<div class="ttc" id="classHGCalTBRecHitProducer_html_aaf7ac7c1f01c8dc36dca0161bfb465ab"><div class="ttname"><a href="classHGCalTBRecHitProducer.html#aaf7ac7c1f01c8dc36dca0161bfb465ab">HGCalTBRecHitProducer::produce</a></div><div class="ttdeci">virtual void produce(edm::Event &amp;, const edm::EventSetup &amp;)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHitProducer_8cc_source.html#l00011">HGCalTBRecHitProducer.cc:11</a></div></div>
+<div class="ttc" id="classHGCalTBRecHitProducer_html_aaf7ac7c1f01c8dc36dca0161bfb465ab"><div class="ttname"><a href="classHGCalTBRecHitProducer.html#aaf7ac7c1f01c8dc36dca0161bfb465ab">HGCalTBRecHitProducer::produce</a></div><div class="ttdeci">virtual void produce(edm::Event &amp;, const edm::EventSetup &amp;)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHitProducer_8cc_source.html#l00015">HGCalTBRecHitProducer.cc:15</a></div></div>
 <div class="ttc" id="HGCalTBDigiCollections_8h_html"><div class="ttname"><a href="HGCalTBDigiCollections_8h.html">HGCalTBDigiCollections.h</a></div></div>
 <div class="ttc" id="classHGCalTBRecHitProducer_html"><div class="ttname"><a href="classHGCalTBRecHitProducer.html">HGCalTBRecHitProducer</a></div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHitProducer_8h_source.html#l00032">HGCalTBRecHitProducer.h:32</a></div></div>
 <div class="ttc" id="HGCalCondObjects_8h_html"><div class="ttname"><a href="HGCalCondObjects_8h.html">HGCalCondObjects.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 10 2016 15:42:41 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Apr 15 2016 02:12:54 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

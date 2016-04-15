@@ -15,6 +15,5 @@ var searchData=
   ['hgcaltbrechit',['HGCalTBRecHit',['../classHGCalTBRecHit.html',1,'']]],
   ['hgcaltbrechitproducer',['HGCalTBRecHitProducer',['../classHGCalTBRecHitProducer.html',1,'']]],
   ['hgcaltbtextsource',['HGCalTBTextSource',['../classHGCalTBTextSource.html',1,'']]],
-  ['hgcaltbtopology',['HGCalTBTopology',['../classHGCalTBTopology.html',1,'']]],
-  ['hgcrechit',['HGCRecHit',['../classHGCRecHit.html',1,'']]]
+  ['hgcaltbtopology',['HGCalTBTopology',['../classHGCalTBTopology.html',1,'']]]
 ];

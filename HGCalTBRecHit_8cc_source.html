@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">79132f004e01119fa99b03256cdbbf22b057683f</span>
+   &#160;<span id="projectnumber">f4878a3158ca8c739cac98aec099ffd117de64f7</span>
    </div>
   </td>
  </tr>
@@ -98,16 +98,21 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;{</div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;}</div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;</div>
-<div class="line"><a name="l00009"></a><span class="lineno"><a class="line" href="classHGCalTBRecHit.html#a74bcedd7843671f81bcaecd8b91aa25b">    9</a></span>&#160;<a class="code" href="classHGCalTBRecHit.html#ab7cf3ae0bba4ba9524a83089747f789c">HGCalTBRecHit::HGCalTBRecHit</a>(<span class="keyword">const</span> DetId&amp; <span class="keywordtype">id</span>, <span class="keywordtype">float</span> energy, <span class="keywordtype">float</span> time, uint32_t flags) :</div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;    CaloRecHit(id, energy, time, flags)</div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;{</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;}</div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;</div>
-<div class="line"><a name="l00014"></a><span class="lineno"><a class="line" href="HGCalTBRecHit_8cc.html#a5f83a46231561f851832f497520ae5d7">   14</a></span>&#160;std::ostream&amp; <a class="code" href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a>(std::ostream&amp; s, <span class="keyword">const</span> <a class="code" href="classHGCalTBRecHit.html">HGCalTBRecHit</a>&amp; hit)</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;{</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="keywordflow">return</span> s &lt;&lt; hit.<a class="code" href="classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd">id</a>() &lt;&lt; <span class="stringliteral">&quot;: &quot;</span> &lt;&lt; hit.energy() &lt;&lt; <span class="stringliteral">&quot; GeV, &quot;</span> &lt;&lt; hit.time() &lt;&lt; <span class="stringliteral">&quot; ns&quot;</span>;</div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;}</div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;</div>
+<div class="line"><a name="l00010"></a><span class="lineno"><a class="line" href="classHGCalTBRecHit.html#a94d783fb5096f9ef7566eeba676f07fd">   10</a></span>&#160;<a class="code" href="classHGCalTBRecHit.html#ab7cf3ae0bba4ba9524a83089747f789c">HGCalTBRecHit::HGCalTBRecHit</a>(<span class="keyword">const</span> DetId&amp; <span class="keywordtype">id</span>, <span class="keywordtype">float</span> energyLow, <span class="keywordtype">float</span> energyHigh, <span class="keywordtype">float</span> time, uint32_t flags) :</div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;    CaloRecHit(id, energyHigh, time, flags),</div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;    _energyLow(energyLow),</div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    _energyHigh(energyHigh)</div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;{</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment">    ///\todo set the default recHit energy to the highGain values unless saturated</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment"></span>}</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;</div>
+<div class="line"><a name="l00019"></a><span class="lineno"><a class="line" href="HGCalTBRecHit_8cc.html#a5f83a46231561f851832f497520ae5d7">   19</a></span>&#160;std::ostream&amp; <a class="code" href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a>(std::ostream&amp; s, <span class="keyword">const</span> <a class="code" href="classHGCalTBRecHit.html">HGCalTBRecHit</a>&amp; hit)</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;{</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    <span class="keywordflow">return</span> s &lt;&lt; hit.<a class="code" href="classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd">id</a>() &lt;&lt; <span class="stringliteral">&quot;: &quot;</span> &lt;&lt; hit.energy() &lt;&lt; <span class="stringliteral">&quot; GeV, &quot;</span> &lt;&lt; hit.time() &lt;&lt; <span class="stringliteral">&quot; ns&quot;</span>;</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;}</div>
 <div class="ttc" id="HGCalTBRecHit_8h_html"><div class="ttname"><a href="HGCalTBRecHit_8h.html">HGCalTBRecHit.h</a></div></div>
 <div class="ttc" id="classHGCalTBRecHit_html"><div class="ttname"><a href="classHGCalTBRecHit.html">HGCalTBRecHit</a></div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8h_source.html#l00013">HGCalTBRecHit.h:13</a></div></div>
 <div class="ttc" id="HGCalTBDetId_8h_html_afcfc2837562fc0ab7716680d5a09aa0b"><div class="ttname"><a href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a></div><div class="ttdeci">std::ostream &amp; operator&lt;&lt;(std::ostream &amp;, const HGCalTBDetId &amp;id)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBDetId_8cc_source.html#l00037">HGCalTBDetId.cc:37</a></div></div>
@@ -116,7 +121,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 10 2016 15:42:41 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Apr 15 2016 02:12:54 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

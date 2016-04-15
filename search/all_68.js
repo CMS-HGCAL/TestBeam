@@ -2,7 +2,9 @@ var searchData=
 [
   ['header_5fwords',['HEADER_WORDS',['../classSKIROC2DataFrame.html#ab325220e1d14c31d426cc3eb24b09f27',1,'SKIROC2DataFrame']]],
   ['hgcal',['HGCal',['../classHGCal.html',1,'']]],
-  ['hgcalcondgains',['HGCalCondGains',['../HGCalCondObjects_8h.html#a3c85cb796f21b0aa1b0ce66006173e5c',1,'HGCalCondObjects.h']]],
+  ['hgcal_5ftb_5fcell',['HGCAL_TB_CELL',['../namespaceHGCAL__TB__CELL.html',1,'']]],
+  ['hgcalcondgains',['HGCalCondGains',['../HGCalCondObjects_8h.html#a23eea8a4f08d23e3998ef0af5d1d3db0',1,'HGCalCondObjects.h']]],
+  ['hgcalcondnoise',['HGCalCondNoise',['../HGCalCondObjects_8h.html#a4a7f303dc6891be973628bf8437483ec',1,'HGCalCondObjects.h']]],
   ['hgcalcondobjectcontainer',['HGCalCondObjectContainer',['../classHGCalCondObjectContainer.html',1,'HGCalCondObjectContainer&lt; Payload &gt;'],['../classHGCalCondObjectContainer.html#a36e365f3f8175f1bafb0059eafa0098a',1,'HGCalCondObjectContainer::HGCalCondObjectContainer(const HGCalCondObjectNumberingScheme *scheme, uint64_t ischeme)'],['../classHGCalCondObjectContainer.html#a8ea32c7cedacfb6424bf246b0ed1856d',1,'HGCalCondObjectContainer::HGCalCondObjectContainer()']]],
   ['hgcalcondobjectcontainer_2ecc',['HGCalCondObjectContainer.cc',['../HGCalCondObjectContainer_8cc.html',1,'']]],
   ['hgcalcondobjectcontainer_2eh',['HGCalCondObjectContainer.h',['../HGCalCondObjectContainer_8h.html',1,'']]],
@@ -12,12 +14,13 @@ var searchData=
   ['hgcalcondobjecttextio',['HGCalCondObjectTextIO',['../classHGCalCondObjectTextIO.html',1,'HGCalCondObjectTextIO'],['../classHGCalCondObjectTextIO.html#ab690038bb28773a4249a1beedd69b22e',1,'HGCalCondObjectTextIO::HGCalCondObjectTextIO()']]],
   ['hgcalcondobjecttextio_2ecc',['HGCalCondObjectTextIO.cc',['../HGCalCondObjectTextIO_8cc.html',1,'']]],
   ['hgcalcondobjecttextio_2eh',['HGCalCondObjectTextIO.h',['../HGCalCondObjectTextIO_8h.html',1,'']]],
-  ['hgcalcondpedestals',['HGCalCondPedestals',['../HGCalCondObjects_8h.html#a3d8efa6b791fb3d691810ac2a7e721be',1,'HGCalCondObjects.h']]],
+  ['hgcalcondpedestals',['HGCalCondPedestals',['../HGCalCondObjects_8h.html#a186c2214670498b3250568ffd7e16e51',1,'HGCalCondObjects.h']]],
   ['hgcaldataframecontainer',['HGCalDataFrameContainer',['../classHGCalDataFrameContainer.html',1,'HGCalDataFrameContainer&lt; Digi &gt;'],['../classHGCalDataFrameContainer.html#a8369389deb461b3e08abf38f84505cf7',1,'HGCalDataFrameContainer::HGCalDataFrameContainer()']]],
   ['hgcaldigidump_2ecc',['HGCalDigiDump.cc',['../HGCalDigiDump_8cc.html',1,'']]],
   ['hgcalelectronicsmap',['HGCalElectronicsMap',['../classHGCalElectronicsMap.html',1,'']]],
   ['hgcalelectronicsmap_2ecc',['HGCalElectronicsMap.cc',['../HGCalElectronicsMap_8cc.html',1,'']]],
   ['hgcalelectronicsmap_2eh',['HGCalElectronicsMap.h',['../HGCalElectronicsMap_8h.html',1,'']]],
+  ['hgcaltbcellparameters_2eh',['HGCalTBCellParameters.h',['../HGCalTBCellParameters_8h.html',1,'']]],
   ['hgcaltbcellvertices',['HGCalTBCellVertices',['../classHGCalTBCellVertices.html',1,'HGCalTBCellVertices'],['../classHGCalTBCellVertices.html#a9492ae3553020ee577fdb71e5c9541a0',1,'HGCalTBCellVertices::HGCalTBCellVertices()']]],
   ['hgcaltbcellvertices_2ecc',['HGCalTBCellVertices.cc',['../HGCalTBCellVertices_8cc.html',1,'']]],
   ['hgcaltbcellvertices_2eh',['HGCalTBCellVertices.h',['../HGCalTBCellVertices_8h.html',1,'']]],
@@ -36,7 +39,7 @@ var searchData=
   ['hgcaltbrawtodigi',['HGCalTBRawToDigi',['../classHGCalTBRawToDigi.html',1,'HGCalTBRawToDigi'],['../classHGCalTBRawToDigi.html#abe0a9985ec0ec5ed8e249c3a290f1da5',1,'HGCalTBRawToDigi::HGCalTBRawToDigi()']]],
   ['hgcaltbrawtodigi_2ecc',['HGCalTBRawToDigi.cc',['../HGCalTBRawToDigi_8cc.html',1,'']]],
   ['hgcaltbrawtodigi_2eh',['HGCalTBRawToDigi.h',['../HGCalTBRawToDigi_8h.html',1,'']]],
-  ['hgcaltbrechit',['HGCalTBRecHit',['../classHGCalTBRecHit.html',1,'HGCalTBRecHit'],['../classHGCalTBRecHit.html#ab7cf3ae0bba4ba9524a83089747f789c',1,'HGCalTBRecHit::HGCalTBRecHit()'],['../classHGCalTBRecHit.html#a74bcedd7843671f81bcaecd8b91aa25b',1,'HGCalTBRecHit::HGCalTBRecHit(const DetId &amp;id, float energy, float time, uint32_t flags=0)']]],
+  ['hgcaltbrechit',['HGCalTBRecHit',['../classHGCalTBRecHit.html',1,'HGCalTBRecHit'],['../classHGCalTBRecHit.html#ab7cf3ae0bba4ba9524a83089747f789c',1,'HGCalTBRecHit::HGCalTBRecHit()'],['../classHGCalTBRecHit.html#a94d783fb5096f9ef7566eeba676f07fd',1,'HGCalTBRecHit::HGCalTBRecHit(const DetId &amp;id, float energyLow, float energyHigh, float time, uint32_t flags=0)']]],
   ['hgcaltbrechit_2ecc',['HGCalTBRecHit.cc',['../HGCalTBRecHit_8cc.html',1,'']]],
   ['hgcaltbrechit_2eh',['HGCalTBRecHit.h',['../HGCalTBRecHit_8h.html',1,'']]],
   ['hgcaltbrechitcollection',['HGCalTBRecHitCollection',['../HGCalTBRecHitCollections_8h.html#ad45122793012a55e792c88426bde2fe5',1,'HGCalTBRecHitCollections.h']]],
@@ -52,6 +55,5 @@ var searchData=
   ['hgcaltbtextsource_2eh',['HGCalTBTextSource.h',['../HGCalTBTextSource_8h.html',1,'']]],
   ['hgcaltbtopology',['HGCalTBTopology',['../classHGCalTBTopology.html',1,'']]],
   ['hgcaltbtopology_2ecc',['HGCalTBTopology.cc',['../HGCalTBTopology_8cc.html',1,'']]],
-  ['hgcaltbtopology_2eh',['HGCalTBTopology.h',['../HGCalTBTopology_8h.html',1,'']]],
-  ['hgcrechit',['HGCRecHit',['../classHGCRecHit.html',1,'']]]
+  ['hgcaltbtopology_2eh',['HGCalTBTopology.h',['../HGCalTBTopology_8h.html',1,'']]]
 ];

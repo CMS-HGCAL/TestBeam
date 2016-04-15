@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">79132f004e01119fa99b03256cdbbf22b057683f</span>
+   &#160;<span id="projectnumber">f4878a3158ca8c739cac98aec099ffd117de64f7</span>
    </div>
   </td>
  </tr>
@@ -110,7 +110,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    fprintf(f, <span class="stringliteral">&quot;%08x %5d %9d %9d %3d %3d %4d &quot;</span>, <span class="keywordtype">id</span>.rawId(), <span class="keywordtype">id</span>.layer()*<span class="keywordtype">id</span>.zside(), <span class="keywordtype">id</span>.sensorIU(), <span class="keywordtype">id</span>.sensorIV(), <span class="keywordtype">id</span>.iu(), <span class="keywordtype">id</span>.iv(), <span class="keywordtype">id</span>.cellType());</div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;}</div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;</div>
-<div class="line"><a name="l00021"></a><span class="lineno"><a class="line" href="classHGCalCondObjectTextIO.html#ad842e405528f2ac32610b8924221e92e">   21</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="classHGCalCondObjectTextIO.html#ad842e405528f2ac32610b8924221e92e">HGCalCondObjectTextIO::load</a>(<span class="keyword">const</span> std::string&amp; filename, <a class="code" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer&lt;double&gt;</a>&amp; cont)</div>
+<div class="line"><a name="l00021"></a><span class="lineno"><a class="line" href="classHGCalCondObjectTextIO.html#a64086616df2622e834f417928acbe157">   21</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="classHGCalCondObjectTextIO.html#a64086616df2622e834f417928acbe157">HGCalCondObjectTextIO::load</a>(<span class="keyword">const</span> std::string&amp; filename, <a class="code" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer&lt;float&gt;</a>&amp; cont)</div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;{</div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    FILE* f = fopen(filename.c_str(), <span class="stringliteral">&quot;r&quot;</span>);</div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;    <span class="keywordflow">if</span> (f == 0) {</div>
@@ -129,7 +129,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;    }</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="comment">// clear the container</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    cont = <a class="code" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer&lt;double&gt;</a>(p_scheme, code);</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;    cont = <a class="code" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer&lt;float&gt;</a>(p_scheme, code);</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;</div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keywordflow">while</span> (!feof(f)) {</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        buffer[0] = 0;</div>
@@ -149,14 +149,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        <a class="code" href="classHGCalTBDetId.html">HGCalTBDetId</a> <span class="keywordtype">id</span> = tb_detid_load(process, ptr);</div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <span class="keywordflow">if</span> (!<span class="keywordtype">id</span>.null()) {</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;            process += ptr;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;            <span class="keywordtype">double</span> value = atof(process);</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;            <span class="keywordtype">float</span> value = atof(process);</div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;            cont.<a class="code" href="classHGCalCondObjectContainer.html#ab9ca15553f3bf71115e7cdd4cc3ed901">set</a>(<span class="keywordtype">id</span>, value);</div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        }</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    }</div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    fclose(f);</div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;}</div>
-<div class="line"><a name="l00067"></a><span class="lineno"><a class="line" href="classHGCalCondObjectTextIO.html#ad80870136cf62af22737d58d0ffffe96">   67</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="classHGCalCondObjectTextIO.html#ad80870136cf62af22737d58d0ffffe96">HGCalCondObjectTextIO::store</a>(<span class="keyword">const</span> std::string&amp; filename, <span class="keyword">const</span> <a class="code" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer&lt;double&gt;</a>&amp; cont)</div>
+<div class="line"><a name="l00067"></a><span class="lineno"><a class="line" href="classHGCalCondObjectTextIO.html#a17551389a0d5a0992755797bef0c50ad">   67</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="classHGCalCondObjectTextIO.html#a17551389a0d5a0992755797bef0c50ad">HGCalCondObjectTextIO::store</a>(<span class="keyword">const</span> std::string&amp; filename, <span class="keyword">const</span> <a class="code" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer&lt;float&gt;</a>&amp; cont)</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;{</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    FILE* f = fopen(filename.c_str(), <span class="stringliteral">&quot;w&quot;</span>);</div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keywordflow">if</span> (f == 0) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
@@ -173,7 +173,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;}</div>
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;</div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
-<div class="line"><a name="l00084"></a><span class="lineno"><a class="line" href="classHGCalCondObjectTextIO.html#a7c18cc41ed01b19593737f28817e3d73">   84</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="classHGCalCondObjectTextIO.html#ad842e405528f2ac32610b8924221e92e">HGCalCondObjectTextIO::load</a>(<span class="keyword">const</span> std::string&amp; filename, <a class="code" href="classHGCalElectronicsMap.html">HGCalElectronicsMap</a>&amp; emap)</div>
+<div class="line"><a name="l00084"></a><span class="lineno"><a class="line" href="classHGCalCondObjectTextIO.html#a7c18cc41ed01b19593737f28817e3d73">   84</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="classHGCalCondObjectTextIO.html#a64086616df2622e834f417928acbe157">HGCalCondObjectTextIO::load</a>(<span class="keyword">const</span> std::string&amp; filename, <a class="code" href="classHGCalElectronicsMap.html">HGCalElectronicsMap</a>&amp; emap)</div>
 <div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;{</div>
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    FILE* f = fopen(filename.c_str(), <span class="stringliteral">&quot;r&quot;</span>);</div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <span class="keywordflow">if</span> (f == 0) {</div>
@@ -208,7 +208,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    fclose(f);</div>
 <div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;}</div>
-<div class="line"><a name="l00119"></a><span class="lineno"><a class="line" href="classHGCalCondObjectTextIO.html#a2408bb038904ebbbcab2e1bcde19c21c">  119</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="classHGCalCondObjectTextIO.html#ad80870136cf62af22737d58d0ffffe96">HGCalCondObjectTextIO::store</a>(<span class="keyword">const</span> std::string&amp; filename, <span class="keyword">const</span> <a class="code" href="classHGCalElectronicsMap.html">HGCalElectronicsMap</a>&amp; emap)</div>
+<div class="line"><a name="l00119"></a><span class="lineno"><a class="line" href="classHGCalCondObjectTextIO.html#a2408bb038904ebbbcab2e1bcde19c21c">  119</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="classHGCalCondObjectTextIO.html#a17551389a0d5a0992755797bef0c50ad">HGCalCondObjectTextIO::store</a>(<span class="keyword">const</span> std::string&amp; filename, <span class="keyword">const</span> <a class="code" href="classHGCalElectronicsMap.html">HGCalElectronicsMap</a>&amp; emap)</div>
 <div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;{</div>
 <div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    FILE* f = fopen(filename.c_str(), <span class="stringliteral">&quot;w&quot;</span>);</div>
 <div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    <span class="keywordflow">if</span> (f == 0) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
@@ -225,7 +225,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    fclose(f);</div>
 <div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;}</div>
+<div class="ttc" id="classHGCalCondObjectTextIO_html_a17551389a0d5a0992755797bef0c50ad"><div class="ttname"><a href="classHGCalCondObjectTextIO.html#a17551389a0d5a0992755797bef0c50ad">HGCalCondObjectTextIO::store</a></div><div class="ttdeci">bool store(const std::string &amp;filename, const HGCalCondObjectContainer&lt; float &gt; &amp;)</div><div class="ttdoc">saves condition to file </div><div class="ttdef"><b>Definition:</b> <a href="HGCalCondObjectTextIO_8cc_source.html#l00067">HGCalCondObjectTextIO.cc:67</a></div></div>
 <div class="ttc" id="HGCalCondObjectTextIO_8h_html"><div class="ttname"><a href="HGCalCondObjectTextIO_8h.html">HGCalCondObjectTextIO.h</a></div></div>
+<div class="ttc" id="classHGCalCondObjectTextIO_html_a64086616df2622e834f417928acbe157"><div class="ttname"><a href="classHGCalCondObjectTextIO.html#a64086616df2622e834f417928acbe157">HGCalCondObjectTextIO::load</a></div><div class="ttdeci">bool load(const std::string &amp;filename, HGCalCondObjectContainer&lt; float &gt; &amp;)</div><div class="ttdoc">load conditions from file </div><div class="ttdef"><b>Definition:</b> <a href="HGCalCondObjectTextIO_8cc_source.html#l00021">HGCalCondObjectTextIO.cc:21</a></div></div>
 <div class="ttc" id="classHGCalCondObjectContainerBase_html_a44346b0f2afeb787ed26a6746f27f403"><div class="ttname"><a href="classHGCalCondObjectContainerBase.html#a44346b0f2afeb787ed26a6746f27f403">HGCalCondObjectContainerBase::schemeCode</a></div><div class="ttdeci">uint64_t schemeCode() const </div><div class="ttdef"><b>Definition:</b> <a href="HGCalCondObjectContainer_8h_source.html#l00046">HGCalCondObjectContainer.h:46</a></div></div>
 <div class="ttc" id="classHGCalElectronicsMap_html_abf0843197865cf50b86645de207a08c5"><div class="ttname"><a href="classHGCalElectronicsMap.html#abf0843197865cf50b86645de207a08c5">HGCalElectronicsMap::insert</a></div><div class="ttdeci">void insert(uint32_t, DetId did)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalElectronicsMap_8cc_source.html#l00053">HGCalElectronicsMap.cc:53</a></div></div>
 <div class="ttc" id="classHGCalCondObjectContainer_html"><div class="ttname"><a href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a></div><div class="ttdef"><b>Definition:</b> <a href="HGCalCondObjectContainer_8h_source.html#l00069">HGCalCondObjectContainer.h:69</a></div></div>
@@ -235,18 +237,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="classHGCalElectronicsMap_html_a60180206b6f95743d9f4d8ab6f0e7554"><div class="ttname"><a href="classHGCalElectronicsMap.html#a60180206b6f95743d9f4d8ab6f0e7554">HGCalElectronicsMap::eidAt</a></div><div class="ttdeci">uint32_t eidAt(size_t i) const </div><div class="ttdef"><b>Definition:</b> <a href="HGCalElectronicsMap_8cc_source.html#l00065">HGCalElectronicsMap.cc:65</a></div></div>
 <div class="ttc" id="classHGCalTBDetId_html"><div class="ttname"><a href="classHGCalTBDetId.html">HGCalTBDetId</a></div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBDetId_8h_source.html#l00012">HGCalTBDetId.h:12</a></div></div>
 <div class="ttc" id="classHGCalTBElectronicsId_html_ae88178c35c1ffcf9d1608e4837de707c"><div class="ttname"><a href="classHGCalTBElectronicsId.html#ae88178c35c1ffcf9d1608e4837de707c">HGCalTBElectronicsId::rawId</a></div><div class="ttdeci">uint32_t rawId() const </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBElectronicsId_8h_source.html#l00037">HGCalTBElectronicsId.h:37</a></div></div>
-<div class="ttc" id="classHGCalCondObjectTextIO_html_ad842e405528f2ac32610b8924221e92e"><div class="ttname"><a href="classHGCalCondObjectTextIO.html#ad842e405528f2ac32610b8924221e92e">HGCalCondObjectTextIO::load</a></div><div class="ttdeci">bool load(const std::string &amp;filename, HGCalCondObjectContainer&lt; double &gt; &amp;)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalCondObjectTextIO_8cc_source.html#l00021">HGCalCondObjectTextIO.cc:21</a></div></div>
 <div class="ttc" id="classHGCalElectronicsMap_html_a93bf58c4008424e22edcff6adc668ea0"><div class="ttname"><a href="classHGCalElectronicsMap.html#a93bf58c4008424e22edcff6adc668ea0">HGCalElectronicsMap::didAt</a></div><div class="ttdeci">DetId didAt(size_t i) const </div><div class="ttdef"><b>Definition:</b> <a href="HGCalElectronicsMap_8cc_source.html#l00069">HGCalElectronicsMap.cc:69</a></div></div>
 <div class="ttc" id="classHGCalCondObjectContainer_html_ab9ca15553f3bf71115e7cdd4cc3ed901"><div class="ttname"><a href="classHGCalCondObjectContainer.html#ab9ca15553f3bf71115e7cdd4cc3ed901">HGCalCondObjectContainer::set</a></div><div class="ttdeci">void set(DetId id, const Payload &amp;value)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalCondObjectContainer_8h_source.html#l00095">HGCalCondObjectContainer.h:95</a></div></div>
 <div class="ttc" id="classHGCalTBElectronicsId_html"><div class="ttname"><a href="classHGCalTBElectronicsId.html">HGCalTBElectronicsId</a></div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBElectronicsId_8h_source.html#l00016">HGCalTBElectronicsId.h:16</a></div></div>
 <div class="ttc" id="HGCalTBDetId_8h_html"><div class="ttname"><a href="HGCalTBDetId_8h.html">HGCalTBDetId.h</a></div></div>
 <div class="ttc" id="classHGCalCondObjectContainer_html_aa3062d28d80d223443efca6638008682"><div class="ttname"><a href="classHGCalCondObjectContainer.html#aa3062d28d80d223443efca6638008682">HGCalCondObjectContainer::size</a></div><div class="ttdeci">size_t size() const </div><div class="ttdef"><b>Definition:</b> <a href="HGCalCondObjectContainer_8h_source.html#l00087">HGCalCondObjectContainer.h:87</a></div></div>
 <div class="ttc" id="classHGCalElectronicsMap_html"><div class="ttname"><a href="classHGCalElectronicsMap.html">HGCalElectronicsMap</a></div><div class="ttdoc">provides the conversion between electronics Id to DetId </div><div class="ttdef"><b>Definition:</b> <a href="HGCalElectronicsMap_8h_source.html#l00017">HGCalElectronicsMap.h:17</a></div></div>
-<div class="ttc" id="classHGCalCondObjectTextIO_html_ad80870136cf62af22737d58d0ffffe96"><div class="ttname"><a href="classHGCalCondObjectTextIO.html#ad80870136cf62af22737d58d0ffffe96">HGCalCondObjectTextIO::store</a></div><div class="ttdeci">bool store(const std::string &amp;filename, const HGCalCondObjectContainer&lt; double &gt; &amp;)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalCondObjectTextIO_8cc_source.html#l00067">HGCalCondObjectTextIO.cc:67</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 10 2016 15:42:41 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Apr 15 2016 02:12:54 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

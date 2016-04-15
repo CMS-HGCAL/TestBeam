@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">79132f004e01119fa99b03256cdbbf22b057683f</span>
+   &#160;<span id="projectnumber">f4878a3158ca8c739cac98aec099ffd117de64f7</span>
    </div>
   </td>
  </tr>
@@ -81,25 +81,42 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <div class="toc"><h3>Table of Contents</h3>
-<ul><li class="level1"><a href="#RECO_">Running the RECO chain starting from a fake SKIROC2 output file:</a></li>
+<ul><li class="level1"><a href="#INPUTS_">Input files:</a></li>
+<li class="level1"><a href="#RECO_">Reconstruction sequence</a></li>
 <li class="level1"><a href="#DQM_">Running the DQM plotting</a></li>
 <li class="level1"><a href="#OBSOLETE_">To be updated:</a></li>
 </ul>
 </div>
 <div class="textblock"><p>Download instructions: <a class="el" href="instructions_.html">Instructions</a></p>
+<h1><a class="anchor" id="INPUTS_"></a>
+Input files:</h1>
+<ul>
+<li>channel mapping: file that contains the conversion between electronicID (<a class="el" href="namespaceSKIROC.html">SKIROC</a> chip number) to detector ID (DetId)<ul>
+<li><pre class="fragment">HGCal/CondObjects/data/map_FNAL_2.txt </pre></li>
+</ul>
+</li>
+<li>pedestals: pedestal values measured from pedestal run with dedicated analysis (see PEDESTAL_ANALYSIS_)<ul>
+<li><pre class="fragment">HGCal/CondObjects/data/Ped_HighGain_8272_Mean.txt </pre></li>
+</ul>
+</li>
+<li>gains: ADCtoGeV conversion factors measured with dedicated analysis (see ADCTOGEV_)<ul>
+<li><pre class="fragment">N/A yet </pre></li>
+</ul>
+</li>
+</ul>
+<p>Pedestals and ADCtoGeV should be provided for both high gain ADC and low gain ADC. Now only pedestals for high gain is available. Default values if files are not provided are:</p>
+<ul>
+<li>0 for pedestals</li>
+<li>1 for ADCtoGeV</li>
+</ul>
 <h1><a class="anchor" id="RECO_"></a>
-Running the RECO chain starting from a fake SKIROC2 output file:</h1>
-<p>The <a class="el" href="namespaceSKIROC.html">SKIROC</a> channel mapping on to the individual cells of a sensor is in:</p>
+Reconstruction sequence</h1>
+<p>The reconstruction sequences are defined in StandardSequences/python</p>
 <ul>
-<li>Condformats/data/map_FNAL.txt</li>
+<li>RawToDigiSeq</li>
+<li>LocalRecoSeq</li>
 </ul>
-<p>Fake calibration files are:</p>
-<ul>
-<li>pedestals.txt</li>
-<li>gains.txt</li>
-</ul>
-<pre class="fragment">cmsRun test_cfg.py
-</pre><h1><a class="anchor" id="DQM_"></a>
+<h1><a class="anchor" id="DQM_"></a>
 Running the DQM plotting</h1>
 <p>Currently the DQM worflow kicks in post the creation of Digis and also after the creation of RecHits.</p>
 <ul>
@@ -143,7 +160,7 @@ To be updated:</h1>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Thu Mar 10 2016 15:42:45 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Apr 15 2016 02:13:00 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
