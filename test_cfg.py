@@ -15,7 +15,7 @@ process.source = cms.Source("HGCalTBTextSource",
 )
 
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("test_DigiAndRechitPlotter_TB_2051_ModPed.root") )
+process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_output_8272.root") )
 
 process.output = cms.OutputModule("PoolOutputModule",
                                   compressionAlgorithm = cms.untracked.string('LZMA'),
@@ -43,7 +43,7 @@ process.dumpDigi = cms.EDAnalyzer("HGCalDigiDump")
 
 #============================================================ Sequences
 process.debugRawSeq = cms.Sequence(process.dumpRaw)
-process.DQMSeq = cms.Sequence(process.hgcaltbdigisplotter * process.hgcaltbdigisplotter_new * process.hgcaltbrechitsplotter)
+process.DQMSeq = cms.Sequence(process.hgcaltbdigisplotter * process.hgcaltbrechitsplotter)
 
 #process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter*process.LocalRecoSeq r)
 
