@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">f4878a3158ca8c739cac98aec099ffd117de64f7</span>
+   &#160;<span id="projectnumber">d6244c02cb92660301bae063b135512567b77f46</span>
    </div>
   </td>
  </tr>
@@ -95,27 +95,30 @@ Input files:</h1>
 <li><pre class="fragment">HGCal/CondObjects/data/map_FNAL_2.txt </pre></li>
 </ul>
 </li>
-<li>pedestals: pedestal values measured from pedestal run with dedicated analysis (see PEDESTAL_ANALYSIS_)<ul>
+<li>pedestals: pedestal values measured from pedestal run with dedicated analysis (PEDESTAL_ANALYSIS_ to be updated soon)<ul>
 <li><pre class="fragment">HGCal/CondObjects/data/Ped_HighGain_8272_Mean.txt </pre></li>
+<li><pre class="fragment">The above file is a sample file in the format needed to be read by the RecHitProducer. This is valid for the high gain ADC and was derived from the pedestal run 8272 </pre></li>
 </ul>
 </li>
-<li>gains: ADCtoGeV conversion factors measured with dedicated analysis (see ADCTOGEV_)<ul>
+<li>gains: ADCtoGeV conversion factors measured with dedicated analysis (ADCTOGEV_ to be updated soon)<ul>
 <li><pre class="fragment">N/A yet </pre></li>
 </ul>
 </li>
 </ul>
-<p>Pedestals and ADCtoGeV should be provided for both high gain ADC and low gain ADC. Now only pedestals for high gain is available. Default values if files are not provided are:</p>
+<p>Pedestals and ADCtoGeV should be provided for both high gain ADC and low gain ADC in the format of the above .txt file in lines 38-41 of <a class="el" href="HGCalTBRecHitProducer_8cc.html">Reco/plugins/HGCalTBRecHitProducer.cc</a> Now only pedestals for high gain is available. Default values if files are not provided are:</p>
 <ul>
 <li>0 for pedestals</li>
 <li>1 for ADCtoGeV</li>
 </ul>
+<p>Run, event, time stamp information has been added to edm::event and can be accessed directly per event.</p>
 <h1><a class="anchor" id="RECO_"></a>
 Reconstruction sequence</h1>
 <p>The reconstruction sequences are defined in StandardSequences/python</p>
 <ul>
-<li>RawToDigiSeq</li>
-<li>LocalRecoSeq</li>
+<li>RawToDigiSeq: This sequence reads the RAW output files and assigns the "decoded" adc values(both high and low gain) from individual channels of the <a class="el" href="namespaceSKIROC.html">SKIROC</a> to the corresponding cells of the sensor.</li>
+<li>LocalRecoSeq: This sequence starts with the Digis above, subtracts from each cell of the sensor the pedestals as provided in the txt files mentioned above, and multiplies the resultant with the ADCtoGeV scale factor. -SimulationSeq: An example is not yet provided, but this will not have to go through the above sequences and we can directly invoke the plotting tools.</li>
 </ul>
+<p>The Raw Data files: Can be found in /afs/cern.ch/user/r/rchatter/public in folders: Electron_Runs_2932016, Electron_Runs_3032016 , Electron_Runs_3132016, Proton_Runs_0142016, Electron_Runs_0142016, Proton_Runs_0242016, Proton_Runs_0442016. The run information can be found on elog <a href="http://cmsonline.cern.ch/portal/page/portal/CMS%20online%20system/Elog?_piref815_429145_815_429142_429142.strutsAction=%2FviewSubcatMessages.do%3FcatId%3D592%26subId%3D17%26page%3D1">http://cmsonline.cern.ch/portal/page/portal/CMS%20online%20system/Elog?_piref815_429145_815_429142_429142.strutsAction=%2FviewSubcatMessages.do%3FcatId%3D592%26subId%3D17%26page%3D1</a> . Please note that the folder names are a little misleading and the beam type should currently be read off from the elog. These files will be made available on CERN eos soon and a message posted on hn.</p>
 <h1><a class="anchor" id="DQM_"></a>
 Running the DQM plotting</h1>
 <p>Currently the DQM worflow kicks in post the creation of Digis and also after the creation of RecHits.</p>
@@ -135,7 +138,7 @@ Running the DQM plotting</h1>
 </ul>
 <p>On executing: </p>
 <pre class="fragment">cmsRun test_cfg.py
-</pre><p>a root file <b>test_DigiAndRechitPlotter_TB.root</b> is produced. This file has two directories namely</p>
+</pre><p>a root file <b>test_output.root</b> is produced. This file has two directories namely</p>
 <ul>
 <li><b>hgcaltbdigisplotter:</b> with the Digi-&gt;DQM workflow</li>
 <li><b>hgcaltbrechitsplotter:</b> with the RecHits to DQM workflow</li>
@@ -160,7 +163,7 @@ To be updated:</h1>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 15 2016 02:13:00 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Apr 15 2016 02:44:48 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>
