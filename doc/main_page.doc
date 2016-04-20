@@ -7,21 +7,26 @@ Download instructions: \ref instructions_
 \section INPUTS_ Input files:
  - channel mapping: file that contains the conversion between electronicID (SKIROC chip number) to detector ID (DetId)
    - \verbatim HGCal/CondObjects/data/map_FNAL_2.txt \endverbatim
- - pedestals: pedestal values measured from pedestal run with dedicated analysis (see PEDESTAL_ANALYSIS_)
+ - pedestals: pedestal values measured from pedestal run with dedicated analysis (PEDESTAL_ANALYSIS_ to be updated soon)
    - \verbatim HGCal/CondObjects/data/Ped_HighGain_8272_Mean.txt \endverbatim
- - gains: ADCtoGeV conversion factors measured with dedicated analysis (see ADCTOGEV_)
+   - \verbatim The above file is a sample file in the format needed to be read by the RecHitProducer. This is valid for the high gain ADC and was derived from the pedestal run 8272 \endverbatim
+ - gains: ADCtoGeV conversion factors measured with dedicated analysis (ADCTOGEV_ to be updated soon)
    - \verbatim N/A yet \endverbatim
 
-Pedestals and ADCtoGeV should be provided for both high gain ADC and low gain ADC.
+Pedestals and ADCtoGeV should be provided for both high gain ADC and low gain ADC in the format of the above .txt file in lines 38-41 of Reco/plugins/HGCalTBRecHitProducer.cc
 Now only pedestals for high gain is available. Default values if files are not provided are:
  - 0 for pedestals
  - 1 for ADCtoGeV
 
+Run, event, time stamp information has been added to edm::event and can be accessed directly per event.
+
 \section RECO_ Reconstruction sequence
 The reconstruction sequences are defined in StandardSequences/python
- - RawToDigiSeq
- - LocalRecoSeq
+ - RawToDigiSeq: This sequence reads the RAW output files and assigns the "decoded" adc values(both high and low gain) from individual channels of the SKIROC to the corresponding cells of the sensor. 
+ - LocalRecoSeq: This sequence starts with the Digis above, subtracts from each cell of the sensor the pedestals as provided in the txt files mentioned above, and multiplies the resultant with the ADCtoGeV scale factor.
+ -SimulationSeq: An example is not yet provided, but this will not have to go through the above sequences and we can directly invoke the plotting tools.
 
+The Raw Data files: Can be found in /afs/cern.ch/user/r/rchatter/public in folders: Electron_Runs_2932016, Electron_Runs_3032016 , Electron_Runs_3132016, Proton_Runs_0142016, Electron_Runs_0142016, Proton_Runs_0242016, Proton_Runs_0442016. The run information can be found on elog http://cmsonline.cern.ch/portal/page/portal/CMS%20online%20system/Elog?_piref815_429145_815_429142_429142.strutsAction=%2FviewSubcatMessages.do%3FcatId%3D592%26subId%3D17%26page%3D1 . Please note that the folder names are a little misleading and the beam type should currently be read off from the elog. These files will be made available on CERN eos soon and a message posted on hn.
 
 \section DQM_ Running the DQM plotting
  
@@ -40,7 +45,7 @@ On executing:
 cmsRun test_cfg.py
 \endverbatim
 
-a root file \b test_DigiAndRechitPlotter_TB.root is produced. This file has two directories namely 
+a root file \b test_output.root is produced. This file has two directories namely 
  - \b hgcaltbdigisplotter: with the Digi->DQM workflow 
  - \b hgcaltbrechitsplotter: with the RecHits to DQM workflow
 
