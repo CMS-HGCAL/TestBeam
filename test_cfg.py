@@ -11,7 +11,10 @@ process.load('HGCal.RawToDigi.hgcaltbdigisplotter_cfi')
 process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
 
 process.source = cms.Source("HGCalTBTextSource",
-                            fileNames=cms.untracked.vstring("file:Proton_Runs_0242016/HGC_Output_8272.txt") ### here a vector is provided
+                            fileNames=cms.untracked.vstring("file:Proton_Runs_0242016/HGC_Output_8272.txt"), ### here a vector is provided
+                            telescopeData = cms.untracked.PSet(
+        fileNames = cms.untracked.vstring(""),
+        )
 )
 
 
