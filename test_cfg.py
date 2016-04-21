@@ -15,10 +15,10 @@ process.source = cms.Source("HGCalTBTextSource",
                             telescopeData = cms.untracked.PSet(
         fileNames = cms.untracked.vstring(""),
         ),
-                            hgcalData = = cms.untracked.PSet(
-                  fileNames=cms.untracked.vstring("file:Proton_Runs_0242016/HGC_Output_8272.txt"), ### here a vector is provided
-        ),
-)
+                            hgcalData = cms.untracked.PSet(
+        fileNames=cms.untracked.vstring("file:Proton_Runs_0242016/HGC_Output_8272.txt"), ### here a vector is provided
+                  ),
+                            )
 
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_output_8272.root") )
