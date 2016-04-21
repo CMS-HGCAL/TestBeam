@@ -134,11 +134,12 @@ void HGCalTBTextSource::produce(edm::Event & e)
 		len = sizeof(float) * _telescope_words.size();
 		fed.resize(len);
 		memcpy(fed.data(), &(_telescope_words[0]), len);
+		_telescope_words.clear();
 	}
 
 	// words are reset, only if the vectors are empty new lines are going to be read
 	m_skiwords.clear();
-	_telescope_words.clear();
+
 
 	e.put(bare_product);
 }
