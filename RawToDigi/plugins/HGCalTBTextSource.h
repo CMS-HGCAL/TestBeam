@@ -13,6 +13,8 @@
 /* now we have only 2 layers */
 #define MAXSKIROCS 2 
 
+#define _TELESCOPE_FED_ID_ 99
+
 /**
  * \class HGCalTBTextSource HGCal/RawToDigi/plugins/HGCalTBTextSource.h
  *
@@ -29,6 +31,7 @@ public:
 	explicit HGCalTBTextSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :  edm::ProducerSourceFromFiles(pset, desc, true),
 		//m_file(0),
 		m_run(0),
+		_hgcalFiles(pset.getParameterSet("hgcalData")),
 		_telescopeFiles(pset.getParameterSet("telescopeData"))
 	{
 
@@ -60,6 +63,7 @@ private:
 	virtual void produce(edm::Event & e);
 
 	void parseAddSkiword(std::vector<uint16_t>& skiwords, std::string);
+	void parseAddTelescopeWords(std::vector<float>& telescope_words, std::string i);
 
 	std::vector<uint16_t> m_skiwords;
 	std::vector<float>    _telescope_words;
@@ -70,7 +74,7 @@ private:
 	unsigned int  m_time, m_time_tmp;
 	unsigned int _triggerID, t_triggerID;
 	
+	edm::FromFiles _hgcalFiles;
 	edm::FromFiles _telescopeFiles;
-	//edm::FromFiles _hgcalFiles;
 
 };

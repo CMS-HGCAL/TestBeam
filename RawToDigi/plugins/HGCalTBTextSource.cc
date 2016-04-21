@@ -44,16 +44,16 @@ bool HGCalTBTextSource::readLines()
 	std::cout << "[DEBUG] Readline" << std::endl;
 #endif
 
-	if(m_file.peek()!='C'){
-		//cms::LogError("InputSource") << "Input file format does not match: reading character #" << m_file.peek() << "#";
-		throw cms::Exception("MismatchInputSource") << "#" << m_file.peek() << "#";
+	if(_hgcalFile.peek()!='C'){
+		//cms::LogError("InputSource") << "Input file format does not match: reading character #" << _hgcalFile.peek() << "#";
+		throw cms::Exception("MismatchInputSource") << "#" << _hgcalFile.peek() << "#";
 	}
 
 	for(unsigned int iSkiroc =0 ; iSkiroc < MAXSKIROCS; ++iSkiroc){
 
 		// read the first line
 		buffer[0] = 0;
-		m_file.getline(buffer, 1000);
+		_hgcalFile.getline(buffer, 1000);
 		if( sscanf(buffer, "CHIP %u TRIG: %x TIME: %x RUN: %u EV: %u", &m_sourceId_tmp, &triggerID_tmp, &m_time_tmp, &m_run_tmp, &m_event_tmp) != 5) return false;
 		if(iSkiroc==0){
 			m_event = m_event_tmp;
@@ -73,9 +73,9 @@ bool HGCalTBTextSource::readLines()
 		
 		assert( (triggerID_tmp & 0xF0000000) == 0x80000000 ); // check if the skiroc is fine  ///\todo transform to exception
 
-		while ( m_file.peek()!='C' && m_file.good()) {
+		while ( _hgcalFile.peek()!='C' && _hgcalFile.good()) {
 			buffer[0] = 0;
-			m_file.getline(buffer, 1000);
+			_hgcalFile.getline(buffer, 1000);
 #ifdef DEBUG
 			std::cout << m_sourceId << "\t" << m_event << "\t" << m_time << "\t" << buffer << "\n"; // buffer has a \n
 #endif	  
@@ -104,7 +104,7 @@ bool HGCalTBTextSource::readTelescopeLines()
 bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&)
 {
 	
-	openFile(*this, _hgcalFile); // 
+	openFile(_hgcalFiles, _hgcalFile); // 
 	openFile(_telescopeFiles, _telescopeFile);
 
 	if(!readLines()) return false; // readlines is here because the run and event info are contained in the file 
@@ -131,9 +131,9 @@ void HGCalTBTextSource::produce(edm::Event & e)
 
 	fed = bare_product->FEDData(_TELESCOPE_FED_ID_);
 	if(_triggerID==t_triggerID){ // empty FED if no data are available for the triggerID
-		len = sizeof(float) * telescope_words.size();
+		len = sizeof(float) * _telescope_words.size();
 		fed.resize(len);
-		memcpy(fed.data(), &(telescope_words[0]), len);
+		memcpy(fed.data(), &(_telescope_words[0]), len);
 	}
 
 	// words are reset, only if the vectors are empty new lines are going to be read
@@ -159,7 +159,8 @@ void HGCalTBTextSource::parseAddTelescopeWords(std::vector<float>& telescope_wor
 //# UTC_Time_Stamp,Trigger Number,Number_Of_Tracks,Chi2/NDF,X_Intercept,Y_Intercept,X_Slope,Y_Slope,X_Slope_Error,Y_Slope_Error
 //1459822031,7,1,1.0206740673,19609.2010917080,13026.1630167309,-0.0001089257,-0.0002085995,0.0000209990,0.0000139143
 	unsigned int time, nTracks;
-	sscanf(i.c_str(), "%u,%u,%u,%f,%f,%f,%f,%f,%f", &time, &t_triggerID, &nTracks, &chi2, &x0, &y0, &m_x, &m_y, &m_x_err, &m_y_err);
+	float chi2, x0, y0, m_x, m_y, m_x_err, m_y_err;
+	sscanf(i.c_str(), "%u,%u,%u,%f,%f,%f,%f,%f,%f,%f", &time, &t_triggerID, &nTracks, &chi2, &x0, &y0, &m_x, &m_y, &m_x_err, &m_y_err);
 	telescope_words.push_back(chi2);
    	telescope_words.push_back(x0);
 	telescope_words.push_back(y0);
