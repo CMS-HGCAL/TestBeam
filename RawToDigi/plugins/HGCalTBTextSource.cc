@@ -123,7 +123,7 @@ bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& t
 	}
 
 
-	if(_telescopeFiles.size()>0 && openFile(_telescopeFiles, _telescopeFile)){  // even if all the telescope files have been processed, keep going untile the hgcal files have all completed
+	if(_telescopeFiles.fileNames().size()>0 && openFile(_telescopeFiles, _telescopeFile)){  // even if all the telescope files have been processed, keep going untile the hgcal files have all completed
 		if(!readTelescopeLines()) return false;
 	}
 
