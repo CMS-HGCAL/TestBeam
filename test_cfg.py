@@ -11,13 +11,13 @@ process.load('HGCal.RawToDigi.hgcaltbdigisplotter_cfi')
 process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
 
 process.source = cms.Source("HGCalTBTextSource",
-                            fileNames=cms.untracked.vstring(""), ### here a vector is provided
-                            telescopeData = cms.untracked.PSet(
-        fileNames = cms.untracked.vstring(""),
-        ),
+                            fileNames=cms.untracked.vstring("NOFILE"), ### here a vector is provided, NOFILE should be given otherwise it would not run at all
                             hgcalData = cms.untracked.PSet(
         fileNames=cms.untracked.vstring("file:Proton_Runs_0242016/HGC_Output_8272.txt"), ### here a vector is provided
                   ),
+                            telescopeData = cms.untracked.PSet(
+        fileNames = cms.untracked.vstring(), 
+        ),
                             )
 
 
@@ -56,6 +56,6 @@ process.DQMSeq = cms.Sequence(process.hgcaltbdigisplotter * process.hgcaltbrechi
 #process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter)
 
 #process.p =cms.Path(process.debugRawSeq * process.RawToDigiSeq ) #*  process.DQMSeq * process.pedestals )
-process.p =cms.Path(process.RawToDigiSeq * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
+process.p =cms.Path(process.RawToDigiSeq) # * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
 process.end = cms.EndPath(process.output)
 

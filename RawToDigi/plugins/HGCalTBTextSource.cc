@@ -10,17 +10,29 @@
 #include <iostream>
 #endif
 
-void HGCalTBTextSource::openFile(edm::FromFiles& files, std::ifstream& file)
+bool HGCalTBTextSource::openFile(edm::FromFiles& files, std::ifstream& file)
 {
+#ifdef DEBUG
+		std::cout << "[DEBUG] " << files.fileNames().size() 
+				  << "\t" << files.fileIndex()
+				  << "\t" << files.fileNames()[0] << "\t" << files.fileNames()[files.fileIndex()] << std::endl;
+#endif
 
-	if(file.is_open() && !file.eof()) return; // continue to use the same file if the end is not reached
+	if(file.is_open() && !file.eof()) return true; // continue to use the same file if the end is not reached
 	if(file.is_open()){ //the end of file is reached
 		file.close();
 		files.incrementFileIndex();
-	}
+		if(files.fileIndex()>=files.fileNames().size()) return false;
+#ifdef DEBUG
+		std::cout << "[DEBUG] INCREMENT " << files.fileNames().size() << "\t" << files.fileNames()[0] << "\t" << files.fileNames()[files.fileIndex()] << std::endl;
+#endif
 
-	std::string name = files.fileNames()[files.fileIndex()];
+	}
 	
+	std::string name = files.fileNames()[files.fileIndex()];
+	if(name == "NOFILE" || name == ""){
+		return false;
+	}
 	if (name.find("file:") == 0) name = name.substr(5);
 #ifdef DEBUG
 	std::cout << "[DEBUG] Opening file: " << name << std::endl;
@@ -30,6 +42,7 @@ void HGCalTBTextSource::openFile(edm::FromFiles& files, std::ifstream& file)
 	if (file.fail()) {
 		throw cms::Exception("FileNotFound") << "Unable to open file " << name;
 	}
+	return true;
 }
 
 
@@ -104,12 +117,16 @@ bool HGCalTBTextSource::readTelescopeLines()
 bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&)
 {
 	
-	openFile(_hgcalFiles, _hgcalFile); // 
-	openFile(_telescopeFiles, _telescopeFile);
+	if(openFile(_hgcalFiles, _hgcalFile) == false) return false; // if all the files have been processed, then return false
+	else{ 
+		if(!readLines()) return false; // readlines is here because the run and event info are contained in the file 
+	}
 
-	if(!readLines()) return false; // readlines is here because the run and event info are contained in the file 
-	if(!readTelescopeLines()) return false;
-	
+
+	if(_telescopeFiles.size()>0 && openFile(_telescopeFiles, _telescopeFile)){  // even if all the telescope files have been processed, keep going untile the hgcal files have all completed
+		if(!readTelescopeLines()) return false;
+	}
+
 	id = edm::EventID(m_run, 1, m_event);
 	
 	// time is a hack
@@ -130,11 +147,13 @@ void HGCalTBTextSource::produce(edm::Event & e)
 	memcpy(fed.data(), &(m_skiwords[0]), len);
 
 	fed = bare_product->FEDData(_TELESCOPE_FED_ID_);
-	if(_triggerID==t_triggerID){ // empty FED if no data are available for the triggerID
+	if((unsigned int) m_run==t_triggerID){ // empty FED if no data are available for the triggerID
 		len = sizeof(float) * _telescope_words.size();
 		fed.resize(len);
 		memcpy(fed.data(), &(_telescope_words[0]), len);
 		_telescope_words.clear();
+	}else{
+		fed.resize(0);
 	}
 
 	// words are reset, only if the vectors are empty new lines are going to be read
@@ -177,8 +196,7 @@ void HGCalTBTextSource::fillDescriptions(edm::ConfigurationDescriptions& descrip
 	edm::ParameterSetDescription desc;
 	desc.setComment("TEST");
 	desc.addUntracked<std::vector<std::string> >("fileNames");
-	desc.addUntracked<std::vector<std::string> >("telescopeFiles");
-	descriptions.add("source", desc);
+	//descriptions.add("source", desc);
 }
 
 
