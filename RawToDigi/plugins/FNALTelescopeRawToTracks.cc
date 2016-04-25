@@ -6,6 +6,9 @@
 #include "FWCore/Framework/interface/EventSetup.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
+#include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+
 #include "HGCal/DataFormats/interface/HGCalTBTrackCollection.h"
 
 /**
@@ -23,6 +26,7 @@ public:
 	explicit FNALTelescopeRawToTracks(const edm::ParameterSet& ps);
 	virtual void produce(edm::Event& e, const edm::EventSetup& c);
 	virtual void beginJob();
+	void fillDescription(edm::ParameterSetDescription &desc);
 
 private:
 	edm::InputTag dataTag_;
@@ -71,6 +75,12 @@ void FNALTelescopeRawToTracks::produce(edm::Event& e, const edm::EventSetup& c)
 	e.put(tracks);
 }
 
+void FNALTelescopeRawToTracks::fillDescription(edm::ParameterSetDescription &desc)
+ {
+	desc.setComment("TEST");
+	desc.add<edm::InputTag>("InputLabel");
+	desc.addUntracked<std::vector<int> >("fedIds", std::vector<int>(99));
+}
 
 #include "FWCore/PluginManager/interface/ModuleDef.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
