@@ -176,8 +176,6 @@ void HGCalTBTextSource::parseAddSkiword(std::vector<uint16_t>& skiwords, std::st
 }
 
 void HGCalTBTextSource::parseAddTelescopeWords(std::vector<float>& telescope_words, std::string i){
-//# UTC_Time_Stamp,Trigger Number,Number_Of_Tracks,Chi2/NDF,X_Intercept,Y_Intercept,X_Slope,Y_Slope,X_Slope_Error,Y_Slope_Error
-//1459822031,7,1,1.0206740673,19609.2010917080,13026.1630167309,-0.0001089257,-0.0002085995,0.0000209990,0.0000139143
 	unsigned int time, nTracks;
 	float chi2, x0, y0, m_x, m_y, m_x_err, m_y_err;
 	sscanf(i.c_str(), "%u,%u,%u,%f,%f,%f,%f,%f,%f,%f", &time, &t_triggerID, &nTracks, &chi2, &x0, &y0, &m_x, &m_y, &m_x_err, &m_y_err);

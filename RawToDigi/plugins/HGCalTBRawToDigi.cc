@@ -46,11 +46,6 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 
 		// we start from the back...
 		int ptr = fed.size() / sizeof(uint16_t) - 1;
-/*
-		printf("Starting on SKIROC %x\n", pdata[ptr]);
-		ptr--; // now we are pointing at a relatively-useless header word
-		ptr--; // now we are pointing at the first TDC word
-*/
 		for (int ski = 2; ski >= 1; ski--) { // starting from 2 because then we are going back reading two samples
 			for (int ichan = 0; ichan < SKIROC::NCHANNELS; ichan++) {
 				HGCalTBElectronicsId eid(ski, ichan);
