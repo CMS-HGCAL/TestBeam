@@ -23,9 +23,13 @@ public:
 		static const int MASK_ADCTDC = 0x0FFF;
 		static const int MASK_HIT = 0x1000;
 		static const int MASK_GAIN = 0x2000;
-		static const unsigned int ADCLOW_SHIFT = 1;
-		static const unsigned int ADCHIGH_SHIFT = 1;
-		static const unsigned int TDC_SHIFT = 2;
+
+		enum {
+			ADCLOW_SHIFT=0,
+			ADCHIGH_SHIFT,
+			TDC_SHIFT
+		};
+		
 		int adcLow() const // adc values in 12 bits, so no reason to use unsigned types
 		{
 			return frame_[i_ + ADCLOW_SHIFT] & MASK_ADCTDC;
