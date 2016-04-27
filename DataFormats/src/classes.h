@@ -20,6 +20,7 @@ struct dictionary {
 	SKIROC2DigiCollection _SR2DC;
 	edm::Wrapper<SKIROC2DigiCollection> _theSR2DC;
 
+	HGCalTBTrack _aTrack;
 //	std::vector<HGCalTBTrack> _HGCTBTRackVect;
 //	edm::Wrapper< HGCalTBTrackCollection > _HGCTBTrackProd;
 

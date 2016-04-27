@@ -1,6 +1,6 @@
 <lcgdict>
-  <class name="HGCalTBTrack" ClassVersion="1">
-	<version ClassVersion="1" checksum="3239490687" />
+  <class name="HGCalTBTrack" ClassVersion="-1">
+	<version ClassVersion="-1" checksum="3239490687" />
 	</class>
   <class name="HGCalTBRecHit" ClassVersion="0">
    <version ClassVersion="0" checksum="3094752182"/>
