@@ -16,9 +16,9 @@ std::ostream& operator<<(std::ostream& s, const SKIROC2DataFrame& ski)
 {
 	s << ski.detid() << std::endl;
 	for (int i = 0; i < ski.samples(); i++)
-		s << "    " << ski[i].adcLow() 
-		  << " " << ski[i].adcHigh() 
-		  << " " << ski[i].tdc() 
+		s << "    " << ski[i].adcLow()
+		  << " " << ski[i].adcHigh()
+		  << " " << ski[i].tdc()
 		  << " " << ski.samples()  << std::endl;
 	return s;
 }
