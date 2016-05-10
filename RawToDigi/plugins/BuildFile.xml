@@ -9,6 +9,7 @@
 <use name="DataFormats/FEDRawData"/>
 <use name="HGCal/DataFormats"/>
 <use name="HGCal/CondObjects"/>
+<use name="HGCal/RawToDigi"/>
 <use name="HGCal/Geometry"/>
 <use name="CommonTools/UtilAlgos"/>
 <flags EDM_PLUGIN="1"/>
