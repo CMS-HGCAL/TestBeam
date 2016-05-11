@@ -186,8 +186,8 @@ RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	for(auto RecHit : *Rechits) {
 		if(!IsCellValid.iu_iv_valid((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize))  continue;
 		int n_layer = (RecHit.id()).layer();
-                int n_cell_type = (RecHit.id()).cellType();
-                double n_cell_area = IsCellValid.Cell_Area(n_cell_type);
+		int n_cell_type = (RecHit.id()).cellType();
+		double n_cell_area = IsCellValid.Cell_Area(n_cell_type);
 //We now obtain the cartesian coordinates of the cell corresponding to an iu,iv. This may either be a full hex, a half hex or an invalid cell. If a cell is invalid based on the iu,iv index -123456 is returned for its x,y vertices
 		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize);
 		double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
@@ -195,7 +195,7 @@ RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 		h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy());
 		h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energy());
 //The energy threshold for the occupancy has been hardcoded here. Need to decide what a good choice is. Maybe dynamic per cell depending on the pedestal
-		if(RecHit.energy() > 5) h_RecHit_layer_Occupancy[n_layer - 1]->Fill(iux , iyy, 1./n_cell_area);
+		if(RecHit.energy() > 5) h_RecHit_layer_Occupancy[n_layer - 1]->Fill(iux , iyy, 1. / n_cell_area);
 // There will be several array indices iu, iv that wont be filled due to it being invalid. Can think of alternate array filling.
 		h_RecHit_layer_cell[n_layer - 1][7 + (RecHit.id()).iu()][7 + (RecHit.id()).iv()]->Fill(RecHit.energy());
 	}

@@ -1,12 +1,15 @@
 #include "HGCal/DataFormats/interface/HGCalTBTrack.h"
 #include <cassert>
 
+double MicronToCM    = 0.0001;// Tracker information has microns as the length unit, conversion factor to cm
+
+
 HGCalTBTrack::HGCalTBTrack(void)
 {
 }
 
 HGCalTBTrack::HGCalTBTrack(const float *v):
-	_vertex(v[1], v[2], 0.),
+	_vertex(MicronToCM * v[1], MicronToCM * v[2], MicronToCM * 0.),
 	_momentum(v[3], v[4], 1.)
 {
 //	assert(size == getSize()); ///\todo to be turned into exception

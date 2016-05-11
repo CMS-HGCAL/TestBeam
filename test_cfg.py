@@ -13,15 +13,15 @@ process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
 process.source = cms.Source("HGCalTBTextSource",
                             fileNames=cms.untracked.vstring("NOFILE"), ### here a vector is provided, NOFILE should be given otherwise it would not run at all
                             hgcalData = cms.untracked.PSet(
-        fileNames=cms.untracked.vstring("file:Proton_Runs_0242016/HGC_Output_8272.txt"), ### here a vector is provided
+        fileNames=cms.untracked.vstring("file:Electron_Runs_0442016/HGC_Output_20532.txt"), ### here a vector is provided
                   ),
                             telescopeData = cms.untracked.PSet(
-        fileNames = cms.untracked.vstring("/afs/cern.ch/user/r/rchatter/public/Run751_HGCAL_converted.txt"),
+        fileNames = cms.untracked.vstring("file:SiTel_March_TB/HGCAL/Run751_HGCAL_converted.txt"), 
         ),
                             )
 
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_output_8272.root") )
+process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Telescope_20532_751.root") )
 
 process.output = cms.OutputModule("PoolOutputModule",
                                   compressionAlgorithm = cms.untracked.string('LZMA'),
@@ -56,6 +56,7 @@ process.DQMSeq = cms.Sequence(process.hgcaltbdigisplotter * process.hgcaltbrechi
 #process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter)
 
 #process.p =cms.Path(process.debugRawSeq * process.RawToDigiSeq ) #*  process.DQMSeq * process.pedestals )
-process.p =cms.Path(process.RawToDigiSeq) # * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
+process.p =cms.Path(process.RawToDigiSeq*process.LocalRecoSeq*process.hgcaltbrechitsplotter_highgain_new) # * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
+#process.p =cms.Path(process.RawToDigiSeq*process.LocalRecoSeq*process.hgcaltbdigisplotter) # * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
 process.end = cms.EndPath(process.output)
 

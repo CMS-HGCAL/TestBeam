@@ -2,7 +2,7 @@
 //
 // Package:    HGCal/Calibration
 // Class:      Pedestals
-// 
+//
 /**\class Pedestals Pedestals.cc HGCal/Pedestals/plugins/Pedestals.cc
 
  Description: [one line class summary]
@@ -48,20 +48,21 @@
 // constructor "usesResource("TFileService");"
 // This will improve performance in multithreaded jobs.
 
-class Pedestals : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
-   public:
-      explicit Pedestals(const edm::ParameterSet&);
-      ~Pedestals();
+class Pedestals : public edm::one::EDAnalyzer<edm::one::SharedResources>
+{
+public:
+	explicit Pedestals(const edm::ParameterSet&);
+	~Pedestals();
 
-      static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 
-   private:
-      virtual void beginJob() override;
-      virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
-      virtual void endJob() override;
+private:
+	virtual void beginJob() override;
+	virtual void analyze(const edm::Event&, const edm::EventSetup&) override;
+	virtual void endJob() override;
 
-      // ----------member data ---------------------------
+	// ----------member data ---------------------------
 
 	edm::EDGetTokenT<HGCalTBDigiCollection> _digisToken;
 
@@ -88,19 +89,19 @@ class Pedestals : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 // constructors and destructor
 //
 Pedestals::Pedestals(const edm::ParameterSet& iConfig) :
-	  _digisToken(consumes<HGCalTBDigiCollection>(iConfig.getParameter<edm::InputTag>("digiCollection")))
+	_digisToken(consumes<HGCalTBDigiCollection>(iConfig.getParameter<edm::InputTag>("digiCollection")))
 {
-   //now do what ever initialization is needed
-   usesResource("TFileService");
+	//now do what ever initialization is needed
+	usesResource("TFileService");
 
 }
 
 
 Pedestals::~Pedestals()
 {
- 
-   // do anything here that needs to be done at desctruction time
-   // (e.g. close files, deallocate resources etc.)
+
+	// do anything here that needs to be done at desctruction time
+	// (e.g. close files, deallocate resources etc.)
 
 }
 
@@ -113,9 +114,9 @@ Pedestals::~Pedestals()
 void
 Pedestals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
-   using namespace edm;
+	using namespace edm;
 
- 	edm::Handle<HGCalTBDigiCollection> digisHandle;
+	edm::Handle<HGCalTBDigiCollection> digisHandle;
 	iEvent.getByToken(_digisToken, digisHandle);
 
 	HGCalCondPedestals pedestals_cond(HGCalTBNumberingScheme::scheme(), 0);
@@ -123,29 +124,29 @@ Pedestals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 	HGCalCondObjectTextIO condIO(HGCalTBNumberingScheme::scheme());
 	HGCalElectronicsMap emap;
-	
+
 	condIO.load("CondObjects/data/map_FNAL_2.txt", emap);
 
 	for(auto digi_itr = digisHandle->begin(); digi_itr != digisHandle->end(); ++digi_itr) {
-		
+
 		SKIROC2DataFrame digi(*digi_itr);
 		HGCalTBDetId detId = digi.detid();
 
 		unsigned int nSamples = digi.samples();
 
 		/**** WARNING \todo multiple samples are not yet allowed */
-		nSamples=1;
+		nSamples = 1;
 		/**** */
 
 		pedestalMap_t::iterator thisPedestal_itr = pedestals.find(detId);
-		if(thisPedestal_itr==pedestals.end()){
+		if(thisPedestal_itr == pedestals.end()) {
 			pedestalSum_t empty_ped;
-			empty_ped.sum=0.;
-			empty_ped.n=0;
+			empty_ped.sum = 0.;
+			empty_ped.n = 0;
 
 			pedestals[detId] = empty_ped;
 			thisPedestal_itr = pedestals.find(detId);
-			assert(thisPedestal_itr!=pedestals.end());
+			assert(thisPedestal_itr != pedestals.end());
 		}
 
 		// now sum the values from different events
@@ -154,18 +155,18 @@ Pedestals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 			thisPedestal_itr->second.sum2 += digi[iSample].adcLow() * digi[iSample].adcLow();
 			++(thisPedestal_itr->second.n);
 #ifdef DEBUG
-		std::cout << "[PEDESTAL PRODUCER: digi]" << *digi_itr << std::endl;
-		std::cout << "                          ** " << thisPedestal_itr->second.sum << std::endl; 
+			std::cout << "[PEDESTAL PRODUCER: digi]" << *digi_itr << std::endl;
+			std::cout << "                          ** " << thisPedestal_itr->second.sum << std::endl;
 #endif
 
 		}
 	}
 
 	// now I have the pedestal average, I have to print them
-	for(const auto pedestal : pedestals){
-		float pedestal_mean = pedestal.second.sum/pedestal.second.n;
+	for(const auto pedestal : pedestals) {
+		float pedestal_mean = pedestal.second.sum / pedestal.second.n;
 		pedestals_cond.set(pedestal.first, pedestal_mean);
-		noise_cond.set(pedestal.first, sqrt(pedestal.second.sum2/pedestal.second.n - (pedestal_mean * pedestal_mean)));
+		noise_cond.set(pedestal.first, sqrt(pedestal.second.sum2 / pedestal.second.n - (pedestal_mean * pedestal_mean)));
 	}
 	condIO.store("newPedestals.txt", pedestals_cond);
 	condIO.store("newNoise.txt", noise_cond);
@@ -174,25 +175,26 @@ Pedestals::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
 
 // ------------ method called once each job just before starting event loop  ------------
-void 
+void
 Pedestals::beginJob()
 {
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
-void 
-Pedestals::endJob() 
+void
+Pedestals::endJob()
 {
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 void
-Pedestals::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
-  //The following says we do not know what parameters are allowed so do no validation
-  // Please change this to state exactly what you do use, even if it is no parameters
-  edm::ParameterSetDescription desc;
-  desc.setUnknown();
-  descriptions.addDefault(desc);
+Pedestals::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
+{
+	//The following says we do not know what parameters are allowed so do no validation
+	// Please change this to state exactly what you do use, even if it is no parameters
+	edm::ParameterSetDescription desc;
+	desc.setUnknown();
+	descriptions.addDefault(desc);
 }
 
 //define this as a plug-in

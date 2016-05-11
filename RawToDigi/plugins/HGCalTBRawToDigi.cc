@@ -33,15 +33,15 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 	std::auto_ptr<SKIROC2DigiCollection> digis = std::auto_ptr<SKIROC2DigiCollection>(new SKIROC2DigiCollection(SKIROC::MAXSAMPLES)); // 2 because TDC and ADC
 	//
 
-	for(auto fedId_ : fedIds_){
+	for(auto fedId_ : fedIds_) {
 
-	  const FEDRawData& fed = rawraw->FEDData(fedId_);
-	  if(fed.size() == 0) continue; // empty FEDs are allowed: for example when one FED is not in the readout for a particular run
+		const FEDRawData& fed = rawraw->FEDData(fedId_);
+		if(fed.size() == 0) continue; // empty FEDs are allowed: for example when one FED is not in the readout for a particular run
 
 		// we can figure out the number of samples from the size of the raw data
 		//int nsamples = fed.size() / (sizeof(uint16_t) * SKIROC::NCHANNELS * 2); // 2 is for ADC and TDC
 		//assert(nsamples>0);
-		
+
 		const uint16_t* pdata = (const uint16_t*)(fed.data());
 
 		// we start from the back...
@@ -56,7 +56,7 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 					digis->addDataFrame(did);
 					int ptradc1 = ptr - ichan - 128 * (2 - ski);
 					int ptradc2 = ptr - ichan - 64 - 128 * (2 - ski);
-					digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF),gray_to_binary( pdata[ptradc2] & 0xFFF), 0);  ///\todo TDC value hardcoded to 0 because not in the readout
+					digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF), gray_to_binary( pdata[ptradc2] & 0xFFF), 0); ///\todo TDC value hardcoded to 0 because not in the readout
 				}
 			}
 		}
@@ -68,21 +68,22 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 	e.put(digis);
 }
 
-unsigned int gray_to_binary (unsigned int gray){
+unsigned int gray_to_binary (unsigned int gray)
+{
 
-  unsigned int result = gray & (1 << 11);
-  result |= (gray ^ (result >> 1)) & (1 << 10);
-  result |= (gray ^ (result >> 1)) & (1 << 9);
-  result |= (gray ^ (result >> 1)) & (1 << 8);
-  result |= (gray ^ (result >> 1)) & (1 << 7);
-  result |= (gray ^ (result >> 1)) & (1 << 6);
-  result |= (gray ^ (result >> 1)) & (1 << 5);
-  result |= (gray ^ (result >> 1)) & (1 << 4);
-  result |= (gray ^ (result >> 1)) & (1 << 3);
-  result |= (gray ^ (result >> 1)) & (1 << 2);
-  result |= (gray ^ (result >> 1)) & (1 << 1);
-  result |= (gray ^ (result >> 1)) & (1 << 0);
-  return result;
+	unsigned int result = gray & (1 << 11);
+	result |= (gray ^ (result >> 1)) & (1 << 10);
+	result |= (gray ^ (result >> 1)) & (1 << 9);
+	result |= (gray ^ (result >> 1)) & (1 << 8);
+	result |= (gray ^ (result >> 1)) & (1 << 7);
+	result |= (gray ^ (result >> 1)) & (1 << 6);
+	result |= (gray ^ (result >> 1)) & (1 << 5);
+	result |= (gray ^ (result >> 1)) & (1 << 4);
+	result |= (gray ^ (result >> 1)) & (1 << 3);
+	result |= (gray ^ (result >> 1)) & (1 << 2);
+	result |= (gray ^ (result >> 1)) & (1 << 1);
+	result |= (gray ^ (result >> 1)) & (1 << 0);
+	return result;
 }
 
 

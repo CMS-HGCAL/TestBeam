@@ -11,7 +11,7 @@
 
 
 /* now we have only 2 layers */
-#define MAXSKIROCS 2 
+#define MAXSKIROCS 2
 
 #define _TELESCOPE_FED_ID_ 99
 
@@ -37,7 +37,7 @@ public:
 
 		produces<FEDRawDataCollection>();
 
-		if(_telescopeFiles.fileNames().size()<1){
+		if(_telescopeFiles.fileNames().size() < 1) {
 			//cms::LogWarning("INPUT SOURCE") << "No telescope data";
 			std::cerr << "[WARNING] No telescope data" << std::endl;
 		}
@@ -65,12 +65,12 @@ private:
 	std::vector<uint16_t> m_skiwords;
 	std::vector<float>    _telescope_words;
 	std::ifstream _hgcalFile, _telescopeFile;
-	
+
 	int m_event, m_run, m_event_tmp, m_run_tmp;
 	int m_sourceId, m_sourceId_tmp;
 	unsigned int  m_time, m_time_tmp;
 	unsigned int _triggerID, t_triggerID;
-	
+
 	edm::FromFiles _hgcalFiles;
 	edm::FromFiles _telescopeFiles;
 
