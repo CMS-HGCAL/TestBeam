@@ -16,7 +16,7 @@ process.source = cms.Source("HGCalTBTextSource",
         fileNames=cms.untracked.vstring("file:Proton_Runs_0242016/HGC_Output_8272.txt"), ### here a vector is provided
                   ),
                             telescopeData = cms.untracked.PSet(
-        fileNames = cms.untracked.vstring(), 
+        fileNames = cms.untracked.vstring("/afs/cern.ch/user/r/rchatter/public/Run751_HGCAL_converted.txt"),
         ),
                             )
 

@@ -109,7 +109,8 @@ bool HGCalTBTextSource::readTelescopeLines()
 	_telescopeFile.getline(buffer, 1000);
 
 	parseAddTelescopeWords(_telescope_words, buffer);
-
+	//words should be multiple of 8!, adding an empty word
+	_telescope_words.push_back(-999);
 	return !_telescope_words.empty();
 }
 
@@ -146,19 +147,19 @@ void HGCalTBTextSource::produce(edm::Event & e)
 	fed.resize(len);
 	memcpy(fed.data(), &(m_skiwords[0]), len);
 
-	fed = bare_product->FEDData(_TELESCOPE_FED_ID_);
+	FEDRawData& fed2 = bare_product->FEDData(_TELESCOPE_FED_ID_);
+
 	if((unsigned int) m_run==t_triggerID){ // empty FED if no data are available for the triggerID
 		len = sizeof(float) * _telescope_words.size();
-		fed.resize(len);
-		memcpy(fed.data(), &(_telescope_words[0]), len);
+		fed2.resize(len);
+		memcpy(fed2.data(), &(_telescope_words[0]), len);
 		_telescope_words.clear();
 	}else{
-		fed.resize(0);
+		fed2.resize(0);
 	}
 
 	// words are reset, only if the vectors are empty new lines are going to be read
 	m_skiwords.clear();
-
 
 	e.put(bare_product);
 }
