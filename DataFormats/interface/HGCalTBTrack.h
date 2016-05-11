@@ -53,7 +53,6 @@ private:
 	float chi2; ///< chi2 of the track
 	float m_x_err; ///< uncertainty on x-direction
 	float m_y_err; ///< uncertainty on y-direction
-
 };
 
 #endif
