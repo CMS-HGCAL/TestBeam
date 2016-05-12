@@ -25,12 +25,14 @@ public:
 	}
 	/////  bool isRecovered() const;
 	float _energyLow, _energyHigh;
-	
-	float energyLow(){ 
+
+	float energyLow()
+	{
 		return _energyLow;
 	};
 
-	float energyHigh(){
+	float energyHigh()
+	{
 		return _energyHigh;
 	};
 
