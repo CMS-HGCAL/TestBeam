@@ -1,0 +1,26 @@
+<lcgdict>
+  <class name="HGCSSSamplingSection"/>
+  <class name="std::vector<HGCSSSamplingSection>"/>
+  <class name="edm::Wrapper<std::vector<HGCSSSamplingSection> >"/>
+
+  <class name="HGCSSSimHit"/>
+  <class name="std::vector<HGCSSSimHit>"/>
+  <class name="edm::Wrapper<std::vector<HGCSSSimHit> >"/>
+
+  <class name="HGCSSGenParticle"/>
+  <class name="std::vector<HGCSSGenParticle>"/>
+  <class name="edm::Wrapper<std::vector<HGCSSGenParticle> >"/>
+
+  <class name="HGCSSRecoHit"/>
+  <class name="std::vector<HGCSSRecoHit>"/>
+  <class name="edm::Wrapper<std::vector<HGCSSRecoHit> >"/>
+
+  <class name="HGCSSTrackSegment"/>
+  <class name="std::vector<HGCSSTrackSegment>"/>
+  <class name="edm::Wrapper<std::vector<HGCSSTrackSegment> >"/>
+
+  <class name="HGCSSInfo"/>
+  <class name="HGCSSEvent"/>
+  <class name="HGCSSGeometryConversion"/>
+  <class name="HGCCellMap"/>
+</lcgdict>
