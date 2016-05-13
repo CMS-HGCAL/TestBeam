@@ -13,10 +13,10 @@ process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
 process.source = cms.Source("HGCalTBTextSource",
                             fileNames=cms.untracked.vstring("NOFILE"), ### here a vector is provided, NOFILE should be given otherwise it would not run at all
                             hgcalData = cms.untracked.PSet(
-        fileNames=cms.untracked.vstring("file:HGC_Output_112.txt"), ### here a vector is provided
+        fileNames=cms.untracked.vstring("file:HGC_Simulated_8Chips_4Layers.txt"), ### here a vector is provided
                   ),
                             telescopeData = cms.untracked.PSet(
-        fileNames = cms.untracked.vstring("NOFILE"), 
+        fileNames = cms.untracked.vstring("file:Run724_HGCAL_converted.txt"), 
         ),
                             )
 
