@@ -39,6 +39,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 //
 // class declaration
 //
@@ -69,9 +70,8 @@ private:
 	std::pair<double, double> CellCentreXY;
 	std::vector<std::pair<double, double>>::const_iterator it;
 	const static int NSAMPLES = 2;
-	const static int NLAYERS  = 1;
-	TH2Poly *h_digi_layer[NSAMPLES][NLAYERS][6000]; ///\todo put the fs make in the analyze method, not the constructor
-//       TH2Poly *h_digi_layer_Raw[NSAMPLES][NLAYERS][512];
+	TH2Poly *h_digi_layer[NSAMPLES][MAXLAYERS][6000]; ///\todo put the fs make in the analyze method, not the constructor
+//       TH2Poly *h_digi_layer_Raw[NSAMPLES][MAXLAYERS][512];
 	TH1F* Sum_Hist_cells_SKI1[6000];
 	const static int cellx = 15;
 	const static int celly = 15;
@@ -105,7 +105,7 @@ DigiPlotter_New::DigiPlotter_New(const edm::ParameterSet& iConfig)
 	double FullHexY[FullHexVertices] = {0.};
 	int iii = 0;
 	for(int nsample = 0; nsample < NSAMPLES; nsample++) {
-		for(int nlayers = 0; nlayers < NLAYERS; nlayers++) {
+		for(int nlayers = 0; nlayers < MAXLAYERS; nlayers++) {
 			for(int eee = 0; eee < 6000; eee++) {
 //Booking a "hexagonal" histograms to display the sum of Digis for NSAMPLES, in 1 SKIROC in 1 layer. To include all layers soon. Also the 1D Digis per cell in a sensor is booked here for NSAMPLES.
 				sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", nsample, nlayers + 1, eee);
@@ -113,13 +113,6 @@ DigiPlotter_New::DigiPlotter_New(const edm::ParameterSet& iConfig)
 				h_digi_layer[nsample][nlayers][eee] = fs->make<TH2Poly>();
 				h_digi_layer[nsample][nlayers][eee]->SetName(name);
 				h_digi_layer[nsample][nlayers][eee]->SetTitle(title);
-				/*
-				                        sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i_Raw", nsample, nlayers + 1,eee);
-				                        sprintf(title, "Sum of adc counts per cell for ADC%i Layer%i Event%i Raw", nsample, nlayers + 1,eee);
-				                        h_digi_layer_Raw[nsample][nlayers][eee] = fs->make<TH2Poly>();
-				                        h_digi_layer_Raw[nsample][nlayers][eee]->SetName(name);
-				                        h_digi_layer_Raw[nsample][nlayers][eee]->SetTitle(title);
-				*/
 				sprintf(name, "SumCellHist_SKI1_Event%i", eee);
 				sprintf(title, "Sum of adc counts of cells  Event%i", eee);
 				Sum_Hist_cells_SKI1[eee] = fs->make<TH1F>(name, title, 4096, 0 , 4095);

@@ -40,6 +40,7 @@
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 
 //
 // class declaration
@@ -75,17 +76,16 @@ private:
 	std::pair<double, double> CellCentreXY;
 	std::vector<std::pair<double, double>>::const_iterator it;
 	const static int NSAMPLES = 2;
-	const static int NLAYERS  = 1;
-	TH2Poly *h_digi_layer[NSAMPLES][NLAYERS];
-	TH1F    *h_digi_layer_summed[NSAMPLES][NLAYERS];
-	TProfile    *h_digi_layer_profile[NSAMPLES][NLAYERS];
+	TH2Poly *h_digi_layer[NSAMPLES][MAXLAYERS];
+	TH1F    *h_digi_layer_summed[NSAMPLES][MAXLAYERS];
+	TProfile    *h_digi_layer_profile[NSAMPLES][MAXLAYERS];
 	const static int cellx = 15;
 	const static int celly = 15;
 	int Sensor_Iu = 0;
 	int Sensor_Iv = 0;
-	TH1F  *h_digi_layer_cell[NSAMPLES][NLAYERS][cellx][celly];
+	TH1F  *h_digi_layer_cell[NSAMPLES][MAXLAYERS][cellx][celly];
 	TH1F  *h_digi_layer_channel[2][64][2];
-//        TH1F  *h_digi_layer_cell_event[NSAMPLES][NLAYERS][cellx][celly][512];
+//        TH1F  *h_digi_layer_cell_event[NSAMPLES][MAXLAYERS][cellx][celly][512];
 	char name[50], title[50];
 };
 
@@ -123,7 +123,7 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
 		}
 	}
 	for(int nsample = 0; nsample < NSAMPLES; nsample++) {
-		for(int nlayers = 0; nlayers < NLAYERS; nlayers++) {
+		for(int nlayers = 0; nlayers < MAXLAYERS; nlayers++) {
 //Booking a "hexagonal" histograms to display the sum of Digis for NSAMPLES, in 1 SKIROC in 1 layer. To include all layers soon. Also the 1D Digis per cell in a sensor is booked here for NSAMPLES.
 			sprintf(name, "FullLayer_ADC%i_Layer%i", nsample, nlayers + 1);
 			sprintf(title, "Sum of adc counts per cell for ADC%i Layer%i", nsample, nlayers + 1);

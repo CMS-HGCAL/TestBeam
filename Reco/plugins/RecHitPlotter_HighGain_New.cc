@@ -46,6 +46,7 @@
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 
 using namespace std;
 
@@ -112,15 +113,15 @@ private:
 //TH2D *Covar_hist =  new TH2D("Covar_hist","Covar_hist",nphistar_bins-1,phistar_var,nphistar_bins-1,phistar_var);
 //TH2D *Correl_hist =  new TH2D("Correl_hist","Correl_hist",nphistar_bins-1,phistar_var,nphistar_bins-1,phistar_var);
 
-	const static int NLAYERS  = 1;
-	TH2Poly *h_RecHit_layer[NLAYERS][1000];
+
+	TH2Poly *h_RecHit_layer[MAXLAYERS][6000];
 	const static int cellx = 15;
 	const static int celly = 15;
 	int Sensor_Iu = 0;
 	int Sensor_Iv = 0;
 	double ADC_Chan[128][9000];
-	TH1F    *h_RecHit_layer_summed[NLAYERS];
-	TH1F  *h_RecHit_layer_cell[NLAYERS][cellx][celly];
+	TH1F    *h_RecHit_layer_summed[MAXLAYERS];
+	TH1F  *h_RecHit_layer_cell[MAXLAYERS][cellx][celly];
 	TH1F* Sum_Cluster_ADC;
 	TH1F* Sum_Cluster_Max;
 	TH1F* AllCells_Ped;
@@ -171,12 +172,12 @@ RecHitPlotter_HighGain_New::RecHitPlotter_HighGain_New(const edm::ParameterSet& 
 	SKI2_Ped_Event = fs->make<TProfile>("SKI2_Ped_Event", "Profile per event of pedestal for SKI2", 5000, 1, 5000, 0, 400);
 	Sum_Cluster_ADC = fs->make<TH1F>("Sum_Cluster_ADC", "Sum_Cluster_ADC",  1000, -4000., 4000.);
 	Sum_Cluster_Max = fs->make<TH1F>("Sum_Cluster_Max", "Sum_Cluster_Max",  1000, -4000., 4000.);
-	for(int nlayers = 0; nlayers < NLAYERS; nlayers++) {
+	for(int nlayers = 0; nlayers < MAXLAYERS; nlayers++) {
 		sprintf(name, "FullLayer_RecHits_Layer%i_Summed", nlayers + 1);
 		sprintf(title, "Sum of RecHits Layer%i Summed over the cells", nlayers + 1);
 		h_RecHit_layer_summed[nlayers] = fs->make<TH1F>(name, title, 4000, -2000., 2000.);
 		h_RecHit_layer_summed[nlayers]->GetXaxis()->SetTitle("RecHits[GeV]");
-		for(int eee = 0; eee < 1000; eee++) {
+		for(int eee = 0; eee < 6000; eee++) {
 			sprintf(name, "FullLayer_RecHits_Layer%i_Event%i", nlayers + 1, eee);
 			sprintf(title, "RecHits Layer%i Event%i", nlayers + 1, eee);
 			h_RecHit_layer[nlayers][eee] = fs->make<TH2Poly>();
@@ -184,7 +185,7 @@ RecHitPlotter_HighGain_New::RecHitPlotter_HighGain_New(const edm::ParameterSet& 
 			h_RecHit_layer[nlayers][eee]->SetTitle(title);
 //                h_RecHit_layer[nlayers][eee]->SetMinimum(-10.);
 //                h_RecHit_layer[nlayers][eee]->SetMaximum(10.);
-			if(eee < 1000) {
+			if(eee < 6000) {
 				for(int iv = -7; iv < 8; iv++) {
 					for(int iu = -7; iu < 8; iu++) {
 						if(!IsCellValid.iu_iv_valid(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize)) continue;

@@ -6,12 +6,13 @@
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 
+// here are defined the number of skirocs and layers
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
+
 #include <fstream>
 #include <iostream>
 
 
-/* now we have only 2 layers */
-#define MAXSKIROCS 2
 
 #define _TELESCOPE_FED_ID_ 99
 

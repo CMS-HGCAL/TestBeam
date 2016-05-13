@@ -1,6 +1,6 @@
 //#include <iostream>
 #include "HGCal/RawToDigi/plugins/HGCalTBRawToDigi.h"
-
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 
 unsigned int gray_to_binary (unsigned int gray);
 
@@ -46,7 +46,7 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 
 		// we start from the back...
 		int ptr = fed.size() / sizeof(uint16_t) - 1;
-		for (int ski = 2; ski >= 1; ski--) { // starting from 2 because then we are going back reading two samples
+		for (int ski = MAXSKIROCS; ski >= 1; ski--) { // starting from 2 because then we are going back reading two samples
 			for (int ichan = 0; ichan < SKIROC::NCHANNELS; ichan++) {
 				HGCalTBElectronicsId eid(ski, ichan);
 				if (!essource_.emap_.existsEId(eid.rawId())) {
