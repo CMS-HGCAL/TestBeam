@@ -1,7 +1,7 @@
 # TBStandaloneSimulator
 A simple standalone simulator (a revamped version of the code developed
 by Anne-Marie Magnan), whicn is intended for quick approximate studies. 
-Use the CMSSW test beam simulator for more sophisticated simulations. 
+For sophisticated studies use the CMSSW test beam simulator. 
 
 The code has been tested with CMSSW_8_0_6, 
 slc6_amd64_gcc530, running within a CERNVM virtual machine on a mac. 
@@ -9,12 +9,11 @@ It should work on lxplus and cmslpc-sl6.
 
 # Installation
 ```linux
-  cd HGCal
-  git clone https://github.com/hbprosper/TBStandaloneSimulator.git
-  cd TBStandaloneSimulator
+  cd CMSSW_8_0_6/src
+  git clone https://github.com/CMS-HGCAL/TestBeam.git HGCal
+  cd HGCal/TBStandaloneSimulator
   cmsenv
   scram b
-  scram b (do scram b a second time, if the first fails)
 ```
 # Running the simulator
 The simulator is called simulateTB. To simulate a couple of 32 GeV electron 
@@ -58,7 +57,7 @@ HGC_Electrons_32GeV_2016_04_sim.root
 ```
 which can be analyzed in the same way as real test beam data.
 
-If a digitized events with noise are required, first create a noise file
+If digitized events with noise are required, first create a noise file
 from a pedestal run as in the following example
 ```linux
 writePedestal.py HGC_Pedestals_2016_04_8272.root
@@ -70,8 +69,8 @@ HGC_Pedestals_2016_04_8272.txt
 ```
 The first is a root file containing the noise to be added to the simulated 
 digitized hits and the second is a text file containing the pedestals. In order
-to activate the noise model during digitization, create the file noise_filelist
-with the file name of the root file containing the noise data,
+to activate the noise model during digitization, create the file noise_filelist,
+which should contain the file name of the root file containing the noise data,
 ```linux
 echo HGC_Pedestals_2016_04_8272_Noise.root > noise_filelist
 ```
