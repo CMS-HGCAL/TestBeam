@@ -3,18 +3,15 @@ A simple event dsisplay for the HGCal test beam experiments. The display has bee
 
 # Installation
 ```linux
-  git clone https://github.com/CMS-HGCAL/TestBeam.git HGcal
+  git clone https://github.com/CMS-HGCAL/TestBeam.git HGCal
   cd HGCal
   cmsenv
   scram b
-
-  cd TBEventDisplay
 ```
 # To Run
-Do 
+Once the cmsenv has been executed, it is possible to run TBEventDisplay.py from any directory as follows 
 ```linux
   TBEventDisplay.py <geometry-file> <root-file-name>
 ```
-where the geometry file is the same as that used in TBStandaloneSimulator
-and the Root file is a file containing test beam digitized objects (SKIROC data frames)
+where the geometry file is of the same format as that used in TBStandaloneSimulator and the Root file is a file containing test beam digitized objects (SKIROC data frames).
 
