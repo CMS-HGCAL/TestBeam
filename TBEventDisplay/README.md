@@ -1,5 +1,5 @@
 # TBEventDisplay
-A simple event dsisplay for the HGCal test beam experiments. The display has been tested with CMSSW_8_0_6, slc6_amd64_gcc530, running within a CERNVM virtual machine on a mac. It should work on lxplus and cmslpc-sl6.
+A simple event display for the HGCal test beam experiments. The display has been tested with CMSSW_8_0_6, slc6_amd64_gcc530, running within a CERNVM virtual machine on a Mac. It should work on lxplus and cmslpc-sl6.
 
 # Installation
 ```linux
