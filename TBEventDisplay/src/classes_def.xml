@@ -1,0 +1,9 @@
+<lcgdict>
+   <class name="Connection"/>
+   <class name="Slot"/>
+   <class name="Pickable"/>
+   <class name="Dialog"/>
+   <class name="FileDialog"/>
+   <class name="HelpDialog"/>
+   <class name="root"/>
+</lcgdict>

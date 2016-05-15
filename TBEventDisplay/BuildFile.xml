@@ -1,0 +1,12 @@
+<use   name="FWCore/Framework"/>
+<use   name="boost_python"/>
+<use   name="boost_regex"/>
+<use   name="boost"/>
+<lib   name="Gui"/>
+<lib   name="RGL"/>
+<lib   name="Eve"/>
+<lib   name="Postscript"/>
+
+<export>
+  <lib   name="1"/>
+</export>
