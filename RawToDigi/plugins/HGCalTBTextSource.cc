@@ -1,4 +1,6 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBTextSource.h"
+#include <iomanip>
+
 //#define DEBUG
 //#define DEBUGTIME
 
@@ -9,6 +11,7 @@
 #ifdef DEBUGTIME
 #include <iostream>
 #endif
+using namespace std;
 
 bool HGCalTBTextSource::openFile(edm::FromFiles& files, std::ifstream& file)
 {
@@ -92,7 +95,7 @@ bool HGCalTBTextSource::readLines()
 #ifdef DEBUG
 			std::cout << m_sourceId << "\t" << m_event << "\t" << m_time << "\t" << buffer << "\n"; // buffer has a \n
 #endif
-			parseAddSkiword(m_skiwords, buffer);
+        		parseAddSkiword(m_skiwords, buffer);
 		}
 
 	}
@@ -146,7 +149,7 @@ void HGCalTBTextSource::produce(edm::Event & e)
 	size_t len = sizeof(uint16_t) * m_skiwords.size();
 	fed.resize(len);
 	memcpy(fed.data(), &(m_skiwords[0]), len);
-
+        for(unsigned int iii = 0; iii < m_skiwords.size(); iii++)
 	FEDRawData& fed2 = bare_product->FEDData(_TELESCOPE_FED_ID_);
 
 //	if((unsigned int) m_run==t_triggerID){ // empty FED if no data are available for the triggerID

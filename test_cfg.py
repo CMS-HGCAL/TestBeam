@@ -16,7 +16,7 @@ process.source = cms.Source("HGCalTBTextSource",
         fileNames=cms.untracked.vstring("file:HGC_Simulated_8Chips_4Layers.txt"), ### here a vector is provided
                   ),
                             telescopeData = cms.untracked.PSet(
-        fileNames = cms.untracked.vstring("file:Run724_HGCAL_converted.txt"), 
+        fileNames = cms.untracked.vstring("NOFILE"), 
         ),
                             )
 
@@ -56,7 +56,7 @@ process.DQMSeq = cms.Sequence(process.hgcaltbdigisplotter * process.hgcaltbrechi
 #process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter)
 
 #process.p =cms.Path(process.debugRawSeq * process.RawToDigiSeq ) #*  process.DQMSeq * process.pedestals )
-process.p =cms.Path(process.RawToDigiSeq*process.LocalRecoSeq*process.hgcaltbrechitsplotter_highgain_new) # * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
+process.p =cms.Path(process.RawToDigiSeq * process.hgcaltbdigisplotter_new) # * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
 #process.p =cms.Path(process.RawToDigiSeq*process.LocalRecoSeq*process.hgcaltbdigisplotter) # * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
 process.end = cms.EndPath(process.output)
 
