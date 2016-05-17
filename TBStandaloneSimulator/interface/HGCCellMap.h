@@ -47,7 +47,10 @@ public:
 	std::vector<HGCCellMap::Cell> cells(int layer = 1,
 	                                    int sensor_u = 0,
 	                                    int sensor_v = 0);
-	TH2Poly*                  honeycomb() { return _map; }
+	TH2Poly*                  honeycomb()
+	{
+		return _map;
+	}
 private:
 	std::map<size_t, std::pair<int, int> > _uvmap;
 	std::map<std::pair<int, int>, int> _posid;

@@ -13,33 +13,35 @@
 
 using namespace std;
 
-Connection::Connection(TQObject *sender,   const char *signal, 
+Connection::Connection(TQObject *sender,   const char *signal,
                        PyObject *receiver, const char *method)
-  : _sender  (sender),
-    _signal  (signal)
+	: _sender  (sender),
+	  _signal  (signal)
 {
-  _slot = new Slot(receiver, method);
+	_slot = new Slot(receiver, method);
 
-  if ( noArgs(_signal) )
-    TQObject::Connect(_sender, _signal.c_str(), 
-		      "Slot", _slot, "handleSignal()"); 
-  
-  else
-   TQObject::Connect(_sender, _signal.c_str(), 
-		     "Slot", _slot, "handleSignal(int)");
+	if ( noArgs(_signal) )
+		TQObject::Connect(_sender, _signal.c_str(),
+		                  "Slot", _slot, "handleSignal()");
+
+	else
+		TQObject::Connect(_sender, _signal.c_str(),
+		                  "Slot", _slot, "handleSignal(int)");
 }
 
-Connection::~Connection() 
+Connection::~Connection()
 {
-  if ( noArgs(_signal) )
-    TQObject::Disconnect(_sender, _signal.c_str(), 
-			 _slot,"handleSignal()"); 
-  else
-    TQObject::Disconnect(_sender, _signal.c_str(),
-			 _slot, "handleSignal(int)");
-  delete _slot;
-  _slot = 0;
+	if ( noArgs(_signal) )
+		TQObject::Disconnect(_sender, _signal.c_str(),
+		                     _slot, "handleSignal()");
+	else
+		TQObject::Disconnect(_sender, _signal.c_str(),
+		                     _slot, "handleSignal(int)");
+	delete _slot;
+	_slot = 0;
 }
 
 Bool_t Connection::noArgs(string& signal)
-{ return signal.find("()") < signal.length(); }
+{
+	return signal.find("()") < signal.length();
+}
