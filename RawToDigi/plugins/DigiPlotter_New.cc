@@ -39,6 +39,30 @@
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
+
+#define MAXVERTICES 6
+
+class Pedestal
+{
+	std::vector<std::pair<double, unsigned int> > _pedestals;
+
+	Pedestal();
+	void Sum(HGCalTBDetId detId, double pedestal)
+	{
+		_pedestals[detId.cellType()].first += pedestal;
+		_pedestals[detId.cellType()].second++;
+	}
+
+	float GetPedestal(HGCalTBDetId detId)
+	{
+		/// \todo here the logic can be adapted if one want to use MouseBites and HalfCells
+		// for example:
+		// if(detId.cellType()==HGCalTBDetId::kCellHalf || detId.cellType()==HGCalTBDetId::kCellMouseBite)
+		// return _pedestals[HGCalTBDetId::kCellMouseBite].first+_pedestals[HGCalTBDetId::kCellHalf].first/(_pedestals[HGCalTBDetId::kCellMouseBite].second+_pedestals[HGCalTBDetId::kCellHalf].second);
+		return _pedestals[detId.cellType()].first / _pedestals[detId.cellType()].second;
+	}
+};
+
 //
 // class declaration
 //
@@ -48,6 +72,7 @@
 // from  edm::one::EDAnalyzer<> and also remove the line from
 // constructor "usesResource("TFileService");"
 // This will improve performance in multithreaded jobs.
+
 
 class DigiPlotter_New : public edm::one::EDAnalyzer<edm::one::SharedResources>
 {
@@ -61,23 +86,16 @@ private:
 	void analyze(const edm::Event& , const edm::EventSetup&) override;
 	virtual void endJob() override;
 	// ----------member data ---------------------------
-	bool DEBUG = 0;
+	Pedestal _pedestals[2]; // one set of pedestals per skiroc
 	HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
 	int sensorsize = 128;// The geometry for a 256 cell sensor hasnt been implemted yet. Need a picture to do this.
-	std::vector<std::pair<double, double>> CellXY;
-	std::pair<double, double> CellCentreXY;
-	std::vector<std::pair<double, double>>::const_iterator it;
+	std::vector<HGCalTB::Point2D> CellXY;
+	HGCalTB::Point2D CellCentreXY;
+	std::vector<HGCalTB::Point2D>::const_iterator it;
 	const static int NSAMPLES = 2;
 	const static int NLAYERS  = 1;
-	TH2Poly *h_digi_layer[NSAMPLES][NLAYERS][6000]; ///\todo put the fs make in the analyze method, not the constructor
-//       TH2Poly *h_digi_layer_Raw[NSAMPLES][NLAYERS][512];
-	TH1F* Sum_Hist_cells_SKI1[6000];
-	const static int cellx = 15;
-	const static int celly = 15;
-	int Sensor_Iu = 0;
-	int Sensor_Iv = 0;
-	char name[50], title[50];
+
 };
 
 //
@@ -97,62 +115,6 @@ DigiPlotter_New::DigiPlotter_New(const edm::ParameterSet& iConfig)
 	usesResource("TFileService");
 	edm::Service<TFileService> fs;
 	consumesMany<SKIROC2DigiCollection>();
-	const int HalfHexVertices = 4;
-	double HalfHexX[HalfHexVertices] = {0.};
-	double HalfHexY[HalfHexVertices] = {0.};
-	const int FullHexVertices = 6;
-	double FullHexX[FullHexVertices] = {0.};
-	double FullHexY[FullHexVertices] = {0.};
-	int iii = 0;
-	for(int nsample = 0; nsample < NSAMPLES; nsample++) {
-		for(int nlayers = 0; nlayers < NLAYERS; nlayers++) {
-			for(int eee = 0; eee < 6000; eee++) {
-//Booking a "hexagonal" histograms to display the sum of Digis for NSAMPLES, in 1 SKIROC in 1 layer. To include all layers soon. Also the 1D Digis per cell in a sensor is booked here for NSAMPLES.
-				sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", nsample, nlayers + 1, eee);
-				sprintf(title, "Sum of adc counts per cell for ADC%i Layer%i Event%i", nsample, nlayers + 1, eee);
-				h_digi_layer[nsample][nlayers][eee] = fs->make<TH2Poly>();
-				h_digi_layer[nsample][nlayers][eee]->SetName(name);
-				h_digi_layer[nsample][nlayers][eee]->SetTitle(title);
-				/*
-				                        sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i_Raw", nsample, nlayers + 1,eee);
-				                        sprintf(title, "Sum of adc counts per cell for ADC%i Layer%i Event%i Raw", nsample, nlayers + 1,eee);
-				                        h_digi_layer_Raw[nsample][nlayers][eee] = fs->make<TH2Poly>();
-				                        h_digi_layer_Raw[nsample][nlayers][eee]->SetName(name);
-				                        h_digi_layer_Raw[nsample][nlayers][eee]->SetTitle(title);
-				*/
-				sprintf(name, "SumCellHist_SKI1_Event%i", eee);
-				sprintf(title, "Sum of adc counts of cells  Event%i", eee);
-				Sum_Hist_cells_SKI1[eee] = fs->make<TH1F>(name, title, 4096, 0 , 4095);
-				for(int iv = -7; iv < 8; iv++) {
-					for(int iu = -7; iu < 8; iu++) {
-						CellXY = TheCell.GetCellCoordinatesForPlots(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize);
-						int NumberOfCellVertices = CellXY.size();
-						iii = 0;
-						if(NumberOfCellVertices == 4) {
-							for(it = CellXY.begin(); it != CellXY.end(); it++) {
-								HalfHexX[iii] =  it->first;
-								HalfHexY[iii++] =  it->second;
-							}
-//Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
-							h_digi_layer[nsample][nlayers][eee]->AddBin(NumberOfCellVertices, HalfHexX, HalfHexY);
-//                                                h_digi_layer_Raw[nsample][nlayers][eee]->AddBin(NumberOfCellVertices, HalfHexX, HalfHexY);
-
-						} else if(NumberOfCellVertices == 6) {
-							iii = 0;
-							for(it = CellXY.begin(); it != CellXY.end(); it++) {
-								FullHexX[iii] =  it->first;
-								FullHexY[iii++] =  it->second;
-							}
-							h_digi_layer[nsample][nlayers][eee]->AddBin(NumberOfCellVertices, FullHexX, FullHexY);
-//                                                h_digi_layer_Raw[nsample][nlayers][eee]->AddBin(NumberOfCellVertices, FullHexX, FullHexY);
-
-						}
-
-					}//loop over iu
-				}//loop over iv
-			}//loop over number of events
-		}//loop over nlayers
-	}//loop over nsamples
 }//contructor ends here
 
 
@@ -165,6 +127,27 @@ DigiPlotter_New::~DigiPlotter_New()
 }
 
 
+void DigiPlotter_New::InitTH2Poly(TH2Poly& poly, const HGCalTBDetId detId)
+{
+	double HexX[MAXVERTICES] = {0.};
+	double HexY[MAXVERTICES] = {0.};
+
+	for(int iv = -7; iv < 8; iv++) {
+		for(int iu = -7; iu < 8; iu++) {
+			CellXY = TheCell.GetCellCoordinatesForPlots(detId, sensorsize);
+			assert(CellXY.size() == 4 || CellXY.size() == 6);
+			unsigned int iVertex = 0;
+			for(it = CellXY.begin(); it != CellXY.end(); it++) {
+				HexX[iVertex] =  it->first;
+				HexY[iVertex] =  it->second;
+				++iVertex;
+			}
+//Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
+			poly.AddBin(CellXY.size(), HexX, HexY);
+		}//loop over iu
+	}//loop over iv
+}
+
 //
 // member functions
 //
@@ -173,6 +156,8 @@ DigiPlotter_New::~DigiPlotter_New()
 void
 DigiPlotter_New::analyze(const edm::Event& event, const edm::EventSetup& setup)
 {
+	int evId = event.id().event() - 1;
+
 	using namespace edm;
 	using namespace std;
 	std::vector<edm::Handle<SKIROC2DigiCollection> > ski;
@@ -186,109 +171,111 @@ DigiPlotter_New::analyze(const edm::Event& event, const edm::EventSetup& setup)
 //                int counter1=0, counter2=0;
 		for(i = ski.begin(); i != ski.end(); i++) {
 			const SKIROC2DigiCollection& Coll = *(*i);
+#ifdef DEBUG
 			if(DEBUG) cout << "SKIROC2 Digis: " << i->provenance()->branchName() << endl;
+#endif
 //////////////////////////////////Evaluate average pedestal per event to subtract out//////////////////////////////////
 			for(SKIROC2DigiCollection::const_iterator k = Coll.begin(); k != Coll.end(); k++) {
-				const SKIROC2DataFrame& SKI_1 = *k ;
-				int n_layer = (SKI_1.detid()).layer();
-				int n_sensor_IU = (SKI_1.detid()).sensorIU();
-				int n_sensor_IV = (SKI_1.detid()).sensorIV();
-				int n_cell_iu = (SKI_1.detid()).iu();
-				int n_cell_iv = (SKI_1.detid()).iv();
+				const SKIROC2DataFrame& skiFrame = *k ;
+				HGCalTBDetId detId = skiFrame.detid();
+
+#ifdef DEBUG
 				if(DEBUG) cout << endl << " Layer = " << n_layer << " Sensor IU = " << n_sensor_IU << " Sensor IV = " << n_sensor_IV << " Cell iu = " << n_cell_iu << " Cell iu = " << n_cell_iv << endl;
-				if(!IsCellValid.iu_iv_valid(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize))  continue;
-				CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize);
+#endif
+				if(!IsCellValid.iu_iv_valid(detId))  continue;
+
+				CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(detId, sensorsize);
 				double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
 				double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
-				int nsample = 0;
+				int iSample = 0;
 
-				if(SKI_1.detid().cellType() == 1 || SKI_1.detid().cellType() == 4) {
-					Average_Pedestal_Calib_Cell_Event1 += SKI_1[nsample].adcLow();
-					Cell_counter1_Calib_Cell1++;
-				};
+				_pedestals[detId.skiIndexInSensor()].Sum(detId, skiFrame.adcLow());
 
 
-				if(((iux <= 0.25 && iyy >= -0.25 ) || (iux < -0.5)) && ((SKI_1.detid().cellType() == 2) || SKI_1.detid().cellType() == 3) ) {
-					Average_Pedestal_Half_Cell_Event1 += SKI_1[nsample].adcLow();
-					Cell_counter1_Half_Cell1++;
-				};
+				// if(detId().cellType() == kCellTypeCalibInner || detId.cellType() == kCellTypeCalibOuter) {
+				// 	Average_Pedestal_Calib_Cell_Event1 += skiFrame[iSample].adcLow();
+				// 	Cell_counter1_Calib_Cell1++;
+				// };
 
-				if(((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50)) && ((SKI_1.detid().cellType() == 2) || SKI_1.detid().cellType() == 3 )  ) {
-					Average_Pedestal_Half_Cell_Event2 += SKI_1[nsample].adcLow();
-					Cell_counter1_Half_Cell2++;
-				};
-				if(((iux <= 0.25 && iyy >= -0.25 ) || (iux < -0.5 && iyy < 0)) && SKI_1.detid().cellType() == 0) {
-					Cell_counter1++;
-					Average_Pedestal_Per_Event1 += SKI_1[nsample].adcLow();
-					Sum_Hist_cells_SKI1[event.id().event() - 1]->Fill(SKI_1[nsample].adcLow());
+
+				// if(((iux <= 0.25 && iyy >= -0.25 ) || (iux < -0.5)) && ((detId.cellType() == kCellHalf) || detId.cellType() == kCellMouseBite) ) {
+				// 	Average_Pedestal_Half_Cell_Event1 += skiFrame[iSample].adcLow();
+				// 	Cell_counter1_Half_Cell1++;
+				// };
+
+				// if(((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50)) && ((detId.cellType() == kCellHalf) || detId.cellType() == kCellMouseBite )  ) {
+				// 	Average_Pedestal_Half_Cell_Event2 += skiFrame[iSample].adcLow();
+				// 	Cell_counter1_Half_Cell2++;
+				// };
+				if(((iux <= 0.25 && iyy >= -0.25 ) || (iux < -0.5 && iyy < 0)) && detId.cellType() == kCellTypeStandard) {
+					// 	Cell_counter1++;
+					// 	Average_Pedestal_Per_Event1 += skiFrame[iSample].adcLow();
+					Sum_Hist_cells_SKI1->Fill(skiFrame.adcLow());
 				}
 
-				if(((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50 && iyy < 0) ) && SKI_1.detid().cellType() == 0) {
-					Cell_counter2++;
-					Average_Pedestal_Per_Event2 += SKI_1[nsample].adcLow();
-				}
+				// if(((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50 && iyy < 0) ) && detId.cellType() == kCellTypeStandard) {
+				// 	Cell_counter2++;
+				// 	Average_Pedestal_Per_Event2 += skiFrame[iSample].adcLow();
+				// }
 
-				/*
-				                                if((iux <= -0.25 && iux >= -3.25) && (iyy <= -0.25 && iyy>= -5.25 ) && SKI_1.detid().cellType() == 0){
-				                                   Cell_counter1++;
-				                                   Average_Pedestal_Per_Event1 += SKI_1[nsample].adcLow();
-				                                   Sum_Hist_cells_SKI1[event.id().event() - 1]->Fill(SKI_1[nsample].adcLow());
-				                                  }
-
-				                                if((iux >= 0.25 && iux <= 3.25) && (iyy <= -0.25 && iyy>= -5.25 ) && SKI_1.detid().cellType() == 0){
-				                                   Cell_counter2++;
-				                                   Average_Pedestal_Per_Event2 += SKI_1[nsample].adcLow();
-				                                  }
-				*/
 
 			}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
+
+			char name[300], title[300];
+			TH2Poly *h_digi_layer[MAXLAYERS], *highGain_hpoly[MAXLAYERS];
+
+			for(unsigned int iLayer = 0; iLayer < MAXLAYERS; ++iLayer) {
+
+				h_digi_layer[iLayer] = fs->make<TH2Poly>();
+				sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", 0, iLayer + 1, evId);
+				sprintf(title, "Sum of adc counts per cell for ADC%i Layer%i Event%i", 0, iLayer + 1, evId);
+				h_digi_layer->SetName(name);
+				h_digi_layer->SetTitle(title);
+				InitTH2Poly(*h_digi_layer[iLayer], detId);
+
+				highGain_hpoly[iLayer] = fs->make<TH2Poly>();
+				sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", 1, iLayer + 1, evId);
+				sprintf(title, "Sum of adc counts per cell for ADC%i Layer%i Event%i", 1, iLayer + 1, evId);
+				highGain_hpoly->SetName(name);
+				highGain_hpoly->SetTitle(title);
+				InitTH2Poly(*highGain_hpoly[iLayer], detId);
+			}
+
+			sprintf(name, "SumCellHist_SKI1_Event%i", evId);
+			sprintf(title, "Sum of adc counts of cells  Event%i", evId);
+			Sum_Hist_cells_SKI1 = fs->make<TH1F>(name, title, 4096, 0 , 4095);
+
 			for(SKIROC2DigiCollection::const_iterator j = Coll.begin(); j != Coll.end(); j++) {
-				int flag_calib = 0;
+				bool flag_calib = false;
 				const SKIROC2DataFrame& SKI = *j ;
-				int n_layer = (SKI.detid()).layer();
-				int n_sensor_IU = (SKI.detid()).sensorIU();
-				int n_sensor_IV = (SKI.detid()).sensorIV();
-				int n_cell_iu = (SKI.detid()).iu();
-				int n_cell_iv = (SKI.detid()).iv();
-				if((n_cell_iu == -1 && n_cell_iv == 2) || (n_cell_iu == 2 && n_cell_iv == -4)) flag_calib = 1;
+
+				int iSample = 0; // using only 1 sample ///\todo to be generalized
+
+				HGCalTBDetId detId = SKI[iSample].detid();
+				if(!IsCellValid.iu_iv_valid(detId, sensorsize)) continue;
+
+
+#ifdef DEBUG
 				if(DEBUG) cout << endl << " Layer = " << n_layer << " Sensor IU = " << n_sensor_IU << " Sensor IV = " << n_sensor_IV << " Cell iu = " << n_cell_iu << " Cell iu = " << n_cell_iv << endl;
-				if(!IsCellValid.iu_iv_valid(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize))  continue;
-				CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize);
+#endif
+
+
+				CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(detId, sensorsize);
+
 				double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
 				double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
-				int nsample = 0;
-				/*
-									if(flag_calib == 1) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, 0.5*(SKI[nsample].adcLow() - 2*(Average_Pedestal_Per_Event/Cell_counter)));
-				                                        else h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Average_Pedestal_Per_Event/Cell_counter)) );
-				*/
-				if(flag_calib == 1) {
-//                                          h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, 0.5*(SKI[nsample].adcLow() - 2*(Sum_Hist_cells_SKI1[event.id().event() - 1]->GetMean())));
-//                                          h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, 0.5*(SKI[nsample].adcLow()));
 
-					if((iux <= 0.25 && iyy >= -0.25 ) || (iux < -0.5) ) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, 0.5 * (SKI[nsample].adcLow() - (Average_Pedestal_Calib_Cell_Event1 / (Cell_counter1_Calib_Cell1))));
-					else if((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50)) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, 0.5 * (SKI[nsample].adcLow() - (Average_Pedestal_Calib_Cell_Event1 / (Cell_counter1_Calib_Cell1))));
-
+				if(detId.cellType() == HGCalTBDetId::kCellTypeCalibOuter || detId.cellType() == HGCalTBDetId::kCellTypeCalibInner) {
+					h_digi_layer->Fill(iux, iyy, 0.5 * (SKI[iSample].adcLow() - _pedestals[detId.skiIndexInSensor()].GetPedestal(detId)));
 				} else {
-//                                             h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Sum_Hist_cells_SKI1[event.id().event() - 1]->GetMean())) );
-//                                             h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow()) );
-//                                            if((iux <0.25 && iyy>= -0.25 ) || (iux < -0.25) ) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Average_Pedestal_Per_Event1/(Cell_counter1))) );
-					if(SKI.detid().cellType() == 3 && event.id().event() == 34) cout << endl << " iux= " << iux << " iyy= " << iyy << " ADC = " << SKI[nsample].adcLow() << " Ped= " << Average_Pedestal_Half_Cell_Event1 / (Cell_counter1_Half_Cell1) << endl;
-					if((iux <= 0.25 && iyy >= -0.25 ) || (iux < -0.5) ) {
-						if( SKI.detid().cellType() == 0 || SKI.detid().cellType() == 5) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Average_Pedestal_Per_Event1 / (Cell_counter1))) );
-						if(SKI.detid().cellType() == 2 || SKI.detid().cellType() == 3) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Average_Pedestal_Half_Cell_Event1 / (Cell_counter1_Half_Cell1))) );
-						if(SKI.detid().cellType() == 1 || SKI.detid().cellType() == 4) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Average_Pedestal_Calib_Cell_Event1 / (Cell_counter1_Calib_Cell1))) );
-					} else if((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50)) {
-						if( SKI.detid().cellType() == 0 || SKI.detid().cellType() == 5) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Average_Pedestal_Per_Event2 / (Cell_counter2))) );
-						if(SKI.detid().cellType() == 2 || SKI.detid().cellType() == 3) h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample].adcLow() - (Average_Pedestal_Half_Cell_Event2 / (Cell_counter1_Half_Cell2))) );
-
-					}
-
+					h_digi_layer->Fill(iux, iyy, (SKI[iSample].adcLow() - _pedestals[detId.skiIndexInSensor()].GetPedestal(detId)));
 				}
+#ifdef DEBUG					if(SKI.detid().cellType() == HGCalDetId::kCellMouseBite && event.id().event() == 34) cout << endl << " iux= " << iux << " iyy= " << iyy << " ADC = " << SKI[iSample].adcLow() << " Ped= " << Average_Pedestal_Half_Cell_Event1 / (Cell_counter1_Half_Cell1) << endl;
+#endif
 
-				nsample = 1;
-				h_digi_layer[nsample][n_layer - 1][event.id().event() - 1]->Fill(iux , iyy, (SKI[nsample - 1].adcHigh() - Sum_Hist_cells_SKI1[event.id().event() - 1]->GetMean()));
+				highGain_hpoly->Fill(iux , iyy, (SKI[iSample].adcHigh() - Sum_Hist_cells_SKI1->GetMean()));
 			}
 		}
 	} else {
