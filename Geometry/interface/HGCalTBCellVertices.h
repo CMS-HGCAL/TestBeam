@@ -18,27 +18,33 @@
  *
  */
 
+namespace HGCalTB
+{
+
+typedef std::pair<double, double> Point2D;
+}
+
 class HGCalTBCellVertices
 {
+	using namespace HGCalTB;
 public:
-
 	HGCalTBCellVertices();	///< Constructor from cell \b iu & \b iv, valid sensorSizes are 128 and 256
 
-	std::vector<std::pair<double, double>> GetCellCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize, bool flipX = false); ///< returns the coordinates of each vertex of cell in the lab frame \b (x,y)
+	std::vector<Point2D> GetCellCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize, bool flipX = false); ///< returns the coordinates of each vertex of cell in the lab frame \b (x,y)
 
-	inline std::vector<std::pair<double, double>> GetCellCoordinatesForPlots(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize)
+	inline std::vector<Point2D> GetCellCoordinatesForPlots(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize)
 	{
 		return GetCellCoordinates(layer, sensor_iu, sensor_iv, iu, iv, sensorsize, true);
 	};  ///< returns the coordinates of each vertex of cell in the lab frame \b (x,y)
 
-	std::pair<double, double> GetCellCentreCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize, bool flipX = false); ///< returns the center of the cell in absolute coordinates: \b (x,y)
+	Point2D GetCellCentreCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize, bool flipX = false); ///< returns the center of the cell in absolute coordinates: \b (x,y)
 
-	inline 	std::pair<double, double> GetCellCentreCoordinatesForPlots(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize)
+	inline 	Point2D GetCellCentreCoordinatesForPlots(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize)
 	{
 		return GetCellCentreCoordinates(layer, sensor_iu, sensor_iv, iu, iv, sensorsize, true);
 	}; ///< returns the center of the cell in absolute coordinates: \b (x,y)
 
-	inline 	std::pair<double, double> GetCellCentreCoordinatesForPlots(HGCalDetId detId, int sensorsize)
+	inline 	Point2D GetCellCentreCoordinatesForPlots(HGCalDetId detId, int sensorsize)
 	{
 		return GetCellCentreCoordinates(detId.layer(), detId.sensorIU, detId.sensorIV, detId.iu(), detId.iv(), sensorsize, true);
 	}; ///< returns the center of the cell in absolute coordinates: \b (x,y)
@@ -51,7 +57,7 @@ private:
 	double vy_a = 3. / 2;
 
 	std::vector<double> x_co_FullHex, y_co_FullHex; // stores the initial x,y coordinates of a hexagonal cell
-	std::vector<std::pair<double, double>> Cell_co;
+	std::vector<Point2D> Cell_co;
 // Translation in u,v co-ordinates in terms of TB cartesian -x,y.
 	double  x0 = 2 * x_a * a; //Translation in Cartesian x for 1 unit of iu
 	double vx0 = x_a * a; // Cartesian x component of translation for 1 unit of iv
@@ -59,7 +65,7 @@ private:
 
 	double Xmax(int iv, double y);// returns the max x value for a cell to be in the given sensor
 
-	std::pair<double, double> RotateLayer(std::pair<double, double>, double Angle);
+	Point2D RotateLayer(Point2D, double Angle);
 
 };
 
