@@ -38,6 +38,10 @@ public:
 		return GetCellCentreCoordinates(layer, sensor_iu, sensor_iv, iu, iv, sensorsize, true);
 	}; ///< returns the center of the cell in absolute coordinates: \b (x,y)
 
+	inline 	std::pair<double, double> GetCellCentreCoordinatesForPlots(HGCalDetId detId, int sensorsize)
+	{
+		return GetCellCentreCoordinates(detId.layer(), detId.sensorIU, detId.sensorIV, detId.iu(), detId.iv(), sensorsize, true);
+	}; ///< returns the center of the cell in absolute coordinates: \b (x,y)
 
 //  void CellType(int iu, int v, bool ValidFlag);// 1 for full hex, 2 for half hex and 3 for the pentagons(to be implemented later)
 private:
