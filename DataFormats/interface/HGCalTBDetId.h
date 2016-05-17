@@ -4,6 +4,8 @@
 #include <iosfwd>
 #include "DataFormats/DetId/interface/DetId.h"
 #include "DataFormats/ForwardDetId/interface/ForwardSubdetector.h"
+#include <cassert>
+
 
 /*
    On a sensor, the indexes are X and V.  X is horizontal (in most diagrams) and V increases along the hexagon faces towards the upper right.
@@ -11,6 +13,16 @@
  */
 class HGCalTBDetId : public DetId
 {
+
+	typedef enum {
+		kCellTypeStandard = 0,
+		kCellTypeCalibInner,
+		kCellHalf,
+		kCellMouseBite,
+		kCellTypeCalibOuter,
+		kCellMerged;
+		kCellUndefined
+	} cell_t;
 
 public:
 	static const int kHGCalTBXOffset         = 0;
@@ -32,16 +44,12 @@ public:
 	static const int kHGCalZsideOffset       = 31;
 	static const int kHGCalZsideMask         = 0x1;
 
-	static const int kCellTypeStandard      =   0;
-	static const int kCellTypeCalibInner    =   1;
-	static const int kCellTypeCalibOuter    =   2;
-
 	/** Create a null cellid*/
 	HGCalTBDetId();
 	/** Create cellid from raw id (0=invalid tower id) */
 	HGCalTBDetId(uint32_t rawid);
 	/** Constructor from layer, sensor_iu, sensor_iv, iu, iv, calibr cell numbers */
-	HGCalTBDetId(int lay, int sensor_iu, int sensor_iv, int iu, int iv, int cellType);
+	HGCalTBDetId(int lay, int sensor_iu, int sensor_iv, int iu, int iv, cell_t cellType);
 	/** Constructor from a generic cell id */
 	HGCalTBDetId(const DetId& id);
 	/** Assignment from a generic cell id */
@@ -72,9 +80,11 @@ public:
 	}
 
 	/// cell type
-	int cellType() const
+	cell_t cellType() const
 	{
-		return ( (id_ >> kHGCalTBCellTypeOffset)&kHGCalTBCellTypeMask);
+		cell_t type = ( (id_ >> kHGCalTBCellTypeOffset)&kHGCalTBCellTypeMask);
+		assert(type < kCellUndefined);
+		return type;
 	}
 
 	/// get the layer #
@@ -99,6 +109,10 @@ public:
 		return true;
 	}
 
+	unsigned int skiIndexInSensor() const
+	{
+		return 0; ///\todo to be implemented
+	}
 };
 
 std::ostream& operator<<(std::ostream&, const HGCalTBDetId& id);
