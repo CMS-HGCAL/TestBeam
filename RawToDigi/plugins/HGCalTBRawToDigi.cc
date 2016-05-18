@@ -58,7 +58,6 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 					digis->addDataFrame(did);
 					int ptradc1 = ptr - ichan - 128 * (MAXSKIROCS - ski);
 					int ptradc2 = ptr - ichan - 64 - 128 * (MAXSKIROCS - ski);
-//                                        std::cout<<std::endl<<setw(10)<<showbase<<internal<<"event = "<<dec<<e.id().event()<<" Ski= "<<ski<<dec<<" Channel "<<ichan <<" ADC1 = "<<hex<<(pdata[ptradc1] & 0xFFF)<<" ADC2 = "<<hex<<(pdata[ptradc2] & 0xFFF)<<" ADC1 = "<<hex<<(pdata[ptradc1])<<" ADC2 = "<<hex<<(pdata[ptradc2])<<std::endl;
 					digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF), gray_to_binary( pdata[ptradc2] & 0xFFF), 0); ///\todo TDC value hardcoded to 0 because not in the readout
 				}
 			}

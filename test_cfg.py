@@ -56,7 +56,7 @@ process.DQMSeq = cms.Sequence(process.hgcaltbdigisplotter * process.hgcaltbrechi
 #process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter)
 
 #process.p =cms.Path(process.debugRawSeq * process.RawToDigiSeq ) #*  process.DQMSeq * process.pedestals )
-process.p =cms.Path(process.RawToDigiSeq * process.hgcaltbdigisplotter_new) # * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
+process.p =cms.Path(process.RawToDigiSeq*process.hgcaltbdigisplotter_new) # * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
 #process.p =cms.Path(process.RawToDigiSeq*process.LocalRecoSeq*process.hgcaltbdigisplotter) # * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
 process.end = cms.EndPath(process.output)
 

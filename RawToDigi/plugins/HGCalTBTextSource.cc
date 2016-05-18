@@ -149,7 +149,7 @@ void HGCalTBTextSource::produce(edm::Event & e)
 	size_t len = sizeof(uint16_t) * m_skiwords.size();
 	fed.resize(len);
 	memcpy(fed.data(), &(m_skiwords[0]), len);
-        for(unsigned int iii = 0; iii < m_skiwords.size(); iii++)
+//        for(unsigned int iii = 0; iii < m_skiwords.size(); iii++)
 	FEDRawData& fed2 = bare_product->FEDData(_TELESCOPE_FED_ID_);
 
 //	if((unsigned int) m_run==t_triggerID){ // empty FED if no data are available for the triggerID
