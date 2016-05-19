@@ -20,6 +20,8 @@ public:
 		return iu_iv_valid(detId.layer(), detId.sensorIU(), detId.sensorIV(), detId.iu(), detId.iv(), sensorSize);
 	};
 	double Cell_Area(int cell_type) const;//returns area in cm*cm
+	std::vector<HGCalTBDetId> validDetIds(unsigned int layer, unsigned int sensorsize);
+
 };
 
 #endif

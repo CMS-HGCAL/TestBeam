@@ -45,3 +45,15 @@ double HGCalTBTopology::Cell_Area(int cell_type) const
 	else return -1.; //signifies an invalid cell type
 }
 
+std::vector<HGCalTBDetId> HGCalTBTopology::validDetIds(unsigned int layer, unsigned int sensorsize)
+{
+	std::vector<HGCalTBDetId> detIds_;
+	for(int iv = -7; iv < 8; iv++) {
+		for(int iu = -7; iu < 8; iu++) {
+			HGCalTBDetId detId(0, 0, 0, iu, iv, HGCalTBDetId::kCellTypeStandard); // the type is not important because not used to see if the cell is valid
+			detIds_.push_back(detId);
+		}
+	}
+	return detIds_;
+}
+
