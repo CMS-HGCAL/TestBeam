@@ -15,7 +15,7 @@ static HGCalTBDetId tb_detid_load(const char* buffer, int& ptr)
 }
 static void tb_detid_store(HGCalTBDetId id, FILE* f)
 {
-	fprintf(f, "%08x %5d %9d %9d %3d %3d %4d ", id.rawId(), id.layer()*id.zside(), id.sensorIU(), id.sensorIV(), id.iu(), id.iv(), id.cellType());
+	fprintf(f, "%08x %5d %9d %9d %3d %3d %4d ", id.rawId(), id.layer()*id.zside(), id.sensorIU(), id.sensorIV(), id.iu(), id.iv(), (int)id.cellType());
 }
 
 bool HGCalCondObjectTextIO::load(const std::string& filename, HGCalCondObjectContainer<float>& cont)
