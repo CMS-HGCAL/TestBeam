@@ -1,6 +1,7 @@
 #ifndef HGCAL_GEOMETRY_HGCALTBCELLVERTICES_H
 #define HGCAL_GEOMETRY_HGCALTBCELLVERTICES_H
 
+#include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
 #include "math.h"
@@ -20,13 +21,13 @@
 
 namespace HGCalTB
 {
-
-typedef std::pair<double, double> Point2D;
+	typedef std::pair<double, double> Point2D;
 }
+
+using namespace HGCalTB;
 
 class HGCalTBCellVertices
 {
-	using namespace HGCalTB;
 public:
 	HGCalTBCellVertices();	///< Constructor from cell \b iu & \b iv, valid sensorSizes are 128 and 256
 
@@ -37,6 +38,11 @@ public:
 		return GetCellCoordinates(layer, sensor_iu, sensor_iv, iu, iv, sensorsize, true);
 	};  ///< returns the coordinates of each vertex of cell in the lab frame \b (x,y)
 
+	inline std::vector<Point2D> GetCellCoordinatesForPlots(HGCalTBDetId detId, int sensorsize)
+	{
+		return GetCellCoordinates(detId.layer(), detId.sensorIU(), detId.sensorIV(), detId.iu(), detId.iv(), sensorsize, true);
+	};  ///< returns the coordinates of each vertex of cell in the lab frame \b (x,y)
+
 	Point2D GetCellCentreCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize, bool flipX = false); ///< returns the center of the cell in absolute coordinates: \b (x,y)
 
 	inline 	Point2D GetCellCentreCoordinatesForPlots(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize)
@@ -44,9 +50,9 @@ public:
 		return GetCellCentreCoordinates(layer, sensor_iu, sensor_iv, iu, iv, sensorsize, true);
 	}; ///< returns the center of the cell in absolute coordinates: \b (x,y)
 
-	inline 	Point2D GetCellCentreCoordinatesForPlots(HGCalDetId detId, int sensorsize)
+	inline 	Point2D GetCellCentreCoordinatesForPlots(HGCalTBDetId detId, int sensorsize)
 	{
-		return GetCellCentreCoordinates(detId.layer(), detId.sensorIU, detId.sensorIV, detId.iu(), detId.iv(), sensorsize, true);
+		return GetCellCentreCoordinates(detId.layer(), detId.sensorIU(), detId.sensorIV(), detId.iu(), detId.iv(), sensorsize, true);
 	}; ///< returns the center of the cell in absolute coordinates: \b (x,y)
 
 //  void CellType(int iu, int v, bool ValidFlag);// 1 for full hex, 2 for half hex and 3 for the pentagons(to be implemented later)
