@@ -41,12 +41,12 @@
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 
 #define MAXVERTICES 6
-
+#define MAXLAYERS 4
 class Pedestal
 {
 	std::vector<std::pair<double, unsigned int> > _pedestals;
-
-	Pedestal();
+public:
+	Pedestal(){};
 	void Sum(HGCalTBDetId detId, double pedestal)
 	{
 		_pedestals[detId.cellType()].first += pedestal;
@@ -85,6 +85,8 @@ private:
 	virtual void beginJob() override;
 	void analyze(const edm::Event& , const edm::EventSetup&) override;
 	virtual void endJob() override;
+	void InitTH2Poly(TH2Poly& poly);
+
 	// ----------member data ---------------------------
 	Pedestal _pedestals[2]; // one set of pedestals per skiroc
 	HGCalTBTopology IsCellValid;
@@ -95,6 +97,7 @@ private:
 	std::vector<HGCalTB::Point2D>::const_iterator it;
 	const static int NSAMPLES = 2;
 	const static int NLAYERS  = 1;
+	edm::Service<TFileService> fs;
 
 };
 
@@ -113,7 +116,6 @@ DigiPlotter_New::DigiPlotter_New(const edm::ParameterSet& iConfig)
 {
 	//now do what ever initialization is needed
 	usesResource("TFileService");
-	edm::Service<TFileService> fs;
 	consumesMany<SKIROC2DigiCollection>();
 }//contructor ends here
 
@@ -127,25 +129,25 @@ DigiPlotter_New::~DigiPlotter_New()
 }
 
 
-void DigiPlotter_New::InitTH2Poly(TH2Poly& poly, const HGCalTBDetId detId)
+void DigiPlotter_New::InitTH2Poly(TH2Poly& poly)
 {
 	double HexX[MAXVERTICES] = {0.};
 	double HexY[MAXVERTICES] = {0.};
 
-	for(int iv = -7; iv < 8; iv++) {
-		for(int iu = -7; iu < 8; iu++) {
-			CellXY = TheCell.GetCellCoordinatesForPlots(detId, sensorsize);
-			assert(CellXY.size() == 4 || CellXY.size() == 6);
-			unsigned int iVertex = 0;
-			for(it = CellXY.begin(); it != CellXY.end(); it++) {
-				HexX[iVertex] =  it->first;
-				HexY[iVertex] =  it->second;
-				++iVertex;
-			}
+	std::vector<HGCalTBDetId> detIds = IsCellValid.validDetIds(0, 128); // hard coding that should be fixed	
+	for( auto detId : detIds){
+		CellXY = TheCell.GetCellCoordinatesForPlots(detId, sensorsize);
+		assert(CellXY.size() == 4 || CellXY.size() == 6);
+		unsigned int iVertex = 0;
+		for(it = CellXY.begin(); it != CellXY.end(); it++) {
+			HexX[iVertex] =  it->first;
+			HexY[iVertex] =  it->second;
+			++iVertex;
+		}
+	}
 //Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
-			poly.AddBin(CellXY.size(), HexX, HexY);
-		}//loop over iu
-	}//loop over iv
+	poly.AddBin(CellXY.size(), HexX, HexY);
+
 }
 
 //
@@ -166,30 +168,53 @@ DigiPlotter_New::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	if(!ski.empty()) {
 
 		std::vector<edm::Handle<SKIROC2DigiCollection> >::iterator i;
-		double Average_Pedestal_Per_Event1 = 0, Average_Pedestal_Per_Event2 = 0, Average_Pedestal_Half_Cell_Event1 = 0, Average_Pedestal_Half_Cell_Event2 = 0, Average_Pedestal_Calib_Cell_Event1 = 0;
-		int Cell_counter1 = 0, Cell_counter2 = 0, Cell_counter1_Half_Cell1 = 0, Cell_counter1_Half_Cell2 = 0, Cell_counter1_Calib_Cell1 = 0;
 //                int counter1=0, counter2=0;
 		for(i = ski.begin(); i != ski.end(); i++) {
 			const SKIROC2DigiCollection& Coll = *(*i);
 #ifdef DEBUG
 			if(DEBUG) cout << "SKIROC2 Digis: " << i->provenance()->branchName() << endl;
 #endif
+
+
+			char name[300], title[300];
+			TH2Poly *lowGain_hpoly[MAXLAYERS], *highGain_hpoly[MAXLAYERS];
+
+			for(unsigned int iLayer = 0; iLayer < MAXLAYERS; ++iLayer) {
+
+				lowGain_hpoly[iLayer] = fs->make<TH2Poly>();
+				sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", 0, iLayer + 1, evId);
+				sprintf(title, "Sum of adc counts per cell for ADC%i Layer%i Event%i", 0, iLayer + 1, evId);
+				lowGain_hpoly[iLayer]->SetName(name);
+				lowGain_hpoly[iLayer]->SetTitle(title);
+				InitTH2Poly(*lowGain_hpoly[iLayer]);
+
+				highGain_hpoly[iLayer] = fs->make<TH2Poly>();
+				sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", 1, iLayer + 1, evId);
+				sprintf(title, "Sum of adc counts per cell for ADC%i Layer%i Event%i", 1, iLayer + 1, evId);
+				highGain_hpoly[iLayer]->SetName(name);
+				highGain_hpoly[iLayer]->SetTitle(title);
+				InitTH2Poly(*highGain_hpoly[iLayer]);
+			}
+
+			sprintf(name, "SumCellHist_SKI1_Event%i", evId);
+			sprintf(title, "Sum of adc counts of cells  Event%i", evId);
+			TH1F* Sum_Hist_cells_SKI1 = fs->make<TH1F>(name, title, 4096, 0 , 4095);
+
 //////////////////////////////////Evaluate average pedestal per event to subtract out//////////////////////////////////
 			for(SKIROC2DigiCollection::const_iterator k = Coll.begin(); k != Coll.end(); k++) {
 				const SKIROC2DataFrame& skiFrame = *k ;
 				HGCalTBDetId detId = skiFrame.detid();
-
+				unsigned int iSample=0; /// \todo now only using one sample, make it more general
 #ifdef DEBUG
 				if(DEBUG) cout << endl << " Layer = " << n_layer << " Sensor IU = " << n_sensor_IU << " Sensor IV = " << n_sensor_IV << " Cell iu = " << n_cell_iu << " Cell iu = " << n_cell_iv << endl;
 #endif
-				if(!IsCellValid.iu_iv_valid(detId))  continue;
+				if(!IsCellValid.isValidDetId(detId, sensorsize))  continue;
 
 				CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(detId, sensorsize);
 				double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
 				double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
-				int iSample = 0;
 
-				_pedestals[detId.skiIndexInSensor()].Sum(detId, skiFrame.adcLow());
+				_pedestals[detId.skiIndexInSensor()].Sum(detId, skiFrame[iSample].adcLow());
 
 
 				// if(detId().cellType() == kCellTypeCalibInner || detId.cellType() == kCellTypeCalibOuter) {
@@ -207,10 +232,10 @@ DigiPlotter_New::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				// 	Average_Pedestal_Half_Cell_Event2 += skiFrame[iSample].adcLow();
 				// 	Cell_counter1_Half_Cell2++;
 				// };
-				if(((iux <= 0.25 && iyy >= -0.25 ) || (iux < -0.5 && iyy < 0)) && detId.cellType() == kCellTypeStandard) {
+				if(((iux <= 0.25 && iyy >= -0.25 ) || (iux < -0.5 && iyy < 0)) && detId.cellType() == HGCalTBDetId::kCellTypeStandard) {
 					// 	Cell_counter1++;
 					// 	Average_Pedestal_Per_Event1 += skiFrame[iSample].adcLow();
-					Sum_Hist_cells_SKI1->Fill(skiFrame.adcLow());
+					Sum_Hist_cells_SKI1->Fill(skiFrame[iSample].adcLow());
 				}
 
 				// if(((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50 && iyy < 0) ) && detId.cellType() == kCellTypeStandard) {
@@ -223,38 +248,13 @@ DigiPlotter_New::analyze(const edm::Event& event, const edm::EventSetup& setup)
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 
-			char name[300], title[300];
-			TH2Poly *h_digi_layer[MAXLAYERS], *highGain_hpoly[MAXLAYERS];
-
-			for(unsigned int iLayer = 0; iLayer < MAXLAYERS; ++iLayer) {
-
-				h_digi_layer[iLayer] = fs->make<TH2Poly>();
-				sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", 0, iLayer + 1, evId);
-				sprintf(title, "Sum of adc counts per cell for ADC%i Layer%i Event%i", 0, iLayer + 1, evId);
-				h_digi_layer->SetName(name);
-				h_digi_layer->SetTitle(title);
-				InitTH2Poly(*h_digi_layer[iLayer], detId);
-
-				highGain_hpoly[iLayer] = fs->make<TH2Poly>();
-				sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", 1, iLayer + 1, evId);
-				sprintf(title, "Sum of adc counts per cell for ADC%i Layer%i Event%i", 1, iLayer + 1, evId);
-				highGain_hpoly->SetName(name);
-				highGain_hpoly->SetTitle(title);
-				InitTH2Poly(*highGain_hpoly[iLayer], detId);
-			}
-
-			sprintf(name, "SumCellHist_SKI1_Event%i", evId);
-			sprintf(title, "Sum of adc counts of cells  Event%i", evId);
-			Sum_Hist_cells_SKI1 = fs->make<TH1F>(name, title, 4096, 0 , 4095);
-
 			for(SKIROC2DigiCollection::const_iterator j = Coll.begin(); j != Coll.end(); j++) {
-				bool flag_calib = false;
 				const SKIROC2DataFrame& SKI = *j ;
 
 				int iSample = 0; // using only 1 sample ///\todo to be generalized
 
-				HGCalTBDetId detId = SKI[iSample].detid();
-				if(!IsCellValid.iu_iv_valid(detId, sensorsize)) continue;
+				HGCalTBDetId detId = SKI.detid();
+				if(!IsCellValid.isValidDetId(detId, sensorsize)) continue;
 
 
 #ifdef DEBUG
@@ -268,14 +268,15 @@ DigiPlotter_New::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
 
 				if(detId.cellType() == HGCalTBDetId::kCellTypeCalibOuter || detId.cellType() == HGCalTBDetId::kCellTypeCalibInner) {
-					h_digi_layer->Fill(iux, iyy, 0.5 * (SKI[iSample].adcLow() - _pedestals[detId.skiIndexInSensor()].GetPedestal(detId)));
+					lowGain_hpoly[detId.layer()]->Fill(iux, iyy, 0.5 * (SKI[iSample].adcLow() - _pedestals[detId.skiIndexInSensor()].GetPedestal(detId)));
 				} else {
-					h_digi_layer->Fill(iux, iyy, (SKI[iSample].adcLow() - _pedestals[detId.skiIndexInSensor()].GetPedestal(detId)));
+					lowGain_hpoly[detId.layer()]->Fill(iux, iyy, (SKI[iSample].adcLow() - _pedestals[detId.skiIndexInSensor()].GetPedestal(detId)));
 				}
-#ifdef DEBUG					if(SKI.detid().cellType() == HGCalDetId::kCellMouseBite && event.id().event() == 34) cout << endl << " iux= " << iux << " iyy= " << iyy << " ADC = " << SKI[iSample].adcLow() << " Ped= " << Average_Pedestal_Half_Cell_Event1 / (Cell_counter1_Half_Cell1) << endl;
+#ifdef DEBUG
+				if(SKI.detid().cellType() == HGCalDetId::kCellMouseBite && event.id().event() == 34) cout << endl << " iux= " << iux << " iyy= " << iyy << " ADC = " << SKI[iSample].adcLow() << " Ped= " << Average_Pedestal_Half_Cell_Event1 / (Cell_counter1_Half_Cell1) << endl;
 #endif
 
-				highGain_hpoly->Fill(iux , iyy, (SKI[iSample].adcHigh() - Sum_Hist_cells_SKI1->GetMean()));
+				highGain_hpoly[detId.layer()]->Fill(iux , iyy, (SKI[iSample].adcHigh() - Sum_Hist_cells_SKI1->GetMean()));
 			}
 		}
 	} else {
