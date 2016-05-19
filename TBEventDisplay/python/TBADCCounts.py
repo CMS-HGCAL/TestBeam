@@ -35,6 +35,7 @@ class ADCCounts:
             h = TH1F(name, "", nbins, xmin, xmax)
             h.SetFillStyle(3001)
             h.SetFillColor(kRed)
+            h.SetLineWidth(1)
             h.GetXaxis().CenterTitle()
             h.GetXaxis().SetTitle("channel")
             h.GetYaxis().CenterTitle()

@@ -16,6 +16,10 @@ COLOR = {'W':   kRed-3,
          'Cu':  kYellow+2,  
          'WCu': kOrange, 
          'PCB': kBlue, 
+         'G10': kBlue,
+         'Kapton': kGreen,  
+         'FR4': kMagenta,
+         'Epoxy': kGray,    
          'Si':  kWhite}
 #------------------------------------------------------------------------------
 class Display3D:
@@ -117,7 +121,11 @@ class Display3D:
             name = '%s_%d' % (material, ii)
             shape= TEveGeoShape(name)
             shape.SetShape(o)
-            shape.SetMainColor(COLOR[material])
+            if COLOR.has_key(material):
+                color = COLOR[material]
+            else:
+                color = kWhite-3
+            shape.SetMainColor(color)
             shape.SetMainTransparency(self.transparency)
 
             # move to correct position
@@ -133,7 +141,13 @@ class Display3D:
             self.page.shapes.append(shape)
 
     def drawHits(self, parent):
-        if parent.hits == None: return
+        try:
+            h = parent.hits
+        except:
+            # there is no hits objects, so set geometry to opaque
+            self.page.transparent = True
+            self.page.button.SetDown(kTRUE, kTRUE)
+            return
         
         for l in xrange(self.nlayers):
             layer = l + 1

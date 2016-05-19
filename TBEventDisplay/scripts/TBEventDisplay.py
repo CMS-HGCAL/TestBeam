@@ -14,6 +14,7 @@ from HGCal.TBEventDisplay.TBUtil import *
 from HGCal.TBEventDisplay.TBADCCounts import ADCCounts
 from HGCal.TBEventDisplay.TBHeatMap import HeatMap
 from HGCal.TBEventDisplay.TBLego import Lego
+from HGCal.TBEventDisplay.TBLongitudinalProfile import LongitudinalProfile
 from HGCal.TBEventDisplay.TBDisplay3D import Display3D
 
 from HGCal.TBStandaloneSimulator.TBFileReader import TBFileReader
@@ -84,11 +85,12 @@ element.button = CheckButton(element.opacity,
                              text='toggle between transparent and opaque')
 '''
 
-
-PAGES = [(0, 'Channels',   'ADCCounts(self, page)', None),
-         (1, 'HeatMap',    'HeatMap(self, page)',   None),
-         (2, 'LegoPlot',   'Lego(self, page)',      None),
-         (3, 'Display3D',  'Display3D(self, page)', [CODE3D_1])]
+# display shoukd always be the last one
+PAGES = [(0, 'Channels',     'ADCCounts(self, page)', None),
+         (1, 'HeatMap',      'HeatMap(self, page)',   None),
+         (2, 'Lego',         'Lego(self, page)',      None),
+         (3, 'Longitudinal', 'LongitudinalProfile(self, page)', None),
+         (4, 'Display3D',    'Display3D(self, page)', [CODE3D_1])]
 
 #-----------------------------------------------------------------------------
 # (A) Root Graphical User Interfaces (GUI)
@@ -286,6 +288,9 @@ class TBEventDisplay:
         self.noteBook = NoteBook(self, self.vframe, 
                                  'setPage', width, height)
 
+        # graphics style
+        self.setStyle()
+
         # Add pages 
         self.display = {}
         for idd, pageName, constructor, sidebar in PAGES:
@@ -330,11 +335,13 @@ class TBEventDisplay:
         self.main.Resize()
         self.main.MapWindow()
 
+        # draw 3D geometry, assuming it is always the last page
+        self.eventNumber = 0
+        self.setPage(len(PAGES)-1)
+        self.eventNumber =-1
+
         if filename != None: 
             self.__openFile(filename)
-
-        # graphics style
-        self.setStyle()
 
         # To DEBUG a display uncomment next line
         #self.setPage(2)
@@ -680,12 +687,15 @@ class TBEventDisplay:
     def setStyle(self):
         self.style = TStyle("Pub", "Pub")
         style = self.style
-        #style.SetPalette(kRainBow)
         style.SetPalette(1)
 
         # For the canvases
         style.SetCanvasBorderMode(0)
         style.SetCanvasColor(kWhite)
+        style.SetCanvasDefH(500) #Height of canvas
+        style.SetCanvasDefW(500) #Width of canvas
+        style.SetCanvasDefX(0)   #Position on screen
+        style.SetCanvasDefY(0)
 
         # For the pads
         style.SetPadBorderMode(0)
@@ -705,14 +715,6 @@ class TBEventDisplay:
         style.SetFrameLineStyle(1)
         style.SetFrameLineWidth(1)
 
-        # For the histograms
-        style.SetHistLineColor(kBlack)
-        style.SetHistLineStyle(0)
-        style.SetHistLineWidth(2)
-
-        style.SetEndErrorSize(2)
-        #style.SetErrorX(0.)
-
         style.SetMarkerSize(0.4)
         style.SetMarkerStyle(20)
 
@@ -724,7 +726,7 @@ class TBEventDisplay:
         style.SetFuncWidth(1)
 
         # For the date:
-        style.SetOptDate(0)
+        style.SetOptDate()
 
         # For the statistics box:
         style.SetOptFile(0)
@@ -743,8 +745,8 @@ class TBEventDisplay:
         # Margins:
         style.SetPadTopMargin(0.05)
         style.SetPadBottomMargin(0.16)
-        style.SetPadLeftMargin(0.18)
-        style.SetPadRightMargin(0.18)
+        style.SetPadLeftMargin(0.22)
+        style.SetPadRightMargin(0.20)
 
         # For the Global title:
         style.SetOptTitle(0) 
@@ -758,7 +760,7 @@ class TBEventDisplay:
         style.SetTitleColor(1, "XYZ")
         style.SetTitleFont(42, "XYZ")
         style.SetTitleSize(0.05, "XYZ")
-        style.SetTitleXOffset(1.25)
+        style.SetTitleXOffset(1.30)
         style.SetTitleYOffset(1.40)
 
         # For the axis labels:
