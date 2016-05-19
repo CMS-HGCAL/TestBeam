@@ -34,7 +34,8 @@ process.source = cms.Source ("HGCSimDigiSource",
                              runNumber  = cms.untracked.int32(101),
                              maxEvents  = cms.untracked.int32(-1),
                              minADCCount= cms.untracked.int32(1),
-                             ADCperMeV  = cms.untracked.double(200),
+                             # this value will actually give the energy in keV
+                             ADCperMeV  = cms.untracked.double(1000),
                              fileNames  = cms.untracked.vstring(filelist),
                              noiseFileNames = 
                              cms.untracked.vstring(noisefilelist)

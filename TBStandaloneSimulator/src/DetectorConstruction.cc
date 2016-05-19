@@ -70,24 +70,24 @@ DetectorConstruction::~DetectorConstruction()
 //
 void DetectorConstruction::DefineMaterials()
 {
-	G4NistManager* nistManager = G4NistManager::Instance();
-	m_materials["Abs"]
-	    = nistManager->FindOrBuildMaterial(m_geometry.material("Abs"), false);
-	m_materials["AbsHCAL"]
-	    = nistManager->FindOrBuildMaterial(m_geometry.material("AbsHCAL"), false);
-	m_materials["Al"] = nistManager->FindOrBuildMaterial("G4_Al", false);
-	m_dEdx["Al"] = 0.4358;
-	m_materials["W"] = nistManager->FindOrBuildMaterial("G4_W", false);
-	m_dEdx["W"] = 2.210;
-	m_materials["Pb"] = nistManager->FindOrBuildMaterial("G4_Pb", false);
-	m_dEdx["Pb"] = 1.274;
-	m_materials["Cu"] = nistManager->FindOrBuildMaterial("G4_Cu", false);
-	m_dEdx["Cu"] = 1.257;
-	m_materials["Si"] = nistManager->FindOrBuildMaterial("G4_Si", false);
-	m_dEdx["Si"] = 0.3876;
-	m_materials["Zn"] = nistManager->FindOrBuildMaterial("G4_Zn", false);
-	m_dEdx["Zn"] = 1.007;
-	m_materials["Air"] = nistManager->FindOrBuildMaterial("G4_AIR", false);
+  G4NistManager* nistManager = G4NistManager::Instance();
+  m_materials["Abs"]
+    = nistManager->FindOrBuildMaterial(m_geometry.material("Abs"), false);
+  m_materials["AbsHCAL"]
+    = nistManager->FindOrBuildMaterial(m_geometry.material("AbsHCAL"), false);
+  m_materials["Al"] = nistManager->FindOrBuildMaterial("G4_Al", false);
+  m_dEdx["Al"] = 0.4358;
+  m_materials["W"] = nistManager->FindOrBuildMaterial("G4_W", false);
+  m_dEdx["W"] = 2.210;
+  m_materials["Pb"] = nistManager->FindOrBuildMaterial("G4_Pb", false);
+  m_dEdx["Pb"] = 1.274;
+  m_materials["Cu"] = nistManager->FindOrBuildMaterial("G4_Cu", false);
+  m_dEdx["Cu"] = 1.257;
+  m_materials["Si"] = nistManager->FindOrBuildMaterial("G4_Si", false);
+  m_dEdx["Si"] = 0.3876;
+  m_materials["Zn"] = nistManager->FindOrBuildMaterial("G4_Zn", false);
+  m_dEdx["Zn"] = 1.007;
+  m_materials["Air"] = nistManager->FindOrBuildMaterial("G4_AIR", false);
 	m_dEdx["Air"] = 0;
 	m_materials["Fe"] = nistManager->FindOrBuildMaterial("G4_Fe", false);
 	m_dEdx["Fe"] = 1.143;
@@ -104,12 +104,44 @@ void DetectorConstruction::DefineMaterials()
 	m_materials["Ni"] = nistManager->FindOrBuildMaterial("G4_Ni", false);
 	m_dEdx["Ni"] = 1.307;
 
-	m_materials["PCB"] = new G4Material("G10", 1.700 * g / cm3, 4);
-	m_materials["PCB"]->AddElement(nistManager->FindOrBuildElement(14), 1);
-	m_materials["PCB"]->AddElement(nistManager->FindOrBuildElement(8) , 2);
-	m_materials["PCB"]->AddElement(nistManager->FindOrBuildElement(6) , 3);
-	m_materials["PCB"]->AddElement(nistManager->FindOrBuildElement(1) , 3);
-	m_dEdx["PCB"] = 0;
+
+	//from http://www.physi.uni-heidelberg.de/~adler/TRD/
+	//TRDunterlagen/RadiatonLength/tgc2.htm
+
+	G4Element* H  = new G4Element("Hydrogen", "H",  1., 1.01*g/mole);
+	G4Element* C  = new G4Element("Carbon",   "C",  6., 12.01*g/mole);
+	G4Element* O  = new G4Element("Oxygen",   "O" , 8., 16.00*g/mole);
+	G4Element* Si = new G4Element("Silicon",  "Si", 14.,28.09*g/mole);
+
+	m_materials["SiO2"] = new G4Material("SiO2", 2.200*g/cm3, 2);
+	m_materials["SiO2"]->AddElement(Si, 1);
+	m_materials["SiO2"]->AddElement(O , 2);
+	m_dEdx["SiO2"] = 5.938; // MeV/cm
+
+	//Epoxy
+	m_materials["Epoxy"] = new G4Material("Epoxy", 1.2*g/cm3, 2);
+	m_materials["Epoxy"]->AddElement(H, 2);
+	m_materials["Epoxy"]->AddElement(C, 2);
+  	m_dEdx["Epoxy"] = 2.0; // JUST A GUESS
+
+	//FR4
+	m_materials["FR4"] = new G4Material("FR4", 1.86*g/cm3, 2);
+	m_materials["FR4"]->AddMaterial(m_materials["SiO2"], 0.528);
+	m_materials["FR4"]->AddMaterial(m_materials["Epoxy"], 0.472);
+	m_dEdx["FR4"] = 0.528*m_dEdx["SiO2"] + 0.472*m_dEdx["Epoxy"];
+
+	//G10
+	m_materials["G10"] = new G4Material("G10", 1.700 * g / cm3, 4);
+	m_materials["G10"]->AddElement(nistManager->FindOrBuildElement(14), 1);
+	m_materials["G10"]->AddElement(nistManager->FindOrBuildElement(8) , 2);
+	m_materials["G10"]->AddElement(nistManager->FindOrBuildElement(6) , 3);
+	m_materials["G10"]->AddElement(nistManager->FindOrBuildElement(1) , 3);
+	m_dEdx["PCB"] = 3.179; // MeV/cm
+
+	m_materials["PCB"] = m_materials["G10"];
+	m_dEdx["PCB"] = m_dEdx["G10"];
+
+
 	m_materials["Brass"] = new G4Material("Brass", 8.5 * g / cm3, 2);
 	m_materials["Brass"]->AddMaterial(m_materials["Cu"]  , 70 * perCent);
 	m_materials["Brass"]->AddMaterial(m_materials["Zn"]  , 30 * perCent);

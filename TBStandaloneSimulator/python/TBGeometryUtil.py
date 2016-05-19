@@ -102,7 +102,7 @@ def computeSquareVertices(side):
     x.append( H); y.append(-H)
     return (x, y)
 #------------------------------------------------------------------------------
-def createGeometry(geometry="TBGeometry_2016_04"):
+def createGeometry(geometry="geometry_4layer.py"):
     from copy import copy
     geometry_module = nameonly(geometry)
     cmd = 'from HGCal.TBStandaloneSimulator.%s import  '\
@@ -122,35 +122,46 @@ def createGeometry(geometry="TBGeometry_2016_04"):
     y0 = 0.0
     z0 = 0.0
     z  = 0.0
+    # must start with a header
     header = None
+    part = Geometry[0]
+    # check for header
+    if type(part) != type({}):
+        sys.exit('\n** error ** Geometry block must start with a header\n')
+        
+    header= copy(part)
+    units = header['units']
+    # convert to mm
+    if   units == 'm':
+        scale = 1000.0
+    elif units == 'cm':
+        scale = 10.0
+    else:
+        scale = 1.0
+    x0 = scale*header['x']
+    y0 = scale*header['y']
+    z0 = scale*header['z']
+    header['x'] = x0
+    header['y'] = y0
+    header['z'] = z0
+    header['units'] = 'mm'
+    
+    # now loop over rest of Geometry block
     geometry  = []
-    for part in Geometry:
-        # check for header
-        if type(part) == type({}):
-            header= copy(part)
-            units = header['units']
-            # convert to mm
-            if   units == 'm':
-                scale = 1000.0
-            elif units == 'cm':
-                scale = 10.0
-            else:
-                scale = 1.0
-            x0 = scale*header['x']
-            y0 = scale*header['y']
-            z0 = scale*header['z']
-            header['x'] = x0
-            header['y'] = y0
-            header['z'] = z0
-            header['units'] = 'mm'
-            continue
-
+    for part in Geometry[1:]:
         print part
+        if not Components.has_key(part):
+            sys.exit('\t** error ** %s is an unknown component' % part)
+
         comp = copy(Components[part])
         # check for modules (SamplingSections)
         if type(comp) == type([]):
             for ii, subpart in enumerate(comp):
                 print '\t%s' % subpart
+                if not Components.has_key(subpart):
+                    sys.exit('\t** error ** %s is an unknown component' % \
+                                 subpart)
+
                 component = copy(Components[subpart])
                 t    = component['thickness']
                 side = component['side']
@@ -167,7 +178,7 @@ def createGeometry(geometry="TBGeometry_2016_04"):
                 component['first'] = ii == 0
                 component['last']  = ii == len(comp)-1
                 geometry.append(component)
-        else:
+        elif type(comp) == type({}):
             t    = comp['thickness']
             side = comp['side']
             x  = comp['x']
@@ -181,6 +192,9 @@ def createGeometry(geometry="TBGeometry_2016_04"):
             comp['first'] = True
             comp['last']  = True
             geometry.append(comp)
+        else:
+            sys.exit('\t** error ** unrecognized construct:\n%s\n'\
+                         '\t** in Geometry block' % comp)
 
 
     #from pprint import PrettyPrinter
