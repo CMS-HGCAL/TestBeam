@@ -62,7 +62,7 @@ Components = {'W2.0': {'shape': 'hexagon',
                        'y': 0.0,
                        'z': 0.0},
               
-              'W4.2':  {'shape': 'square',
+              'W4.2':  {'shape': 'hexagon',
                         'material': 'W',
                         'units': 'mm',
                         'side': 71.4598,
