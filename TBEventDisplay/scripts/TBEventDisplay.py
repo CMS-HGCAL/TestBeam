@@ -152,11 +152,12 @@ class TBEventDisplay:
     gui = TBEventDisplay(title)
     """
 
-    def __init__(self, title, geometryModule,
+    def __init__(self, title, geometryFile,
                  filename=None, width=WIDTH, height=HEIGHT):
 
         # Initial directory for open file dialog
         self.openDir  = os.environ['PWD']
+        self.geometryFile = geometryFile
         self.filename = filename
 
         self.pageNameMap = {}
@@ -173,7 +174,7 @@ class TBEventDisplay:
         # histogram cache (one per sensor)
         self.hist       = []
         # get test beam geometry
-        geometry        = createGeometry(geometry=geometryModule)
+        geometry        = createGeometry(geometry=self.geometryFile)
         self.geometry   = geometry['geometry']
         self.sensitive  = geometry['sensitive']
         self.shutterOpen= False
@@ -580,46 +581,12 @@ class TBEventDisplay:
         self.cells = {}
         for l in xrange(len(self.sensitive)):
             layer = l + 1
-            # we assume the cells for each layer to be identical
             self.cells[layer] = copy(self.cellmap.cells(layer))
-            cells = self.cells[layer] # make an alias
-
-            #from pprint import PrettyPrinter
-            #pp = PrettyPrinter()
-            #pp.pprint(self.geometry)
-            #print self.sensitive[layer]
-
-            element = self.geometry[self.sensitive[layer]]
-            if not element.has_key('cellsize'):
-                sys.exit('** keyword cellsize not found - check %s' % \
-                             geometryModule)
-
-            if not element.has_key('side'):
-                sys.exit('** keyword side not found - check %s' % \
-                             geometryModule)
-
-            if not element.has_key('z'):
-                sys.exit('** keyword z not found - check %s' % \
-                             geometryModule)
-
-            cellside= element['cellsize']
-            side    = element['side']
-            z       = element['z']
-
-            poly = TH2Poly()
-            poly.SetName('layer %3d' % layer)
-            poly.SetTitle('layer %3d' % layer)
-            poly.GetXaxis().CenterTitle()
-            poly.GetXaxis().SetTitle("#font[12]{x} axis")
-            poly.GetYaxis().CenterTitle()
-            poly.GetYaxis().SetTitle("#font[12]{y} axis")
-
-            # populate histogram with cells
-            for ii in xrange(cells.size()):
-                cells[ii].z = z
-                xv, yv = computeBinVertices(cellside, cells[ii])
-                poly.AddBin(len(xv), xv, yv)
-
+            index   = self.sensitive[layer]
+            element = self.geometry[index]
+            poly = createHoneycomb(layer, element, 
+                                   self.cells[layer],
+                                   self.geometryFile)
             # cache sensor histogram
             self.hist.append(poly)
 

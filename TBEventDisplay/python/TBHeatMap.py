@@ -68,7 +68,7 @@ class HeatMap:
             self.canvas.cd(layer)
             h.Draw("colz")
             self.wafer.Draw("same")
-            if len(self.hist) > 4: continue
+            if len(self.hist) > 2: continue
 
             for ii in xrange(cells.size()):
                 cell = cells[ii]

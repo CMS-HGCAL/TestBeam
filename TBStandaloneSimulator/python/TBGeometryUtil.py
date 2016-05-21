@@ -224,9 +224,40 @@ def divideCanvas(nlayers, canvas):
     canvas.Divide(xdiv, ydiv)
     return nplots    
 #------------------------------------------------------------------------------
+def createHoneycomb(layer, element, cells, geometryFile):
+    if not element.has_key('cellsize'):
+        sys.exit('** keyword cellsize not found - check %s' % geometryFile)
+
+    if not element.has_key('side'):
+        sys.exit('** keyword side not found - check %s' % geometryFile)
+
+    if not element.has_key('z'):
+        sys.exit('** keyword z not found - check %s' % geometryFile)
+
+    cellside= element['cellsize']
+    side    = element['side']
+    z       = element['z']
+
+    poly = TH2Poly()
+    poly.SetName('layer %3d' % layer)
+    poly.SetTitle('layer %3d' % layer)
+
+    poly.GetXaxis().CenterTitle()
+    poly.GetXaxis().SetTitle("#font[12]{x} axis")
+
+    poly.GetYaxis().CenterTitle()
+    poly.GetYaxis().SetTitle("#font[12]{y} axis")
+
+    # populate histogram with cells
+    for ii in xrange(cells.size()):
+        cells[ii].z = z
+        xv, yv = computeBinVertices(cellside, cells[ii])
+        poly.AddBin(len(xv), xv, yv)
+    return poly
+#------------------------------------------------------------------------------
 def main():
     # get test beam geometry
-    geom, sensitive  = createGeometry(geometry="TBGeometry_2016_04")
+    geom, sensitive  = createGeometry(geometry="geometry_1layer.py")
     from pprint import PrettyPrinter
     pp = PrettyPrinter()
     pp.pprint(geom)

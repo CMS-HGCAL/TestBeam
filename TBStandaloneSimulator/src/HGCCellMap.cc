@@ -125,6 +125,13 @@ HGCCellMap::operator()(size_t cellid)
 }
 
 pair<double, double>
+HGCCellMap::operator()(pair<int, int>& uv)
+{
+  return uv2xy(uv.first, uv.second);
+}
+
+
+pair<double, double>
 HGCCellMap::uv2xy(int u, int v)
 {
 	pair<int, int> key(u, v);

@@ -55,11 +55,12 @@ public:
 
 		bool operator<(HGCSimDigiSource::Cell& o)
 		{
-			// negate skiroc number so that
-			// SKIROC 2 occurs before SKIROC 1
-			int lhs = -100000 * skiroc + channel;
-			int rhs = -100000 * o.skiroc + o.channel;
-			return lhs < rhs;
+		  // SKIROC 2 occurs before SKIROC 1
+		  int ski   = skiroc % 2;
+		  int o_ski = o.skiroc % 2;
+		  int lhs   = 64 * ski + channel;
+		  int rhs   = 64 * o_ski + o.channel;
+		  return lhs < rhs;
 		}
 	};
 
