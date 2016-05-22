@@ -13,10 +13,10 @@ process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
 process.source = cms.Source("HGCalTBTextSource",
                             fileNames=cms.untracked.vstring("NOFILE"), ### here a vector is provided, NOFILE should be given otherwise it would not run at all
                             hgcalData = cms.untracked.PSet(
-        fileNames=cms.untracked.vstring("file:Electron_Runs_0442016/HGC_Output_20532.txt"), ### here a vector is provided
+        fileNames=cms.untracked.vstring("file:HGC_Output_112.txt"), ### here a vector is provided
                   ),
                             telescopeData = cms.untracked.PSet(
-        fileNames = cms.untracked.vstring("file:SiTel_March_TB/HGCAL/Run751_HGCAL_converted.txt"), 
+        fileNames = cms.untracked.vstring("NOFILE"), 
         ),
                             )
 
@@ -56,7 +56,7 @@ process.DQMSeq = cms.Sequence(process.hgcaltbdigisplotter * process.hgcaltbrechi
 #process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter)
 
 #process.p =cms.Path(process.debugRawSeq * process.RawToDigiSeq ) #*  process.DQMSeq * process.pedestals )
-process.p =cms.Path(process.RawToDigiSeq*process.LocalRecoSeq*process.hgcaltbrechitsplotter_highgain_new) # * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
-#process.p =cms.Path(process.RawToDigiSeq*process.LocalRecoSeq*process.hgcaltbdigisplotter) # * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
+#process.p =cms.Path(process.RawToDigiSeq*process.LocalRecoSeq*process.hgcaltbrechitsplotter_highgain_new) # * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
+process.p =cms.Path(process.RawToDigiSeq*process.LocalRecoSeq*process.hgcaltbdigisplotter_new) # * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
 process.end = cms.EndPath(process.output)
 
