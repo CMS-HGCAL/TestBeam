@@ -48,7 +48,7 @@ bool HGCalTBTextSource::readLines()
 		std::cout << m_run << "\t" << m_event << "\t" << m_time << "\n";
 #endif
 		
-		assert( (triggerID_tmp & 0xF0000000) == 0x80000000 ); // check if the skiroc is fine  ///\todo transform to exception
+//		assert( (triggerID_tmp & 0xF0000000) == 0x80000000 ); // check if the skiroc is fine  ///\todo transform to exception
 		
 		while ( m_file.peek()!='C' && m_file.good()) {
 			buffer[0] = 0;

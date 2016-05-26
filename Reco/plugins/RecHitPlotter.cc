@@ -192,12 +192,12 @@ RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize);
 		double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
 		double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-		h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy());
-		h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energy());
+		h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh());
+		h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh());
 //The energy threshold for the occupancy has been hardcoded here. Need to decide what a good choice is. Maybe dynamic per cell depending on the pedestal
-		if(RecHit.energy() > 5) h_RecHit_layer_Occupancy[n_layer - 1]->Fill(iux , iyy, 1./n_cell_area);
+		if(RecHit.energyHigh() > 5) h_RecHit_layer_Occupancy[n_layer - 1]->Fill(iux , iyy, 1./n_cell_area);
 // There will be several array indices iu, iv that wont be filled due to it being invalid. Can think of alternate array filling.
-		h_RecHit_layer_cell[n_layer - 1][7 + (RecHit.id()).iu()][7 + (RecHit.id()).iv()]->Fill(RecHit.energy());
+		h_RecHit_layer_cell[n_layer - 1][7 + (RecHit.id()).iu()][7 + (RecHit.id()).iv()]->Fill(RecHit.energyHigh());
 	}
 
 

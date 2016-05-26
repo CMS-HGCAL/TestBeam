@@ -1,6 +1,6 @@
-//#include <iostream>
+#include <iostream>
 #include "HGCal/RawToDigi/plugins/HGCalTBRawToDigi.h"
-
+using namespace std;
 
 unsigned int gray_to_binary (unsigned int gray);
 
@@ -61,6 +61,7 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 					digis->addDataFrame(did);
 					int ptradc1 = ptr - ichan - 128 * (2 - ski);
 					int ptradc2 = ptr - ichan - 64 - 128 * (2 - ski);
+//                                        cout<<endl<<" Ski= "<<ski<<" Channel= "<<ichan<<" Low = "<<gray_to_binary(pdata[ptradc1] & 0xFFF)<<" High= "<<gray_to_binary( pdata[ptradc2] & 0xFFF)<<endl;
 					digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF),gray_to_binary( pdata[ptradc2] & 0xFFF), 0);  ///\todo TDC value hardcoded to 0 because not in the readout
 				}
 			}

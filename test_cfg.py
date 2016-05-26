@@ -11,11 +11,13 @@ process.load('HGCal.RawToDigi.hgcaltbdigisplotter_cfi')
 process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
 
 process.source = cms.Source("HGCalTBTextSource",
-                            fileNames=cms.untracked.vstring("file:Proton_Runs_0242016/HGC_Output_8272.txt") ### here a vector is provided
+                            fileNames=cms.untracked.vstring("file:HGC_Output_512.txt") ### here a vector is provided
 )
 
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("test_DigiAndRechitPlotter_TB_2051_ModPed.root") )
+
+process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_512_Digi.root") )
+
 
 process.output = cms.OutputModule("PoolOutputModule",
                                   compressionAlgorithm = cms.untracked.string('LZMA'),
@@ -43,13 +45,9 @@ process.dumpDigi = cms.EDAnalyzer("HGCalDigiDump")
 
 #============================================================ Sequences
 process.debugRawSeq = cms.Sequence(process.dumpRaw)
-process.DQMSeq = cms.Sequence(process.hgcaltbdigisplotter * process.hgcaltbdigisplotter_new * process.hgcaltbrechitsplotter)
 
-#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter*process.LocalRecoSeq r)
+process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
+#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter_new)
 
-#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter)
 
-#process.p =cms.Path(process.debugRawSeq * process.RawToDigiSeq ) #*  process.DQMSeq * process.pedestals )
-process.p =cms.Path(process.RawToDigiSeq * process.LocalRecoSeq *  process.DQMSeq ) #* process.pedestals )
 process.end = cms.EndPath(process.output)
-

@@ -6,7 +6,7 @@ bool ix_iv_valid(int ix, int iv, int sensorSize);
 
 void Pedestal_Writer(){
 
-     TFile* F = new TFile("test_DigiAndRechitPlotter_TB_8272.root");
+     TFile* F = new TFile("HGC_501_Digi.root");
      F->cd("hgcaltbdigisplotter");
      char name[100];
      int nsample =1;
@@ -19,7 +19,7 @@ void Pedestal_Writer(){
      TH1F* h[1000];
      int counter = 0;
      ofstream fs;
-     fs.open("/home/rchatter/shervinTest/CMSSW_7_6_3_patch2/src/HGCal/Ped_HighGain_Test_8272.txt");
+     fs.open("HGC_501_Ped.txt");
      fs<<"SCHEME_CODE 0"<<endl;
      fs<<"# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE"<<endl;
 

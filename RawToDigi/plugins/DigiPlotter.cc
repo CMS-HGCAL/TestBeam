@@ -63,7 +63,8 @@ private:
 	void analyze(const edm::Event& , const edm::EventSetup&) override;
 	virtual void endJob() override;
 	// ----------member data ---------------------------
-	bool DEBUG = 0;
+	bool DEBUG = 1;
+        bool SIM = 1;
 	HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
         std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_2.txt";
@@ -204,13 +205,11 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	using namespace std;
 	std::vector<edm::Handle<SKIROC2DigiCollection> > ski;
 	event.getManyByType(ski);
-//        int Event = event.id().event();
 	if(!ski.empty()) {
 
 		std::vector<edm::Handle<SKIROC2DigiCollection> >::iterator i;
                 int counter1=0, counter2=0;
 		for(i = ski.begin(); i != ski.end(); i++) {
-                       
 			const SKIROC2DigiCollection& Coll = *(*i);
 //			cout << "SKIROC2 Digis: " << i->provenance()->branchName() << endl;
 			for(SKIROC2DigiCollection::const_iterator j = Coll.begin(); j != Coll.end(); j++) {
@@ -222,7 +221,8 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				int n_cell_iv = (SKI.detid()).iv();
                                 uint32_t EID = essource_.emap_.detId2eid(SKI.detid());
                                 HGCalTBElectronicsId eid(EID);
-				if(DEBUG) cout << endl << " Layer = " << n_layer << " Sensor IU = " << n_sensor_IU << " Sensor IV = " << n_sensor_IV << " Cell iu = " << n_cell_iu << " Cell iu = " << n_cell_iv << endl;
+//                                if(SIM) n_layer = n_layer + 1;
+				if(DEBUG) cout << endl << " Layer = " << n_layer << " Sensor IU = " << n_sensor_IU << " Sensor IV = " << n_sensor_IV << " Cell iu = " << n_cell_iu << " Cell iu = " << n_cell_iv <<" Sim ADC= "<<SKI[0].adcHigh()<<endl;
 				if(!IsCellValid.iu_iv_valid(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize))  continue;
 				CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize);
 				double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
@@ -232,16 +232,19 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
                                         h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter1++,SKI[nsample].adcLow(),1);
 					h_digi_layer_summed[nsample][n_layer - 1]->Fill(SKI[nsample].adcLow());
                                         h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][nsample]->Fill(SKI[nsample].adcLow());
-                                            h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample].adcLow());
-//                                        h_digi_layer_cell_event[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv][event.id().event() - 1]->Fill(SKI[nsample].adcLow());
+                                        if((SKI.detid()).cellType() != 4) h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample].adcLow());
                                         nsample = 1;
+/*
+                                        if(event.id().event() == 1){
+                                           h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, eid.ichan());
+                                           cout<<endl<<" U= "<<n_cell_iu<<" V= "<<n_cell_iv<<" SKI= "<<eid.iskiroc()<<" CHAN= "<<eid.ichan()<<endl;
+                                          }
+*/
                                         h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample-1].adcHigh());
                                         h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter2++,SKI[nsample-1].adcHigh(),1);
                                         h_digi_layer_summed[nsample][n_layer - 1]->Fill(SKI[nsample-1].adcHigh());
                                         if((SKI.detid()).cellType() != 4) h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample-1].adcHigh());
-//                                        if(((SKI.detid()).cellType() != 4) && (eid.ichan() == 0) ) cout<<endl<<"SKIROC=  "<<eid.iskiroc()<<" Chan= "<<eid.ichan()<<" u= "<<n_cell_iu<<" v = "<<n_cell_iv<<endl;
                                         h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][nsample]->Fill(SKI[nsample-1].adcHigh());
-//                                        h_digi_layer_cell_event[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv][event.id().event() - 1]->Fill(SKI[nsample-1].adcHigh());  
 			}
 		}
 	} else {
