@@ -174,8 +174,8 @@ DigiPlotter_New::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	if(!ski.empty()) {
 
 		std::vector<edm::Handle<SKIROC2DigiCollection> >::iterator i;
-//		double Average_Pedestal_Per_Event1 = 0, Average_Pedestal_Per_Event2 = 0, Average_Pedestal_Half_Cell_Event1 = 0, Average_Pedestal_Half_Cell_Event2 = 0, Average_Pedestal_Calib_Cell_Event1 = 0;
-//		int Cell_counter1 = 0, Cell_counter2 = 0, Cell_counter1_Half_Cell1 = 0, Cell_counter1_Half_Cell2 = 0, Cell_counter1_Calib_Cell1 = 0;
+		double Average_Pedestal_SKI1_Event1 = 0, Average_Pedestal_SKI1_Event2 = 0, Average_Pedestal_SKI2_Event1 = 0, Average_Pedestal_SKI2_Event2 = 0;
+		int Cell_SKI1_counter1 = 0, Cell_SKI1_counter2 = 0, Cell_SKI2_counter1 = 0, Cell_SKI2_counter2 = 0;
 //                int counter1=0, counter2=0;
 		for(i = ski.begin(); i != ski.end(); i++) {
 			const SKIROC2DigiCollection& Coll = *(*i);
@@ -192,23 +192,38 @@ DigiPlotter_New::analyze(const edm::Event& event, const edm::EventSetup& setup)
                                  int n_sensor_IV = (detId).sensorIV();
                                  int n_cell_iu = (detId).iu();
                                  int n_cell_iv = (detId).iv();
-         
-
 #ifdef DEBUG
-				if(DEBUG) cout << endl << " Layer = " << n_layer << " Sensor IU = " << n_sensor_IU << " Sensor IV = " << n_sensor_IV << " Cell iu = " << n_cell_iu << " Cell iu = " << n_cell_iv << endl;
+                                if(DEBUG) cout << endl << " Layer = " << n_layer << " Sensor IU = " << n_sensor_IU << " Sensor IV = " << n_sensor_IV << " Cell iu = " << n_cell_iu << " Cell iu = " << n_cell_iv << endl;
 #endif
-				if(!IsCellValid.iu_iv_valid(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize))  continue;
+                                if(!IsCellValid.iu_iv_valid(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize))  continue;
 
-				CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize);
-				double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
-				double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
+                                CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize);
+//                                double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
+                                double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
 
-//				_pedestals[detId.skiIndexInSensor()].Sum(detId, skiFrame[iSample].adcLow());
+//                              _pedestals[detId.skiIndexInSensor()].Sum(detId, skiFrame[iSample].adcLow());
 
-				if(((iux <= 0.25 && iyy >= -0.25 ) || (iux < -0.5 && iyy < 0)) && detId.cellType() == 0) {
-				   cout<<endl<<iux*iyy<<endl;	
-				}
+                                 if(n_layer == 1){
+                                        if(iyy < 0){
+						Average_Pedestal_SKI1_Event1+= skiFrame[0].adcHigh();
+				         	Cell_SKI1_counter1++;		
+                                           }
+                                        else if(iyy > 0){
+                                                Average_Pedestal_SKI2_Event1+= skiFrame[0].adcHigh();
+                                                Cell_SKI2_counter1++;   
+                                           }  
+                                   } 
 
+                                 if(n_layer == 2){
+                                        if(iyy < 0){
+                                                Average_Pedestal_SKI1_Event2+= skiFrame[0].adcHigh();
+                                                Cell_SKI1_counter2++;   
+                                           }
+                                        else if(iyy > 0){
+                                                Average_Pedestal_SKI2_Event2+= skiFrame[0].adcHigh();
+                                                Cell_SKI2_counter2++;
+                                           }
+                                   }         
 
 
 			}
@@ -260,12 +275,19 @@ DigiPlotter_New::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
 
 				if(detId.cellType() == 1 || detId.cellType() == 4) {
+                                        cout << endl << " Layer = " << n_layer << " Sensor IU = " << n_sensor_IU << " Sensor IV = " << n_sensor_IV << " Cell iu = " << n_cell_iu << " Cell iu = " << n_cell_iv <<" Layers= "<<MAXLAYERS<<endl;
 					if(evId%10 == 0) h_digi_layer[n_layer-1]->Fill(iux, iyy, 0.5 * (SKI[iSample].adcLow()));
 				} else {
 					if(evId%10 == 0) h_digi_layer[n_layer-1]->Fill(iux, iyy, (SKI[iSample].adcLow()));
 				}
 
-				if(evId%10 == 0) highGain_hpoly[n_layer-1]->Fill(iux , iyy, (SKI[iSample].adcHigh()));
+				if(evId%10 == 0 ){
+ 					 if(n_layer == 1 && iyy<0) highGain_hpoly[n_layer-1]->Fill(iux , iyy, (SKI[iSample].adcHigh() - Average_Pedestal_SKI1_Event1/Cell_SKI1_counter1));
+                                         if(n_layer == 1 && iyy>0) highGain_hpoly[n_layer-1]->Fill(iux , iyy, (SKI[iSample].adcHigh() - Average_Pedestal_SKI2_Event1/Cell_SKI2_counter1));
+                                         if(n_layer == 2 && iyy<0) highGain_hpoly[n_layer-1]->Fill(iux , iyy, (SKI[iSample].adcHigh() - Average_Pedestal_SKI1_Event2/Cell_SKI1_counter2));
+                                         if(n_layer == 2 && iyy>0) highGain_hpoly[n_layer-1]->Fill(iux , iyy, (SKI[iSample].adcHigh() - Average_Pedestal_SKI2_Event2/Cell_SKI2_counter2));
+
+				}
 			}
 
 		}

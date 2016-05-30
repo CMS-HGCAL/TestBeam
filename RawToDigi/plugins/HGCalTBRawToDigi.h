@@ -31,7 +31,7 @@ public:
 
 private:
 	edm::InputTag dataTag_;
-	std::vector<int> fedIds_;
+	int fedId_;
 	std::string mapfile_;
 	struct {
 		HGCalElectronicsMap emap_;

@@ -2,9 +2,9 @@ import FWCore.ParameterSet.Config as cms
 
 hgcaltbdigis = cms.EDProducer("HGCalTBRawToDigi",
                             InputLabel=cms.InputTag("source"), ###
-                            fedIds=cms.untracked.vint32(0, 1), ## list of FEDs should be know from the setup
+                            fedId=cms.untracked.int32(1000), ## list of FEDs should be know from the setup
                             
-                            electronicsMap=cms.untracked.string("HGCal/CondObjects/data/map_FNAL_2.txt"), ### electronicsMap written by hand
+                            electronicsMap=cms.untracked.string("HGCal/CondObjects/data/map_FNAL_SB1.txt"), ### electronicsMap written by hand
                             
 )
 
