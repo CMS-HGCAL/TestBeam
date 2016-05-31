@@ -65,7 +65,8 @@ double Return_RMS(double mean_sq, double mean)
 }
 bool DoCommonMode = 1;
 bool PED = 0;
-bool UP = 1;
+ 
+bool UP = 0;
 
         edm::Service<TFileService> fs;
 class RecHitPlotter_HighGain_New : public edm::one::EDAnalyzer<edm::one::SharedResources>
@@ -329,6 +330,7 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 		uint32_t EID = essource_.emap_.detId2eid(RecHit.id());
 		HGCalTBElectronicsId eid(EID);
 		AllCells_Ped->Fill(RecHit.energyHigh());
+                if(RecHit.energyHigh() > 55) cout<<endl<<" Energy= "<<RecHit.energyHigh()<<" u= "<<iux<<" v= "<<iyy<<" event number= "<<event.id().event()<<endl;
 		if(!DoCommonMode) {
 			h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh());
 		}
