@@ -23,6 +23,7 @@
 #include "TH2Poly.h"
 #include "TH1F.h"
 #include "TProfile.h"
+#include <fstream>
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
@@ -40,6 +41,10 @@
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
+
+using namespace std;
+
 
 //
 // class declaration
@@ -66,7 +71,7 @@ private:
 	bool DEBUG = 0;
 	HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
-	std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_2.txt";
+	std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_SB1.txt";
 	struct {
 		HGCalElectronicsMap emap_;
 	} essource_;
@@ -75,18 +80,21 @@ private:
 	std::pair<double, double> CellCentreXY;
 	std::vector<std::pair<double, double>>::const_iterator it;
 	const static int NSAMPLES = 2;
-	const static int NLAYERS  = 1;
-	TH2Poly *h_digi_layer[NSAMPLES][NLAYERS];
-	TH1F    *h_digi_layer_summed[NSAMPLES][NLAYERS];
-	TProfile    *h_digi_layer_profile[NSAMPLES][NLAYERS];
+	TH2Poly *h_digi_layer[NSAMPLES][MAXLAYERS];
+	TH1F    *h_digi_layer_summed[NSAMPLES][MAXLAYERS];
+	TProfile    *h_digi_layer_profile[NSAMPLES][MAXLAYERS];
 	const static int cellx = 15;
 	const static int celly = 15;
 	int Sensor_Iu = 0;
 	int Sensor_Iv = 0;
-	TH1F  *h_digi_layer_cell[NSAMPLES][NLAYERS][cellx][celly];
-	TH1F  *h_digi_layer_channel[2][64][2];
-//        TH1F  *h_digi_layer_cell_event[NSAMPLES][NLAYERS][cellx][celly][512];
+	TH2F* Noise_2D_Profile[NSAMPLES][MAXLAYERS];
+	TH1F  *h_digi_layer_cell[NSAMPLES][MAXLAYERS][cellx][celly];
+	TH1F  *h_digi_layer_channel[MAXSKIROCS][64][NSAMPLES];
+//        TH1F  *h_digi_layer_cell_event[NSAMPLES][MAXLAYERS][cellx][celly][512];
 	char name[50], title[50];
+	double ADC_Sum_SKI_Layer[2][MAXLAYERS][2]; // 2 SKIROCs per layer, High gain and low gain ADC HARD CODED
+	int Cell_Count_SKI_Layer[2][4]; // 2 SKIROCs per layer, High gain and low gain ADC HARD CODED
+
 };
 
 //
@@ -112,18 +120,25 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
 	const int FullHexVertices = 6;
 	double FullHexX[FullHexVertices] = {0.};
 	double FullHexY[FullHexVertices] = {0.};
-	int iii = 0;
-	for(int ISkiroc = 1; ISkiroc <= 2; ISkiroc++) {
+	for(int nsample = 0; nsample < NSAMPLES; nsample++) {
+		for(int nlayers = 0; nlayers < MAXLAYERS; nlayers++) {
+			sprintf(name, "Noise_2D_Profile_ADC%i_Layer%i", nsample, nlayers);
+			sprintf(title, "Noise 2D Profile ADC%i Layer%i", nsample, nlayers);
+			Noise_2D_Profile[nsample][nlayers] = fs->make<TH2F>(name, title, 128, 0, 127, 500, -250, 250);
+		}
+	}
+	for(int ISkiroc = 1; ISkiroc <= MAXSKIROCS; ISkiroc++) {
 		for(int Channel = 0; Channel < 64; Channel++) {
-			for(int iii = 0; iii < 2; iii++) {
+			for(int iii = 0; iii < NSAMPLES; iii++) {
 				sprintf(name, "Ski_%i_Channel_%i_ADC%i", ISkiroc, Channel, iii);
 				sprintf(title, "Ski %i Channel %i ADC%i", ISkiroc, Channel, iii);
 				h_digi_layer_channel[ISkiroc - 1][Channel][iii] = fs->make<TH1F>(name, title, 4096, 0., 4095.);
 			}
 		}
 	}
+	int iii = 0;
 	for(int nsample = 0; nsample < NSAMPLES; nsample++) {
-		for(int nlayers = 0; nlayers < NLAYERS; nlayers++) {
+		for(int nlayers = 0; nlayers < MAXLAYERS; nlayers++) {
 //Booking a "hexagonal" histograms to display the sum of Digis for NSAMPLES, in 1 SKIROC in 1 layer. To include all layers soon. Also the 1D Digis per cell in a sensor is booked here for NSAMPLES.
 			sprintf(name, "FullLayer_ADC%i_Layer%i", nsample, nlayers + 1);
 			sprintf(title, "Sum of adc counts per cell for ADC%i Layer%i", nsample, nlayers + 1);
@@ -201,10 +216,19 @@ void
 DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 {
 	using namespace edm;
-	using namespace std;
 	std::vector<edm::Handle<SKIROC2DigiCollection> > ski;
 	event.getManyByType(ski);
 //        int Event = event.id().event();
+
+	for(int ski = 0; ski < 2; ski++) {
+		for(int layers = 0; layers < MAXLAYERS; layers++) {
+			Cell_Count_SKI_Layer[ski][layers] = 0;
+			for(int samples = 0; samples < 2; samples++) {
+				ADC_Sum_SKI_Layer[ski][layers][samples] = 0.; // 2 SKIROCs per layer, High gain and low gain ADC HARD CODED
+			}
+		}
+	}
+
 	if(!ski.empty()) {
 
 		std::vector<edm::Handle<SKIROC2DigiCollection> >::iterator i;
@@ -212,6 +236,23 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 		for(i = ski.begin(); i != ski.end(); i++) {
 
 			const SKIROC2DigiCollection& Coll = *(*i);
+//////////////////////////////////Evaluate average pedestal per event to subtract out//////////////////////////////////
+			for(SKIROC2DigiCollection::const_iterator k = Coll.begin(); k != Coll.end(); k++) {
+				const SKIROC2DataFrame& SKI_1 = *k ;
+				int n_layer = (SKI_1.detid()).layer();
+				int n_sensor_IU = (SKI_1.detid()).sensorIU();
+				int n_sensor_IV = (SKI_1.detid()).sensorIV();
+				int n_cell_iu = (SKI_1.detid()).iu();
+				int n_cell_iv = (SKI_1.detid()).iv();
+				uint32_t EID = essource_.emap_.detId2eid(SKI_1.detid());
+				HGCalTBElectronicsId eid(EID);
+				if(DEBUG) cout << endl << " Layer = " << n_layer << " Sensor IU = " << n_sensor_IU << " Sensor IV = " << n_sensor_IV << " Cell iu = " << n_cell_iu << " Cell iu = " << n_cell_iv << endl;
+				if(!IsCellValid.iu_iv_valid(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize))  continue;
+				ADC_Sum_SKI_Layer[eid.iskiroc() - 2 * (n_layer - 1) - 1][n_layer - 1][1] += SKI_1[0].adcHigh();
+				ADC_Sum_SKI_Layer[eid.iskiroc() - 2 * (n_layer - 1) - 1][n_layer - 1][0] += SKI_1[0].adcLow();
+				Cell_Count_SKI_Layer[eid.iskiroc() - 2 * (n_layer - 1) - 1][n_layer - 1] += 1;
+			}
+
 //			cout << "SKIROC2 Digis: " << i->provenance()->branchName() << endl;
 			for(SKIROC2DigiCollection::const_iterator j = Coll.begin(); j != Coll.end(); j++) {
 				const SKIROC2DataFrame& SKI = *j ;
@@ -230,14 +271,14 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				int nsample = 0;
 				h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample].adcLow());
 				h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter1++, SKI[nsample].adcLow(), 1);
-				h_digi_layer_summed[nsample][n_layer - 1]->Fill(SKI[nsample].adcLow());
+				h_digi_layer_summed[nsample][n_layer - 1]->Fill(ADC_Sum_SKI_Layer[eid.iskiroc() - 2 * (n_layer - 1) - 1][n_layer - 1][0]);
 				h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][nsample]->Fill(SKI[nsample].adcLow());
 				h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample].adcLow());
 //                                        h_digi_layer_cell_event[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv][event.id().event() - 1]->Fill(SKI[nsample].adcLow());
 				nsample = 1;
 				h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample - 1].adcHigh());
 				h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter2++, SKI[nsample - 1].adcHigh(), 1);
-				h_digi_layer_summed[nsample][n_layer - 1]->Fill(SKI[nsample - 1].adcHigh());
+				h_digi_layer_summed[nsample][n_layer - 1]->Fill(ADC_Sum_SKI_Layer[eid.iskiroc() - 2 * (n_layer - 1) - 1][n_layer - 1][1]);
 				if((SKI.detid()).cellType() != 4) h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample - 1].adcHigh());
 //                                        if(((SKI.detid()).cellType() != 4) && (eid.ichan() == 0) ) cout<<endl<<"SKIROC=  "<<eid.iskiroc()<<" Chan= "<<eid.ichan()<<" u= "<<n_cell_iu<<" v = "<<n_cell_iv<<endl;
 				h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][nsample]->Fill(SKI[nsample - 1].adcHigh());
@@ -266,6 +307,27 @@ DigiPlotter::beginJob()
 void
 DigiPlotter::endJob()
 {
+	int Code = 0;
+	int SENSOR_IX = 0;
+	int SENSOR_IV = 0;
+	ofstream fs1, fs2;
+	fs1.open("/afs/cern.ch/work/r/rchatter/May_Test_Beam_Test/CMSSW_8_0_1/src/HGCal/CondObjects/data/Ped_HighGain_Test_2Layer.txt");
+	fs1 << "SCHEME_CODE 0" << endl;
+	fs1 << "# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE" << endl;
+	fs2.open("/afs/cern.ch/work/r/rchatter/May_Test_Beam_Test/CMSSW_8_0_1/src/HGCal/CondObjects/data/Ped_LowGain_Test_2Layer.txt");
+	fs2 << "SCHEME_CODE 0" << endl;
+	fs2 << "# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE" << endl;
+
+	for(int ISkiroc = 1; ISkiroc <= MAXSKIROCS; ISkiroc++) {
+		for(int Channel = 0; Channel < 64; Channel++) {
+			HGCalTBElectronicsId ElId(ISkiroc, Channel);
+			HGCalTBDetId DetId = essource_.emap_.eid2detId(ElId);
+			if(DetId.layer() != 0) {
+				fs1 << " " << Code << " " << DetId.layer() << " " << SENSOR_IX << " " << SENSOR_IV << " " << DetId.iu() << " " << DetId.iv() << " " << " " << DetId.cellType() << " " << h_digi_layer_channel[ISkiroc - 1][Channel][1]->GetMean() << endl;
+				fs2 << " " << Code << " " << DetId.layer() << " " << SENSOR_IX << " " << SENSOR_IV << " " << DetId.iu() << " " << DetId.iv() << " " << " " << DetId.cellType() << " " << h_digi_layer_channel[ISkiroc - 1][Channel][0]->GetMean() << endl;
+			}
+		}
+	}
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
