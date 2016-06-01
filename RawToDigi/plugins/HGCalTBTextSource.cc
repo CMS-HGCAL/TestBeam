@@ -48,6 +48,62 @@ bool HGCalTBTextSource::openFile(edm::FromFiles& files, std::ifstream& file)
 
 bool HGCalTBTextSource::readLines()
 {
+    int counter = 0;
+    m_lines.clear();
+    char buffer[1024];
+    while (!feof(m_file) && runcounter < 1001) {
+        buffer[0] = 0;
+        fgets(buffer, 1000, m_file);
+//                if (strstr(buffer, "CHIP")) counter++;
+//                if (counter == 2) break; // done with this event(2 SKIROCS)
+//      if (strstr(buffer, "DONE")) break; // done with this event!
+//      if (buffer[0] != '0' && buffer[1] != 'x') continue;
+        //if (buffer[0] != ' ') continue;
+
+        if (strstr(buffer, "STARTING")) continue;
+        if (strstr(buffer, "Board")) continue;
+        if(strstr(buffer, "Event")) continue;
+        counter++;
+        if(counter <= 64) m_lines.push_back(buffer);
+        if(counter == 68) {
+            runcounter++;
+            break;
+        }
+    }
+    return !m_lines.empty();
+}
+
+
+bool HGCalTBTextSource::readLinesTBMay()
+{
+	m_skiwords.clear();
+    char buffer[1024];
+
+    int counter = 0;
+//	STARTING SPILL READ AT TIME (1us): 0x1B51CA5F RUN: 1285 
+//  Board header: on FMC-IO 15, trig_count in mem= 501, sk_status = 1
+// 	Event header for event 0 with (200ns) timestamp 0x14BAB4C2 
+
+    while (!feof(_hgcalFile) && runcounter < 1001 /*?what is that?*/ ) {
+        buffer[0] = 0;
+		_hgcalFile.getline(buffer, 1000);
+
+        if (strstr(buffer, "STARTING")) continue;
+        if (strstr(buffer, "Board")) continue;
+        if(strstr(buffer, "Event")) continue;
+        counter++;
+        if(counter <= 64) m_lines.push_back(buffer);
+        // if(counter == 68) { // what is that?
+        //     runcounter++;
+        //     break;
+        // }
+    }
+    return !m_lines.empty();
+}
+
+
+bool HGCalTBTextSource::readLinesTBApr()
+{
 	m_skiwords.clear();
 	char buffer[1024];
 	unsigned int triggerID_tmp = 0;

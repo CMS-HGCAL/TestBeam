@@ -53,6 +53,7 @@ private:
 
 	bool openFile(edm::FromFiles& files, std::ifstream& file); ///< open a new file and update the pointer, it checks if the end of file is reached and increment the file, returns false if the list of files has been completely processed
 	bool readLines(); ///< read the hgcal file (two SKIROCS) and return the true if at least one word has been read
+	bool readLinesTBApr(); ///< read the hgcal file (two SKIROCS) and return the true if at least one word has been read
 	bool readTelescopeLines(); ///< read the telescope file and return the true if at least one word has been read
 
 	virtual bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&);
