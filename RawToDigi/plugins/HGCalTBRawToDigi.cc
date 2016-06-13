@@ -49,16 +49,24 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 		ptr--; // now we are pointing at the first TDC word
 */
          counter++;
-         if(counter > 502){
+         if(counter > 150){
             ski_up = 4;
             ski_down = 3;
+           }   
+         if(counter > 300 ){
+            ski_up = 6;
+            ski_down = 5;  
+           }
+         if(counter > 450){
+            ski_up = 8;
+            ski_down = 7;
            }   
 //                for (int ski = 2; ski >= 1; ski--) {
 			for (int ichan = 0; ichan < SKIROC::NCHANNELS; ichan++) {
                             for (int ski = ski_up; ski >= ski_down; ski--) {
 				HGCalTBElectronicsId eid(ski, ichan);
 				if (!essource_.emap_.existsEId(eid.rawId())) {
-					std::cout << "We do not have a mapping for " << eid;
+//					std::cout << "We do not have a mapping for " << eid;
 				} else {
 					HGCalTBDetId did = essource_.emap_.eid2detId(eid);
 					digis->addDataFrame(did);
@@ -66,7 +74,7 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 	                                int ptradc1 = ptr - ichan*2 - (ski_up - ski);
 					int ptradc2 = ptr - ichan*2 - (ski_up - ski) -  128;
                                         digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF),gray_to_binary( pdata[ptradc2] & 0xFFF),0); 
-                                        cout<<endl<<dec<<"SKI= "<<ski<<" chan= "<<ichan<<" "<<ptradc1<<" "<<ptradc2<<" "<<" High= "<<hex<<(pdata[ptradc1])<<dec<<"  "<<gray_to_binary(pdata[ptradc1] & 0xFFF)<<" Low= "<<hex<<( pdata[ptradc2] & 0xFFF)<<"  "<<gray_to_binary( pdata[ptradc2] & 0xFFF)<<endl; 
+//                                        cout<<endl<<dec<<"SKI= "<<ski<<" chan= "<<ichan<<" "<<ptradc1<<" "<<ptradc2<<" "<<" High= "<<hex<<(pdata[ptradc1])<<dec<<"  "<<gray_to_binary(pdata[ptradc1] & 0xFFF)<<" Low= "<<hex<<( pdata[ptradc2] & 0xFFF)<<"  "<<dec<<gray_to_binary( pdata[ptradc2] & 0xFFF)<<endl; 
                                           }
                                         else{
                                               int ptradc1 = ptr - ichan*2 + (ski_up - ski) ;

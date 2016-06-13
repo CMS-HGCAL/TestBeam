@@ -71,7 +71,7 @@ private:
 	bool DEBUG = 0;
 	HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
-	std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_SB1.txt";
+	std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_Layer1234.txt";
 	struct {
 		HGCalElectronicsMap emap_;
 	} essource_;
@@ -311,10 +311,10 @@ DigiPlotter::endJob()
      int SENSOR_IX = 0;
      int SENSOR_IV = 0;
      ofstream fs1, fs2;
-     fs1.open("/afs/cern.ch/work/r/rchatter/May_Test_Beam_Test/CMSSW_8_0_1/src/HGCal/CondObjects/data/Ped_HighGain_Test_2Layer.txt");
+     fs1.open("/afs/cern.ch/work/r/rchatter/May_Test_Beam_Test/CMSSW_8_0_1/src/HGCal/CondObjects/data/Ped_HighGain_M1254.txt");
      fs1<<"SCHEME_CODE 0"<<endl;
      fs1<<"# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE"<<endl;
-     fs2.open("/afs/cern.ch/work/r/rchatter/May_Test_Beam_Test/CMSSW_8_0_1/src/HGCal/CondObjects/data/Ped_LowGain_Test_2Layer.txt");
+     fs2.open("/afs/cern.ch/work/r/rchatter/May_Test_Beam_Test/CMSSW_8_0_1/src/HGCal/CondObjects/data/Ped_LowGain_M1254.txt");
      fs2<<"SCHEME_CODE 0"<<endl;
      fs2<<"# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE"<<endl;
 

@@ -89,7 +89,7 @@ private:
 	edm::EDGetToken HGCalTBTrackCollection_;
 	HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
-	std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_SB1.txt";
+	std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_Layer1234.txt";
 	struct {
 		HGCalElectronicsMap emap_;
 	} essource_;
@@ -236,7 +236,7 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit1.id()).layer(), (RecHit1.id()).sensorIU(), (RecHit1.id()).sensorIV(), (RecHit1.id()).iu(), (RecHit1.id()).iv(), sensorsize);
 		double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
 		double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-
+                if((RecHit1.id()).iu() == 4 && (RecHit1.id()).iv() == 2) continue;
 //             if((RecHit1.energyHigh() > ADC_TMP) && ((RecHit1.id()).cellType() == 0) ){
 		if((RecHit1.energyHigh() > ADC_TMP)) {
 
@@ -248,24 +248,31 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 //             if(UP && fabs(iux - iux_Max) > 0. && fabs(iyy - iyy_Max) > 0. && RecHit1.energyHigh()< 2000000.){
 		if(((RecHit1.id()).cellType() == 0) || ((RecHit1.id()).cellType() == 5)) {
 
-			if((iux <= 0.25 && iyy >= -0.25 ) || (iux < -0.5)) {
+			if(( iyy >= -0.25 )) {
 				Cell_counter1_Full++;
 				Average_Pedestal_Per_Event1_Full += RecHit1.energyHigh();
 			}
 
-			if((iux >= -0.25 && iyy <= -0.5) || (iux >= 0.5)) {
+			if((iyy <= -0.5)) {
 				Cell_counter2_Full++;
 				Average_Pedestal_Per_Event2_Full += RecHit1.energyHigh();
 			}
+
+/*
+                      Cell_counter1_Full++;
+                      Average_Pedestal_Per_Event1_Full += RecHit1.energyHigh();
+		      Cell_counter2_Full++;
+                      Average_Pedestal_Per_Event2_Full += RecHit1.energyHigh();	
+*/
 		}
 
 		if(((RecHit1.id()).cellType() == 2) || ((RecHit1.id()).cellType() == 3) || ((RecHit1.id()).cellType() == 4) ) {
 
-			if(((iux <= 0.25 && iyy >= -0.25 ) || (iux < -0.5))) {
+			if(((iyy >= -0.25 ))) {
 				Cell_counter1_Half++;
 				Average_Pedestal_Per_Event1_Half += RecHit1.energyHigh();
 			}
-			if(((iux >= -0.25 && iyy <= -0.5) || (iux >= 0.5))) {
+			if(((iyy <= -0.5))) {
 				Cell_counter2_Half++;
 				Average_Pedestal_Per_Event2_Half += RecHit1.energyHigh();
 			}
@@ -304,10 +311,10 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 
 
 	}
-	if(ADC_TMP > 5.) {
+	if(ADC_TMP > 50.) {
 		CG_X->Fill(iux_Max);
 		CG_Y->Fill(iyy_Max);
-//   Sum_Cluster_Max->Fill(ADC_TMP);
+   Sum_Cluster_Max->Fill(ADC_TMP);
 //   cout<<endl<<" X= "<<CG_X<<" Y= "<<CG_Y<<" Max ADC= "<<ADC_TMP<<endl;
 	}
 
@@ -331,14 +338,19 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 		uint32_t EID = essource_.emap_.detId2eid(RecHit.id());
 		HGCalTBElectronicsId eid(EID);
 		AllCells_Ped->Fill(RecHit.energyHigh());
+if(RecHit.energyHigh() > 55) cout<<endl<<" Energy= "<<RecHit.energyHigh()<<" u= "<<iux<<" v= "<<iyy<<" event number= "<<event.id().event()<<endl;
+                if((RecHit.id()).iu() == 4 && (RecHit.id()).iv() == 2) continue;
 		if(!DoCommonMode) {
 			h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh());
 		}
 		if(((RecHit.id()).cellType() == 0 ) || ((RecHit.id()).cellType() == 5) ) {
-			if((iux <= 0.25 && iyy >= -0.25 ) || (iux < -0.5) ) {
+			if((iyy >= -0.25 ) ) {
 				if(!PED && DoCommonMode) {
-					if((RecHit.id()).cellType() == 0)  h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, (RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Full / (Cell_counter1_Full))) );
-                                   Sum_Cluster_Tmp += (RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Full / (Cell_counter1_Full))); 
+					if((RecHit.id()).cellType() == 0){
+                                           h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, (RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Full / (Cell_counter1_Full))) );
+
+                                          }
+                                   Sum_Cluster_Tmp += (RecHit.energyHigh()); 
 				}
 				h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Full / (Cell_counter1_Full)));
 				if(DoCommonMode) {
@@ -347,10 +359,11 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 //                          Sum_Cluster_ADC->Fill(RecHit.energyHigh()- (Average_Pedestal_Per_Event1_Full/(Cell_counter1_Full)));
 //                          CG_X->Fill(iux);
 //                          CG_Y->Fill(iyy);
-			} else if((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50)) {
+			} else if(( iyy < -0.50 )) {
 				if(!PED && DoCommonMode) {
 					if((RecHit.id()).cellType() == 0) h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, (RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Full / (Cell_counter2_Full))) );
-                                  Sum_Cluster_Tmp += (RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Full / (Cell_counter2_Full)));
+                                  Sum_Cluster_Tmp += (RecHit.energyHigh());
+
 				}
 				h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Full / (Cell_counter2_Full)));
 				if(DoCommonMode) {
@@ -362,21 +375,27 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 			}
 		}
 		if((RecHit.id()).cellType() == 1 ) {
-			if(!PED) h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh());
+//			if(!PED) h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh());
 			if(DoCommonMode) {
 				AllCells_CM->Fill(RecHit.energyHigh());
 			}
 		}
 		if(((RecHit.id()).cellType() != 5) && ((RecHit.id()).cellType() != 1) && ((RecHit.id()).cellType() != 0)) {
-			if((iux <= 0.25 && iyy >= -0.25 ) || (iux < -0.5) ) {
-				if(!PED && DoCommonMode) h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Half / Cell_counter1_Half) );
-				h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Half / Cell_counter1_Half));
+			if((iyy >= -0.25 ) ) {
+				if(!PED && DoCommonMode){
+//                                    h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Half / Cell_counter1_Half) );
+
+                                   }
+//				h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Half / Cell_counter1_Half));
 				if(DoCommonMode) {
 					AllCells_CM->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Half / (Cell_counter1_Half)));
 				}
 			}
-			if((iux > -0.25 && iyy < -0.50 ) || (iux > 0.50) ) {
-				if(!PED && DoCommonMode) h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Half / Cell_counter2_Half) );
+			if(( iyy < -0.50 )) {
+				if(!PED && DoCommonMode){
+//                                     h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Half / Cell_counter2_Half) );
+
+                                   }
 				h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Half / Cell_counter2_Half));
 				if(DoCommonMode) {
 					AllCells_CM->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Half / (Cell_counter2_Half)));
