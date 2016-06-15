@@ -1,23 +1,38 @@
 #include <iostream>
 #include "HGCal/RawToDigi/plugins/HGCalTBTextSource.h"
 using namespace std;
-int runcounter = 0;
+unsigned int runcounter = 0;
+int runflag = 0;
+int trigcountperspillflag = 0; 
+unsigned int Events_Per_Spill = 0;
+int spillcounter = 0;
+string buffer1 = "0 0 0x00000000   0x00000000";
 bool HGCalTBTextSource::readLines()
 {
-        int counter = 0;
 	m_lines.clear();
 	char buffer[1024];
-/*
-        if(m_file.peek()!='C'){
-              throw cms::Exception("MismatchInputSource") << "#" << m_file.peek() << "#";
+        int counter = 0;
+        if(runcounter == 0 && runflag == 0){
+           buffer[0] = 0;   
+           fgets(buffer, 1000, m_file); 
+          if(sscanf(buffer, "STARTING SPILL READ AT TIME (1us): %x RUN: %u",&m_time_tmp,&m_run_tmp) !=2 ) return false;
+           m_run = m_run_tmp;
+           runflag = 1;
           }
+         if(runcounter == 0 && trigcountperspillflag == 0){
+               buffer[0] = 0;
+               fgets(buffer, 1000, m_file);
+               if(sscanf(buffer,"Board header: on FMC-IO 13, trig_count in mem= %u, sk_status = 1",&Events_Per_Spill) !=1 ) return false;
+               trigcountperspillflag = 1;
+               if(Events_Per_Spill != 150) return false;
+             }
 
-        buffer[0] = 0;
-        m_file.getline(buffer, 1000);
-        if( sscanf(buffer, " RUN: %u", &m_run_tmp) != 1) return false;
-*/
 
-        while (!feof(m_file) && runcounter < 600) {
+//        if( sscanf(buffer, " RUN: %u", &m_run) != 1) return false;
+//        sscanf(buffer, " RUN:%u", &m_run);
+//        cout<<endl<<m_run<<endl;
+        while (!feof(m_file) && (runcounter < Events_Per_Spill*4)) {
+
 //	while (!feof(m_file) && runcounter < 1001) {
 		buffer[0] = 0;
 		fgets(buffer, 1000, m_file);
@@ -26,19 +41,30 @@ bool HGCalTBTextSource::readLines()
 //		if (strstr(buffer, "DONE")) break; // done with this event!
 //		if (buffer[0] != '0' && buffer[1] != 'x') continue;
                 //if (buffer[0] != ' ') continue;
-                
+                if((runcounter == (Events_Per_Spill*4 - 1)) && counter == 63){
+                   m_lines.push_back(buffer1);
+                   runcounter++;
+                   break;
+                   } 
                 if (strstr(buffer, "STARTING")) continue;
                 if (strstr(buffer, "Board")) continue;
                 if(strstr(buffer, "Event")) continue;
                 counter++;
-		if(counter <= 64) m_lines.push_back(buffer);
-                if(counter == 68){
-//                   if((runcounter%150) == 0) m_event = 1;
-//                   else m_event++;  
+		if(runcounter != (Events_Per_Spill*4 - 1) && counter <= 64) m_lines.push_back(buffer);
+                if(runcounter == (Events_Per_Spill*4 - 1) && counter < 64) m_lines.push_back(buffer);
+                if(runcounter != (Events_Per_Spill*4 - 1) && counter == 68){
+//                   cout<<endl<<runcounter<<endl;  
                    runcounter++;
-                   break; 
+                   break;
                   } 
+                
 	}
+        if(runcounter == Events_Per_Spill*4){
+             runcounter = 0;
+             trigcountperspillflag = 0;
+             spillcounter++;
+            }
+
 	return !m_lines.empty();
 }
 

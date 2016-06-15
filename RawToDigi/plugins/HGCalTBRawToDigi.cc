@@ -60,7 +60,8 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
          if(counter > 450){
             ski_up = 8;
             ski_down = 7;
-           }   
+           }
+         if(counter == 600) counter = 0;   
 //                for (int ski = 2; ski >= 1; ski--) {
 			for (int ichan = 0; ichan < SKIROC::NCHANNELS; ichan++) {
                             for (int ski = ski_up; ski >= ski_down; ski--) {

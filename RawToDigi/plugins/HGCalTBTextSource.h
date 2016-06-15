@@ -55,7 +55,7 @@ private:
 		if (feof(m_file)) return false;
 		if (!readLines()) return false;
 
-//		m_event++; /// \todo get eventID from file?
+		m_event++; /// \todo get eventID from file?
 		id = edm::EventID(m_run, 1, m_event);
 		// time is a hack
 		edm::TimeValue_t present_time = presentTime(); ///\todo take time from file? how to define the time?
@@ -69,6 +69,7 @@ private:
 
 	std::vector<std::string> m_lines;
 	FILE* m_file;
-	int m_event = 0, m_run;
+        unsigned int m_time_tmp, m_run_tmp;
+	int m_event, m_run;
 	int m_sourceId;
 };
