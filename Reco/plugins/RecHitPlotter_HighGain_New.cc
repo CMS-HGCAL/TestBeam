@@ -236,7 +236,7 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit1.id()).layer(), (RecHit1.id()).sensorIU(), (RecHit1.id()).sensorIV(), (RecHit1.id()).iu(), (RecHit1.id()).iv(), sensorsize);
 		double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
 		double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-                if((RecHit1.id()).iu() == 4 && (RecHit1.id()).iv() == 2) continue;
+//                if((RecHit1.id()).iu() == 4 && (RecHit1.id()).iv() == 2) continue;
 //             if((RecHit1.energyHigh() > ADC_TMP) && ((RecHit1.id()).cellType() == 0) ){
 		if((RecHit1.energyHigh() > ADC_TMP)) {
 
@@ -244,7 +244,7 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 			iux_Max = iux;
 			iyy_Max = iyy;
 		}
-
+               if(RecHit1.energyHigh() > 20.) continue;
 //             if(UP && fabs(iux - iux_Max) > 0. && fabs(iyy - iyy_Max) > 0. && RecHit1.energyHigh()< 2000000.){
 		if(((RecHit1.id()).cellType() == 0) || ((RecHit1.id()).cellType() == 5)) {
 
@@ -323,7 +323,7 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 
                                 h_RecHit_layer[iLayer] = fs->make<TH2Poly>();
                                 sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", 0, iLayer + 1, evId);
-                                sprintf(title, "Sum of adc counts per cell for ADC%i Layer%i Event%i", 0, iLayer + 1, evId);
+                                sprintf(title, "ADC counts in Layer%i",iLayer + 1);
                                 h_RecHit_layer[iLayer]->SetName(name);
                                 h_RecHit_layer[iLayer]->SetTitle(title);
                                 InitTH2Poly(*h_RecHit_layer[iLayer]);
@@ -339,7 +339,7 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 		HGCalTBElectronicsId eid(EID);
 		AllCells_Ped->Fill(RecHit.energyHigh());
 if(RecHit.energyHigh() > 55) cout<<endl<<" Energy= "<<RecHit.energyHigh()<<" u= "<<iux<<" v= "<<iyy<<" event number= "<<event.id().event()<<endl;
-                if((RecHit.id()).iu() == 4 && (RecHit.id()).iv() == 2) continue;
+//                if((RecHit.id()).iu() == 4 && (RecHit.id()).iv() == 2) continue;
 		if(!DoCommonMode) {
 			h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh());
 		}
@@ -375,7 +375,7 @@ if(RecHit.energyHigh() > 55) cout<<endl<<" Energy= "<<RecHit.energyHigh()<<" u= 
 			}
 		}
 		if((RecHit.id()).cellType() == 1 ) {
-//			if(!PED) h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh());
+			if(!PED) h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh());
 			if(DoCommonMode) {
 				AllCells_CM->Fill(RecHit.energyHigh());
 			}
@@ -383,7 +383,7 @@ if(RecHit.energyHigh() > 55) cout<<endl<<" Energy= "<<RecHit.energyHigh()<<" u= 
 		if(((RecHit.id()).cellType() != 5) && ((RecHit.id()).cellType() != 1) && ((RecHit.id()).cellType() != 0)) {
 			if((iyy >= -0.25 ) ) {
 				if(!PED && DoCommonMode){
-//                                    h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Half / Cell_counter1_Half) );
+                                    h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Half / Cell_counter1_Half) );
 
                                    }
 //				h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Half / Cell_counter1_Half));
@@ -393,7 +393,7 @@ if(RecHit.energyHigh() > 55) cout<<endl<<" Energy= "<<RecHit.energyHigh()<<" u= 
 			}
 			if(( iyy < -0.50 )) {
 				if(!PED && DoCommonMode){
-//                                     h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Half / Cell_counter2_Half) );
+                                     h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Half / Cell_counter2_Half) );
 
                                    }
 				h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Half / Cell_counter2_Half));

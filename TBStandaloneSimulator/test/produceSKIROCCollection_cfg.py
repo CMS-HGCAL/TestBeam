@@ -42,7 +42,7 @@ process.source = cms.Source ("HGCSimDigiSource",
 
 process.out = cms.OutputModule("PoolOutputModule",
                                fileName = cms.untracked.string
-                               ("HGC_Electrons_32GeV_2016_04_sim.root")
+                               ("HGC_electrons_8GeV_2016_4layer_20k_sim.root")
                                )
 
 process.outpath = cms.EndPath(process.out)
