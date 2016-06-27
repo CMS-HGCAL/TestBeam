@@ -89,7 +89,7 @@ private:
 	edm::EDGetToken HGCalTBTrackCollection_;
 	HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
-	std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_Layer1234.txt";
+	std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_16Layers.txt";
 	struct {
 		HGCalElectronicsMap emap_;
 	} essource_;
