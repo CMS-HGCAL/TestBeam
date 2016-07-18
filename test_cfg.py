@@ -9,7 +9,7 @@ process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(1), ### maybe this should be read from the file
 #                            fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
-                            fileNames=cms.untracked.vstring("file:HGC_Output_3.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+                            fileNames=cms.untracked.vstring("file:/afs/cern.ch/user/r/rchatter/public/data/HGC_Output_500.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
 )
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
@@ -33,15 +33,15 @@ process.output = cms.OutputModule("PoolOutputModule",
 #                                 SelectEvents = SelectEventsPSet
                                  )
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_3_Digi.root") )
-#process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_1571_Reco.root") )
+#process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_500_Digi.root") )
+#process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_500_Reco.root") )
+#process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_500_Reco_Layer.root") )
+process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_500_Reco_Display.root") )
 
 
-#process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter*process.hgcaltbrechits*process.hgcaltbrechitsplotter)
-
-process.p =cms.Path(process.dumpRaw*process.hgcaltbdigis*process.dumpDigi*process.hgcaltbdigisplotter)
-#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
+#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
+process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.FourLayerRecHitPlotterMax)
 
 process.end = cms.EndPath(process.output)

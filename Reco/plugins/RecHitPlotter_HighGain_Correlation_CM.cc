@@ -54,7 +54,7 @@ using namespace std;
 // This will improve performance in multithreaded jobs.
 
 static const double delta = 0.00001;//Add/subtract delta = 0.00001 to x,y of a cell centre so the TH2Poly::Fill doesnt have a problem at the edges where the centre of a half-hex cell passes through the sennsor boundary line.
-bool doCommonMode_CM = 1;
+bool doCommonMode_CM = 0;
 double return_RMS_CM(double mean_sq, double mean){
       return sqrt(mean_sq - mean*mean);
      }
@@ -76,7 +76,7 @@ private:
 	edm::EDGetToken HGCalTBRecHitCollection_;
 	HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
-        std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_16Layers.txt";
+        std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_1To16Layer.txt";
         struct {
                 HGCalElectronicsMap emap_;
         } essource_;
@@ -130,7 +130,7 @@ RecHitPlotter_HighGain_Correlation_CM::RecHitPlotter_HighGain_Correlation_CM(con
         AllCells_CM = fs->make<TH1F>("AllCells_CM","AllCells_CM",500,-250,250);
         sprintf(name, "Noise_2D_Profile_Layer");
         sprintf(title, "Noise 2D Profile Layer");
-        Noise_2D_Profile = fs->make<TH2F>(name,title,512,0,511,500,-250,250);
+        Noise_2D_Profile = fs->make<TH2F>(name,title,2048,0,2047,8000,-4000,4000);
         for(int ILayer=0;ILayer<MAXLAYERS;ILayer++){ 
              sprintf(name, "Full_Cell_Layer_%i",ILayer);
              sprintf(title, "Full Cell Layer %i",ILayer);
@@ -263,8 +263,9 @@ RecHitPlotter_HighGain_Correlation_CM::analyze(const edm::Event& event, const ed
                             }
                           if(doCommonMode_CM){
 //                             AllCells_CM->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_Full/(Cell_counter)));
-                             AllCells_Ped->Fill(RecHit.energyHigh()); 
-                             if((RecHit.id()).cellType() == 0) h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_Full[(RecHit.id()).layer()]/(Cell_counter[(RecHit.id()).layer() -1])));
+                             AllCells_Ped->Fill(RecHit.energyHigh());
+                             cout<<endl<<" Energy= "<<RecHit.energyHigh()<<" CM = "<<Average_Pedestal_Per_Event_Full[(RecHit.id()).layer() - 1]<<" Cells= "<<Cell_counter[(RecHit.id()).layer() -1]<<endl;   
+                             if((RecHit.id()).cellType() == 0) h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_Full[(RecHit.id()).layer() - 1]/(Cell_counter[(RecHit.id()).layer() -1])));
                              else if((RecHit.id()).cellType() == 2 || (RecHit.id()).cellType() == 4) h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_Half[(RecHit.id()).layer() -1]/(Cell_counter_Half[(RecHit.id()).layer() -1])));
                              else if((RecHit.id()).cellType() == 1) h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh());
                              else h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_MB[(RecHit.id()).layer() -1]/(Cell_counter_MB[(RecHit.id()).layer() -1])));

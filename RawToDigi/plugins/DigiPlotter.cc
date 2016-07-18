@@ -71,7 +71,7 @@ private:
 	bool DEBUG = 0;
 	HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
-	std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_16Layers.txt";
+	std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_1To16Layer.txt";
 	struct {
 		HGCalElectronicsMap emap_;
 	} essource_;
@@ -88,7 +88,6 @@ private:
 	int Sensor_Iu = 0;
 	int Sensor_Iv = 0;
         TH2F* Noise_2D_Profile[NSAMPLES][MAXLAYERS];
-	TH1F  *h_digi_layer_cell[NSAMPLES][MAXLAYERS][cellx][celly];
 	TH1F  *h_digi_layer_channel[MAXSKIROCS][64][NSAMPLES];
 //        TH1F  *h_digi_layer_cell_event[NSAMPLES][MAXLAYERS][cellx][celly][512];
 	char name[50], title[50];
@@ -159,19 +158,6 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
 			for(int iv = -7; iv < 8; iv++) {
 				for(int iu = -7; iu < 8; iu++) {
 					if(!IsCellValid.iu_iv_valid(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize)) continue;
-//Some thought needs to be put in about the binning and limits of this 1D histogram, probably different for beam type Fermilab and cern.
-					sprintf(name, "Cell_u_%i_v_%i_ADC%i_Layer%i", iu, iv, nsample, nlayers + 1);
-					sprintf(title, "Digis for Cell_u_%i_v_%i ADC%i Layer%i", iu, iv, nsample, nlayers + 1);
-					h_digi_layer_cell[nsample][nlayers][iu + 7][iv + 7] = fs->make<TH1F>(name, title, 4096, 0., 4095.);
-					h_digi_layer_cell[nsample][nlayers][iu + 7][iv + 7]->GetXaxis()->SetTitle("Digis[adc counts]");
-					/*
-					                                        for(int eee = 0; eee< 512; eee++){
-					                                            sprintf(name, "Cell_u_%i_v_%i_ADC%i_Layer%i_Event%i", iu, iv, nsample, nlayers + 1,eee);
-					                                            sprintf(title, "Digis for Cell_u_%i_v_%i ADC%i Layer%i Event %i", iu, iv, nsample, nlayers + 1, eee);
-					                                            h_digi_layer_cell_event[nsample][nlayers][iu + 7][iv + 7][eee] = fs->make<TH1F>(name, title, 4096, 0., 4095.);
-					                                            h_digi_layer_cell_event[nsample][nlayers][iu + 7][iv + 7][eee]->GetXaxis()->SetTitle("Digis[adc counts]");
-					                                           }
-					*/
 					CellXY = TheCell.GetCellCoordinatesForPlots(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize);
 					int NumberOfCellVertices = CellXY.size();
 					iii = 0;
@@ -219,7 +205,7 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	std::vector<edm::Handle<SKIROC2DigiCollection> > ski;
 	event.getManyByType(ski);
 //        int Event = event.id().event();
-
+/*
         for(int ski=0;ski<2;ski++){
             for(int layers =0; layers<MAXLAYERS; layers++){
                 Cell_Count_SKI_Layer[ski][layers] = 0;    
@@ -228,14 +214,14 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
                     }
                }
            }          
-
+*/
 	if(!ski.empty()) {
 
 		std::vector<edm::Handle<SKIROC2DigiCollection> >::iterator i;
 		int counter1 = 0, counter2 = 0;
 		for(i = ski.begin(); i != ski.end(); i++) {
-
 			const SKIROC2DigiCollection& Coll = *(*i);
+
 //////////////////////////////////Evaluate average pedestal per event to subtract out//////////////////////////////////
                         for(SKIROC2DigiCollection::const_iterator k = Coll.begin(); k != Coll.end(); k++) {
                                 const SKIROC2DataFrame& SKI_1 = *k ;
@@ -248,10 +234,12 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
                                 HGCalTBElectronicsId eid(EID);
                                 if(DEBUG) cout << endl << " Layer = " << n_layer << " Sensor IU = " << n_sensor_IU << " Sensor IV = " << n_sensor_IV << " Cell iu = " << n_cell_iu << " Cell iu = " << n_cell_iv << endl;
                                 if(!IsCellValid.iu_iv_valid(n_layer, n_sensor_IU, n_sensor_IV, n_cell_iu, n_cell_iv, sensorsize))  continue;
-                                ADC_Sum_SKI_Layer[eid.iskiroc() - 2*(n_layer - 1) - 1][n_layer - 1][1] += SKI_1[0].adcHigh();         
-                                ADC_Sum_SKI_Layer[eid.iskiroc() - 2*(n_layer - 1) - 1][n_layer - 1][0] += SKI_1[0].adcLow();
-                                Cell_Count_SKI_Layer[eid.iskiroc() - 2*(n_layer - 1) - 1][n_layer - 1] += 1;                        
+//                                ADC_Sum_SKI_Layer[eid.iskiroc() - 2*(n_layer - 1) - 1][n_layer - 1][1] += SKI_1[0].adcHigh();         
+//                                ADC_Sum_SKI_Layer[eid.iskiroc() - 2*(n_layer - 1) - 1][n_layer - 1][0] += SKI_1[0].adcLow();
+//                                Cell_Count_SKI_Layer[eid.iskiroc() - 2*(n_layer - 1) - 1][n_layer - 1] += 1;                        
                             }
+
+
 
 //			cout << "SKIROC2 Digis: " << i->provenance()->branchName() << endl;
 			for(SKIROC2DigiCollection::const_iterator j = Coll.begin(); j != Coll.end(); j++) {
@@ -271,19 +259,16 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				int nsample = 0;
 				h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample].adcLow());
 				h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter1++, SKI[nsample].adcLow(), 1);
-				h_digi_layer_summed[nsample][n_layer - 1]->Fill(ADC_Sum_SKI_Layer[eid.iskiroc() - 2*(n_layer - 1) - 1][n_layer - 1][0]);
-				h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][nsample]->Fill(SKI[nsample].adcLow());
-				h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample].adcLow());
-//                                        h_digi_layer_cell_event[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv][event.id().event() - 1]->Fill(SKI[nsample].adcLow());
+//				h_digi_layer_summed[nsample][n_layer - 1]->Fill(ADC_Sum_SKI_Layer[eid.iskiroc() - 2*(n_layer - 1) - 1][n_layer - 1][0]);
+			if(eid.iskiroc() > 0)	h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][nsample]->Fill(SKI[nsample].adcLow());
 				nsample = 1;
 				h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample - 1].adcHigh());
 				h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter2++, SKI[nsample - 1].adcHigh(), 1);
-				h_digi_layer_summed[nsample][n_layer - 1]->Fill(ADC_Sum_SKI_Layer[eid.iskiroc() - 2*(n_layer - 1) - 1][n_layer - 1][1]);
-				if((SKI.detid()).cellType() != 4) h_digi_layer_cell[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv]->Fill(SKI[nsample - 1].adcHigh());
+//				h_digi_layer_summed[nsample][n_layer - 1]->Fill(ADC_Sum_SKI_Layer[eid.iskiroc() - 2*(n_layer - 1) - 1][n_layer - 1][1]);
 //                                        if(((SKI.detid()).cellType() != 4) && (eid.ichan() == 0) ) cout<<endl<<"SKIROC=  "<<eid.iskiroc()<<" Chan= "<<eid.ichan()<<" u= "<<n_cell_iu<<" v = "<<n_cell_iv<<endl;
-				h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][nsample]->Fill(SKI[nsample - 1].adcHigh());
-//                                        h_digi_layer_cell_event[nsample][n_layer - 1][7 + n_cell_iu][7 + n_cell_iv][event.id().event() - 1]->Fill(SKI[nsample-1].adcHigh());
+			if(eid.iskiroc() > 0)	h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][nsample]->Fill(SKI[nsample - 1].adcHigh());
 			}
+
 		}
 	} else {
 		edm::LogWarning("DQM") << "No SKIROC2 Digis";
@@ -311,10 +296,10 @@ DigiPlotter::endJob()
      int SENSOR_IX = 0;
      int SENSOR_IV = 0;
      ofstream fs1, fs2;
-     fs1.open("/afs/cern.ch/work/r/rchatter/FNAL_June_TestBeam/CMSSW_8_0_1/src/HGCal/CondObjects/data/Ped_HighGain_Check_L16.txt");
+     fs1.open("/afs/cern.ch/work/r/rchatter/FNAL_June_TestBeam/CMSSW_8_0_1/src/HGCal/Ped_HighGain_Check_L16.txt");
      fs1<<"SCHEME_CODE 0"<<endl;
      fs1<<"# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE"<<endl;
-     fs2.open("/afs/cern.ch/work/r/rchatter/FNAL_June_TestBeam/CMSSW_8_0_1/src/HGCal/CondObjects/data/Ped_LowGain_Check_L16.txt");
+     fs2.open("/afs/cern.ch/work/r/rchatter/FNAL_June_TestBeam/CMSSW_8_0_1/src/HGCal/Ped_LowGain_Check_L16.txt");
      fs2<<"SCHEME_CODE 0"<<endl;
      fs2<<"# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE"<<endl;
 

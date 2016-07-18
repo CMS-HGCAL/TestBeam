@@ -217,7 +217,6 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 	event.getByToken(HGCalTBRecHitCollection_, Rechits);
 	edm::Handle<HGCalTBRecHitCollection> Rechits1;
 	event.getByToken(HGCalTBRecHitCollection_, Rechits1);
-        int evId = event.id().event() - 1;
 
 	double Average_Pedestal_Per_Event1_Full = 0, Average_Pedestal_Per_Event1_Half = 0, Average_Pedestal_Per_Event2_Full = 0, Average_Pedestal_Per_Event2_Half = 0;
 	int Cell_counter1_Full = 0, Cell_counter2_Full = 0, Cell_counter1_Half = 0, Cell_counter2_Half = 0;
@@ -320,7 +319,7 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 
                         TH2Poly *h_RecHit_layer[MAXLAYERS];
                         for(unsigned int iLayer = 0; iLayer < MAXLAYERS; ++iLayer) {
-
+                                int evId = event.id().event() - 1;
                                 h_RecHit_layer[iLayer] = fs->make<TH2Poly>();
                                 sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", 0, iLayer + 1, evId);
                                 sprintf(title, "ADC counts in Layer%i",iLayer + 1);
