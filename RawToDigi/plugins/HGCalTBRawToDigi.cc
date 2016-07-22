@@ -122,19 +122,23 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 				} else {
 					HGCalTBDetId did = essource_.emap_.eid2detId(eid);
 					digis->addDataFrame(did);
-                                        if(ski <=2){
+                                        if(ski <=32){
 	                                int ptradc1 = ptr - ichan*2 - (ski_up - ski);
 					int ptradc2 = ptr - ichan*2 - (ski_up - ski) -  128;
                                         digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF),gray_to_binary( pdata[ptradc2] & 0xFFF),0); 
-                                        cout<<endl<<dec<<"SKI= "<<ski<<" chan= "<<ichan<<" "<<ptradc1<<" "<<ptradc2<<" "<<" High= "<<hex<<(pdata[ptradc1])<<dec<<"  "<<gray_to_binary(pdata[ptradc1] & 0xFFF)<<" Low= "<<hex<<( pdata[ptradc2] & 0xFFF)<<"  "<<dec<<gray_to_binary( pdata[ptradc2] & 0xFFF)<<endl; 
+//                                        cout<<endl<<dec<<"SKI= "<<ski<<" chan= "<<ichan<<" "<<ptradc1<<" "<<ptradc2<<" "<<" High= "<<hex<<(pdata[ptradc1])<<dec<<"  "<<gray_to_binary(pdata[ptradc1] & 0xFFF)<<" Low= "<<hex<<( pdata[ptradc2] & 0xFFF)<<"  "<<dec<<gray_to_binary( pdata[ptradc2] & 0xFFF)<<endl; 
                                           }
+
+/*
                                         else{
                                               int ptradc1 = ptr - ichan*2 + (ski_up - ski) ;
                                               int ptradc2 = ptr - ichan*2 + (ski_up - ski) -  128;
-						cout<<endl<<dec<<" Layer= "<<did.layer()<<" SKI= "<<eid.iskiroc()<<" chan= "<<ichan<<" "<<ptradc1<<" "<<ptradc2<<" "<<" High= "<<hex<<(pdata[ptradc1])<<dec<<"  "<<gray_to_binary(pdata[ptradc1] & 0xFFF)<<" Low= "<<hex<<( pdata[ptradc2] & 0xFFF)<<"  "<<dec<<gray_to_binary( pdata[ptradc2] & 0xFFF)<<endl;
+//						cout<<endl<<dec<<" Layer= "<<did.layer()<<" SKI= "<<eid.iskiroc()<<" chan= "<<ichan<<" "<<ptradc1<<" "<<ptradc2<<" "<<" High= "<<hex<<(pdata[ptradc1])<<dec<<"  "<<gray_to_binary(pdata[ptradc1] & 0xFFF)<<" Low= "<<hex<<( pdata[ptradc2] & 0xFFF)<<"  "<<dec<<gray_to_binary( pdata[ptradc2] & 0xFFF)<<endl;
                                               digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF),gray_to_binary( pdata[ptradc2] & 0xFFF),0); 
 
-                                             }   
+                                             }  
+*/ 
+
 				}
                              }//loop over skirocs
 			}

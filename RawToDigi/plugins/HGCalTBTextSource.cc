@@ -55,7 +55,21 @@ bool HGCalTBTextSource::readLines()
 		fgets(buffer, 1000, m_file);
                 if (strstr(buffer, "STARTING")) continue;
                 if (strstr(buffer, "Board")) continue;
-                if(strstr(buffer, "Event")) continue;
+//                if(strstr(buffer, "Event")) continue;
+
+/*                
+                if(strstr(buffer,"CKOV= 0")){
+                    for(int iii=1; iii<=64;iii++){
+ 			m_lines.push_back(buffer1);
+                        if(iii==64) counter=67;
+                       }
+                   } 
+
+                if(strstr(buffer,"CKOV= 1")) cout<<endl<<"CKOV= 1"<<endl;
+                else cout<<endl<<"CKOV= 0"<<endl; 
+*/
+
+                if(strstr(buffer, "Event")) continue;                 
                 counter++;
 		if(runcounter < Number_Of_Events_Per_Spill && counter <= Number_Of_SKIROC_Data_Words) m_lines.push_back(buffer);
                 if(runcounter < Number_Of_Events_Per_Spill && counter == Number_Of_SKIROC_Words){
