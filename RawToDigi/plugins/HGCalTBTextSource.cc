@@ -1,15 +1,15 @@
 #include <iostream>
 #include "HGCal/RawToDigi/plugins/HGCalTBTextSource.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
-
+#include "HGCal/Geometry/interface/HGCalTBSpillParameters.h"
 using namespace std;
 unsigned int runcounter = 0;
 int runflag = 0;
 int trigcountperspillflag = 0; 
 unsigned int Events_Per_Spill = 0;
 unsigned int spillcounter = 0;
-unsigned int Number_Of_Events_Per_Spill = 150;
-unsigned int Number_Of_Spills = 8;
+//unsigned int Number_Of_Events_Per_Spill = 150;
+//unsigned int Number_Of_Spills = 8;
 int Number_Of_SKIROC_Data_Words = 64;
 int Number_Of_SKIROC_Words = 68;
 
@@ -26,7 +26,7 @@ bool HGCalTBTextSource::readLines()
            m_run = m_run_tmp;
            runflag = 1;
           }
-        if(runcounter == Number_Of_Events_Per_Spill){
+        if(runcounter == EVENTSPERSPILL){
            runcounter=0;
            trigcountperspillflag++;
           }
@@ -49,7 +49,7 @@ bool HGCalTBTextSource::readLines()
 //        if( sscanf(buffer, " RUN: %u", &m_run) != 1) return false;
 //        sscanf(buffer, " RUN:%u", &m_run);
 //        cout<<endl<<m_run<<endl;
-        while (!feof(m_file) && spillcounter< Number_Of_Spills) {
+        while (!feof(m_file) && spillcounter< SPILLS) {
 //	while (!feof(m_file) && runcounter < 1001) {
 		buffer[0] = 0;
 		fgets(buffer, 1000, m_file);
@@ -71,20 +71,15 @@ bool HGCalTBTextSource::readLines()
 
                 if(strstr(buffer, "Event")) continue;                 
                 counter++;
-		if(runcounter < Number_Of_Events_Per_Spill && counter <= Number_Of_SKIROC_Data_Words) m_lines.push_back(buffer);
-                if(runcounter < Number_Of_Events_Per_Spill && counter == Number_Of_SKIROC_Words){
+		if(runcounter < EVENTSPERSPILL && counter <= Number_Of_SKIROC_Data_Words) m_lines.push_back(buffer);
+                if(runcounter < EVENTSPERSPILL && counter == Number_Of_SKIROC_Words){
                    runcounter++;
 //                   cout<<endl<<" Reached Here 1"<<endl;
                    break;
                   }
                 
 	}
-/*
-        if(trigcountperspillflag == 16){
-             trigcountperspillflag = 0;
-             spillcounter++;
-            }
-*/
+
 	return !m_lines.empty();
 }
 

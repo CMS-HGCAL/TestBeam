@@ -130,7 +130,7 @@ RecHitPlotter_HighGain_Correlation_CM::RecHitPlotter_HighGain_Correlation_CM(con
         AllCells_CM = fs->make<TH1F>("AllCells_CM","AllCells_CM",500,-250,250);
         sprintf(name, "Noise_2D_Profile_Layer");
         sprintf(title, "Noise 2D Profile Layer");
-        Noise_2D_Profile = fs->make<TH2F>(name,title,2048,0,2047,8000,-4000,4000);
+        Noise_2D_Profile = fs->make<TH2F>(name,title,2048,0,2048,8000,-4000,4000);
         for(int ILayer=0;ILayer<MAXLAYERS;ILayer++){ 
              sprintf(name, "Full_Cell_Layer_%i",ILayer);
              sprintf(title, "Full Cell Layer %i",ILayer);

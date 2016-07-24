@@ -235,8 +235,6 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit1.id()).layer(), (RecHit1.id()).sensorIU(), (RecHit1.id()).sensorIV(), (RecHit1.id()).iu(), (RecHit1.id()).iv(), sensorsize);
 		double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
 		double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-//                if((RecHit1.id()).iu() == 4 && (RecHit1.id()).iv() == 2) continue;
-//             if((RecHit1.energyHigh() > ADC_TMP) && ((RecHit1.id()).cellType() == 0) ){
 		if((RecHit1.energyHigh() > ADC_TMP)) {
 
 			ADC_TMP = RecHit1.energyHigh();
