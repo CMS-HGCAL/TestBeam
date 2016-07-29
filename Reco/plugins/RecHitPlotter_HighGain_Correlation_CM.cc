@@ -76,7 +76,7 @@ private:
 	edm::EDGetToken HGCalTBRecHitCollection_;
 	HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
-        std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_16Layers.txt";
+        std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_SB2_Layer16.txt";
         struct {
                 HGCalElectronicsMap emap_;
         } essource_;
@@ -251,24 +251,29 @@ RecHitPlotter_HighGain_Correlation_CM::analyze(const edm::Event& event, const ed
 //                if(RecHit.energyHigh() > 100) continue;
 		if(!IsCellValid.iu_iv_valid((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize))  continue;
                 CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize);
-                double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
-                double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
+//                double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
+//                double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
                 uint32_t EID = essource_.emap_.detId2eid(RecHit.id());
                 HGCalTBElectronicsId eid(EID);
-                if(eid.ichan() == 33) cout<<endl<<(RecHit.id()).cellType()<<" "<<iux<<" "<<iyy<<endl;
 //                          TF1* Fit2= (TF1*) h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()]->GetFunction("gaus");      
                           if(!doCommonMode_CM){
                              h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh());
                              Noise_2D_Profile->Fill((64*(eid.iskiroc()-1) + eid.ichan()),RecHit.energyHigh());  
                             }
                           if(doCommonMode_CM){
-//                             AllCells_CM->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_Full/(Cell_counter)));
                              AllCells_Ped->Fill(RecHit.energyHigh());
 //                             cout<<endl<<" Energy= "<<RecHit.energyHigh()<<" CM = "<<Average_Pedestal_Per_Event_Full[(RecHit.id()).layer() - 1]<<" Cells= "<<Cell_counter[(RecHit.id()).layer() -1]<<endl;   
-                             if((RecHit.id()).cellType() == 0) h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_Full[(RecHit.id()).layer() - 1]/(Cell_counter[(RecHit.id()).layer() -1])));
-                             else if((RecHit.id()).cellType() == 2 || (RecHit.id()).cellType() == 4) h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_Half[(RecHit.id()).layer() -1]/(Cell_counter_Half[(RecHit.id()).layer() -1])));
-                             else if((RecHit.id()).cellType() == 1) h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh());
-                             else h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_MB[(RecHit.id()).layer() -1]/(Cell_counter_MB[(RecHit.id()).layer() -1])));
+                             if((RecHit.id()).cellType() == 0 || (RecHit.id()).cellType() == 4) h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_Full[(RecHit.id()).layer() - 1]/(Cell_counter[(RecHit.id()).layer() -1])));
+                             else if((RecHit.id()).cellType() == 2 ) h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_Half[(RecHit.id()).layer() -1]/(Cell_counter_Half[(RecHit.id()).layer() -1])));
+                             else if((RecHit.id()).cellType() == 1) h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_Calib_Pad[(RecHit.id()).layer() - 1]/(Cell_counter_Calib_Pad[(RecHit.id()).layer() -1])));
+                             else if(((RecHit.id()).cellType() == 3) && ( ((RecHit.id()).iu() == 4 && (RecHit.id()).iv() == 3) || ((RecHit.id()).iu() == -7 && (RecHit.id()).iv() == 4) || ((RecHit.id()).iu() == 7 && (RecHit.id()).iv() == -3) || ((RecHit.id()).iu() == -4 && (RecHit.id()).iv() == -3) ) ){
+             h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_MB[(RecHit.id()).layer() -1]/(Cell_counter_MB[(RecHit.id()).layer() -1])));
+             cout<<endl<<"Mouse Bite "<<" Channel= "<<eid.ichan()<<" skiroc= "<<eid.iskiroc()-1<<" Layer= "<<(RecHit.id()).layer() -1<<" CM= "<<(Average_Pedestal_Per_Event_MB[(RecHit.id()).layer() -1]/(Cell_counter_MB[(RecHit.id()).layer() -1]))<<" Filled= "<<RecHit.energyHigh() - (Average_Pedestal_Per_Event_MB[(RecHit.id()).layer() -1]/(Cell_counter_MB[(RecHit.id()).layer() -1]))<<" Number of Cells= "<< Cell_counter_MB[(RecHit.id()).layer() - 1]<< endl;
+             }
+                             else if(((RecHit.id()).cellType() == 3) && (((RecHit.id()).iu() == -4 && (RecHit.id()).iv() == 6) || ((RecHit.id()).iu() == -2 && (RecHit.id()).iv() == 6) || ((RecHit.id()).iu() == 4 && (RecHit.id()).iv() == -7) || ((RecHit.id()).iu() == 2 && (RecHit.id()).iv() == -6))){
+             h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_Merged_Cell[(RecHit.id()).layer() -1]/(Cell_counter_Merged_Cell[(RecHit.id()).layer() -1])));
+             cout<<endl<<" Channel= "<<eid.ichan()<<" skiroc= "<<eid.iskiroc()-1<<" Layer= "<<(RecHit.id()).layer() -1<<" CM= "<<(Average_Pedestal_Per_Event_Merged_Cell[(RecHit.id()).layer() -1]/(Cell_counter_Merged_Cell[(RecHit.id()).layer() -1]))<<" Filled= "<<RecHit.energyHigh() - (Average_Pedestal_Per_Event_Merged_Cell[(RecHit.id()).layer() -1]/(Cell_counter_Merged_Cell[(RecHit.id()).layer() -1]))<<endl;
+           }  
                              Noise_2D_Profile->Fill((64*(eid.iskiroc()-1) + eid.ichan()),RecHit.energyHigh() - (Average_Pedestal_Per_Event_Full[(RecHit.id()).layer() -1]/(Cell_counter[(RecHit.id()).layer() -1])));
                            } 
                            

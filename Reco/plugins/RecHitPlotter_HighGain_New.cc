@@ -89,7 +89,7 @@ private:
 	edm::EDGetToken HGCalTBTrackCollection_;
 	HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
-	std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_16Layers.txt";
+	std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_SB2_Layer16.txt";
 	struct {
 		HGCalElectronicsMap emap_;
 	} essource_;
@@ -316,15 +316,14 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 	}
 
                         TH2Poly *h_RecHit_layer[MAXLAYERS];
-                        for(unsigned int iLayer = 0; iLayer < MAXLAYERS; ++iLayer) {
                                 int evId = event.id().event() - 1;
+                                int iLayer = (evId%2400)/150;
                                 h_RecHit_layer[iLayer] = fs->make<TH2Poly>();
                                 sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", 0, iLayer + 1, evId);
                                 sprintf(title, "ADC counts in Layer%i",iLayer + 1);
                                 h_RecHit_layer[iLayer]->SetName(name);
                                 h_RecHit_layer[iLayer]->SetTitle(title);
                                 InitTH2Poly(*h_RecHit_layer[iLayer]);
-                        }
 
 	for(auto RecHit : *Rechits) {
 		if(!IsCellValid.iu_iv_valid((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize))  continue;

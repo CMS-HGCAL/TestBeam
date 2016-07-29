@@ -57,8 +57,9 @@ bool HGCalTBTextSource::readLines()
                 if (strstr(buffer, "Board")) continue;
 //                if(strstr(buffer, "Event")) continue;
 
+
 /*                
-                if(strstr(buffer,"CKOV= 0")){
+                if(strstr(buffer,"CKOV= 1")){
                     for(int iii=1; iii<=64;iii++){
  			m_lines.push_back(buffer1);
                         if(iii==64) counter=67;
