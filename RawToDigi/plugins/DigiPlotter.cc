@@ -93,7 +93,8 @@ private:
 	char name[50], title[50];
         double ADC_Sum_SKI_Layer[2][MAXLAYERS][2]; // 2 SKIROCs per layer, High gain and low gain ADC HARD CODED
         int Cell_Count_SKI_Layer[2][4]; // 2 SKIROCs per layer, High gain and low gain ADC HARD CODED
-
+        string m_pedestalsHighGain;
+        string m_pedestalsLowGain;
 };
 
 //
@@ -181,6 +182,9 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
 			}//loop over iv
 		}//loop over nlayers
 	}//loop over nsamples
+
+        m_pedestalsHighGain = iConfig.getUntrackedParameter<string>("pedestalsHighGain", "");
+        m_pedestalsLowGain = iConfig.getUntrackedParameter<string>("pedestalsLowGain", "");
 }//contructor ends here
 
 
@@ -296,10 +300,12 @@ DigiPlotter::endJob()
      int SENSOR_IX = 0;
      int SENSOR_IV = 0;
      ofstream fs1, fs2;
-     fs1.open("/afs/cern.ch/work/r/rchatter/FNAL_June_TestBeam/CMSSW_8_0_1/src/HGCal/Ped_HighGain_L16.txt");
+     // fs1.open("/afs/cern.ch/user/t/tmudholk/public/research/cmssw_temp/CMSSW_8_0_17/src/HGCal/Ped_HighGain_OneLayer.txt");
+     fs1.open(m_pedestalsHighGain.c_str());
      fs1<<"SCHEME_CODE 0"<<endl;
      fs1<<"# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE"<<endl;
-     fs2.open("/afs/cern.ch/work/r/rchatter/FNAL_June_TestBeam/CMSSW_8_0_1/src/HGCal/Ped_LowGain_L16.txt");
+     // fs2.open("/afs/cern.ch/user/t/tmudholk/public/research/cmssw_temp/CMSSW_8_0_17/src/HGCal/Ped_LowGain_OneLayer.txt");
+     fs2.open(m_pedestalsLowGain.c_str());
      fs2<<"SCHEME_CODE 0"<<endl;
      fs2<<"# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE"<<endl;
 
@@ -321,9 +327,13 @@ DigiPlotter::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
 {
 	//The following says we do not know what parameters are allowed so do no validation
 	// Please change this to state exactly what you do use, even if it is no parameters
-	edm::ParameterSetDescription desc;
-	desc.setUnknown();
-	descriptions.addDefault(desc);
+        // not sure what the above means or if it is still valid after my changes -- Tanmay
+        edm::ParameterSetDescription desc;
+	// desc.setUnknown();
+	// descriptions.addDefault(desc);
+        desc.addUntracked<string>("pedestalsHighGain", "");
+        desc.addUntracked<string>("pedestalsLowGain", "");
+        descriptions.add("hgcaltbdigisplotter", desc);
 }
 
 //define this as a plug-in

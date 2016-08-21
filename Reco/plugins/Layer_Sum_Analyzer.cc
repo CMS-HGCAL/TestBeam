@@ -104,13 +104,14 @@ private:
         TH2F *h_x_y_layer[MAXLAYERS];
         TH2F *HighGain_LowGain_2D; 
 	int SPILL = 0, EVENT = 0, LAYER = 0;
-	double AllCells[MAXLAYERS][EVENTSPERSPILL * SPILLS] = {{0.}};
-	double SevenCells[MAXLAYERS][EVENTSPERSPILL * SPILLS] = {{0.}};
-	double NineteenCells[MAXLAYERS][EVENTSPERSPILL * SPILLS] = {{0.}};
-        double X_Layer[MAXLAYERS][EVENTSPERSPILL * SPILLS] = {{0.}};
-        double Y_Layer[MAXLAYERS][EVENTSPERSPILL * SPILLS] = {{0.}};
-        double Time_Stamp[EVENTSPERSPILL * SPILLS] = {0.};
-        double Delta_Time_Stamp[EVENTSPERSPILL * SPILLS] = {0.};  
+
+        map<int, double> AllCells[MAXLAYERS];
+        map<int, double> SevenCells[MAXLAYERS];
+        map<int, double> NineteenCells[MAXLAYERS];
+        map<int, double> X_Layer[MAXLAYERS];
+        map<int, double> Y_Layer[MAXLAYERS];
+        map<int, double> Time_Stamp;
+        map<int, double> Delta_Time_Stamp;
         double Time_Temp = 0.;
 };
 

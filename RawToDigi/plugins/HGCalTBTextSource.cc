@@ -49,7 +49,7 @@ bool HGCalTBTextSource::readLines()
 //        if( sscanf(buffer, " RUN: %u", &m_run) != 1) return false;
 //        sscanf(buffer, " RUN:%u", &m_run);
 //        cout<<endl<<m_run<<endl;
-        while (!feof(m_file) && spillcounter< SPILLS) {
+        while (!feof(m_file) && spillcounter< m_nSpills) {
 //	while (!feof(m_file) && runcounter < 1001) {
 		buffer[0] = 0;
 		fgets(buffer, 1000, m_file);
@@ -123,6 +123,7 @@ void HGCalTBTextSource::fillDescriptions(edm::ConfigurationDescriptions& descrip
 	desc.setComment("TEST");
 	desc.addUntracked<int>("run", 101);
 	desc.addUntracked<std::vector<std::string> >("fileNames");
+        desc.addUntracked<unsigned int>("nSpills", 6);
 	descriptions.add("source", desc);
 }
 

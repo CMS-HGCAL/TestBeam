@@ -22,8 +22,9 @@ class HGCalTBTextSource : public edm::ProducerSourceFromFiles
 
 public:
 	explicit HGCalTBTextSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :  edm::ProducerSourceFromFiles(pset, desc, true),
-		m_file(0),
-		m_run(pset.getUntrackedParameter<int>("run", 101)) /// \todo check and read from file?
+                m_file(0),
+                m_run(pset.getUntrackedParameter<int>("run", 101)), /// \todo check and read from file?
+                m_nSpills(pset.getUntrackedParameter<unsigned int>("nSpills", 6))
 	{
 
 		m_sourceId = pset.getUntrackedParameter<int>("fed", 1000); /// \todo check and read from file?
@@ -71,5 +72,6 @@ private:
 	FILE* m_file;
         unsigned int m_time_tmp, m_run_tmp;
 	int m_event, m_run;
+        unsigned int m_nSpills;
 	int m_sourceId;
 };
