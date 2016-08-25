@@ -17,11 +17,11 @@ options.register('outputFolder',
                  VarParsing.VarParsing.varType.string,
                  'Result of processing')
 
-options.register('commonPrefix',
-                 '',
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 'Input file to process')
+# options.register('commonPrefix',
+#                  '',
+#                  VarParsing.VarParsing.multiplicity.singleton,
+#                  VarParsing.VarParsing.varType.string,
+#                  'Input file to process')
 
 options.register('runNumber',
                  '',
@@ -29,11 +29,17 @@ options.register('runNumber',
                  VarParsing.VarParsing.varType.int,
                  'Input file to process')
 
+options.register('runType',
+                 'Unknown',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Type of run: HGCRun for run with beam on, PED for pedestal run, Unknown otherwise')
+
 options.register('chainSequence',
-                 3,
+                 0,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
-                 '1: do Digi, 3: do both Digi and Reco (only Reco not implemented so far)')
+                 '0: if runType is PED then do Digi, if runType is HGC_Run then do Digi and Reco; 1: do Digi, 3: do both Digi and Reco (only Reco not implemented so far)')
 
 options.register('nSpills',
                  6,
@@ -61,6 +67,20 @@ if not os.path.isdir(options.dataFolder):
 if not os.path.isdir(options.outputFolder):
     os.system("mkdir -p " + options.outputFolder)
 
+if (options.runType != "PED" and options.runType != "HGCRun"):
+    sys.exit("Error: only runtypes PED and HGCRun supported for now; given runType was %s"%(options.runType))
+
+if (options.pedestalsHighGain == "" or options.pedestalsLowGain == ""): # Poor coding practice, but will have to do for now
+    if (runType == "HGCRun"):
+        options.pedestalsHighGain="%s/CondObjects/data/Ped_HighGain_OneLayer_H2CERN.txt"%(options.cmsswSource)
+        options.pedestalsLowGain="%s/CondObjects/data/Ped_LowGain_OneLayer_H2CERN.txt"%(options.cmsswSource)
+    elif (runType == "PED"):
+        options.pedestalsHighGain="%s/Ped_HighGain_OneLayer_%06d.txt"%(options.outputFolder, options.runNumber)
+        options.pedestalsLowGain="%s/Ped_LowGain_OneLayer_%06d.txt"%(options.outputFolder, options.runNumber)
+
+if (options.pedestalsHighGain == "" or options.pedestalsLowGain == ""):
+    sys.exit("Error: must specify paths to pedestal files (output in case of Digi-only chain, input in case of Digi + Reco chain)")
+
 process = cms.Process("unpack")
 process.load('HGCal.RawToDigi.hgcaltbdigis_cfi')
 process.load('HGCal.RawToDigi.hgcaltbdigisplotter_cfi')
@@ -70,7 +90,7 @@ process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(1), ### maybe this should be read from the file
                             #fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
-                            fileNames=cms.untracked.vstring("file:%s/%s_%d.txt"%(options.dataFolder,options.commonPrefix,options.runNumber)), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+                            fileNames=cms.untracked.vstring("file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber)), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
                             nSpills=cms.untracked.uint32(options.nSpills)
 )
 
@@ -88,12 +108,20 @@ process.dumpDigi = cms.EDAnalyzer("HGCalDigiDump")
 process.output = cms.OutputModule("PoolOutputModule",
 			fileName = cms.untracked.string("test_output.root")
                                  )
+process.hgcaltbrechits = cms.EDProducer("HGCalTBRecHitProducer",
+                                OutputCollectionName = cms.string(''),
+                                digiCollection = cms.InputTag('hgcaltbdigis'),
+                                pedestalLow = cms.string(options.pedestalsLowGain),
+                                pedestalHigh = cms.string(options.pedestalsHighGain),
+                                gainLow = cms.string(''),
+                                gainHigh = cms.string(''),
+                              )
 
 # process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Display.root") )
 if (options.chainSequence == 1):
-    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_%d_Digi.root"%(options.outputFolder,options.commonPrefix,options.runNumber)))
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Digi.root"%(options.outputFolder,options.runType,options.runNumber)))
 elif (options.chainSequence == 3):
-    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_%d_Reco.root"%(options.outputFolder,options.commonPrefix,options.runNumber)))
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco.root"%(options.outputFolder,options.runType,options.runNumber)))
 # process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco.root") )
 #process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Layer.root") )
 #process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Cluster.root") )
@@ -101,7 +129,7 @@ elif (options.chainSequence == 3):
 if (options.chainSequence == 1):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
 elif (options.chainSequence == 3):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter)
 # process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.FourLayerRecHitPlotterMax)
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.LayerSumAnalyzer)

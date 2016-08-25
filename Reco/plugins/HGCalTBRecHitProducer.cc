@@ -34,8 +34,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 	HGCalCondPedestals pedestals_low, pedestals_high;
 	HGCalCondObjectTextIO condIO(HGCalTBNumberingScheme::scheme());
 	//HGCalElectronicsMap emap;
-//    assert(io.load("mapfile.txt",emap)); ///\todo to be trasformed into exception
-	if(_pedestalLow_filename != "") assert(condIO.load(_pedestalLow_filename, pedestals_low));
+        //    assert(io.load("mapfile.txt",emap)); ///\todo to be trasformed into exception
+        if(_pedestalLow_filename != "") assert(condIO.load(_pedestalLow_filename, pedestals_low));
 	if(_pedestalHigh_filename != "") 	assert(condIO.load(_pedestalHigh_filename, pedestals_high));
 	if(_gainsLow_filename != "") 	assert(condIO.load(_gainsLow_filename, adcToGeV_low));
 	if(_gainsHigh_filename != "") 	assert(condIO.load(_gainsHigh_filename, adcToGeV_high));
