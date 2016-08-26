@@ -1,2 +1,2 @@
 #define EVENTSPERSPILL  150
-#define SPILLS  8
+#define SPILLS  34
