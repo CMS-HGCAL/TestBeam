@@ -17,6 +17,7 @@
 #include "TH1F.h"
 #include "TF1.h"
 #include <sstream>
+#include <fstream>
 #include <math.h>
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -45,14 +46,26 @@
 const bool ELECTRONS(1);// uses > *CELLS_THRESHOLD
 const bool PIONS(0);// uses > PION_*CELLS_THRESHOLD and < *CELLS_THRESHOLD
 
-double ADCtoMIP[16] = {16.02,16.85,15.36,14.73,10.66,15.64,16.52,14.24,10.07,14.42,16.14,17.33,16.61,16.84,15.79,16.43};// one MIP is equal to _ADCtoMIP_ ADC Counts
- 
-const int CMTHRESHOLD = 2;// anything less than this value is added to the commonmode sum
+double Layer_Z[16]  = {1.2,2.,3.5,4.3,5.8,6.3,8.7,9.5,11.4,12.2,13.8,14.6,16.6,17.4,20.,20.8};
+
+double ADCtoMIP[16] = {1.};
+
+//double ADCtoMIP[16] = {16.02,16.85,15.36,14.73,10.66,15.64,16.52,14.24,10.07,14.42,16.14,17.33,16.61,16.84,15.79,16.43};// one MIP is equal to _ADCtoMIP_ ADC Counts
+//double LayerWeight[16] = {0.6374029601923652, 0.7392021202456731, 0.6374273268336504, 0.7392021202456731, 0.6374273268336504, 0.8861075434658853, 0.8487578715427883, 1.0330129666860974, 0.8487578715427883, 1.0330129666860974, 0.8487578715427883, 1.5226977107534714, 1.2714189609610644, 1.5226977107534714, 1.2714189609610644, 1.5226977107534714};// X0 weights
+
+//double LayerWeight[16] = {1.4091566745180932, 0.7020676448403224, 0.6054055986179145, 0.7020676448403224, 0.6054055986179145, 0.8415931435769973, 0.8061197656138868, 0.9811186423136724, 0.8061197656138868, 0.9811186423136724, 0.8061197656138868, 1.4462036381025891, 1.2075480996058319, 1.4462036381025891, 1.2075480996058319, 1.4462036381025891};
+
+double LayerWeight[16] = {1.};
+
+//double LayerWeight[16] = {0.4847555727337982, 1.0214605968539232, 0.4847555727337982, 1.0214605968539232, 0.4847555727337982, 1.1420105918768606, 0.6423912113800805, 1.2625605868997982, 0.6423912113800805, 1.2625605868997982, 0.6423912113800805, 1.6643939036429232, 0.9576624886726451, 1.6643939036429232, 0.9576624886726451, 1.6643939036429232};// dE/dx weights
+
+double LayerSumWeight = 1.;
+const int CMTHRESHOLD = 30;// anything less than this value is added to the commonmode sum
 
 // applied to all layers sum after commonmode subtraction and the ADC to MIP conversion
-const double ALLCELLS_THRESHOLD = 2460.;
-const double SEVENCELLS_THRESHOLD = 2460.;
-const double NINETEENCELLS_THRESHOLD = 2460.;
+const double ALLCELLS_THRESHOLD = 50.;
+const double SEVENCELLS_THRESHOLD = 50.;
+const double NINETEENCELLS_THRESHOLD = 50.;
 const double PION_ALLCELLS_THRESHOLD = 15.;
 const double PION_7CELLS_THRESHOLD = -100.;
 const double PION_19CELLS_THRESHOLD = -100.;
@@ -88,12 +101,17 @@ private:
 	double maxdist = (1 + sqrt (3) / 2) * HGCAL_TB_CELL::FULL_CELL_SIDE;
 	TH1F *h_sum_layer[MAXLAYERS], *h_layer_seven[MAXLAYERS], *h_layer_nineteen[MAXLAYERS], *h_sum_all, *h_seven_all, *h_nineteen_all;
         TH1F *h_x_layer[MAXLAYERS], *h_y_layer[MAXLAYERS];
+        TH2F *h_x_y_layer[MAXLAYERS];
+        TH2F *HighGain_LowGain_2D; 
 	int SPILL = 0, EVENT = 0, LAYER = 0;
 	double AllCells[MAXLAYERS][EVENTSPERSPILL * SPILLS] = {{0.}};
 	double SevenCells[MAXLAYERS][EVENTSPERSPILL * SPILLS] = {{0.}};
 	double NineteenCells[MAXLAYERS][EVENTSPERSPILL * SPILLS] = {{0.}};
         double X_Layer[MAXLAYERS][EVENTSPERSPILL * SPILLS] = {{0.}};
         double Y_Layer[MAXLAYERS][EVENTSPERSPILL * SPILLS] = {{0.}};
+        double Time_Stamp[EVENTSPERSPILL * SPILLS] = {0.};
+        double Delta_Time_Stamp[EVENTSPERSPILL * SPILLS] = {0.};  
+        double Time_Temp = 0.;
 };
 
 
@@ -108,25 +126,29 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 
 	//booking the histos
 	for(int layer = 0; layer < MAXLAYERS; layer++){
-		stringstream name, sevenname, nineteenname, Xname, Yname;
+		stringstream name, sevenname, nineteenname, Xname, Yname, X_Y_name;
 		name << "AllCells_Sum_Layer" << layer + 1;
 		sevenname << "Cells7_Sum_Layer" << layer + 1;
 		nineteenname << "Cells19_Sum_Layer" << layer + 1;
                 Xname << "X_Layer" << layer + 1;
                 Yname << "Y_Layer" << layer + 1;
+                X_Y_name<<"X_Y_Layer"<< layer + 1;
 
 		h_sum_layer[layer] = fs->make<TH1F>(name.str().c_str(), name.str().c_str(), 622, -10, 612);
 		h_layer_seven[layer] = fs->make<TH1F>(sevenname.str().c_str(), sevenname.str().c_str(), 622, -10, 612);
 		h_layer_nineteen[layer] = fs->make<TH1F>(nineteenname.str().c_str(), nineteenname.str().c_str(), 622, -10, 612);
                 h_x_layer[layer] = fs->make<TH1F>(Xname.str().c_str(), Xname.str().c_str(),2000,-10.,10. );
                 h_y_layer[layer] = fs->make<TH1F>(Yname.str().c_str(), Yname.str().c_str(),2000,-10.,10. );
-
+                h_x_y_layer[layer] = fs->make<TH2F>(X_Y_name.str().c_str(), X_Y_name.str().c_str(),2000,-10.,10.,2000,-10.,10. );
 	}
 
-	h_sum_all = fs->make<TH1F>("AllCells_Sum_AllLayers", "AllCells_Sum_AllLayers", 5010, -10, 5000); 
-	h_seven_all = fs->make<TH1F>("Cells7_Sum_AllLayers", "7Cells_Sum_AllLayers", 5010, -10, 5000); 
-	h_nineteen_all = fs->make<TH1F>("Cells19_Sum_AllLayers", "19Cells_Sum_AllLayers", 5010, -10, 5000); 
-
+	h_sum_all = fs->make<TH1F>("AllCells_Sum_AllLayers", "AllCells_Sum_AllLayers", 40010, -10, 40000);
+        h_sum_all->Sumw2(); 
+	h_seven_all = fs->make<TH1F>("Cells7_Sum_AllLayers", "7Cells_Sum_AllLayers", 40010, -10, 40000); 
+        h_seven_all->Sumw2();
+	h_nineteen_all = fs->make<TH1F>("Cells19_Sum_AllLayers", "19Cells_Sum_AllLayers", 40010, -10, 40000); 
+        h_nineteen_all->Sumw2();
+        HighGain_LowGain_2D = fs->make<TH2F>("HighGain_LowGain_2D","HighGain_LowGain_2D",4000,0,4000,4000,0,4000);
 }//constructor ends here
 
 
@@ -144,12 +166,22 @@ void
 Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setup)
 {
 
+        
 	if(((event.id()).event() - 1) % (EVENTSPERSPILL * MAXLAYERS) == 0 && (event.id()).event() != 1){
 		SPILL++;
 	}
 	LAYER = (((event.id()).event() - 1) / EVENTSPERSPILL) % MAXLAYERS;
 	EVENT = ((event.id()).event() - 1) % EVENTSPERSPILL + EVENTSPERSPILL * SPILL;
-
+        if(EVENT == 1){
+           Time_Temp = event.time().value();
+           Time_Stamp[EVENT] = Time_Temp;
+           Delta_Time_Stamp[EVENT] = 0.;
+          }
+        else{
+              Time_Stamp[EVENT] = event.time().value();
+              Delta_Time_Stamp[EVENT] = event.time().value() - Time_Temp;
+              Time_Temp = event.time().value();
+             }     
 	//opening Rechits
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_, Rechits);
@@ -167,7 +199,7 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
 
 		//getting X and Y coordinates
 		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), sensorsize);
-
+                HighGain_LowGain_2D->Fill(Rechit.energyLow(),Rechit.energyHigh());
                 if((Rechit.id()).cellType() != 0) continue;
 
 		if(FIRST){
@@ -229,7 +261,9 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
 
 		if((radius < 1.95 * maxdist && nineteennum < 19) && ((Rechit1.energyHigh() - commonmode)/ADCtoMIP[LAYER] > CMTHRESHOLD)){
 
-			nineteencells_sum += (Rechit1.energyHigh() - commonmode) / ADCtoMIP[LAYER];
+//			nineteencells_sum += (LayerWeight[LAYER]*(Rechit1.energyHigh() - commonmode))/ ADCtoMIP[LAYER];
+                        nineteencells_sum += ((Rechit1.energyHigh() - commonmode))/ ADCtoMIP[LAYER];
+
                         x_tmp += CellCentreXY.first*((Rechit1.energyHigh() - commonmode) / ADCtoMIP[LAYER]);
                         y_tmp += CellCentreXY.second*((Rechit1.energyHigh() - commonmode) / ADCtoMIP[LAYER]);
 			nineteennum++;
@@ -257,6 +291,13 @@ Layer_Sum_Analyzer::beginJob()
 
         for(int iii = 0; iii< 16;iii++)
             ADCtoMIP[iii] = ADCtoMIP[iii]/1.3; // Converting response to 120 GeV protons to MIPs
+/*
+        for(int iii= 0; iii<16;iii++){
+            LayerWeight[iii] += 0.8;
+            LayerSumWeight += LayerWeight[iii];
+           }
+*/
+
 
 }
 
@@ -267,9 +308,14 @@ Layer_Sum_Analyzer::endJob()
 
 	double allcells, sevencells, nineteencells;
 	bool doAllCells, do7Cells, do19Cells;
+        ofstream fs1;
+        fs1.open("/home/daq/CMSSW_8_0_1/src/HGCal/HGC_CERN_Time_Synch.txt"); 
+        fs1<<"# "<<"Event Num"<<"\t"<<"Time(us)"<<"\t"<<"Delta t(us)"<<"\t"<<"Cluster x[cm]"<<"\t"<<"Cluster y[cm]"<<endl;
 	for(int event = 0; event < (SPILL + 1) * EVENTSPERSPILL; event++){
 		allcells = sevencells = nineteencells = 0.;
 		doAllCells = do7Cells = do19Cells = false;
+//                fs1<<event+1<<"\t"<<200*Time_Stamp[event+1]/1000.<<"\t"<<200*Delta_Time_Stamp[event+1]/1000.<<endl;//division by 1000 to covert from ns --> us
+
 		for(int layer = 0; layer < MAXLAYERS; layer++){
 			allcells += AllCells[layer][event];
 			sevencells += SevenCells[layer][event];
@@ -286,7 +332,7 @@ Layer_Sum_Analyzer::endJob()
 				do7Cells  = true;
 			}
 			if(nineteencells >= NINETEENCELLS_THRESHOLD){
-				h_nineteen_all->Fill(nineteencells);
+				h_nineteen_all->Fill(nineteencells/LayerSumWeight);
 				do19Cells = true;
 			}
 		}
@@ -301,11 +347,12 @@ Layer_Sum_Analyzer::endJob()
 				do7Cells  = true;
 			}
 			if(nineteencells <= NINETEENCELLS_THRESHOLD && allcells >= PION_19CELLS_THRESHOLD){
-				h_nineteen_all->Fill(nineteencells);
+				h_nineteen_all->Fill(nineteencells/LayerSumWeight);
 				do19Cells = true;
 			}
 		}
 
+                
 		for(int layer = 0; layer < MAXLAYERS; layer++){
 			if(doAllCells){
 				h_sum_layer[layer]->Fill(AllCells[layer][event]);
@@ -317,11 +364,14 @@ Layer_Sum_Analyzer::endJob()
 				h_layer_nineteen[layer]->Fill(NineteenCells[layer][event]);
                                 h_x_layer[layer]->Fill(X_Layer[layer][event]);
                                 h_y_layer[layer]->Fill(Y_Layer[layer][event]);
-                                cout<<endl<<" Event = "<<event<<" LAYER = "<<layer<<" X= "<<X_Layer[layer][event]<<" Y= "<<Y_Layer[layer][event]<<endl;
+				h_x_y_layer[layer]->Fill(X_Layer[layer][event],Y_Layer[layer][event]);
+                                cout<<endl<<"   "<<layer<<"     "<<X_Layer[layer][event]<<"     "<<Y_Layer[layer][event]<<endl;
+                                fs1<<event+1<<"\t"<<200*Time_Stamp[event+1]/1000.<<"\t"<<200*Delta_Time_Stamp[event+1]/1000.<<"\t"<<X_Layer[layer][event]<<"\t"<<Y_Layer[layer][event]<<endl;                               
+//                                fs1<<event<<"	"<<layer<<"	"<<X_Layer[layer][event]<<"	"<<Y_Layer[layer][event]<<"	"<<Layer_Z[layer]<<"	"<<endl;
 			}
 		}
 	}
-		
+fs1.close();		
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
