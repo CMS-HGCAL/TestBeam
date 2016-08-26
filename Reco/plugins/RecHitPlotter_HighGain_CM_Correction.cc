@@ -1,20 +1,7 @@
-// -*- C++ -*-
+/* Modify RecHitPlotter_HighGain_Correlation_CM.cc to use the RecHitCommonMode class */
 //
-// Package:    HGCal/RecHitPlotter_HighGain_CM_Correction
-// Class:      RecHitPlotter_HighGain_CM_Correction
-//
-/**\class RecHitPlotter_HighGain_CM_Correction RecHitPlotter_HighGain_CM_Correction.cc HGCal/RecHitPlotter_HighGain_CM_Correction/plugins/RecHitPlotter_HighGain_CM_Correction.cc
-
- Description: [one line class summary]
-
- Implementation:
-     [Notes on implementation]
-*/
-//
-// Original Author:  Rajdeep Mohan Chatterjee
-//         Created:  Mon, 15 Feb 2016 09:47:43 GMT
-//
-//
+// Author:  Menglei Sun
+// Created: Fri, August 26 2016
 
 
 // system include files
