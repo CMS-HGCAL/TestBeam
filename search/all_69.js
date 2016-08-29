@@ -1,8 +1,10 @@
 var searchData=
 [
   ['ichan',['ichan',['../classHGCalTBElectronicsId.html#a2644f9a945814b7102aa5c696f0d831d',1,'HGCalTBElectronicsId']]],
-  ['id',['id',['../structHGCalCondObjectContainer_1_1Item.html#a0cca259b8300c306bf3401a78e7277aa',1,'HGCalCondObjectContainer::Item::id()'],['../classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd',1,'HGCalTBRecHit::id()'],['../classSKIROC2DataFrame.html#a343b1c60d5ab8ffb015ccdb2120a68e7',1,'SKIROC2DataFrame::id()']]],
+  ['id',['id',['../structHGCalCondObjectContainer_1_1Item.html#a0cca259b8300c306bf3401a78e7277aa',1,'HGCalCondObjectContainer::Item::id()'],['../classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd',1,'HGCalTBRecHit::id()'],['../classSKIROC2DataFrame.html#a343b1c60d5ab8ffb015ccdb2120a68e7',1,'SKIROC2DataFrame::id()'],['../classHGCSSTrackSegment.html#a090bdd608077ee877dc7b7ab31ea4369',1,'HGCSSTrackSegment::id()']]],
+  ['imap',['imap',['../structTBGeometry_1_1Element.html#a4ef9def85231cce4ce2161b87b851e4a',1,'TBGeometry::Element']]],
   ['indexof',['indexOf',['../classHGCalCondObjectContainerBase.html#aa97421d4a9f316aed3adaa511aba1593',1,'HGCalCondObjectContainerBase']]],
+  ['inidir',['IniDir',['../classDialog.html#a427f20655b848ac2c2558464c12c832a',1,'Dialog::IniDir()'],['../classFileDialog.html#a90aaedbab3fd96096172f0d9e2533ae3',1,'FileDialog::IniDir()']]],
   ['insert',['insert',['../classHGCalElectronicsMap.html#abf0843197865cf50b86645de207a08c5',1,'HGCalElectronicsMap']]],
   ['instructions_2edoc',['instructions.doc',['../instructions_8doc.html',1,'']]],
   ['instructions',['Instructions',['../instructions_.html',1,'']]],

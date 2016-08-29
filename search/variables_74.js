@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['tdc_5fshift',['TDC_SHIFT',['../classSKIROC2DataFrame_1_1Sample.html#a6cb251f6c57bfaaf135dd6ed583d6342',1,'SKIROC2DataFrame::Sample']]],
-  ['top',['Top',['../HGCalTBCellVertices_8cc.html#af554e93263c7de33f2f018d37ded4f78',1,'HGCalTBCellVertices.cc']]]
+  ['tdc',['TDC',['../structHGCSimDigiSource_1_1Cell.html#a9890b9afdc410fa99fe87be26e7bde57',1,'HGCSimDigiSource::Cell']]],
+  ['top',['Top',['../HGCalTBCellVertices_8cc.html#af554e93263c7de33f2f018d37ded4f78',1,'HGCalTBCellVertices.cc']]],
+  ['trigcountperspillflag',['trigcountperspillflag',['../HGCalTBTextSource_8cc.html#afc254f6766d3378efe609af1409bb6b2',1,'HGCalTBTextSource.cc']]]
 ];

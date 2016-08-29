@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">d6244c02cb92660301bae063b135512567b77f46</span>
+   &#160;<span id="projectnumber">03a93d6239a951948e06fb3ef8dae4cbdebfad30</span>
    </div>
   </td>
  </tr>
@@ -65,7 +65,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -85,24 +85,28 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <dd>load and store are <a class="el" href="classHGCalCondObjectContainer.html">HGCalCondObjectContainer</a> not templated.... so now takes only floats!!!  </dd>
 <dt><a class="anchor" id="_todo000003"></a>Member <a class="el" href="classHGCalTBNumberingScheme.html#a52400d46ec4984d64b8cc2d95303fa72">HGCalTBNumberingScheme::denseIndexFor</a>  (uint32_t rawDetId, uint64_t scheme) const </dt>
 <dd>need documentation!!!  </dd>
-<dt><a class="anchor" id="_todo000008"></a>Member <a class="el" href="classHGCalTBRawToDigi.html#ac328b38f99c32230c5f3286cf92e0dcb">HGCalTBRawToDigi::beginJob</a>  ()</dt>
+<dt><a class="anchor" id="_todo000009"></a>Member <a class="el" href="classHGCalTBRawToDigi.html#ac328b38f99c32230c5f3286cf92e0dcb">HGCalTBRawToDigi::beginJob</a>  ()</dt>
 <dd>this should be done by an ESProducer  </dd>
-<dt><a class="anchor" id="_todo000009"></a>Member <a class="el" href="classHGCalTBRawToDigi.html#a3f062f6c2577ca23b62fa21fd0ecdaf3">HGCalTBRawToDigi::produce</a>  (edm::Event &amp;e, const edm::EventSetup &amp;c)</dt>
-<dd>TDC value hardcoded to 0 because not in the readout  </dd>
-<dt><a class="anchor" id="_todo000006"></a>Member <a class="el" href="classHGCalTBRecHit.html#a94d783fb5096f9ef7566eeba676f07fd">HGCalTBRecHit::HGCalTBRecHit</a>  (const DetId &amp;id, float energyLow, float energyHigh, float time, uint32_t flags=0)</dt>
-<dd>set the default recHit energy to the highGain values unless saturated  </dd>
-<dt><a class="anchor" id="_todo000011"></a>Member <a class="el" href="classHGCalTBRecHitProducer.html#aaf7ac7c1f01c8dc36dca0161bfb465ab">HGCalTBRecHitProducer::produce</a>  (edm::Event &amp;, const edm::EventSetup &amp;)</dt>
+<dt><a class="anchor" id="_todo000010"></a>Member <a class="el" href="classHGCalTBRawToDigi.html#a3f062f6c2577ca23b62fa21fd0ecdaf3">HGCalTBRawToDigi::produce</a>  (edm::Event &amp;e, const edm::EventSetup &amp;c)</dt>
+<dd>Exception if 0????  </dd>
+<dt><a class="anchor" id="_todo000005"></a>Class <a class="el" href="classHGCalTBRecHit.html">HGCalTBRecHit</a>  </dt>
+<dd>fix the energy threshold for low gain saturation in a different way: now it's hardcoded  </dd>
+<dt><a class="anchor" id="_todo000016"></a>Member <a class="el" href="classHGCalTBRecHitProducer.html#aaf7ac7c1f01c8dc36dca0161bfb465ab">HGCalTBRecHitProducer::produce</a>  (edm::Event &amp;, const edm::EventSetup &amp;)</dt>
 <dd><p class="startdd">check if reading the conditions from file some channels are not in the file! </p>
 <p>use time calibration! </p>
 <p class="enddd">define an algorithm for the energy if more than 1 sample, code inefficient  </p>
 </dd>
-<dt><a class="anchor" id="_todo000010"></a>Class <a class="el" href="classHGCalTBTextSource.html">HGCalTBTextSource</a>  </dt>
-<dd>efficiency not tested, many improvements can be done FED ID is set to the first chipID, this has to be fixed: maybe the FED ID can be read from the file or the filename The number of skiroc chips is hard coded, but should be set by cfg file based on the setup </dd>
+<dt><a class="anchor" id="_todo000011"></a>Class <a class="el" href="classHGCalTBTextSource.html">HGCalTBTextSource</a>  </dt>
+<dd><p class="startdd">replace c-like scanf with c++ versions </p>
+<p class="enddd">change run and fed IDs (now are hardcoded)  </p>
+</dd>
+<dt><a class="anchor" id="_todo000012"></a>Member <a class="el" href="classHGCalTBTextSource.html#af1506e04cf3367e11dd60a84814b9513">HGCalTBTextSource::HGCalTBTextSource</a>  (const edm::ParameterSet &amp;pset, edm::InputSourceDescription const &amp;desc)</dt>
+<dd>check and read from file? </dd>
 </dl>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 15 2016 02:44:47 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 29 2016 11:29:32 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

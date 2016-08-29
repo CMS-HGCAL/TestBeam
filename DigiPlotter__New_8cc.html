@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">d6244c02cb92660301bae063b135512567b77f46</span>
+   &#160;<span id="projectnumber">03a93d6239a951948e06fb3ef8dae4cbdebfad30</span>
    </div>
   </td>
  </tr>
@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -82,12 +82,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_e46803c94c4b811f3ca40b0db668b707.html">RawToDigi</a></li><li class="navelem"><a class="el" href="dir_433d0385aeae3b9ced8f2acf632e3771.html">plugins</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_78f63a5688909ac856b1fda199e5bacf.html">RawToDigi</a></li><li class="navelem"><a class="el" href="dir_722b3296c03419ff1941500c933c1976.html">plugins</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a>  </div>
+<a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">DigiPlotter_New.cc File Reference</div>  </div>
 </div><!--header-->
@@ -103,30 +105,57 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <code>#include &quot;FWCore/Framework/interface/MakerMacros.h&quot;</code><br/>
 <code>#include &quot;FWCore/ParameterSet/interface/ParameterSet.h&quot;</code><br/>
 <code>#include &quot;FWCore/ServiceRegistry/interface/Service.h&quot;</code><br/>
-<code>#include &quot;<a class="el" href="HGCalTBRecHitCollections_8h_source.html">HGCal/DataFormats/interface/HGCalTBRecHitCollections.h</a>&quot;</code><br/>
-<code>#include &quot;<a class="el" href="HGCalTBDetId_8h_source.html">HGCal/DataFormats/interface/HGCalTBDetId.h</a>&quot;</code><br/>
-<code>#include &quot;<a class="el" href="HGCalTBRecHit_8h_source.html">HGCal/DataFormats/interface/HGCalTBRecHit.h</a>&quot;</code><br/>
-<code>#include &quot;<a class="el" href="HGCalTBCellVertices_8h_source.html">HGCal/Geometry/interface/HGCalTBCellVertices.h</a>&quot;</code><br/>
-<code>#include &quot;<a class="el" href="HGCalTBTopology_8h_source.html">HGCal/Geometry/interface/HGCalTBTopology.h</a>&quot;</code><br/>
+<code>#include &quot;HGCal/DataFormats/interface/HGCalTBRecHitCollections.h&quot;</code><br/>
+<code>#include &quot;HGCal/DataFormats/interface/HGCalTBDetId.h&quot;</code><br/>
+<code>#include &quot;HGCal/DataFormats/interface/HGCalTBRecHit.h&quot;</code><br/>
+<code>#include &quot;HGCal/Geometry/interface/HGCalTBCellVertices.h&quot;</code><br/>
+<code>#include &quot;HGCal/Geometry/interface/HGCalTBTopology.h&quot;</code><br/>
+<code>#include &quot;HGCal/Geometry/interface/HGCalTBGeometryParameters.h&quot;</code><br/>
 <code>#include &quot;CommonTools/UtilAlgos/interface/TFileService.h&quot;</code><br/>
-<code>#include &quot;<a class="el" href="HGCalTBDataFrameContainers_8h_source.html">HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h</a>&quot;</code><br/>
-<code>#include &quot;<a class="el" href="HGCalElectronicsMap_8h_source.html">HGCal/CondObjects/interface/HGCalElectronicsMap.h</a>&quot;</code><br/>
-<code>#include &quot;<a class="el" href="HGCalTBElectronicsId_8h_source.html">HGCal/DataFormats/interface/HGCalTBElectronicsId.h</a>&quot;</code><br/>
+<code>#include &quot;HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h&quot;</code><br/>
+<code>#include &quot;HGCal/CondObjects/interface/HGCalElectronicsMap.h&quot;</code><br/>
+<code>#include &quot;HGCal/DataFormats/interface/HGCalTBElectronicsId.h&quot;</code><br/>
+<code>#include &quot;HGCal/DataFormats/interface/SKIROCParameters.h&quot;</code><br/>
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for DigiPlotter_New.cc:</div>
 <div class="dyncontent">
 <div class="center"><img src="DigiPlotter__New_8cc__incl.png" border="0" usemap="#RawToDigi_2plugins_2DigiPlotter__New_8cc" alt=""/></div>
 <map name="RawToDigi_2plugins_2DigiPlotter__New_8cc" id="RawToDigi_2plugins_2DigiPlotter__New_8cc">
-<area shape="rect" href="HGCalTBRecHitCollections_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHitCollections.h" alt="" coords="1805,96,2003,139"/><area shape="rect" href="HGCalTBRecHit_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHit.h" alt="" coords="1799,187,1996,229"/><area shape="rect" href="HGCalTBDetId_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDetId.h" alt="" coords="2481,277,2679,320"/><area shape="rect" href="HGCalTBCellVertices_8h.html" title="HGCal/Geometry/interface\l/HGCalTBCellVertices.h" alt="" coords="2156,96,2335,139"/><area shape="rect" href="HGCalTBTopology_8h.html" title="HGCal/Geometry/interface\l/HGCalTBTopology.h" alt="" coords="2020,187,2199,229"/><area shape="rect" href="HGCalTBDataFrameContainers_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDataFrameContainers.h" alt="" coords="2727,96,2951,139"/><area shape="rect" href="HGCalElectronicsMap_8h.html" title="HGCal/CondObjects/interface\l/HGCalElectronicsMap.h" alt="" coords="1007,187,1204,229"/><area shape="rect" href="HGCalTBElectronicsId_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBElectronicsId.h" alt="" coords="3300,187,3497,229"/><area shape="rect" href="HGCalTBCellParameters_8h.html" title="HGCal/Geometry/interface\l/HGCalTBCellParameters.h" alt="" coords="2359,187,2543,229"/><area shape="rect" href="SKIROC2DataFrame_8h.html" title="HGCal/DataFormats/interface\l/SKIROC2DataFrame.h" alt="" coords="3079,187,3276,229"/><area shape="rect" href="SKIROCParameters_8h.html" title="HGCal/DataFormats/interface\l/SKIROCParameters.h" alt="" coords="2617,187,2815,229"/></map>
+</map>
 </div>
 </div>
 <p><a href="DigiPlotter__New_8cc_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:aac7ec137b84499b383540ee1eb134cb4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="DigiPlotter__New_8cc.html#aac7ec137b84499b383540ee1eb134cb4">MAXVERTICES</a>&#160;&#160;&#160;6</td></tr>
+<tr class="separator:aac7ec137b84499b383540ee1eb134cb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ae840cd7b247527128da651ba885020ef"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="DigiPlotter__New_8cc.html#ae840cd7b247527128da651ba885020ef">DEFINE_FWK_MODULE</a> (DigiPlotter_New)</td></tr>
 <tr class="separator:ae840cd7b247527128da651ba885020ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a6e760cf2eb11a7227cf205234c03e2c9"><td class="memItemLeft" align="right" valign="top">edm::Service&lt; TFileService &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="DigiPlotter__New_8cc.html#a6e760cf2eb11a7227cf205234c03e2c9">fs</a></td></tr>
+<tr class="separator:a6e760cf2eb11a7227cf205234c03e2c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Macro Definition Documentation</h2>
+<a class="anchor" id="aac7ec137b84499b383540ee1eb134cb4"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MAXVERTICES&#160;&#160;&#160;6</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="DigiPlotter__New_8cc_source.html#l00044">44</a> of file <a class="el" href="DigiPlotter__New_8cc_source.html">DigiPlotter_New.cc</a>.</p>
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
 <a class="anchor" id="ae840cd7b247527128da651ba885020ef"></a>
 <div class="memitem">
@@ -144,10 +173,25 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a class="anchor" id="a6e760cf2eb11a7227cf205234c03e2c9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">edm::Service&lt;TFileService&gt; fs</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Definition at line <a class="el" href="DigiPlotter__New_8cc_source.html#l00080">80</a> of file <a class="el" href="DigiPlotter__New_8cc_source.html">DigiPlotter_New.cc</a>.</p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 15 2016 02:44:47 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 29 2016 11:29:32 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

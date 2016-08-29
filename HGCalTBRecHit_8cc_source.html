@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">d6244c02cb92660301bae063b135512567b77f46</span>
+   &#160;<span id="projectnumber">03a93d6239a951948e06fb3ef8dae4cbdebfad30</span>
    </div>
   </td>
  </tr>
@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -82,7 +82,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_2171f7ec022c5423887b07c69b2f5b48.html">DataFormats</a></li><li class="navelem"><a class="el" href="dir_ff05210ea7d3425186b0c5c3346fb559.html">src</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_6ba8779e58d6e750aefa3b87cfb38344.html">DataFormats</a></li><li class="navelem"><a class="el" href="dir_81ab35a754b14b9a2382b10242b910e0.html">src</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -90,7 +90,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">HGCalTBRecHit.cc</div>  </div>
 </div><!--header-->
 <div class="contents">
-<a href="HGCalTBRecHit_8cc.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="HGCalTBRecHit_8h.html">HGCal/DataFormats/interface/HGCalTBRecHit.h</a>&quot;</span></div>
+<a href="HGCalTBRecHit_8cc.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#include &quot;HGCal/DataFormats/interface/HGCalTBRecHit.h&quot;</span></div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor">#include &lt;cassert&gt;</span></div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="preprocessor">#include &lt;math.h&gt;</span></div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;</div>
@@ -104,24 +104,34 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;    _energyLow(energyLow),</div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    _energyHigh(energyHigh)</div>
 <div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;{</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment">    ///\todo set the default recHit energy to the highGain values unless saturated</span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment"></span>}</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;</div>
-<div class="line"><a name="l00019"></a><span class="lineno"><a class="line" href="HGCalTBRecHit_8cc.html#a5f83a46231561f851832f497520ae5d7">   19</a></span>&#160;std::ostream&amp; <a class="code" href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a>(std::ostream&amp; s, <span class="keyword">const</span> <a class="code" href="classHGCalTBRecHit.html">HGCalTBRecHit</a>&amp; hit)</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;{</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    <span class="keywordflow">return</span> s &lt;&lt; hit.<a class="code" href="classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd">id</a>() &lt;&lt; <span class="stringliteral">&quot;: &quot;</span> &lt;&lt; hit.energy() &lt;&lt; <span class="stringliteral">&quot; GeV, &quot;</span> &lt;&lt; hit.time() &lt;&lt; <span class="stringliteral">&quot; ns&quot;</span>;</div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;</div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;}</div>
-<div class="ttc" id="HGCalTBRecHit_8h_html"><div class="ttname"><a href="HGCalTBRecHit_8h.html">HGCalTBRecHit.h</a></div></div>
-<div class="ttc" id="classHGCalTBRecHit_html"><div class="ttname"><a href="classHGCalTBRecHit.html">HGCalTBRecHit</a></div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8h_source.html#l00013">HGCalTBRecHit.h:13</a></div></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;</div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="comment">// setting the default energy</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    <span class="keywordflow">if</span>(<a class="code" href="classHGCalTBRecHit.html#a66c45f4209107f7e6d03fb2b67e916cc">checkFlag</a>(<a class="code" href="classHGCalTBRecHit.html#a319378af62d1aba267f453c2d055f64ea4f5e80dfe02e5eeeb4b2e667cb508e35">kLowGainSaturated</a>)){</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;        setEnergy(-1);</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;        <span class="keywordflow">if</span> ( <a class="code" href="classHGCalTBRecHit.html#a66c45f4209107f7e6d03fb2b67e916cc">checkFlag</a>(<a class="code" href="classHGCalTBRecHit.html#a319378af62d1aba267f453c2d055f64ea6dcef14f032c2a34b8ef15916cdcc2e8">kHighGainSaturated</a>) ){</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;            setEnergy(energyLow);</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;        } <span class="keywordflow">else</span> setEnergy(energyHigh);</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;    }</div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;}</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;</div>
+<div class="line"><a name="l00027"></a><span class="lineno"><a class="line" href="HGCalTBRecHit_8cc.html#a5f83a46231561f851832f497520ae5d7">   27</a></span>&#160;std::ostream&amp; <a class="code" href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a>(std::ostream&amp; s, <span class="keyword">const</span> <a class="code" href="classHGCalTBRecHit.html">HGCalTBRecHit</a>&amp; hit)</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;{</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    <span class="keywordflow">return</span> s &lt;&lt; hit.<a class="code" href="classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd">id</a>() &lt;&lt; <span class="stringliteral">&quot;: &quot;</span> &lt;&lt; hit.energy() &lt;&lt; <span class="stringliteral">&quot; GeV, &quot;</span> &lt;&lt; hit.time() &lt;&lt; <span class="stringliteral">&quot; ns&quot;</span>;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;}</div>
+<div class="ttc" id="classHGCalTBRecHit_html_a319378af62d1aba267f453c2d055f64ea6dcef14f032c2a34b8ef15916cdcc2e8"><div class="ttname"><a href="classHGCalTBRecHit.html#a319378af62d1aba267f453c2d055f64ea6dcef14f032c2a34b8ef15916cdcc2e8">HGCalTBRecHit::kHighGainSaturated</a></div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8h_source.html#l00023">HGCalTBRecHit.h:23</a></div></div>
+<div class="ttc" id="classHGCalTBRecHit_html"><div class="ttname"><a href="classHGCalTBRecHit.html">HGCalTBRecHit</a></div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8h_source.html#l00016">HGCalTBRecHit.h:16</a></div></div>
+<div class="ttc" id="classHGCalTBRecHit_html_a319378af62d1aba267f453c2d055f64ea4f5e80dfe02e5eeeb4b2e667cb508e35"><div class="ttname"><a href="classHGCalTBRecHit.html#a319378af62d1aba267f453c2d055f64ea4f5e80dfe02e5eeeb4b2e667cb508e35">HGCalTBRecHit::kLowGainSaturated</a></div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8h_source.html#l00024">HGCalTBRecHit.h:24</a></div></div>
+<div class="ttc" id="classHGCalTBRecHit_html_a66c45f4209107f7e6d03fb2b67e916cc"><div class="ttname"><a href="classHGCalTBRecHit.html#a66c45f4209107f7e6d03fb2b67e916cc">HGCalTBRecHit::checkFlag</a></div><div class="ttdeci">bool checkFlag(int flag) const </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8h_source.html#l00054">HGCalTBRecHit.h:54</a></div></div>
 <div class="ttc" id="HGCalTBDetId_8h_html_afcfc2837562fc0ab7716680d5a09aa0b"><div class="ttname"><a href="HGCalTBDetId_8h.html#afcfc2837562fc0ab7716680d5a09aa0b">operator&lt;&lt;</a></div><div class="ttdeci">std::ostream &amp; operator&lt;&lt;(std::ostream &amp;, const HGCalTBDetId &amp;id)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBDetId_8cc_source.html#l00037">HGCalTBDetId.cc:37</a></div></div>
-<div class="ttc" id="classHGCalTBRecHit_html_ab7cf3ae0bba4ba9524a83089747f789c"><div class="ttname"><a href="classHGCalTBRecHit.html#ab7cf3ae0bba4ba9524a83089747f789c">HGCalTBRecHit::HGCalTBRecHit</a></div><div class="ttdeci">HGCalTBRecHit()</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8cc_source.html#l00005">HGCalTBRecHit.cc:5</a></div></div>
-<div class="ttc" id="classHGCalTBRecHit_html_a1635cda50df835cd1ab96b68d1a4aabd"><div class="ttname"><a href="classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd">HGCalTBRecHit::id</a></div><div class="ttdeci">HGCalTBDetId id() const </div><div class="ttdoc">get the id </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8h_source.html#l00022">HGCalTBRecHit.h:22</a></div></div>
+<div class="ttc" id="classHGCalTBRecHit_html_ab7cf3ae0bba4ba9524a83089747f789c"><div class="ttname"><a href="classHGCalTBRecHit.html#ab7cf3ae0bba4ba9524a83089747f789c">HGCalTBRecHit::HGCalTBRecHit</a></div><div class="ttdeci">enum HGCalTBRecHit::Flags HGCalTBRecHit()</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8cc_source.html#l00005">HGCalTBRecHit.cc:5</a></div></div>
+<div class="ttc" id="classHGCalTBRecHit_html_a1635cda50df835cd1ab96b68d1a4aabd"><div class="ttname"><a href="classHGCalTBRecHit.html#a1635cda50df835cd1ab96b68d1a4aabd">HGCalTBRecHit::id</a></div><div class="ttdeci">HGCalTBDetId id() const </div><div class="ttdoc">get the id </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRecHit_8h_source.html#l00032">HGCalTBRecHit.h:32</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 15 2016 02:44:44 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 29 2016 11:29:32 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

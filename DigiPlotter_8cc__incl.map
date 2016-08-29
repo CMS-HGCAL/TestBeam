@@ -1,15 +1,2 @@
 <map id="RawToDigi/plugins/DigiPlotter.cc" name="RawToDigi/plugins/DigiPlotter.cc">
-<area shape="rect" href="$HGCalTBRecHitCollections_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHitCollections.h" alt="" coords="1805,80,2003,123"/>
-<area shape="rect" href="$HGCalTBRecHit_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHit.h" alt="" coords="1224,171,1421,213"/>
-<area shape="rect" href="$HGCalTBDetId_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDetId.h" alt="" coords="1931,261,2128,304"/>
-<area shape="rect" href="$HGCalTBCellVertices_8h.html" title="HGCal/Geometry/interface\l/HGCalTBCellVertices.h" alt="" coords="3565,80,3744,123"/>
-<area shape="rect" href="$HGCalTBTopology_8h.html" title="HGCal/Geometry/interface\l/HGCalTBTopology.h" alt="" coords="3496,171,3675,213"/>
-<area shape="rect" href="$HGCalElectronicsMap_8h.html" title="HGCal/CondObjects/interface\l/HGCalElectronicsMap.h" alt="" coords="2971,171,3168,213"/>
-<area shape="rect" href="$HGCalCondObjectTextIO_8h.html" title="HGCal/CondObjects/interface\l/HGCalCondObjectTextIO.h" alt="" coords="3113,80,3311,123"/>
-<area shape="rect" href="$HGCalTBElectronicsId_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBElectronicsId.h" alt="" coords="2067,171,2264,213"/>
-<area shape="rect" href="$HGCalTBDataFrameContainers_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDataFrameContainers.h" alt="" coords="2391,80,2615,123"/>
-<area shape="rect" href="$HGCalTBCellParameters_8h.html" title="HGCal/Geometry/interface\l/HGCalTBCellParameters.h" alt="" coords="3749,171,3933,213"/>
-<area shape="rect" href="$HGCalCondObjectContainer_8h.html" title="HGCal/CondObjects/interface\l/HGCalCondObjectContainer.h" alt="" coords="3269,171,3472,213"/>
-<area shape="rect" href="$SKIROC2DataFrame_8h.html" title="HGCal/DataFormats/interface\l/SKIROC2DataFrame.h" alt="" coords="2288,171,2485,213"/>
-<area shape="rect" href="$SKIROCParameters_8h.html" title="HGCal/DataFormats/interface\l/SKIROCParameters.h" alt="" coords="2749,171,2947,213"/>
 </map>

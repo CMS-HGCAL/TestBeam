@@ -1,13 +1,2 @@
 <map id="RawToDigi/plugins/DigiPlotter_New.cc" name="RawToDigi/plugins/DigiPlotter_New.cc">
-<area shape="rect" href="$HGCalTBRecHitCollections_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHitCollections.h" alt="" coords="1805,96,2003,139"/>
-<area shape="rect" href="$HGCalTBRecHit_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBRecHit.h" alt="" coords="1799,187,1996,229"/>
-<area shape="rect" href="$HGCalTBDetId_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDetId.h" alt="" coords="2481,277,2679,320"/>
-<area shape="rect" href="$HGCalTBCellVertices_8h.html" title="HGCal/Geometry/interface\l/HGCalTBCellVertices.h" alt="" coords="2156,96,2335,139"/>
-<area shape="rect" href="$HGCalTBTopology_8h.html" title="HGCal/Geometry/interface\l/HGCalTBTopology.h" alt="" coords="2020,187,2199,229"/>
-<area shape="rect" href="$HGCalTBDataFrameContainers_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBDataFrameContainers.h" alt="" coords="2727,96,2951,139"/>
-<area shape="rect" href="$HGCalElectronicsMap_8h.html" title="HGCal/CondObjects/interface\l/HGCalElectronicsMap.h" alt="" coords="1007,187,1204,229"/>
-<area shape="rect" href="$HGCalTBElectronicsId_8h.html" title="HGCal/DataFormats/interface\l/HGCalTBElectronicsId.h" alt="" coords="3300,187,3497,229"/>
-<area shape="rect" href="$HGCalTBCellParameters_8h.html" title="HGCal/Geometry/interface\l/HGCalTBCellParameters.h" alt="" coords="2359,187,2543,229"/>
-<area shape="rect" href="$SKIROC2DataFrame_8h.html" title="HGCal/DataFormats/interface\l/SKIROC2DataFrame.h" alt="" coords="3079,187,3276,229"/>
-<area shape="rect" href="$SKIROCParameters_8h.html" title="HGCal/DataFormats/interface\l/SKIROCParameters.h" alt="" coords="2617,187,2815,229"/>
 </map>

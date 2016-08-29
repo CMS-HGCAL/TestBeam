@@ -3,6 +3,7 @@ var searchData=
   ['kcelltypecalibinner',['kCellTypeCalibInner',['../classHGCalTBDetId.html#a18aae85a1950e2ab1296d424fee42461',1,'HGCalTBDetId']]],
   ['kcelltypecalibouter',['kCellTypeCalibOuter',['../classHGCalTBDetId.html#a437393cfc7b4446fa1667d52918c0d55',1,'HGCalTBDetId']]],
   ['kcelltypestandard',['kCellTypeStandard',['../classHGCalTBDetId.html#ab12edf9fdc42e58291a17999f0d93004',1,'HGCalTBDetId']]],
+  ['kgood',['kGood',['../HGCalTBRecHit_8h.html#a589126f75c17989842158d4200876cd4',1,'HGCalTBRecHit.h']]],
   ['khgcallayermask',['kHGCalLayerMask',['../classHGCalTBDetId.html#aa9944b0cb50311312dab19a14455759c',1,'HGCalTBDetId']]],
   ['khgcallayeroffset',['kHGCalLayerOffset',['../classHGCalTBDetId.html#acf483204488af74ba6205245e2fb910b',1,'HGCalTBDetId']]],
   ['khgcaltbcelltypemask',['kHGCalTBCellTypeMask',['../classHGCalTBDetId.html#afd4d9bb01860d413e4f940b9246341d4',1,'HGCalTBDetId']]],
@@ -21,8 +22,10 @@ var searchData=
   ['khgcaltbxsignmask',['kHGCalTBXSignMask',['../classHGCalTBDetId.html#a4c7a19195cab3dc5288f4b4b2d01942f',1,'HGCalTBDetId']]],
   ['khgcalzsidemask',['kHGCalZsideMask',['../classHGCalTBDetId.html#a2b76e89257077d3ae1e2b00f4e5cfdb3',1,'HGCalTBDetId']]],
   ['khgcalzsideoffset',['kHGCalZsideOffset',['../classHGCalTBDetId.html#a826b09d59c6fcfe9201771584f481b04',1,'HGCalTBDetId']]],
+  ['khighgainsaturated',['kHighGainSaturated',['../HGCalTBRecHit_8h.html#a2609a6d15629fed0f3c0fe7208d160a0',1,'HGCalTBRecHit.h']]],
   ['kichanmask',['kIChanMask',['../classHGCalTBElectronicsId.html#ac8dd68341243c034be18b7d53cbfa017',1,'HGCalTBElectronicsId']]],
   ['kichanoffset',['kIChanOffset',['../classHGCalTBElectronicsId.html#a01c505210b304f03f6e2749474f46af4',1,'HGCalTBElectronicsId']]],
   ['kiskirocmask',['kISkiRocMask',['../classHGCalTBElectronicsId.html#a39deb366d5705db6a46a731588d47f5e',1,'HGCalTBElectronicsId']]],
-  ['kiskirocoffset',['kISkiRocOffset',['../classHGCalTBElectronicsId.html#ab70e1a8d1e7cebb0fe685477d1444abe',1,'HGCalTBElectronicsId']]]
+  ['kiskirocoffset',['kISkiRocOffset',['../classHGCalTBElectronicsId.html#ab70e1a8d1e7cebb0fe685477d1444abe',1,'HGCalTBElectronicsId']]],
+  ['klowgainsaturated',['kLowGainSaturated',['../HGCalTBRecHit_8h.html#afb1a9cac450c160369a52a14765fc7c7',1,'HGCalTBRecHit.h']]]
 ];

@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['helpdialog',['HelpDialog',['../classHelpDialog.html',1,'']]],
   ['hgcal',['HGCal',['../classHGCal.html',1,'']]],
   ['hgcalcondobjectcontainer',['HGCalCondObjectContainer',['../classHGCalCondObjectContainer.html',1,'']]],
   ['hgcalcondobjectcontainerbase',['HGCalCondObjectContainerBase',['../classHGCalCondObjectContainerBase.html',1,'']]],
@@ -15,5 +16,9 @@ var searchData=
   ['hgcaltbrechit',['HGCalTBRecHit',['../classHGCalTBRecHit.html',1,'']]],
   ['hgcaltbrechitproducer',['HGCalTBRecHitProducer',['../classHGCalTBRecHitProducer.html',1,'']]],
   ['hgcaltbtextsource',['HGCalTBTextSource',['../classHGCalTBTextSource.html',1,'']]],
-  ['hgcaltbtopology',['HGCalTBTopology',['../classHGCalTBTopology.html',1,'']]]
+  ['hgcaltbtopology',['HGCalTBTopology',['../classHGCalTBTopology.html',1,'']]],
+  ['hgcaltbtrack',['HGCalTBTrack',['../classHGCalTBTrack.html',1,'']]],
+  ['hgccellmap',['HGCCellMap',['../classHGCCellMap.html',1,'']]],
+  ['hgcsimdigisource',['HGCSimDigiSource',['../classHGCSimDigiSource.html',1,'']]],
+  ['hgcsstracksegment',['HGCSSTrackSegment',['../classHGCSSTrackSegment.html',1,'']]]
 ];

@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">d6244c02cb92660301bae063b135512567b77f46</span>
+   &#160;<span id="projectnumber">03a93d6239a951948e06fb3ef8dae4cbdebfad30</span>
    </div>
   </td>
  </tr>
@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -82,7 +82,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_e46803c94c4b811f3ca40b0db668b707.html">RawToDigi</a></li><li class="navelem"><a class="el" href="dir_433d0385aeae3b9ced8f2acf632e3771.html">plugins</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_78f63a5688909ac856b1fda199e5bacf.html">RawToDigi</a></li><li class="navelem"><a class="el" href="dir_722b3296c03419ff1941500c933c1976.html">plugins</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -90,117 +90,157 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="title">HGCalTBTextSource.cc</div>  </div>
 </div><!--header-->
 <div class="contents">
-<a href="HGCalTBTextSource_8cc.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#include &quot;<a class="code" href="HGCalTBTextSource_8h.html">HGCal/RawToDigi/plugins/HGCalTBTextSource.h</a>&quot;</span></div>
-<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment">//#define DEBUG</span></div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment">//#define DEBUGTIME</span></div>
-<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;</div>
-<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="preprocessor">#ifdef DEBUG</span></div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#include &lt;iostream&gt;</span></div>
-<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#ifdef DEBUGTIME</span></div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor"></span><span class="preprocessor">#include &lt;iostream&gt;</span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="keywordtype">bool</span> HGCalTBTextSource::readLines()</div>
-<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;{</div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;    <span class="comment">//m_lines.clear();</span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;    m_skiwords.clear();</div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;    <span class="keywordtype">char</span> buffer[1024];</div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> triggerID_tmp=0;</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;</div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;    <span class="comment">//unsigned int length, bcid;</span></div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#ifdef DEBUG</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor"></span>    std::cout &lt;&lt; <span class="stringliteral">&quot;[DEBUG] Readline&quot;</span> &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="preprocessor"></span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;    <span class="keywordflow">if</span>(m_file.peek()!=<span class="charliteral">&#39;C&#39;</span>){</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;        <span class="comment">//cms::LogError(&quot;InputSource&quot;) &lt;&lt; &quot;Input file format does not match: reading character #&quot; &lt;&lt; m_file.peek() &lt;&lt; &quot;#&quot;;</span></div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;        <span class="keywordflow">throw</span> cms::Exception(<span class="stringliteral">&quot;MismatchInputSource&quot;</span>) &lt;&lt; <span class="stringliteral">&quot;#&quot;</span> &lt;&lt; m_file.peek() &lt;&lt; <span class="stringliteral">&quot;#&quot;</span>;</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;    }</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    <span class="keywordflow">for</span>(<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> iSkiroc =0 ; iSkiroc &lt; <a class="code" href="HGCalTBTextSource_8h.html#ae3c6232cc7f146ec5d21a0f4d56bc2df">MAXSKIROCS</a>; ++iSkiroc){</div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;        <span class="comment">// read the first line</span></div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        buffer[0] = 0;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        m_file.getline(buffer, 1000);</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        <span class="keywordflow">if</span>( sscanf(buffer, <span class="stringliteral">&quot;CHIP %u TRIG: %x TIME: %x RUN: %u EV: %u&quot;</span>, &amp;m_sourceId_tmp, &amp;triggerID_tmp, &amp;m_time_tmp, &amp;m_run_tmp, &amp;m_event_tmp) != 5) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;        <span class="keywordflow">if</span>(iSkiroc==0){</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;            m_event = m_event_tmp;</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;            m_run = m_run_tmp;</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;            m_time = m_time_tmp;</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;            m_sourceId = m_sourceId_tmp;</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;            ++m_event;</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;            m_time = m_time &gt;&gt; 8;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        }</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="preprocessor">#ifdef DEBUGTIME</span></div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="preprocessor"></span>        std::cout &lt;&lt; m_run &lt;&lt; <span class="stringliteral">&quot;\t&quot;</span> &lt;&lt; m_event &lt;&lt; <span class="stringliteral">&quot;\t&quot;</span> &lt;&lt; m_time &lt;&lt; <span class="stringliteral">&quot;\n&quot;</span>;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="preprocessor"></span>        </div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        assert( (triggerID_tmp &amp; 0xF0000000) == 0x80000000 ); <span class="comment">// check if the skiroc is fine  ///\todo transform to exception</span></div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        </div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;        <span class="keywordflow">while</span> ( m_file.peek()!=<span class="charliteral">&#39;C&#39;</span> &amp;&amp; m_file.good()) {</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;            buffer[0] = 0;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;            m_file.getline(buffer, 1000);</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="preprocessor">#ifdef DEBUG</span></div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="preprocessor"></span>            std::cout &lt;&lt; m_sourceId &lt;&lt; <span class="stringliteral">&quot;\t&quot;</span> &lt;&lt; m_event &lt;&lt; <span class="stringliteral">&quot;\t&quot;</span> &lt;&lt; m_time &lt;&lt; <span class="stringliteral">&quot;\t&quot;</span> &lt;&lt; buffer &lt;&lt; <span class="stringliteral">&quot;\n&quot;</span>; <span class="comment">// buffer has a \n</span></div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="preprocessor">#endif    </span></div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="preprocessor"></span>            parseAddSkiword(m_skiwords, buffer);</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        }</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    }</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keywordflow">return</span> !m_skiwords.empty();</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;}</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="keywordtype">void</span> HGCalTBTextSource::produce(edm::Event &amp; e)</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;{</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    std::auto_ptr&lt;FEDRawDataCollection&gt; bare_product(<span class="keyword">new</span>  FEDRawDataCollection());</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    FEDRawData&amp; fed = bare_product-&gt;FEDData(m_sourceId);</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keywordtype">size_t</span> len = <span class="keyword">sizeof</span>(uint16_t) * m_skiwords.size();</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    fed.resize(len);</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    memcpy(fed.data(), &amp;(m_skiwords[0]), len);</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    e.put(bare_product);</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;}</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="keywordtype">void</span> HGCalTBTextSource::parseAddSkiword(std::vector&lt;uint16_t&gt;&amp; skiwords, std::string i){</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    uint32_t a, b;</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    sscanf(i.c_str(), <span class="stringliteral">&quot;%x %x&quot;</span>, &amp;a, &amp;b);</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keywordflow">if</span>(a==0) <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        </div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment">// two words of 16bits for ADC high gain and low gain</span></div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    skiwords.push_back(uint16_t(b &gt;&gt; 16));</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    skiwords.push_back(uint16_t(b));</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;}</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;</div>
+<a href="HGCalTBTextSource_8cc.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="preprocessor">#include &lt;iostream&gt;</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="preprocessor">#include &quot;HGCal/RawToDigi/plugins/HGCalTBTextSource.h&quot;</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="preprocessor">#include &quot;HGCal/Geometry/interface/HGCalTBGeometryParameters.h&quot;</span></div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="preprocessor">#include &quot;HGCal/Geometry/interface/HGCalTBSpillParameters.h&quot;</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="keyword">using namespace </span>std;</div>
+<div class="line"><a name="l00006"></a><span class="lineno"><a class="line" href="HGCalTBTextSource_8cc.html#af2ac908715061490f9f4b9a6031cbae9">    6</a></span>&#160;<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> <a class="code" href="HGCalTBTextSource_8cc.html#af2ac908715061490f9f4b9a6031cbae9">runcounter</a> = 0;</div>
+<div class="line"><a name="l00007"></a><span class="lineno"><a class="line" href="HGCalTBTextSource_8cc.html#aa83363d57f497507b0bd61390772ab4c">    7</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="HGCalTBTextSource_8cc.html#aa83363d57f497507b0bd61390772ab4c">runflag</a> = 0;</div>
+<div class="line"><a name="l00008"></a><span class="lineno"><a class="line" href="HGCalTBTextSource_8cc.html#afc254f6766d3378efe609af1409bb6b2">    8</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="HGCalTBTextSource_8cc.html#afc254f6766d3378efe609af1409bb6b2">trigcountperspillflag</a> = 0; </div>
+<div class="line"><a name="l00009"></a><span class="lineno"><a class="line" href="HGCalTBTextSource_8cc.html#a2e58513f8a4ce5a820de4cc19483fab2">    9</a></span>&#160;<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> <a class="code" href="HGCalTBTextSource_8cc.html#a2e58513f8a4ce5a820de4cc19483fab2">Events_Per_Spill</a> = 0;</div>
+<div class="line"><a name="l00010"></a><span class="lineno"><a class="line" href="HGCalTBTextSource_8cc.html#a3db0503d15008a77a68ebc9241a5d01a">   10</a></span>&#160;<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> <a class="code" href="HGCalTBTextSource_8cc.html#a3db0503d15008a77a68ebc9241a5d01a">spillcounter</a> = 0;</div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment">//unsigned int Number_Of_Events_Per_Spill = 150;</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="comment">//unsigned int Number_Of_Spills = 8;</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno"><a class="line" href="HGCalTBTextSource_8cc.html#abe1535b26dc88aab89119ee98e281fa4">   13</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="HGCalTBTextSource_8cc.html#abe1535b26dc88aab89119ee98e281fa4">Number_Of_SKIROC_Data_Words</a> = 64;</div>
+<div class="line"><a name="l00014"></a><span class="lineno"><a class="line" href="HGCalTBTextSource_8cc.html#aa1eea19b0fb0a8d647e69c3de0985bfa">   14</a></span>&#160;<span class="keywordtype">int</span> <a class="code" href="HGCalTBTextSource_8cc.html#aa1eea19b0fb0a8d647e69c3de0985bfa">Number_Of_SKIROC_Words</a> = 68;</div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;</div>
+<div class="line"><a name="l00016"></a><span class="lineno"><a class="line" href="HGCalTBTextSource_8cc.html#a814c4d0bd564195baf9f59f4ede3de9c">   16</a></span>&#160;<span class="keywordtype">string</span> <a class="code" href="HGCalTBTextSource_8cc.html#a814c4d0bd564195baf9f59f4ede3de9c">buffer1</a> = <span class="stringliteral">&quot;0 0 0x00000000   0x00000000&quot;</span>;</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="keywordtype">bool</span> HGCalTBTextSource::readLines()</div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;{</div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;    m_lines.clear();</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;    <span class="keywordtype">char</span> buffer[1024];</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;        <span class="keywordtype">int</span> <a class="code" href="HGCalTBRawToDigi_8cc.html#a617a47c70795bcff659815ad0efd2266">counter</a> = 0;</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;        <span class="keywordflow">if</span>(<a class="code" href="HGCalTBTextSource_8cc.html#af2ac908715061490f9f4b9a6031cbae9">runcounter</a> == 0 &amp;&amp; <a class="code" href="HGCalTBTextSource_8cc.html#aa83363d57f497507b0bd61390772ab4c">runflag</a> == 0){</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;           buffer[0] = 0;   </div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;           fgets(buffer, 1000, m_file); </div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;          <span class="keywordflow">if</span>(sscanf(buffer, <span class="stringliteral">&quot;STARTING SPILL READ AT TIME (1us): %x RUN: %u&quot;</span>,&amp;m_time_tmp,&amp;m_run_tmp) !=2 ) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;           m_run = m_run_tmp;</div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;           <a class="code" href="HGCalTBTextSource_8cc.html#aa83363d57f497507b0bd61390772ab4c">runflag</a> = 1;</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;          }</div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;        <span class="keywordflow">if</span>(<a class="code" href="HGCalTBTextSource_8cc.html#af2ac908715061490f9f4b9a6031cbae9">runcounter</a> == <a class="code" href="HGCalTBSpillParameters_8h.html#a714c5bdda39dcfb1a2a6dbe8b8f685fd">EVENTSPERSPILL</a>){</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;           <a class="code" href="HGCalTBTextSource_8cc.html#af2ac908715061490f9f4b9a6031cbae9">runcounter</a>=0;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;           <a class="code" href="HGCalTBTextSource_8cc.html#afc254f6766d3378efe609af1409bb6b2">trigcountperspillflag</a>++;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;          }</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;        <span class="keywordflow">if</span>(<a class="code" href="HGCalTBTextSource_8cc.html#afc254f6766d3378efe609af1409bb6b2">trigcountperspillflag</a> == <a class="code" href="HGCalTBGeometryParameters_8h.html#aa6c8a1191b429febe1ed25c661e7f140">MAXLAYERS</a>){</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;            <a class="code" href="HGCalTBTextSource_8cc.html#a3db0503d15008a77a68ebc9241a5d01a">spillcounter</a>++;</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;            <a class="code" href="HGCalTBTextSource_8cc.html#afc254f6766d3378efe609af1409bb6b2">trigcountperspillflag</a> = 0;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;          }  </div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment">/*</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment">         if(runcounter == 0 &amp;&amp; trigcountperspillflag == 0){</span></div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment">               buffer[0] = 0;</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment">               fgets(buffer, 1000, m_file);</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment">               if(sscanf(buffer,&quot;Board header: on FMC-IO 2, trig_count in mem= %u, sk_status = 1&quot;,&amp;Events_Per_Spill) !=1 ) return false;</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment">               trigcountperspillflag = 1;</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment">               if(Events_Per_Spill &lt; 140) return false;</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment">             }</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">//        if( sscanf(buffer, &quot; RUN: %u&quot;, &amp;m_run) != 1) return false;</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment">//        sscanf(buffer, &quot; RUN:%u&quot;, &amp;m_run);</span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment">//        cout&lt;&lt;endl&lt;&lt;m_run&lt;&lt;endl;</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keywordflow">while</span> (!feof(m_file) &amp;&amp; <a class="code" href="HGCalTBTextSource_8cc.html#a3db0503d15008a77a68ebc9241a5d01a">spillcounter</a>&lt; <a class="code" href="HGCalTBSpillParameters_8h.html#aa3dc98cd485070cb7c9af133c51f888d">SPILLS</a>) {</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment">//  while (!feof(m_file) &amp;&amp; runcounter &lt; 1001) {</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        buffer[0] = 0;</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        fgets(buffer, 1000, m_file);</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;                <span class="keywordflow">if</span> (strstr(buffer, <span class="stringliteral">&quot;STARTING&quot;</span>)) <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;                <span class="keywordflow">if</span> (strstr(buffer, <span class="stringliteral">&quot;Board&quot;</span>)) <span class="keywordflow">continue</span>;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment">//                if(strstr(buffer, &quot;Event&quot;)) continue;</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">/*                </span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">                if(strstr(buffer,&quot;CKOV= 1&quot;)){</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">                    for(int iii=1; iii&lt;=64;iii++){</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">            m_lines.push_back(buffer1);</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">                        if(iii==64) counter=67;</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">                       }</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">                   } </span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment">                if(strstr(buffer,&quot;CKOV= 1&quot;)) cout&lt;&lt;endl&lt;&lt;&quot;CKOV= 1&quot;&lt;&lt;endl;</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">                else cout&lt;&lt;endl&lt;&lt;&quot;CKOV= 0&quot;&lt;&lt;endl; </span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;                <span class="keywordflow">if</span>(strstr(buffer, <span class="stringliteral">&quot;Event&quot;</span>)) <span class="keywordflow">continue</span>;                 </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;                counter++;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keywordflow">if</span>(<a class="code" href="HGCalTBTextSource_8cc.html#af2ac908715061490f9f4b9a6031cbae9">runcounter</a> &lt; <a class="code" href="HGCalTBSpillParameters_8h.html#a714c5bdda39dcfb1a2a6dbe8b8f685fd">EVENTSPERSPILL</a> &amp;&amp; counter &lt;= <a class="code" href="HGCalTBTextSource_8cc.html#abe1535b26dc88aab89119ee98e281fa4">Number_Of_SKIROC_Data_Words</a>) m_lines.push_back(buffer);</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;                <span class="keywordflow">if</span>(<a class="code" href="HGCalTBTextSource_8cc.html#af2ac908715061490f9f4b9a6031cbae9">runcounter</a> &lt; <a class="code" href="HGCalTBSpillParameters_8h.html#a714c5bdda39dcfb1a2a6dbe8b8f685fd">EVENTSPERSPILL</a> &amp;&amp; counter == <a class="code" href="HGCalTBTextSource_8cc.html#aa1eea19b0fb0a8d647e69c3de0985bfa">Number_Of_SKIROC_Words</a>){</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;                   <a class="code" href="HGCalTBTextSource_8cc.html#af2ac908715061490f9f4b9a6031cbae9">runcounter</a>++;</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment">//                   cout&lt;&lt;endl&lt;&lt;&quot; Reached Here 1&quot;&lt;&lt;endl;</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;                   <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;                  }</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;                </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    }</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keywordflow">return</span> !m_lines.empty();</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;}</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="keywordtype">void</span> HGCalTBTextSource::produce(edm::Event &amp; e)</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;{</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    std::auto_ptr&lt;FEDRawDataCollection&gt; bare_product(<span class="keyword">new</span>  FEDRawDataCollection());</div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;</div>
-<div class="line"><a name="l00091"></a><span class="lineno"><a class="line" href="classHGCalTBTextSource.html#a5cdc5df071e38d7b957d3b53e562a053">   91</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classHGCalTBTextSource.html#a5cdc5df071e38d7b957d3b53e562a053">HGCalTBTextSource::fillDescriptions</a>(edm::ConfigurationDescriptions&amp; descriptions)</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;{</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    edm::ParameterSetDescription desc;</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    desc.setComment(<span class="stringliteral">&quot;TEST&quot;</span>);</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    desc.addUntracked&lt;std::vector&lt;std::string&gt; &gt;(<span class="stringliteral">&quot;fileNames&quot;</span>);</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    descriptions.add(<span class="stringliteral">&quot;source&quot;</span>, desc);</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;}</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="preprocessor">#include &quot;FWCore/Framework/interface/InputSourceMacros.h&quot;</span></div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<a class="code" href="HGCalTBTextSource_8cc.html#a19e9bacf2b24f8baa841ab5cbb8d7c34">DEFINE_FWK_INPUT_SOURCE</a>(<a class="code" href="classHGCalTBTextSource.html">HGCalTBTextSource</a>);</div>
-<div class="ttc" id="classHGCalTBTextSource_html_a5cdc5df071e38d7b957d3b53e562a053"><div class="ttname"><a href="classHGCalTBTextSource.html#a5cdc5df071e38d7b957d3b53e562a053">HGCalTBTextSource::fillDescriptions</a></div><div class="ttdeci">static void fillDescriptions(edm::ConfigurationDescriptions &amp;descriptions)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8cc_source.html#l00091">HGCalTBTextSource.cc:91</a></div></div>
-<div class="ttc" id="classHGCalTBTextSource_html"><div class="ttname"><a href="classHGCalTBTextSource.html">HGCalTBTextSource</a></div><div class="ttdoc">convert data from txt file to FEDRawData </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8h_source.html#l00026">HGCalTBTextSource.h:26</a></div></div>
-<div class="ttc" id="HGCalTBTextSource_8h_html"><div class="ttname"><a href="HGCalTBTextSource_8h.html">HGCalTBTextSource.h</a></div></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">//        cout&lt;&lt;endl&lt;&lt;&quot;Size= &quot;&lt;&lt;m_lines.size()&lt;&lt;endl;   </span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <span class="comment">// here we parse the data</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    std::vector&lt;uint16_t&gt; skiwords;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="comment">// make sure there are an even number of 32-bit-words (a round number of 64 bit words...</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <span class="keywordflow">if</span> (m_lines.size() % 2) {</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;        skiwords.push_back(0);</div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;        skiwords.push_back(0);</div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    }</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    <span class="keywordflow">for</span> (std::vector&lt;std::string&gt;::const_iterator i = m_lines.begin(); i != m_lines.end(); i++) {</div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;        uint32_t a, b, c, d;</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;        sscanf(i-&gt;c_str(), <span class="stringliteral">&quot;%x %x %x %x&quot;</span>, &amp;a, &amp;b, &amp;c, &amp;d);</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment">//                cout&lt;&lt;endl&lt;&lt;&quot; Here &quot;&lt;&lt;dec&lt;&lt;a&lt;&lt;dec&lt;&lt;&quot; &quot;&lt;&lt;b&lt;&lt;hex&lt;&lt;&quot; &quot;&lt;&lt;c&lt;&lt;hex&lt;&lt;&quot; &quot;&lt;&lt;d&lt;&lt;endl;</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;        skiwords.push_back(uint16_t(c &gt;&gt; 16));</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                skiwords.push_back(uint16_t(d &gt;&gt; 16));</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        skiwords.push_back(uint16_t(c));</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;                skiwords.push_back(uint16_t(d));</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    }</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    FEDRawData&amp; fed = bare_product-&gt;FEDData(m_sourceId);</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    <span class="keywordtype">size_t</span> len = <span class="keyword">sizeof</span>(uint16_t) * skiwords.size();</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment">//        cout&lt;&lt;endl&lt;&lt;&quot; Len= &quot;&lt;&lt;len&lt;&lt;endl;</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    fed.resize(len);</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    memcpy(fed.data(), &amp;(skiwords[0]), len);</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    e.put(bare_product);</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;}</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;</div>
+<div class="line"><a name="l00120"></a><span class="lineno"><a class="line" href="classHGCalTBTextSource.html#a5cdc5df071e38d7b957d3b53e562a053">  120</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="classHGCalTBTextSource.html#a5cdc5df071e38d7b957d3b53e562a053">HGCalTBTextSource::fillDescriptions</a>(edm::ConfigurationDescriptions&amp; descriptions)</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;{</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    edm::ParameterSetDescription desc;</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    desc.setComment(<span class="stringliteral">&quot;TEST&quot;</span>);</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    desc.addUntracked&lt;<span class="keywordtype">int</span>&gt;(<span class="stringliteral">&quot;run&quot;</span>, 101);</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    desc.addUntracked&lt;std::vector&lt;std::string&gt; &gt;(<span class="stringliteral">&quot;fileNames&quot;</span>);</div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    descriptions.add(<span class="stringliteral">&quot;source&quot;</span>, desc);</div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;}</div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;</div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;</div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="preprocessor">#include &quot;FWCore/Framework/interface/InputSourceMacros.h&quot;</span></div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<a class="code" href="HGCalTBTextSource_8cc.html#a19e9bacf2b24f8baa841ab5cbb8d7c34">DEFINE_FWK_INPUT_SOURCE</a>(<a class="code" href="classHGCalTBTextSource.html">HGCalTBTextSource</a>);</div>
+<div class="ttc" id="HGCalTBTextSource_8cc_html_aa83363d57f497507b0bd61390772ab4c"><div class="ttname"><a href="HGCalTBTextSource_8cc.html#aa83363d57f497507b0bd61390772ab4c">runflag</a></div><div class="ttdeci">int runflag</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8cc_source.html#l00007">HGCalTBTextSource.cc:7</a></div></div>
+<div class="ttc" id="HGCalTBTextSource_8cc_html_a2e58513f8a4ce5a820de4cc19483fab2"><div class="ttname"><a href="HGCalTBTextSource_8cc.html#a2e58513f8a4ce5a820de4cc19483fab2">Events_Per_Spill</a></div><div class="ttdeci">unsigned int Events_Per_Spill</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8cc_source.html#l00009">HGCalTBTextSource.cc:9</a></div></div>
+<div class="ttc" id="HGCalTBTextSource_8cc_html_a814c4d0bd564195baf9f59f4ede3de9c"><div class="ttname"><a href="HGCalTBTextSource_8cc.html#a814c4d0bd564195baf9f59f4ede3de9c">buffer1</a></div><div class="ttdeci">string buffer1</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8cc_source.html#l00016">HGCalTBTextSource.cc:16</a></div></div>
+<div class="ttc" id="HGCalTBTextSource_8cc_html_a3db0503d15008a77a68ebc9241a5d01a"><div class="ttname"><a href="HGCalTBTextSource_8cc.html#a3db0503d15008a77a68ebc9241a5d01a">spillcounter</a></div><div class="ttdeci">unsigned int spillcounter</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8cc_source.html#l00010">HGCalTBTextSource.cc:10</a></div></div>
+<div class="ttc" id="classHGCalTBTextSource_html_a5cdc5df071e38d7b957d3b53e562a053"><div class="ttname"><a href="classHGCalTBTextSource.html#a5cdc5df071e38d7b957d3b53e562a053">HGCalTBTextSource::fillDescriptions</a></div><div class="ttdeci">static void fillDescriptions(edm::ConfigurationDescriptions &amp;descriptions)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8cc_source.html#l00120">HGCalTBTextSource.cc:120</a></div></div>
+<div class="ttc" id="HGCalTBGeometryParameters_8h_html_aa6c8a1191b429febe1ed25c661e7f140"><div class="ttname"><a href="HGCalTBGeometryParameters_8h.html#aa6c8a1191b429febe1ed25c661e7f140">MAXLAYERS</a></div><div class="ttdeci">#define MAXLAYERS</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBGeometryParameters_8h_source.html#l00004">HGCalTBGeometryParameters.h:4</a></div></div>
+<div class="ttc" id="HGCalTBTextSource_8cc_html_afc254f6766d3378efe609af1409bb6b2"><div class="ttname"><a href="HGCalTBTextSource_8cc.html#afc254f6766d3378efe609af1409bb6b2">trigcountperspillflag</a></div><div class="ttdeci">int trigcountperspillflag</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8cc_source.html#l00008">HGCalTBTextSource.cc:8</a></div></div>
+<div class="ttc" id="classHGCalTBTextSource_html"><div class="ttname"><a href="classHGCalTBTextSource.html">HGCalTBTextSource</a></div><div class="ttdoc">convert data from txt file to FEDRawData </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8h_source.html#l00020">HGCalTBTextSource.h:20</a></div></div>
+<div class="ttc" id="HGCalTBTextSource_8cc_html_abe1535b26dc88aab89119ee98e281fa4"><div class="ttname"><a href="HGCalTBTextSource_8cc.html#abe1535b26dc88aab89119ee98e281fa4">Number_Of_SKIROC_Data_Words</a></div><div class="ttdeci">int Number_Of_SKIROC_Data_Words</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8cc_source.html#l00013">HGCalTBTextSource.cc:13</a></div></div>
+<div class="ttc" id="HGCalTBSpillParameters_8h_html_a714c5bdda39dcfb1a2a6dbe8b8f685fd"><div class="ttname"><a href="HGCalTBSpillParameters_8h.html#a714c5bdda39dcfb1a2a6dbe8b8f685fd">EVENTSPERSPILL</a></div><div class="ttdeci">#define EVENTSPERSPILL</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBSpillParameters_8h_source.html#l00001">HGCalTBSpillParameters.h:1</a></div></div>
+<div class="ttc" id="HGCalTBRawToDigi_8cc_html_a617a47c70795bcff659815ad0efd2266"><div class="ttname"><a href="HGCalTBRawToDigi_8cc.html#a617a47c70795bcff659815ad0efd2266">counter</a></div><div class="ttdeci">int counter</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBRawToDigi_8cc_source.html#l00007">HGCalTBRawToDigi.cc:7</a></div></div>
 <div class="ttc" id="HGCalTBTextSource_8cc_html_a19e9bacf2b24f8baa841ab5cbb8d7c34"><div class="ttname"><a href="HGCalTBTextSource_8cc.html#a19e9bacf2b24f8baa841ab5cbb8d7c34">DEFINE_FWK_INPUT_SOURCE</a></div><div class="ttdeci">DEFINE_FWK_INPUT_SOURCE(HGCalTBTextSource)</div></div>
-<div class="ttc" id="HGCalTBTextSource_8h_html_ae3c6232cc7f146ec5d21a0f4d56bc2df"><div class="ttname"><a href="HGCalTBTextSource_8h.html#ae3c6232cc7f146ec5d21a0f4d56bc2df">MAXSKIROCS</a></div><div class="ttdeci">#define MAXSKIROCS</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8h_source.html#l00015">HGCalTBTextSource.h:15</a></div></div>
+<div class="ttc" id="HGCalTBSpillParameters_8h_html_aa3dc98cd485070cb7c9af133c51f888d"><div class="ttname"><a href="HGCalTBSpillParameters_8h.html#aa3dc98cd485070cb7c9af133c51f888d">SPILLS</a></div><div class="ttdeci">#define SPILLS</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBSpillParameters_8h_source.html#l00002">HGCalTBSpillParameters.h:2</a></div></div>
+<div class="ttc" id="HGCalTBTextSource_8cc_html_aa1eea19b0fb0a8d647e69c3de0985bfa"><div class="ttname"><a href="HGCalTBTextSource_8cc.html#aa1eea19b0fb0a8d647e69c3de0985bfa">Number_Of_SKIROC_Words</a></div><div class="ttdeci">int Number_Of_SKIROC_Words</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8cc_source.html#l00014">HGCalTBTextSource.cc:14</a></div></div>
+<div class="ttc" id="HGCalTBTextSource_8cc_html_af2ac908715061490f9f4b9a6031cbae9"><div class="ttname"><a href="HGCalTBTextSource_8cc.html#af2ac908715061490f9f4b9a6031cbae9">runcounter</a></div><div class="ttdeci">unsigned int runcounter</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8cc_source.html#l00006">HGCalTBTextSource.cc:6</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 15 2016 02:44:44 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 29 2016 11:29:32 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

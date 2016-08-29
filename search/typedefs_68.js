@@ -7,5 +7,19 @@ var searchData=
   ['hgcaltbrechitcollection',['HGCalTBRecHitCollection',['../HGCalTBRecHitCollections_8h.html#ad45122793012a55e792c88426bde2fe5',1,'HGCalTBRecHitCollections.h']]],
   ['hgcaltbrechitref',['HGCalTBRecHitRef',['../HGCalTBRecHitCollections_8h.html#a28277f24093b85440a819b9bcb4b3234',1,'HGCalTBRecHitCollections.h']]],
   ['hgcaltbrechitrefs',['HGCalTBRecHitRefs',['../HGCalTBRecHitCollections_8h.html#ab54bc5c68eab89342c3abbbba4312159',1,'HGCalTBRecHitCollections.h']]],
-  ['hgcaltbrechitsref',['HGCalTBRecHitsRef',['../HGCalTBRecHitCollections_8h.html#a5a178efc79f703ca16ff1bcef6e8ae05',1,'HGCalTBRecHitCollections.h']]]
+  ['hgcaltbrechitsref',['HGCalTBRecHitsRef',['../HGCalTBRecHitCollections_8h.html#a5a178efc79f703ca16ff1bcef6e8ae05',1,'HGCalTBRecHitCollections.h']]],
+  ['hgcaltbtrackcollection',['HGCalTBTrackCollection',['../HGCalTBTrackCollection_8h.html#ae044f7dc35df49feafa960278df6334d',1,'HGCalTBTrackCollection.h']]],
+  ['hgcssgenparticlecollection',['HGCSSGenParticleCollection',['../HGCSSCollections_8h.html#af0440ce957b3a9be39c40d75e82bb937',1,'HGCSSCollections.h']]],
+  ['hgcssgenparticleref',['HGCSSGenParticleRef',['../HGCSSCollections_8h.html#a739475212cd790dae2a3d1654aa37634',1,'HGCSSCollections.h']]],
+  ['hgcssgenparticlerefprod',['HGCSSGenParticleRefProd',['../HGCSSCollections_8h.html#a94579be0fce955a8da9bd3d4e00fc818',1,'HGCSSCollections.h']]],
+  ['hgcssgenparticlerefvector',['HGCSSGenParticleRefVector',['../HGCSSCollections_8h.html#abb2a284b87041c17a67d715d6f153417',1,'HGCSSCollections.h']]],
+  ['hgcsssamplingsectioncollection',['HGCSSSamplingSectionCollection',['../HGCSSCollections_8h.html#a2dba930be7ebd00e11b3c8e3e88a84f8',1,'HGCSSCollections.h']]],
+  ['hgcsssamplingsectionref',['HGCSSSamplingSectionRef',['../HGCSSCollections_8h.html#a935bf580bac5d8774daccfe2550d092c',1,'HGCSSCollections.h']]],
+  ['hgcsssamplingsectionrefprod',['HGCSSSamplingSectionRefProd',['../HGCSSCollections_8h.html#a6cc510bb255f66c61bdaf224d9a9e68a',1,'HGCSSCollections.h']]],
+  ['hgcsssamplingsectionrefvector',['HGCSSSamplingSectionRefVector',['../HGCSSCollections_8h.html#a6ae9e06ba39bf2afaefed6d476ff388e',1,'HGCSSCollections.h']]],
+  ['hgcsssimhitcollection',['HGCSSSimHitCollection',['../HGCSSCollections_8h.html#ae586ba7b15bad90b16de2ed2ca157a55',1,'HGCSSCollections.h']]],
+  ['hgcsssimhitref',['HGCSSSimHitRef',['../HGCSSCollections_8h.html#a5a796056d12d1db880d8e060b5a6d3a9',1,'HGCSSCollections.h']]],
+  ['hgcsssimhitrefprod',['HGCSSSimHitRefProd',['../HGCSSCollections_8h.html#a5e6531273885ba8092dd6b02a6b75ad1',1,'HGCSSCollections.h']]],
+  ['hgcsssimhitrefvector',['HGCSSSimHitRefVector',['../HGCSSCollections_8h.html#a670817c704beb1a15c08d53c1f1c76f9',1,'HGCSSCollections.h']]],
+  ['hgcsstracksegmentvec',['HGCSSTrackSegmentVec',['../HGCSSTrackSegment_8h.html#ab70a8346b5c991322a23f5f62c281194',1,'HGCSSTrackSegment.h']]]
 ];

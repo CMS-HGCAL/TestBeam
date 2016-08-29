@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">d6244c02cb92660301bae063b135512567b77f46</span>
+   &#160;<span id="projectnumber">03a93d6239a951948e06fb3ef8dae4cbdebfad30</span>
    </div>
   </td>
  </tr>
@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -82,7 +82,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_e46803c94c4b811f3ca40b0db668b707.html">RawToDigi</a></li><li class="navelem"><a class="el" href="dir_433d0385aeae3b9ced8f2acf632e3771.html">plugins</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_78f63a5688909ac856b1fda199e5bacf.html">RawToDigi</a></li><li class="navelem"><a class="el" href="dir_722b3296c03419ff1941500c933c1976.html">plugins</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -97,103 +97,82 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;</div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="preprocessor">#include &quot;FWCore/ParameterSet/interface/ConfigurationDescriptions.h&quot;</span></div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="preprocessor">#include &quot;FWCore/ParameterSet/interface/ParameterSetDescription.h&quot;</span></div>
-<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;</div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;fstream&gt;</span></div>
-<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;iostream&gt;</span></div>
-<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;</div>
-<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="comment">//#define DEBUG</span></div>
-<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;</div>
-<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="comment">/* now we have only 2 layers */</span></div>
-<div class="line"><a name="l00015"></a><span class="lineno"><a class="line" href="HGCalTBTextSource_8h.html#ae3c6232cc7f146ec5d21a0f4d56bc2df">   15</a></span>&#160;<span class="preprocessor">#define MAXSKIROCS 2 </span></div>
-<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor"></span><span class="comment"></span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment"> * \class HGCalTBTextSource HGCal/RawToDigi/plugins/HGCalTBTextSource.h</span></div>
-<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment"> *</span></div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment"> * \brief convert data from txt file to FEDRawData</span></div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment"> *</span></div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment"> * \todo efficiency not tested, many improvements can be done</span></div>
-<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"> * FED ID is set to the first chipID, this has to be fixed: maybe the FED ID can be read from the file or the filename</span></div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment"> * The number of skiroc chips is hard coded, but should be set by cfg file based on the setup</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno"><a class="line" href="classHGCalTBTextSource.html">   26</a></span>&#160;<span class="keyword">class </span><a class="code" href="classHGCalTBTextSource.html">HGCalTBTextSource</a> : <span class="keyword">public</span> edm::ProducerSourceFromFiles</div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;{</div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="preprocessor">#include &lt;iostream&gt;</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="preprocessor">#include &lt;stdio.h&gt;</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="preprocessor">#include &lt;fstream&gt;</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="comment"> * \class HGCalTBTextSource HGCal/RawToDigi/plugins/HGCalTBTextSource.h</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment"> * \brief convert data from txt file to FEDRawData</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment"> * \todo replace c-like scanf with c++ versions</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment"> * \todo change run and fed IDs (now are hardcoded)</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno"><a class="line" href="classHGCalTBTextSource.html">   20</a></span>&#160;<span class="keyword">class </span><a class="code" href="classHGCalTBTextSource.html">HGCalTBTextSource</a> : <span class="keyword">public</span> edm::ProducerSourceFromFiles</div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;{</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;</div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="keyword">public</span>:</div>
+<div class="line"><a name="l00024"></a><span class="lineno"><a class="line" href="classHGCalTBTextSource.html#af1506e04cf3367e11dd60a84814b9513">   24</a></span>&#160;    <span class="keyword">explicit</span> <a class="code" href="classHGCalTBTextSource.html#af1506e04cf3367e11dd60a84814b9513">HGCalTBTextSource</a>(<span class="keyword">const</span> edm::ParameterSet &amp; pset, edm::InputSourceDescription <span class="keyword">const</span>&amp; desc) :  edm::ProducerSourceFromFiles(pset, desc, true),</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;        m_file(0),</div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;        m_run(pset.getUntrackedParameter&lt;int&gt;(<span class="stringliteral">&quot;run&quot;</span>, 101)) <span class="comment">/// \todo check and read from file?</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment"></span>    {</div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">public</span>:</div>
-<div class="line"><a name="l00030"></a><span class="lineno"><a class="line" href="classHGCalTBTextSource.html#af1506e04cf3367e11dd60a84814b9513">   30</a></span>&#160;    <span class="keyword">explicit</span> <a class="code" href="classHGCalTBTextSource.html#af1506e04cf3367e11dd60a84814b9513">HGCalTBTextSource</a>(<span class="keyword">const</span> edm::ParameterSet &amp; pset, edm::InputSourceDescription <span class="keyword">const</span>&amp; desc) :  edm::ProducerSourceFromFiles(pset, desc, true),</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;        <span class="comment">//m_file(0),</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;        m_run(0)</div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;    {</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;</div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        produces&lt;FEDRawDataCollection&gt;();</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        <span class="keywordflow">if</span> (fileNames().size()&lt;1){</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;            <span class="keywordflow">throw</span> cms::Exception(<span class="stringliteral">&quot;No input files&quot;</span>) &lt;&lt; <span class="stringliteral">&quot;&quot;</span>;</div>
-<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;        }</div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        _fileName_itr = fileNames().begin();</div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        openFile();</div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;    }</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;</div>
-<div class="line"><a name="l00043"></a><span class="lineno"><a class="line" href="classHGCalTBTextSource.html#adefa0c4b3ac029abfc35887e280357ec">   43</a></span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classHGCalTBTextSource.html#adefa0c4b3ac029abfc35887e280357ec">~HGCalTBTextSource</a>()</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    {</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    }</div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;</div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="classHGCalTBTextSource.html#a5cdc5df071e38d7b957d3b53e562a053">fillDescriptions</a>(edm::ConfigurationDescriptions&amp; descriptions);</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;</div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;    <span class="keywordtype">void</span> openFile(){</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;        std::string name = *_fileName_itr;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;        <span class="keywordflow">if</span> (name.find(<span class="stringliteral">&quot;file:&quot;</span>) == 0) name = name.substr(5);</div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="preprocessor">#ifdef DEBUG</span></div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="preprocessor"></span>        std::cout &lt;&lt; <span class="stringliteral">&quot;[DEBUG] Opening file: &quot;</span> &lt;&lt; name &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="preprocessor"></span>        </div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;        m_file.open(name);</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        <span class="keywordflow">if</span> (m_file.fail()) {</div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;            <span class="keywordflow">throw</span> cms::Exception(<span class="stringliteral">&quot;FileNotFound&quot;</span>) &lt;&lt; <span class="stringliteral">&quot;Unable to open file &quot;</span> &lt;&lt; *_fileName_itr;</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        }</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    }</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> setRunAndEventInfo(edm::EventID&amp; <span class="keywordtype">id</span>, edm::TimeValue_t&amp; time, edm::EventAuxiliary::ExperimentType&amp;)</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    {</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;        <span class="keywordflow">if</span>(m_file.eof()){</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;            <span class="comment">// reached end of file</span></div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;            m_file.close();</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;            _fileName_itr++;</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;            <span class="keywordflow">if</span>(_fileName_itr!=fileNames().end()) openFile();</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;            <span class="keywordflow">else</span> <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        } </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;        <span class="keywordflow">if</span>(!readLines()) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keywordtype">id</span> = edm::EventID(m_run, 1, m_event);</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;        <span class="comment">// time is a hack</span></div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;        time = (edm::TimeValue_t) m_time;</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="preprocessor">        #ifdef DEBUGTIME</span></div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="preprocessor"></span>        std::cout &lt;&lt; m_time &lt;&lt; <span class="stringliteral">&quot;\t&quot;</span> &lt;&lt; time &lt;&lt; std::endl;</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="preprocessor"></span>        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    }</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> produce(edm::Event &amp; e);</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keywordtype">bool</span> readLines();</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <span class="keywordtype">void</span> parseAddSkiword(std::vector&lt;uint16_t&gt;&amp; skiwords, std::string);</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment">//  std::vector&lt;std::pair&lt;int, std::vector&lt;std::string&gt; &gt; &gt; m_lines;</span></div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    std::vector&lt;uint16_t&gt; m_skiwords;</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    std::vector&lt;std::string&gt;::const_iterator _fileName_itr;</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    std::ifstream m_file;</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    <span class="keywordtype">int</span> m_event, m_run, m_event_tmp, m_run_tmp;</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordtype">int</span> m_sourceId, m_sourceId_tmp;</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>  m_time, m_time_tmp;</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;};</div>
-<div class="ttc" id="classHGCalTBTextSource_html_adefa0c4b3ac029abfc35887e280357ec"><div class="ttname"><a href="classHGCalTBTextSource.html#adefa0c4b3ac029abfc35887e280357ec">HGCalTBTextSource::~HGCalTBTextSource</a></div><div class="ttdeci">virtual ~HGCalTBTextSource()</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8h_source.html#l00043">HGCalTBTextSource.h:43</a></div></div>
-<div class="ttc" id="classHGCalTBTextSource_html_a5cdc5df071e38d7b957d3b53e562a053"><div class="ttname"><a href="classHGCalTBTextSource.html#a5cdc5df071e38d7b957d3b53e562a053">HGCalTBTextSource::fillDescriptions</a></div><div class="ttdeci">static void fillDescriptions(edm::ConfigurationDescriptions &amp;descriptions)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8cc_source.html#l00091">HGCalTBTextSource.cc:91</a></div></div>
-<div class="ttc" id="classHGCalTBTextSource_html"><div class="ttname"><a href="classHGCalTBTextSource.html">HGCalTBTextSource</a></div><div class="ttdoc">convert data from txt file to FEDRawData </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8h_source.html#l00026">HGCalTBTextSource.h:26</a></div></div>
-<div class="ttc" id="classHGCalTBTextSource_html_af1506e04cf3367e11dd60a84814b9513"><div class="ttname"><a href="classHGCalTBTextSource.html#af1506e04cf3367e11dd60a84814b9513">HGCalTBTextSource::HGCalTBTextSource</a></div><div class="ttdeci">HGCalTBTextSource(const edm::ParameterSet &amp;pset, edm::InputSourceDescription const &amp;desc)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8h_source.html#l00030">HGCalTBTextSource.h:30</a></div></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;        m_sourceId = pset.getUntrackedParameter&lt;<span class="keywordtype">int</span>&gt;(<span class="stringliteral">&quot;fed&quot;</span>, 1000); <span class="comment">/// \todo check and read from file?</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="comment"></span>        produces&lt;FEDRawDataCollection&gt;();</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;    }</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;</div>
+<div class="line"><a name="l00033"></a><span class="lineno"><a class="line" href="classHGCalTBTextSource.html#adefa0c4b3ac029abfc35887e280357ec">   33</a></span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classHGCalTBTextSource.html#adefa0c4b3ac029abfc35887e280357ec">~HGCalTBTextSource</a>()</div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;    {</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;        <span class="keywordflow">if</span> (m_file != 0) fclose(m_file);</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;        m_file = 0;</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;    }</div>
+<div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">void</span> <a class="code" href="classHGCalTBTextSource.html#a5cdc5df071e38d7b957d3b53e562a053">fillDescriptions</a>(edm::ConfigurationDescriptions&amp; descriptions);</div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;</div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> setRunAndEventInfo(edm::EventID&amp; <span class="keywordtype">id</span>, edm::TimeValue_t&amp; time, edm::EventAuxiliary::ExperimentType&amp;)</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    {</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;        <span class="keywordflow">if</span> (!(fileNames().size())) <span class="keywordflow">return</span> <span class="keyword">false</span>; <span class="comment">// need a file...</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;        <span class="keywordflow">if</span> (m_file == 0) {</div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;            std::string name = fileNames()[0].c_str(); <span class="comment">/// \todo FIX in order to take several files</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"></span>            <span class="keywordflow">if</span> (name.find(<span class="stringliteral">&quot;file:&quot;</span>) == 0) name = name.substr(5);</div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;            m_file = fopen(name.c_str(), <span class="stringliteral">&quot;r&quot;</span>);</div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;            <span class="keywordflow">if</span> (m_file == 0) {</div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;                <span class="keywordflow">throw</span> cms::Exception(<span class="stringliteral">&quot;FileNotFound&quot;</span>) &lt;&lt; <span class="stringliteral">&quot;Unable to open file &quot;</span> &lt;&lt; name;</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;            }</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;            m_event = 0;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;        }</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;        <span class="keywordflow">if</span> (feof(m_file)) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;        <span class="keywordflow">if</span> (!readLines()) <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;        m_event++; <span class="comment">/// \todo get eventID from file?</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment"></span>        <span class="keywordtype">id</span> = edm::EventID(m_run, 1, m_event);</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        <span class="comment">// time is a hack</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        edm::TimeValue_t present_time = presentTime(); <span class="comment">///\todo take time from file? how to define the time?</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"></span>        <span class="keywordtype">unsigned</span> <span class="keywordtype">long</span> time_between_events = timeBetweenEvents();</div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;        time = present_time + time_between_events;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    }</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> produce(edm::Event &amp; e);</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    <span class="keywordtype">bool</span> readLines();</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    std::vector&lt;std::string&gt; m_lines;</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    FILE* m_file;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;        <span class="keywordtype">unsigned</span> <span class="keywordtype">int</span> m_time_tmp, m_run_tmp;</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    <span class="keywordtype">int</span> m_event, m_run;</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordtype">int</span> m_sourceId;</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;};</div>
+<div class="ttc" id="classHGCalTBTextSource_html_adefa0c4b3ac029abfc35887e280357ec"><div class="ttname"><a href="classHGCalTBTextSource.html#adefa0c4b3ac029abfc35887e280357ec">HGCalTBTextSource::~HGCalTBTextSource</a></div><div class="ttdeci">virtual ~HGCalTBTextSource()</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8h_source.html#l00033">HGCalTBTextSource.h:33</a></div></div>
+<div class="ttc" id="classHGCalTBTextSource_html_a5cdc5df071e38d7b957d3b53e562a053"><div class="ttname"><a href="classHGCalTBTextSource.html#a5cdc5df071e38d7b957d3b53e562a053">HGCalTBTextSource::fillDescriptions</a></div><div class="ttdeci">static void fillDescriptions(edm::ConfigurationDescriptions &amp;descriptions)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8cc_source.html#l00120">HGCalTBTextSource.cc:120</a></div></div>
+<div class="ttc" id="classHGCalTBTextSource_html"><div class="ttname"><a href="classHGCalTBTextSource.html">HGCalTBTextSource</a></div><div class="ttdoc">convert data from txt file to FEDRawData </div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8h_source.html#l00020">HGCalTBTextSource.h:20</a></div></div>
+<div class="ttc" id="classHGCalTBTextSource_html_af1506e04cf3367e11dd60a84814b9513"><div class="ttname"><a href="classHGCalTBTextSource.html#af1506e04cf3367e11dd60a84814b9513">HGCalTBTextSource::HGCalTBTextSource</a></div><div class="ttdeci">HGCalTBTextSource(const edm::ParameterSet &amp;pset, edm::InputSourceDescription const &amp;desc)</div><div class="ttdef"><b>Definition:</b> <a href="HGCalTBTextSource_8h_source.html#l00024">HGCalTBTextSource.h:24</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 15 2016 02:44:44 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 29 2016 11:29:32 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

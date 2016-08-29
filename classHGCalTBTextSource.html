@@ -23,7 +23,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">HGCal Test Beam
-   &#160;<span id="projectnumber">d6244c02cb92660301bae063b135512567b77f46</span>
+   &#160;<span id="projectnumber">03a93d6239a951948e06fb3ef8dae4cbdebfad30</span>
    </div>
   </td>
  </tr>
@@ -73,7 +73,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(8)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(9)"><span class="SelectionMark">&#160;</span>Macros</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(10)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -101,11 +101,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 Inheritance diagram for HGCalTBTextSource:</div>
 <div class="dyncontent">
 <div class="center"><img src="classHGCalTBTextSource__inherit__graph.png" border="0" usemap="#HGCalTBTextSource_inherit__map" alt="Inheritance graph"/></div>
+<map name="HGCalTBTextSource_inherit__map" id="HGCalTBTextSource_inherit__map">
+</map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <div class="dynheader">
 Collaboration diagram for HGCalTBTextSource:</div>
 <div class="dyncontent">
 <div class="center"><img src="classHGCalTBTextSource__coll__graph.png" border="0" usemap="#HGCalTBTextSource_coll__map" alt="Collaboration graph"/></div>
+<map name="HGCalTBTextSource_coll__map" id="HGCalTBTextSource_coll__map">
+</map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -122,9 +126,11 @@ Static Public Member Functions</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>convert data from txt file to FEDRawData </p>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000010">Todo:</a></b></dt><dd>efficiency not tested, many improvements can be done FED ID is set to the first chipID, this has to be fixed: maybe the FED ID can be read from the file or the filename The number of skiroc chips is hard coded, but should be set by cfg file based on the setup </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000011">Todo:</a></b></dt><dd><p class="startdd">replace c-like scanf with c++ versions </p>
+<p class="enddd">change run and fed IDs (now are hardcoded) </p>
+</dd></dl>
 
-<p>Definition at line <a class="el" href="HGCalTBTextSource_8h_source.html#l00026">26</a> of file <a class="el" href="HGCalTBTextSource_8h_source.html">HGCalTBTextSource.h</a>.</p>
+<p>Definition at line <a class="el" href="HGCalTBTextSource_8h_source.html#l00020">20</a> of file <a class="el" href="HGCalTBTextSource_8h_source.html">HGCalTBTextSource.h</a>.</p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a class="anchor" id="af1506e04cf3367e11dd60a84814b9513"></a>
 <div class="memitem">
@@ -157,8 +163,9 @@ Static Public Member Functions</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000012">Todo:</a></b></dt><dd>check and read from file? </dd></dl>
 
-<p>Definition at line <a class="el" href="HGCalTBTextSource_8h_source.html#l00030">30</a> of file <a class="el" href="HGCalTBTextSource_8h_source.html">HGCalTBTextSource.h</a>.</p>
+<p>Definition at line <a class="el" href="HGCalTBTextSource_8h_source.html#l00024">24</a> of file <a class="el" href="HGCalTBTextSource_8h_source.html">HGCalTBTextSource.h</a>.</p>
 
 </div>
 </div>
@@ -183,7 +190,7 @@ Static Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="HGCalTBTextSource_8h_source.html#l00043">43</a> of file <a class="el" href="HGCalTBTextSource_8h_source.html">HGCalTBTextSource.h</a>.</p>
+<p>Definition at line <a class="el" href="HGCalTBTextSource_8h_source.html#l00033">33</a> of file <a class="el" href="HGCalTBTextSource_8h_source.html">HGCalTBTextSource.h</a>.</p>
 
 </div>
 </div>
@@ -210,7 +217,7 @@ Static Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Definition at line <a class="el" href="HGCalTBTextSource_8cc_source.html#l00091">91</a> of file <a class="el" href="HGCalTBTextSource_8cc_source.html">HGCalTBTextSource.cc</a>.</p>
+<p>Definition at line <a class="el" href="HGCalTBTextSource_8cc_source.html#l00120">120</a> of file <a class="el" href="HGCalTBTextSource_8cc_source.html">HGCalTBTextSource.cc</a>.</p>
 
 </div>
 </div>
@@ -221,7 +228,7 @@ Static Public Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 15 2016 02:44:48 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Aug 29 2016 11:29:32 for HGCal Test Beam by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.5
 </small></address>

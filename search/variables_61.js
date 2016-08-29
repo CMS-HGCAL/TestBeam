@@ -1,5 +1,7 @@
 var searchData=
 [
-  ['adchigh_5fshift',['ADCHIGH_SHIFT',['../classSKIROC2DataFrame_1_1Sample.html#a149777263c55bcbdd624386af53211d9',1,'SKIROC2DataFrame::Sample']]],
-  ['adclow_5fshift',['ADCLOW_SHIFT',['../classSKIROC2DataFrame_1_1Sample.html#afd471df5b45a69896d8cfdd48b613f5a',1,'SKIROC2DataFrame::Sample']]]
+  ['adchigh',['ADChigh',['../structHGCSimDigiSource_1_1Cell.html#a169c84407ae680f8bcdd9e425876f2ad',1,'HGCSimDigiSource::Cell']]],
+  ['adclow',['ADClow',['../structHGCSimDigiSource_1_1Cell.html#a07c67815f1f144fd2dc020341ec6ed0f',1,'HGCSimDigiSource::Cell']]],
+  ['adctomip',['ADCtoMIP',['../Layer__Sum__Analyzer_8cc.html#a15c97d5d1d25972d2cc900e1d077ba25',1,'Layer_Sum_Analyzer.cc']]],
+  ['allcells_5fthreshold',['ALLCELLS_THRESHOLD',['../Layer__Sum__Analyzer_8cc.html#a4e32bf1032aeb5df34a52df06a977b08',1,'Layer_Sum_Analyzer.cc']]]
 ];
