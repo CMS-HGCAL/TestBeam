@@ -56,7 +56,7 @@ struct Cell {
 int main(int argc, char **argv)
 {
 	// electronics id to (u, v) mapping file
-	string electronicsmapfile("map_FNAL_2.txt");
+	string electronicsmapfile("map_FNAL_1234.txt");
 	if ( argc > 1 )
 		electronicsmapfile = string(argv[1]);
 

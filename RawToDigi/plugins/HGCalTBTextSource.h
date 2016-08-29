@@ -5,73 +5,71 @@
 
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-
-#include <fstream>
 #include <iostream>
-
-
-/* now we have only 2 layers */
-#define MAXSKIROCS 2
-
-#define _TELESCOPE_FED_ID_ 99
+#include <stdio.h>
+#include <fstream>
 
 /**
  * \class HGCalTBTextSource HGCal/RawToDigi/plugins/HGCalTBTextSource.h
  *
  * \brief convert data from txt file to FEDRawData
  *
- * \todo efficiency not tested, many improvements can be done
- * FED ID is set to the first chipID, this has to be fixed: maybe the FED ID can be read from the file or the filename
- * The number of skiroc chips is hard coded, but should be set by cfg file based on the setup
+ * \todo replace c-like scanf with c++ versions
+ * \todo change run and fed IDs (now are hardcoded)
  */
 class HGCalTBTextSource : public edm::ProducerSourceFromFiles
 {
 
 public:
 	explicit HGCalTBTextSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :  edm::ProducerSourceFromFiles(pset, desc, true),
-		//m_file(0),
-		m_run(0),
-		_hgcalFiles(pset.getUntrackedParameterSet("hgcalData")),
-		_telescopeFiles(pset.getUntrackedParameterSet("telescopeData"))
+		m_file(0),
+		m_run(pset.getUntrackedParameter<int>("run", 101)) /// \todo check and read from file?
 	{
 
+		m_sourceId = pset.getUntrackedParameter<int>("fed", 1000); /// \todo check and read from file?
 		produces<FEDRawDataCollection>();
-
-		if(_telescopeFiles.fileNames().size() < 1) {
-			//cms::LogWarning("INPUT SOURCE") << "No telescope data";
-			std::cerr << "[WARNING] No telescope data" << std::endl;
-		}
 	}
 
 	virtual ~HGCalTBTextSource()
 	{
+		if (m_file != 0) fclose(m_file);
+		m_file = 0;
 	}
 
 	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
+	virtual bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&)
+	{
 
-	bool openFile(edm::FromFiles& files, std::ifstream& file); ///< open a new file and update the pointer, it checks if the end of file is reached and increment the file, returns false if the list of files has been completely processed
-	bool readLines(); ///< read the hgcal file (two SKIROCS) and return the true if at least one word has been read
-	bool readTelescopeLines(); ///< read the telescope file and return the true if at least one word has been read
+		if (!(fileNames().size())) return false; // need a file...
+		if (m_file == 0) {
+			std::string name = fileNames()[0].c_str(); /// \todo FIX in order to take several files
+			if (name.find("file:") == 0) name = name.substr(5);
+			m_file = fopen(name.c_str(), "r");
+			if (m_file == 0) {
+				throw cms::Exception("FileNotFound") << "Unable to open file " << name;
+			}
+			m_event = 0;
+		}
+		if (feof(m_file)) return false;
+		if (!readLines()) return false;
 
-	virtual bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&);
+		m_event++; /// \todo get eventID from file?
+		id = edm::EventID(m_run, 1, m_event);
+		// time is a hack
+		edm::TimeValue_t present_time = presentTime(); ///\todo take time from file? how to define the time?
+		unsigned long time_between_events = timeBetweenEvents();
 
+		time = present_time + time_between_events;
+		return true;
+	}
 	virtual void produce(edm::Event & e);
+	bool readLines();
 
-	void parseAddSkiword(std::vector<uint16_t>& skiwords, std::string);
-	void parseAddTelescopeWords(std::vector<float>& telescope_words, std::string i);
-
-	std::vector<uint16_t> m_skiwords;
-	std::vector<float>    _telescope_words;
-	std::ifstream _hgcalFile, _telescopeFile;
-
-	int m_event, m_run, m_event_tmp, m_run_tmp;
-	int m_sourceId, m_sourceId_tmp;
-	unsigned int  m_time, m_time_tmp;
-	unsigned int _triggerID, t_triggerID;
-
-	edm::FromFiles _hgcalFiles;
-	edm::FromFiles _telescopeFiles;
-
+	std::vector<std::string> m_lines;
+	FILE* m_file;
+        unsigned int m_time_tmp, m_run_tmp;
+	int m_event, m_run;
+	int m_sourceId;
 };

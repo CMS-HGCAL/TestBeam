@@ -27,3 +27,11 @@ hgcaltbrechitsplotter_highgain_correlation = cms.EDAnalyzer("RecHitPlotter_HighG
 hgcaltbrechitsplotter_highgain_correlation_cm = cms.EDAnalyzer("RecHitPlotter_HighGain_Correlation_CM",
                HGCALTBRECHITS = cms.InputTag("hgcaltbrechits","","unpack" )
                               )
+
+FourLayerRecHitPlotterMax = cms.EDAnalyzer("FourLayerRecHitPlotterMax",
+               HGCALTBRECHITS = cms.InputTag("hgcaltbrechits","","unpack" )
+                              )
+
+LayerSumAnalyzer = cms.EDAnalyzer("Layer_Sum_Analyzer",
+               HGCALTBRECHITS = cms.InputTag("hgcaltbrechits","","unpack" )
+                              )

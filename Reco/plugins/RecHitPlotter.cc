@@ -69,7 +69,7 @@ private:
 	std::vector<std::pair<double, double>> CellXY;
 	std::pair<double, double> CellCentreXY;
 	std::vector<std::pair<double, double>>::const_iterator it;
-	const static int NLAYERS  = 1;
+	const static int NLAYERS  = 2;
 	TH2Poly *h_RecHit_layer[NLAYERS];
 	TH1F    *h_RecHit_layer_summed[NLAYERS];
 	TH2Poly *h_RecHit_layer_Occupancy[NLAYERS];
@@ -182,6 +182,15 @@ RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_, Rechits);
+        edm::Handle<HGCalTBRecHitCollection> Rechits1;
+        event.getByToken(HGCalTBRecHitCollection_, Rechits1);
+
+        double Average_Pedestal_Per_Event1_Full = 0;
+        int Cell_counter1_Full = 0; 
+        for(auto RecHit1 : *Rechits1) {
+             Average_Pedestal_Per_Event1_Full+=RecHit1.energyHigh(); 
+             Cell_counter1_Full++;
+           }
 
 	for(auto RecHit : *Rechits) {
 		if(!IsCellValid.iu_iv_valid((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize))  continue;
@@ -192,12 +201,12 @@ RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize);
 		double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
 		double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-		h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy());
-		h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energy());
-//The energy threshold for the occupancy has been hardcoded here. Need to decide what a good choice is. Maybe dynamic per cell depending on the pedestal
-		if(RecHit.energy() > 5) h_RecHit_layer_Occupancy[n_layer - 1]->Fill(iux , iyy, 1. / n_cell_area);
+		h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh());
+		h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh());
+//The energyHigh threshold for the occupancy has been hardcoded here. Need to decide what a good choice is. Maybe dynamic per cell depending on the pedestal
+		if(RecHit.energyHigh() > 5) h_RecHit_layer_Occupancy[n_layer - 1]->Fill(iux , iyy, 1. / n_cell_area);
 // There will be several array indices iu, iv that wont be filled due to it being invalid. Can think of alternate array filling.
-		h_RecHit_layer_cell[n_layer - 1][7 + (RecHit.id()).iu()][7 + (RecHit.id()).iv()]->Fill(RecHit.energy());
+		h_RecHit_layer_cell[n_layer - 1][7 + (RecHit.id()).iu()][7 + (RecHit.id()).iv()]->Fill(RecHit.energyHigh() - Average_Pedestal_Per_Event1_Full/Cell_counter1_Full);
 	}
 
 
