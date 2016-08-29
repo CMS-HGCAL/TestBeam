@@ -14,6 +14,7 @@ HGCalTBRecHit::HGCalTBRecHit(const DetId& id, float energyLow, float energyHigh,
 {
 
 	///\todo set the default recHit energy to the highGain values unless saturated
+	setEnergy( ( energyLow < _lowGainSaturationThreshold ) ? energyLow : energyHigh);
 }
 
 std::ostream& operator<<(std::ostream& s, const HGCalTBRecHit& hit)

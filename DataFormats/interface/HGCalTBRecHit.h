@@ -8,7 +8,10 @@
 /** \class HGCalTBRecHit
  *
  * \author Jeremy Mans
+ *
+ * \todo fix the energy threshold for low gain saturation in a different way: now it's hardcoded
  */
+#define _lowGainSaturationThreshold 2000
 
 class HGCalTBRecHit : public CaloRecHit
 {
