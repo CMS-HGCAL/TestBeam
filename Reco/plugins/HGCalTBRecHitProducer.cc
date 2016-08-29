@@ -6,7 +6,8 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg)
 	  _pedestalLow_filename(cfg.getParameter<std::string>("pedestalLow")),
 	  _pedestalHigh_filename(cfg.getParameter<std::string>("pedestalHigh")),
 	  _gainsLow_filename(cfg.getParameter<std::string>("gainLow")),
-	  _gainsHigh_filename(cfg.getParameter<std::string>("gainHigh"))
+	  _gainsHigh_filename(cfg.getParameter<std::string>("gainHigh")),
+	  _adcSaturation(cfg.getParameter<unsigned int>("adcSaturation"))
 {
 	produces <HGCalTBRecHitCollection>(outputCollectionName);
 
@@ -65,6 +66,10 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 			float energyHigh = digi[iSample].adcHigh() - pedestal_high_value * adcToGeV_high_value;
 
 			HGCalTBRecHit recHit(digi.detid(), energyLow, energyHigh, digi[iSample].tdc()); ///\todo use time calibration!
+
+			if(digi[iSample].adcHigh() > _adcSaturation) recHit.setFlag(kHighGainSaturated);
+			if(digi[iSample].adcLow() > _adcSaturation) recHit.setFlag(kLowGainSaturated);
+			
 
 #ifdef DEBUG
 			std::cout << recHit << std::endl;

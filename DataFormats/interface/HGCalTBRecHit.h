@@ -18,6 +18,13 @@ class HGCalTBRecHit : public CaloRecHit
 public:
 	typedef DetId key_type;
 
+	enum Flags {
+		kGood = 0,
+		kHighGainSaturated,
+		kLowGainSaturated
+	}
+
+
 	HGCalTBRecHit();
 	// by default a recHit is greated with no flag
 	HGCalTBRecHit(const DetId& id, float energyLow, float energyHigh, float time, uint32_t flags = 0); // when constructing from digis using 2 gains for the ADC
@@ -38,6 +45,13 @@ public:
 	{
 		return _energyHigh;
 	};
+
+	// set the flags 
+	void setFlag(int flag) {setFlagField(1, flag, 1);}; // flagBits_|= (0x1 << flag);}
+	void unsetFlag(int flag) {setFlagField(0, flag, 1);}; //_ &= ~(0x1 << flag);}
+ 
+	// check if the flag is true
+	bool checkFlag(int flag) const {return flagField(flag, 1);}; //flagBits_ & ( 0x1<<flag);}
 
 };
 
