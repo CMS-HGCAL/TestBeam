@@ -78,8 +78,8 @@ HGCSimDigiSource::HGCSimDigiSource
 	if ( _noisefilenames.size() > (size_t)0 ) {
 		_noisechain = new TChain("Pedestals");
 		if ( !_noisechain )
-			throw cms::Exception("ChainCreationFailed", 
-					     "chain: Pedestals");
+			throw cms::Exception("ChainCreationFailed",
+			                     "chain: Pedestals");
 
 		for(size_t c = 0; c < _noisefilenames.size(); c++)
 			_noisechain->Add(_noisefilenames[c].c_str());
@@ -145,8 +145,8 @@ setRunAndEventInfo(edm::EventID& id,
                    edm::EventAuxiliary::ExperimentType&)
 {
 	if ( !_chain )
-		throw cms::Exception("ChainNotFound") 
-		  << "sim file chain not open";
+		throw cms::Exception("ChainNotFound")
+		        << "sim file chain not open";
 
 	if ( _entry >= _entries ) return false;
 
@@ -230,7 +230,7 @@ void HGCSimDigiSource::digitize(std::vector<HGCSimDigiSource::Cell>& channels)
 
 	if ( _entry < debugCount ) {
 		cout << endl
-		     << "    number of sim hits:  " 
+		     << "    number of sim hits:  "
 		     << _simhits->size() << endl;
 	}
 
@@ -269,14 +269,14 @@ void HGCSimDigiSource::digitize(std::vector<HGCSimDigiSource::Cell>& channels)
 			cell.u = u;
 			cell.v = v;
 
-			pair<double, double> xy = _cellmap.uv2xy(cell.u, 
-								 cell.v);
+			pair<double, double> xy = _cellmap.uv2xy(cell.u,
+			                          cell.v);
 			cell.x = xy.first;
 			cell.y = xy.second;
 
 			pair<int, int> eid = _cellmap.uv2eid(layer,
-			                                     sensor_u, 
-							     sensor_v,
+			                                     sensor_u,
+			                                     sensor_v,
 			                                     u, v);
 			cell.skiroc   = eid.first;
 			cell.channel  = eid.second;
