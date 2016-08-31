@@ -69,7 +69,7 @@ bool DoCommonMode = 1;
 bool PED = 0;
 bool UP = 1;
 
-        edm::Service<TFileService> fs;
+edm::Service<TFileService> fs;
 class RecHitPlotter_HighGain_New : public edm::one::EDAnalyzer<edm::one::SharedResources>
 {
 
@@ -82,7 +82,7 @@ private:
 	virtual void beginJob() override;
 	void analyze(const edm::Event& , const edm::EventSetup&) override;
 	virtual void endJob() override;
-        void InitTH2Poly(TH2Poly& poly);
+	void InitTH2Poly(TH2Poly& poly);
 	ofstream ofs;
 	// ----------member data ---------------------------
 	edm::EDGetToken HGCalTBRecHitCollection_;
@@ -97,7 +97,7 @@ private:
 	std::vector<std::pair<double, double>> CellXY;
 	std::pair<double, double> CellCentreXY;
 	std::vector<std::pair<double, double>>::const_iterator it;
-        const static int NLAYERS  = 1;
+	const static int NLAYERS  = 1;
 	double Mean_SUM[128] = {0.};
 	double Mean_SQ_SUM[128] = {0.};
 	double Mean_PROD_SUM[128][128] = { {0.} };
@@ -184,25 +184,25 @@ RecHitPlotter_HighGain_New::~RecHitPlotter_HighGain_New()
 
 void RecHitPlotter_HighGain_New::InitTH2Poly(TH2Poly& poly)
 {
-        double HexX[MAXVERTICES] = {0.};
-        double HexY[MAXVERTICES] = {0.};
+	double HexX[MAXVERTICES] = {0.};
+	double HexY[MAXVERTICES] = {0.};
 
-        for(int iv = -7; iv < 8; iv++) {
-                for(int iu = -7; iu < 8; iu++) {
-                        if(!IsCellValid.iu_iv_valid(NLAYERS, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize)) continue;
-                        CellXY = TheCell.GetCellCoordinatesForPlots(NLAYERS, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize);
-                        assert(CellXY.size() == 4 || CellXY.size() == 6);
-                        unsigned int iVertex = 0;
-                        for(it = CellXY.begin(); it != CellXY.end(); it++) {
-                                HexX[iVertex] =  it->first;
-                                HexY[iVertex] =  it->second;
-                                ++iVertex;
-                        }
+	for(int iv = -7; iv < 8; iv++) {
+		for(int iu = -7; iu < 8; iu++) {
+			if(!IsCellValid.iu_iv_valid(NLAYERS, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize)) continue;
+			CellXY = TheCell.GetCellCoordinatesForPlots(NLAYERS, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize);
+			assert(CellXY.size() == 4 || CellXY.size() == 6);
+			unsigned int iVertex = 0;
+			for(it = CellXY.begin(); it != CellXY.end(); it++) {
+				HexX[iVertex] =  it->first;
+				HexY[iVertex] =  it->second;
+				++iVertex;
+			}
 //Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
-                        poly.AddBin(CellXY.size(), HexX, HexY);
-                    }//loop over iu
-            }//loop over iv
- }
+			poly.AddBin(CellXY.size(), HexX, HexY);
+		}//loop over iu
+	}//loop over iv
+}
 //
 
 // ------------ method called for each event  ------------
@@ -225,11 +225,11 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 
 	int Sum_Cluster_Tmp = 0;
 
-/*
-	for(auto Track : *Tracks) {
-		cout << endl << " Event/Trigger = " << event.id().event() << " Track intercept X= " << Track.vertex().X() << " Track intercept Y= " << Track.vertex().Y() << " Slope X= " << Track.momentum().X() << " Slope Y= " << Track.momentum().Y() << " Track hit X= " << Track.pointAt(ExtrapolateZ).X() << " Track hit Y= " << Track.pointAt(ExtrapolateZ).Y() << endl;
-	}
-*/
+	/*
+		for(auto Track : *Tracks) {
+			cout << endl << " Event/Trigger = " << event.id().event() << " Track intercept X= " << Track.vertex().X() << " Track intercept Y= " << Track.vertex().Y() << " Slope X= " << Track.momentum().X() << " Slope Y= " << Track.momentum().Y() << " Track hit X= " << Track.pointAt(ExtrapolateZ).X() << " Track hit Y= " << Track.pointAt(ExtrapolateZ).Y() << endl;
+		}
+	*/
 
 	for(auto RecHit1 : *Rechits1) {
 		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit1.id()).layer(), (RecHit1.id()).sensorIU(), (RecHit1.id()).sensorIV(), (RecHit1.id()).iu(), (RecHit1.id()).iv(), sensorsize);
@@ -241,7 +241,7 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 			iux_Max = iux;
 			iyy_Max = iyy;
 		}
-               if(RecHit1.energyHigh() > 20.) continue;
+		if(RecHit1.energyHigh() > 20.) continue;
 //             if(UP && fabs(iux - iux_Max) > 0. && fabs(iyy - iyy_Max) > 0. && RecHit1.energyHigh()< 2000000.){
 		if(((RecHit1.id()).cellType() == 0) || ((RecHit1.id()).cellType() == 5)) {
 
@@ -255,12 +255,12 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 				Average_Pedestal_Per_Event2_Full += RecHit1.energyHigh();
 			}
 
-/*
-                      Cell_counter1_Full++;
-                      Average_Pedestal_Per_Event1_Full += RecHit1.energyHigh();
-		      Cell_counter2_Full++;
-                      Average_Pedestal_Per_Event2_Full += RecHit1.energyHigh();	
-*/
+			/*
+			                      Cell_counter1_Full++;
+			                      Average_Pedestal_Per_Event1_Full += RecHit1.energyHigh();
+					      Cell_counter2_Full++;
+			                      Average_Pedestal_Per_Event2_Full += RecHit1.energyHigh();
+			*/
 		}
 
 		if(((RecHit1.id()).cellType() == 2) || ((RecHit1.id()).cellType() == 3) || ((RecHit1.id()).cellType() == 4) ) {
@@ -311,19 +311,19 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 	if(ADC_TMP > 50.) {
 		CG_X->Fill(iux_Max);
 		CG_Y->Fill(iyy_Max);
-   Sum_Cluster_Max->Fill(ADC_TMP);
+		Sum_Cluster_Max->Fill(ADC_TMP);
 //   cout<<endl<<" X= "<<CG_X<<" Y= "<<CG_Y<<" Max ADC= "<<ADC_TMP<<endl;
 	}
 
-                        TH2Poly *h_RecHit_layer[MAXLAYERS];
-                                int evId = event.id().event() - 1;
-                                int iLayer = (evId%2400)/150;
-                                h_RecHit_layer[iLayer] = fs->make<TH2Poly>();
-                                sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", 0, iLayer + 1, evId);
-                                sprintf(title, "ADC counts in Layer%i",iLayer + 1);
-                                h_RecHit_layer[iLayer]->SetName(name);
-                                h_RecHit_layer[iLayer]->SetTitle(title);
-                                InitTH2Poly(*h_RecHit_layer[iLayer]);
+	TH2Poly *h_RecHit_layer[MAXLAYERS];
+	int evId = event.id().event() - 1;
+	int iLayer = (evId % 2400) / 150;
+	h_RecHit_layer[iLayer] = fs->make<TH2Poly>();
+	sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", 0, iLayer + 1, evId);
+	sprintf(title, "ADC counts in Layer%i", iLayer + 1);
+	h_RecHit_layer[iLayer]->SetName(name);
+	h_RecHit_layer[iLayer]->SetTitle(title);
+	InitTH2Poly(*h_RecHit_layer[iLayer]);
 
 	for(auto RecHit : *Rechits) {
 		if(!IsCellValid.iu_iv_valid((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize))  continue;
@@ -334,7 +334,7 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 		uint32_t EID = essource_.emap_.detId2eid(RecHit.id());
 		HGCalTBElectronicsId eid(EID);
 		AllCells_Ped->Fill(RecHit.energyHigh());
-if(RecHit.energyHigh() > 55) cout<<endl<<" Energy= "<<RecHit.energyHigh()<<" u= "<<iux<<" v= "<<iyy<<" event number= "<<event.id().event()<<endl;
+		if(RecHit.energyHigh() > 55) cout << endl << " Energy= " << RecHit.energyHigh() << " u= " << iux << " v= " << iyy << " event number= " << event.id().event() << endl;
 //                if((RecHit.id()).iu() == 4 && (RecHit.id()).iv() == 2) continue;
 		if(!DoCommonMode) {
 			h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh());
@@ -342,11 +342,11 @@ if(RecHit.energyHigh() > 55) cout<<endl<<" Energy= "<<RecHit.energyHigh()<<" u= 
 		if(((RecHit.id()).cellType() == 0 ) || ((RecHit.id()).cellType() == 5) ) {
 			if((iyy >= -0.25 ) ) {
 				if(!PED && DoCommonMode) {
-					if((RecHit.id()).cellType() == 0){
-                                           h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, (RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Full / (Cell_counter1_Full))) );
+					if((RecHit.id()).cellType() == 0) {
+						h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, (RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Full / (Cell_counter1_Full))) );
 
-                                          }
-                                   Sum_Cluster_Tmp += (RecHit.energyHigh()); 
+					}
+					Sum_Cluster_Tmp += (RecHit.energyHigh());
 				}
 				h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Full / (Cell_counter1_Full)));
 				if(DoCommonMode) {
@@ -358,7 +358,7 @@ if(RecHit.energyHigh() > 55) cout<<endl<<" Energy= "<<RecHit.energyHigh()<<" u= 
 			} else if(( iyy < -0.50 )) {
 				if(!PED && DoCommonMode) {
 					if((RecHit.id()).cellType() == 0) h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, (RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Full / (Cell_counter2_Full))) );
-                                  Sum_Cluster_Tmp += (RecHit.energyHigh());
+					Sum_Cluster_Tmp += (RecHit.energyHigh());
 
 				}
 				h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Full / (Cell_counter2_Full)));
@@ -378,20 +378,20 @@ if(RecHit.energyHigh() > 55) cout<<endl<<" Energy= "<<RecHit.energyHigh()<<" u= 
 		}
 		if(((RecHit.id()).cellType() != 5) && ((RecHit.id()).cellType() != 1) && ((RecHit.id()).cellType() != 0)) {
 			if((iyy >= -0.25 ) ) {
-				if(!PED && DoCommonMode){
-                                    h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Half / Cell_counter1_Half) );
+				if(!PED && DoCommonMode) {
+					h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Half / Cell_counter1_Half) );
 
-                                   }
+				}
 //				h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Half / Cell_counter1_Half));
 				if(DoCommonMode) {
 					AllCells_CM->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Half / (Cell_counter1_Half)));
 				}
 			}
 			if(( iyy < -0.50 )) {
-				if(!PED && DoCommonMode){
-                                     h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Half / Cell_counter2_Half) );
+				if(!PED && DoCommonMode) {
+					h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Half / Cell_counter2_Half) );
 
-                                   }
+				}
 				h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Half / Cell_counter2_Half));
 				if(DoCommonMode) {
 					AllCells_CM->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Half / (Cell_counter2_Half)));
