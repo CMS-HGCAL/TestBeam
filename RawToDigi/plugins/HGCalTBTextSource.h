@@ -57,11 +57,15 @@ private:
 
 		m_event++; /// \todo get eventID from file?
 		id = edm::EventID(m_run, 1, m_event);
+/*
 		// time is a hack
 		edm::TimeValue_t present_time = presentTime(); ///\todo take time from file? how to define the time?
 		unsigned long time_between_events = timeBetweenEvents();
 
 		time = present_time + time_between_events;
+*/
+
+                 time = (edm::TimeValue_t) m_time;
 		return true;
 	}
 	virtual void produce(edm::Event & e);
@@ -69,7 +73,7 @@ private:
 
 	std::vector<std::string> m_lines;
 	FILE* m_file;
-        unsigned int m_time_tmp, m_run_tmp;
+        unsigned int m_time, m_time_tmp, m_run_tmp;
 	int m_event, m_run;
 	int m_sourceId;
 };

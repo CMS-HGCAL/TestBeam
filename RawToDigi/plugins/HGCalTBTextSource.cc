@@ -8,6 +8,7 @@ int runflag = 0;
 int trigcountperspillflag = 0; 
 unsigned int Events_Per_Spill = 0;
 unsigned int spillcounter = 0;
+unsigned int tmp_event = 0;
 //unsigned int Number_Of_Events_Per_Spill = 150;
 //unsigned int Number_Of_Spills = 8;
 int Number_Of_SKIROC_Data_Words = 64;
@@ -69,8 +70,10 @@ bool HGCalTBTextSource::readLines()
                 if(strstr(buffer,"CKOV= 1")) cout<<endl<<"CKOV= 1"<<endl;
                 else cout<<endl<<"CKOV= 0"<<endl; 
 */
-
-                if(strstr(buffer, "Event")) continue;                 
+                if(sscanf(buffer,"Event header for event %x with (200ns) timestamp %x",&tmp_event,&m_time) ==2){
+                         continue;
+                   } 
+//                if(strstr(buffer, "Event")) continue;                 
                 counter++;
 		if(runcounter < EVENTSPERSPILL && counter <= Number_Of_SKIROC_Data_Words) m_lines.push_back(buffer);
                 if(runcounter < EVENTSPERSPILL && counter == Number_Of_SKIROC_Words){
