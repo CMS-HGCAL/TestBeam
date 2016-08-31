@@ -58,7 +58,7 @@ void DumpPlotsDigi(TString inputFileName, TString outputFolder, Int_t runNumber)
       ReverseXAxis(sumADCCounts);
       // if(iii != 0) sprintf(dirname,"/afs/cern.ch/work/r/rchatter/CMSSW_7_6_3_patch2/src/HGCal/DQM_Plots/Run%i/Spill%i/Overview/FullLayer_RecHits_Layer%i.png",iii,jjj,layerCounter);
       // else sprintf(dirname,"/afs/cern.ch/work/r/rchatter/CMSSW_7_6_3_patch2/src/HGCal/DQM_Plots/Cumulative/Overview/FullLayer_RecHits_Layer%i.png",layerCounter);
-      outputPlotFullPath = (outputFolder + Form("/Overview/")) + plotName + Form("_%06d.png", runNumber);
+      outputPlotFullPath = (outputFolder + Form("/")) + plotName + Form("_%06d.png", runNumber);
       c1->SaveAs(outputPlotFullPath);
       delete sumADCCounts;
 
@@ -67,7 +67,7 @@ void DumpPlotsDigi(TString inputFileName, TString outputFolder, Int_t runNumber)
       allADCCounts->GetXaxis()->SetTitle("Channel number");
       allADCCounts->GetYaxis()->SetTitle("ADC Counts");
       allADCCounts->Draw();
-      outputPlotFullPath = (outputFolder + Form("/Overview/")) + plotName + Form("_%06d.png", runNumber);
+      outputPlotFullPath = (outputFolder + Form("/")) + plotName + Form("_%06d.png", runNumber);
       c1->SaveAs(outputPlotFullPath);
       delete allADCCounts;
     } // ends loop over layers

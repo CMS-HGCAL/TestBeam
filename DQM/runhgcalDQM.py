@@ -6,7 +6,7 @@ import os, re, time, subprocess, glob
 
 cmsswSource = "/hgcaldata/PromptFeedback/CMSSW_8_0_17/src/HGCal"
 dataFolder = "/hgcaldata/data" # Important to NOT have a trailing slash
-outputFolder = "/hgcaldata/PromptFeedback/testOutput" # Important to NOT have a trailing slash
+outputFolder = "/hgcaldata/PromptFeedback/processingOutput" # Important to NOT have a trailing slash
 # dqmPlotsRecoFolder = "/hgcaldata/PromptFeedback/DQMPlots_Reco"
 # dqmPlotsDigiFolder = "/hgcaldata/PromptFeedback/DQMPlots_Digi"
 dqmPlotsFolder = "/var/www/html/dqm"
@@ -90,12 +90,17 @@ if __name__ == "__main__":
                 print ("For run number %d, runTypeToProcess = %s and cmsswArguments = %s"%(runToProcess, runTypeToProcess, cmsswArguments))
                 # subprocess.call("bash runhgcalDQMHelper.sh %s %d %s %d %s %s"%(DQMHelperOptions, runToProcess, runTypeToProcess, chainSequence, pedestalsHighGain, pedestalsLowGain), shell=True)
                 # cmsRunCommand = "bash runhgcalDQMHelper.sh %s %s"%(cmsswSource, cmsswArguments)
-                # print ("About to execute %s"%(executeCommand))
+                print ("About to execute: cmsRun test_cfg.py %s"%(cmsswArguments))
                 subprocess.call("cd %s && eval `scram runtime -sh` && cmsRun test_cfg.py %s && cd -"%(cmsswSource, cmsswArguments), shell=True)
+                dqmOutputFolder = dqmPlotsFolder + "/%d"%(runToProcess)
+                if (not(os.path.isdir(dqmOutputFolder))):
+                    os.system("mkdir -p "+dqmOutputFolder)
+                if (not(os.path.isdir(dqmOutputFolder+"/Detailed"))):
+                    os.system("mkdir -p "+dqmOutputFolder+"/Detailed")
                 if (runTypeToProcess == "HGCRun"):
-                    subprocess.call("cd %s && eval `scram runtime -sh` && cd - && root -b -q \"DumpPlotsReco.C++(\\\"%s/HGCRun_Output_%06d_Reco.root\\\", \\\"%s\\\", %d)\""%(cmsswSource, outputFolder, runToProcess, dqmPlotsFolder, runToProcess), shell=True)
+                    subprocess.call("cd %s && eval `scram runtime -sh` && cd - && root -b -q \"DumpPlotsReco.C++(\\\"%s/HGCRun_Output_%06d_Reco.root\\\", \\\"%s\\\", %d)\""%(cmsswSource, outputFolder, runToProcess, dqmOutputFolder, runToProcess), shell=True)
                 elif (runTypeToProcess == "PED"):
-                    subprocess.call("cd %s && eval `scram runtime -sh` && cd - && root -b -q \"DumpPlotsDigi.C++(\\\"%s/PED_Output_%06d_Digi.root\\\", \\\"%s\\\", %d)\""%(cmsswSource, outputFolder, runToProcess, dqmPlotsFolder, runToProcess), shell=True)
+                    subprocess.call("cd %s && eval `scram runtime -sh` && cd - && root -b -q \"DumpPlotsDigi.C++(\\\"%s/PED_Output_%06d_Digi.root\\\", \\\"%s\\\", %d)\""%(cmsswSource, outputFolder, runToProcess, dqmOutputFolder, runToProcess), shell=True)
             else:
                 print ("Only runtypes PED and HGCRun supported for now")
             listOfRunsAlreadyProcessed += [runToProcess]

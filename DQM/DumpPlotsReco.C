@@ -71,7 +71,7 @@ void DumpPlotsReco(TString inputFileName, TString outputFolder, Int_t runNumber)
     ReverseXAxis(Overview_Rechits_Layer);
     // if(iii != 0) sprintf(dirname,"/afs/cern.ch/work/r/rchatter/CMSSW_7_6_3_patch2/src/HGCal/DQM_Plots/Run%i/Spill%i/Overview/FullLayer_RecHits_Layer%i.png",iii,jjj,layerCounter);
     // else sprintf(dirname,"/afs/cern.ch/work/r/rchatter/CMSSW_7_6_3_patch2/src/HGCal/DQM_Plots/Cumulative/Overview/FullLayer_RecHits_Layer%i.png",layerCounter);
-    outputPlotName = (outputFolder + Form("/Overview/")) + histogramName + Form("_%06d.png", runNumber);
+    outputPlotName = (outputFolder + Form("/")) + histogramName + Form("_%06d.png", runNumber);
     c1->SaveAs(outputPlotName);
     delete Overview_Rechits_Layer;
 
@@ -83,7 +83,7 @@ void DumpPlotsReco(TString inputFileName, TString outputFolder, Int_t runNumber)
     ReverseXAxis(Overview_Occupancy_Layer);
     // if(iii != 0) sprintf(dirname,"/afs/cern.ch/work/r/rchatter/CMSSW_7_6_3_patch2/src/HGCal/DQM_Plots/Run%i/Spill%i/Overview/FullLayer_Occupancy_Layer%i.png",iii,jjj,layerCounter);
     // else sprintf(dirname,"/afs/cern.ch/work/r/rchatter/CMSSW_7_6_3_patch2/src/HGCal/DQM_Plots/Cumulative/Overview/FullLayer_Occupancy_Layer%i.png",layerCounter);
-    outputPlotName = (outputFolder + Form("/Overview/")) + histogramName + Form("_%06d.png", runNumber);
+    outputPlotName = (outputFolder + Form("/")) + histogramName + Form("_%06d.png", runNumber);
     c1->SaveAs(outputPlotName);
     delete Overview_Occupancy_Layer;
     
@@ -92,7 +92,7 @@ void DumpPlotsReco(TString inputFileName, TString outputFolder, Int_t runNumber)
     Overview_Rechits_Layer_Summed->Draw();
     // if(iii != 0) sprintf(outputPlotName,"/afs/cern.ch/work/r/rchatter/CMSSW_7_6_3_patch2/src/HGCal/DQM_Plots/Run%i/Spill%i/Overview/FullLayer_RecHits_Layer%i_Summed.png",iii,jjj,layerCounter);
     // else sprintf(outputPlotName,"/afs/cern.ch/work/r/rchatter/CMSSW_7_6_3_patch2/src/HGCal/DQM_Plots/Cumulative/Overview/FullLayer_RecHits_Layer%i_Summed.png",layerCounter);
-    outputPlotName = (outputFolder + Form("/Overview/")) + histogramName + Form("_%06d.png", runNumber);
+    outputPlotName = (outputFolder + Form("/")) + histogramName + Form("_%06d.png", runNumber);
     c1->SaveAs(outputPlotName);
     delete Overview_Rechits_Layer_Summed;
 	
