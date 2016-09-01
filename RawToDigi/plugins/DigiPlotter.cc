@@ -296,10 +296,10 @@ DigiPlotter::endJob()
      int SENSOR_IX = 0;
      int SENSOR_IV = 0;
      ofstream fs1, fs2;
-     fs1.open("/afs/cern.ch/work/r/rchatter/CERN_OneLayer_TestBeam/CMSSW_8_0_1/src/HGCal/Ped_HighGain_L1.txt");
+     fs1.open("CondObjects/data/Ped_HighGain_L1_temp.txt");
      fs1<<"SCHEME_CODE 0"<<endl;
      fs1<<"# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE"<<endl;
-     fs2.open("/afs/cern.ch/work/r/rchatter/CERN_OneLayer_TestBeam/CMSSW_8_0_1/src/HGCal/Ped_LowGain_L1.txt");
+     fs2.open("CondObjects/data/Ped_LowGain_L1_temp.txt");
      fs2<<"SCHEME_CODE 0"<<endl;
      fs2<<"# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE"<<endl;
 
