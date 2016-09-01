@@ -6,13 +6,13 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 
 options.register('dataFolder',
-                 '',
+                 '/afs/cern.ch/work/r/rslu/public/HGC_TB_data_Sep2016/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw text input')
 
 options.register('outputFolder',
-                 '',
+                 '/tmp/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Result of processing')
@@ -24,7 +24,7 @@ options.register('outputFolder',
 #                  'Input file to process')
 
 options.register('runNumber',
-                 '',
+                 850,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Input file to process')
@@ -42,7 +42,7 @@ options.register('chainSequence',
                  '0: if runType is PED then do Digi, if runType is HGC_Run then do Digi and Reco; 1: do Digi, 3: do both Digi and Reco (only Reco not implemented so far), 4: do event display sequence')
 
 options.register('nSpills',
-                 6,
+                 15,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Number of spills in run')
@@ -68,13 +68,14 @@ if not os.path.isdir(options.outputFolder):
     os.system("mkdir -p " + options.outputFolder)
 
 if (options.runType != "PED" and options.runType != "HGCRun"):
+    print options
     sys.exit("Error: only runtypes PED and HGCRun supported for now; given runType was %s"%(options.runType))
 
 if (options.pedestalsHighGain == "" or options.pedestalsLowGain == ""): # Poor coding practice, but will have to do for now
-    if (runType == "HGCRun"):
-        options.pedestalsHighGain="%s/CondObjects/data/Ped_HighGain_OneLayer_H2CERN.txt"%(options.cmsswSource)
-        options.pedestalsLowGain="%s/CondObjects/data/Ped_LowGain_OneLayer_H2CERN.txt"%(options.cmsswSource)
-    elif (runType == "PED"):
+    if (options.runType == "HGCRun"):
+        options.pedestalsHighGain="CondObjects/data/Ped_HighGain_OneLayer_H2CERN.txt" #%(options.cmsswSource)
+        options.pedestalsLowGain="CondObjects/data/Ped_LowGain_OneLayer_H2CERN.txt"  #%(options.cmsswSource)
+    elif (options.runType == "PED"):
         options.pedestalsHighGain="%s/Ped_HighGain_OneLayer_%06d.txt"%(options.outputFolder, options.runNumber)
         options.pedestalsLowGain="%s/Ped_LowGain_OneLayer_%06d.txt"%(options.outputFolder, options.runNumber)
 
@@ -85,7 +86,7 @@ process.load('HGCal.Reco.hgcaltbrechitproducer_cfi')
 process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
 
 process.source = cms.Source("HGCalTBTextSource",
-                            run=cms.untracked.int32(1), ### maybe this should be read from the file
+                            run=cms.untracked.int32(options.runNumber), ### maybe this should be read from the file
                             #fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
                             fileNames=cms.untracked.vstring("file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber)), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
                             nSpills=cms.untracked.uint32(options.nSpills)
