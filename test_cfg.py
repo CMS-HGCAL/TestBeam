@@ -48,13 +48,13 @@ options.register('nSpills',
                  'Number of spills in run')
 
 options.register('pedestalsHighGain',
-                 '',
+                 'CondObjects/data/Ped_HighGain_OneLayer_H2CERN.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Path to high gain pedestals file')
 
 options.register('pedestalsLowGain',
-                 '',
+                 'CondObjects/data/Ped_LowGain_OneLayer_H2CERN.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Path to low gain pedestals file')
@@ -71,14 +71,10 @@ if (options.runType != "PED" and options.runType != "HGCRun"):
     print options
     sys.exit("Error: only runtypes PED and HGCRun supported for now; given runType was %s"%(options.runType))
 
-if (options.pedestalsHighGain == "" or options.pedestalsLowGain == ""): # Poor coding practice, but will have to do for now
-    if (options.runType == "HGCRun"):
-        options.pedestalsHighGain="CondObjects/data/Ped_HighGain_OneLayer_H2CERN.txt" #%(options.cmsswSource)
-        options.pedestalsLowGain="CondObjects/data/Ped_LowGain_OneLayer_H2CERN.txt"  #%(options.cmsswSource)
-    elif (options.runType == "PED"):
-        options.pedestalsHighGain="%s/Ped_HighGain_OneLayer_%06d.txt"%(options.outputFolder, options.runNumber)
-        options.pedestalsLowGain="%s/Ped_LowGain_OneLayer_%06d.txt"%(options.outputFolder, options.runNumber)
-
+if (options.runType == "PED"):
+    if (os.path.isfile(options.pedestalsHighGain) or os.path.isfile(options.pedestalsLowGain)):
+        sys.exit("Error: Run %d is a pedestals run. The arguments pedestalsHighGain = %s and pedestalsLowGain = %s should be paths that do not lead to an existing file."%(options.runNumber, options.pedestalsHighGain, options.pedestalsLowGain))
+            
 process = cms.Process("unpack")
 process.load('HGCal.RawToDigi.hgcaltbdigis_cfi')
 process.load('HGCal.RawToDigi.hgcaltbdigisplotter_cfi')
