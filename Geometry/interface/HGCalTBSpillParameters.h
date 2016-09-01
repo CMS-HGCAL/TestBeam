@@ -1,2 +1,2 @@
-#define EVENTSPERSPILL  150
-#define SPILLS  7
+#define EVENTSPERSPILL  400
+#define SPILLS  3

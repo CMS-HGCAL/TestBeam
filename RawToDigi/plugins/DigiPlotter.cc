@@ -123,7 +123,7 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
 		for(int nlayers = 0; nlayers < MAXLAYERS; nlayers++) {
                      sprintf(name, "Noise_2D_Profile_ADC%i_Layer%i", nsample, nlayers);
                      sprintf(title, "Noise 2D Profile ADC%i Layer%i", nsample, nlayers);       	    
-                     Noise_2D_Profile[nsample][nlayers] = fs->make<TH2F>(name,title,128,0,127,500,-250,250);                      
+                     Noise_2D_Profile[nsample][nlayers] = fs->make<TH2F>(name,title,128,0,127,2000,-1000,1000);                      
                    }      
      	    }
 	for(int ISkiroc = 1; ISkiroc <= MAXSKIROCS; ISkiroc++) {
@@ -263,6 +263,7 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 			if(eid.iskiroc() > 0)	h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][nsample]->Fill(SKI[nsample].adcLow());
 				nsample = 1;
 				h_digi_layer[nsample][n_layer - 1]->Fill(iux , iyy, SKI[nsample - 1].adcHigh());
+//				Noise_2D_Profile[nsample][n_layer - 1]->Fill();
 				h_digi_layer_profile[nsample][n_layer - 1]->Fill(counter2++, SKI[nsample - 1].adcHigh(), 1);
 //				h_digi_layer_summed[nsample][n_layer - 1]->Fill(ADC_Sum_SKI_Layer[eid.iskiroc() - 2*(n_layer - 1) - 1][n_layer - 1][1]);
 //                                        if(((SKI.detid()).cellType() != 4) && (eid.ichan() == 0) ) cout<<endl<<"SKIROC=  "<<eid.iskiroc()<<" Chan= "<<eid.ichan()<<" u= "<<n_cell_iu<<" v = "<<n_cell_iv<<endl;
@@ -296,10 +297,10 @@ DigiPlotter::endJob()
      int SENSOR_IX = 0;
      int SENSOR_IV = 0;
      ofstream fs1, fs2;
-     fs1.open("CondObjects/data/Ped_HighGain_L1_temp.txt");
+     fs1.open("CondObjects/data/Ped_HighGain_L8_temp.txt");
      fs1<<"SCHEME_CODE 0"<<endl;
      fs1<<"# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE"<<endl;
-     fs2.open("CondObjects/data/Ped_LowGain_L1_temp.txt");
+     fs2.open("CondObjects/data/Ped_LowGain_L8_temp.txt");
      fs2<<"SCHEME_CODE 0"<<endl;
      fs2<<"# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE"<<endl;
 

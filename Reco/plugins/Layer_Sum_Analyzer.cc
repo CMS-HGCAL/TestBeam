@@ -134,9 +134,9 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
                 Yname << "Y_Layer" << layer + 1;
                 X_Y_name<<"X_Y_Layer"<< layer + 1;
 
-		h_sum_layer[layer] = fs->make<TH1F>(name.str().c_str(), name.str().c_str(), 622, -10, 612);
-		h_layer_seven[layer] = fs->make<TH1F>(sevenname.str().c_str(), sevenname.str().c_str(), 622, -10, 612);
-		h_layer_nineteen[layer] = fs->make<TH1F>(nineteenname.str().c_str(), nineteenname.str().c_str(), 622, -10, 612);
+		h_sum_layer[layer] = fs->make<TH1F>(name.str().c_str(), name.str().c_str(), 40010, -10, 40000);
+		h_layer_seven[layer] = fs->make<TH1F>(sevenname.str().c_str(), sevenname.str().c_str(), 40010, -10, 40000);
+		h_layer_nineteen[layer] = fs->make<TH1F>(nineteenname.str().c_str(), nineteenname.str().c_str(), 40010, -10, 40000);
                 h_x_layer[layer] = fs->make<TH1F>(Xname.str().c_str(), Xname.str().c_str(),2000,-10.,10. );
                 h_y_layer[layer] = fs->make<TH1F>(Yname.str().c_str(), Yname.str().c_str(),2000,-10.,10. );
                 h_x_y_layer[layer] = fs->make<TH2F>(X_Y_name.str().c_str(), X_Y_name.str().c_str(),2000,-10.,10.,2000,-10.,10. );
