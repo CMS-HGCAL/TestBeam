@@ -19,36 +19,42 @@
 class Slot : public TQObject
 {
 private:
-  PyObject*   _object;
-  std::string _mstr;
-  std::vector<char> _method;
+	PyObject*   _object;
+	std::string _mstr;
+	std::vector<char> _method;
 
 public:
 
-  /** RootCint requires a default constructor      
-   */
+	/** RootCint requires a default constructor
+	 */
 
-  Slot();
+	Slot();
 
-  /**
-   */
-  Slot(PyObject* object, const char* method);
+	/**
+	 */
+	Slot(PyObject* object, const char* method);
 
-  /**
-   */
-  ~Slot();
+	/**
+	 */
+	~Slot();
 
-  /**
-  */
-  void handleSignal(int id);
+	/**
+	*/
+	void handleSignal(int id);
 
-  /**
-   */
-  void handleSignal();
+	/**
+	 */
+	void handleSignal();
 
-  PyObject*  receiver() const {return _object;}
+	PyObject*  receiver() const
+	{
+		return _object;
+	}
 
-  const char*    method()   const {return _mstr.c_str();}
+	const char*    method()   const
+	{
+		return _mstr.c_str();
+	}
 
 };
 

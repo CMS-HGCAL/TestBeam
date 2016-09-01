@@ -30,12 +30,12 @@ public:
 		double count;
 		bool operator<(HGCCellMap::Cell& o)
 		{
-		  // SKIROC 2 occurs before SKIROC 1
-		  int ski   = skiroc % 2;
-		  int o_ski = o.skiroc % 2;
-		  int lhs   = 64 * ski + channel;
-		  int rhs   = 64 * o_ski + o.channel;
-		  return lhs < rhs;
+			// SKIROC 2 occurs before SKIROC 1
+			int ski   = skiroc % 2;
+			int o_ski = o.skiroc % 2;
+			int lhs   = 64 * ski + channel;
+			int rhs   = 64 * o_ski + o.channel;
+			return lhs < rhs;
 		}
 	};
 	HGCCellMap(std::string inputFilename = "");
@@ -57,7 +57,10 @@ public:
 	std::vector<HGCCellMap::Cell> cells(int layer = 1,
 	                                    int sensor_u = 0,
 	                                    int sensor_v = 0);
-	TH2Poly*                  honeycomb() { return _map; }
+	TH2Poly*                  honeycomb()
+	{
+		return _map;
+	}
 private:
 	std::map<size_t, std::pair<int, int> > _uvmap;
 	std::map<std::pair<int, int>, int> _posid;

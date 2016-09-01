@@ -17,15 +17,15 @@ using namespace std;
 
 Slot::Slot() {}
 
-Slot::Slot(PyObject* object, const char *method)  	   
-  : _object(object),
-    _mstr(method),
-    _method(std::vector<char>(_mstr.size()+1,0))
+Slot::Slot(PyObject* object, const char *method)
+	: _object(object),
+	  _mstr(method),
+	  _method(std::vector<char>(_mstr.size() + 1, 0))
 {
-  copy(_mstr.begin(), _mstr.end(), _method.begin());
+	copy(_mstr.begin(), _mstr.end(), _method.begin());
 }
 
-Slot::~Slot() 
+Slot::~Slot()
 {}
 
 // SLOTS
@@ -33,24 +33,24 @@ Slot::~Slot()
 
 void Slot::handleSignal(int id)
 {
-  char ip[4] = {"(i)"};
+	char ip[4] = {"(i)"};
 
-  PyObject* result = PyObject_CallMethod(_object, &_method[0], ip, id);
-  if ( PyErr_Occurred() ) PyErr_Clear();
+	PyObject* result = PyObject_CallMethod(_object, &_method[0], ip, id);
+	if ( PyErr_Occurred() ) PyErr_Clear();
 
-  // Decrement reference count. Use XDECREF to ignore NULL references
-  
-  Py_XDECREF(result);
+	// Decrement reference count. Use XDECREF to ignore NULL references
+
+	Py_XDECREF(result);
 }
 
 void Slot::handleSignal()
 {
-  PyObject* result = PyObject_CallMethod(_object, &_method[0], NULL);
-  if ( PyErr_Occurred() ) PyErr_Clear();
+	PyObject* result = PyObject_CallMethod(_object, &_method[0], NULL);
+	if ( PyErr_Occurred() ) PyErr_Clear();
 
-  // Decrement reference count. Use XDECREF to ignore NULL references
-  
-  Py_XDECREF(result);
+	// Decrement reference count. Use XDECREF to ignore NULL references
+
+	Py_XDECREF(result);
 }
 
 

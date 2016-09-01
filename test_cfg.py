@@ -123,6 +123,19 @@ elif (options.chainSequence == 3 or options.chainSequence == 4):
 #process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Layer.root") )
 #process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Cluster.root") )
 
+
+########Activate this to produce event displays#########################################
+#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
+
+################Not needed for DQM purposes, produces digi histograms for each channel, and the pedestal txt file needed for Digi->Reco
+#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
+
+################Produces Reco histograms for each channel as well as a scatter plot of the Reco per channel#############
+#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
+
+#################Produces Clusters of Recos(7cells, 19cells and all cells(full hexagons only))################
+#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.LayerSumAnalyzer)
+
 if (options.chainSequence == 1):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
 elif (options.chainSequence == 3):
