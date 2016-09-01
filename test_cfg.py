@@ -39,7 +39,7 @@ options.register('chainSequence',
                  0,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
-                 '0: if runType is PED then do Digi, if runType is HGC_Run then do Digi and Reco; 1: do Digi, 3: do both Digi and Reco (only Reco not implemented so far)')
+                 '0: if runType is PED then do Digi, if runType is HGC_Run then do Digi and Reco; 1: do Digi, 3: do both Digi and Reco (only Reco not implemented so far), 4: do event display sequence')
 
 options.register('nSpills',
                  6,
@@ -77,9 +77,6 @@ if (options.pedestalsHighGain == "" or options.pedestalsLowGain == ""): # Poor c
     elif (runType == "PED"):
         options.pedestalsHighGain="%s/Ped_HighGain_OneLayer_%06d.txt"%(options.outputFolder, options.runNumber)
         options.pedestalsLowGain="%s/Ped_LowGain_OneLayer_%06d.txt"%(options.outputFolder, options.runNumber)
-
-if (options.pedestalsHighGain == "" or options.pedestalsLowGain == ""):
-    sys.exit("Error: must specify paths to pedestal files (output in case of Digi-only chain, input in case of Digi + Reco chain)")
 
 process = cms.Process("unpack")
 process.load('HGCal.RawToDigi.hgcaltbdigis_cfi')
@@ -120,7 +117,7 @@ process.hgcaltbrechits = cms.EDProducer("HGCalTBRecHitProducer",
 # process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Display.root") )
 if (options.chainSequence == 1):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Digi.root"%(options.outputFolder,options.runType,options.runNumber)))
-elif (options.chainSequence == 3):
+elif (options.chainSequence == 3 or options.chainSequence == 4):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco.root"%(options.outputFolder,options.runType,options.runNumber)))
 # process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco.root") )
 #process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Layer.root") )
@@ -129,7 +126,10 @@ elif (options.chainSequence == 3):
 if (options.chainSequence == 1):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
 elif (options.chainSequence == 3):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter)
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
+    # process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter)
+elif (options.chainSequence == 4):
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
 # process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.FourLayerRecHitPlotterMax)
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.LayerSumAnalyzer)

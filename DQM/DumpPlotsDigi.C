@@ -44,8 +44,8 @@ void DumpPlotsDigi(TString inputFileName, TString outputFolder, Int_t runNumber)
   TFile *inputFile = TFile::Open(inputFileName);
   inputFile->cd("hgcaltbdigisplotter");
   TString outputPlotFullPath, plotName;
-  const int nLayers = 1;
-  const int nSkirocs = 2;
+  const int nLayers = 8;
+  int nSkirocs = nLayers*2;
   const int nChannelsPerSkiroc = 64;
       
   for (int gainCounter = 0; gainCounter <= 1; ++gainCounter) {

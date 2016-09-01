@@ -57,7 +57,7 @@ void DumpPlotsReco(TString inputFileName, TString outputFolder, Int_t runNumber)
   // if(iii != 0) sprintf(filename,"test_DigiAndRechitPlotter_TB_Run%i_Spill%i.root",iii,jjj);
   // else sprintf(filename,"test_DigiAndRechitPlotter_TB_Cumulative.root");
   TFile *inputFile = TFile::Open(inputFileName);
-  inputFile->cd("hgcaltbrechitsplotter_highgain_correlation_cm");
+  inputFile->cd("hgcaltbrechitsplotter_highgain_new");
 
   TString outputPlotName, histogramName;
 
