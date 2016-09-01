@@ -59,7 +59,11 @@ options.register('pedestalsLowGain',
                  VarParsing.VarParsing.varType.string,
                  'Path to low gain pedestals file')
 
+options.output = "test_output.root"
+
 options.parseArguments()
+
+print options
 
 if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
@@ -68,18 +72,23 @@ if not os.path.isdir(options.outputFolder):
     os.system("mkdir -p " + options.outputFolder)
 
 if (options.runType != "PED" and options.runType != "HGCRun"):
-    print options
     sys.exit("Error: only runtypes PED and HGCRun supported for now; given runType was %s"%(options.runType))
 
 if (options.runType == "PED"):
     if (os.path.isfile(options.pedestalsHighGain) or os.path.isfile(options.pedestalsLowGain)):
         sys.exit("Error: Run %d is a pedestals run. The arguments pedestalsHighGain = %s and pedestalsLowGain = %s should be paths that do not lead to an existing file."%(options.runNumber, options.pedestalsHighGain, options.pedestalsLowGain))
             
+
+
+################################
 process = cms.Process("unpack")
-process.load('HGCal.RawToDigi.hgcaltbdigis_cfi')
-process.load('HGCal.RawToDigi.hgcaltbdigisplotter_cfi')
-process.load('HGCal.Reco.hgcaltbrechitproducer_cfi')
-process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
+
+
+####################################
+process.load('HGCal.StandardSequences.RawToDigi_cff')
+process.load('HGCal.StandardSequences.LocalReco_cff')
+process.load('HGCal.StandardSequences.dqm_cff')
+
 
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(options.runNumber), ### maybe this should be read from the file
@@ -88,10 +97,16 @@ process.source = cms.Source("HGCalTBTextSource",
                             nSpills=cms.untracked.uint32(options.nSpills)
 )
 
-process.hgcaltbdigisplotter = cms.EDAnalyzer("DigiPlotter",
-                                     pedestalsHighGain=cms.untracked.string(options.pedestalsHighGain),
-                                     pedestalsLowGain=cms.untracked.string(options.pedestalsLowGain)
-                                     )
+
+
+######
+process.hgcaltbdigisplotter.pedestalsHighGain = cms.untracked.string(options.pedestalsHighGain)
+process.hgcaltbdigisplotter.pedestalsLowGain  = cms.untracked.string(options.pedestalsLowGain)
+
+process.hgcaltbrechits.pedestalLow = cms.string(options.pedestalsLowGain)
+process.hgcaltbrechits.pedestalHigh = cms.string(options.pedestalsHighGain)
+process.hgcaltbrechits.gainLow = cms.string('')
+process.hgcaltbrechits.gainHigh = cms.string('')
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
                               dumpPayload=cms.untracked.bool(True))
@@ -100,16 +115,8 @@ process.dumpDigi = cms.EDAnalyzer("HGCalDigiDump")
 
 
 process.output = cms.OutputModule("PoolOutputModule",
-			fileName = cms.untracked.string("test_output.root")
+			fileName = cms.untracked.string(options.output)
                                  )
-process.hgcaltbrechits = cms.EDProducer("HGCalTBRecHitProducer",
-                                OutputCollectionName = cms.string(''),
-                                digiCollection = cms.InputTag('hgcaltbdigis'),
-                                pedestalLow = cms.string(options.pedestalsLowGain),
-                                pedestalHigh = cms.string(options.pedestalsHighGain),
-                                gainLow = cms.string(''),
-                                gainHigh = cms.string(''),
-                              )
 
 # process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Display.root") )
 if (options.chainSequence == 1):
