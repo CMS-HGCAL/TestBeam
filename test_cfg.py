@@ -6,11 +6,11 @@ process.load('HGCal.RawToDigi.hgcaltbdigisplotter_cfi')
 process.load('HGCal.Reco.hgcaltbrechitproducer_cfi')
 process.load('HGCal.Reco.hgcaltbrechitplotter_cfi')
 
-RUNNUMBER  = "834"
+RUNNUMBER  = "843"
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(1),####provide file name below
-#                            fileNames=cms.untracked.vstring("file:/afs/cern.ch/work/r/rslu/public/HGC_TB_data_Sep2016/HGCRun_Output_"+RUNNUMBER+".txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
-                            fileNames=cms.untracked.vstring("file:/afs/cern.ch/work/r/rslu/public/HGC_TB_data_Sep2016/PED_Output_000"+RUNNUMBER+".txt")
+                            fileNames=cms.untracked.vstring("file:/afs/cern.ch/work/r/rslu/public/HGC_TB_data_Sep2016/HGCRun_Output_"+RUNNUMBER+".txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+#                            fileNames=cms.untracked.vstring("file:/afs/cern.ch/work/r/rslu/public/HGC_TB_data_Sep2016/PED_Output_000"+RUNNUMBER+".txt")
 )
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
