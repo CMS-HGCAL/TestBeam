@@ -47,6 +47,7 @@
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
+#include "HGCal/Geometry/interface/HGCalTBSpillParameters.h"
 #define MAXVERTICES 6
 
 using namespace std;
@@ -317,7 +318,8 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 
 	TH2Poly *h_RecHit_layer[MAXLAYERS];
 	int evId = event.id().event() - 1;
-	int iLayer = (evId % 2400) / 150;
+	int iLayer = (evId % (MAXLAYERS * EVENTSPERSPILL)) / (EVENTSPERSPILL);
+	cout << endl << " iLayer= " << iLayer << endl;
 	h_RecHit_layer[iLayer] = fs->make<TH2Poly>();
 	sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", 0, iLayer + 1, evId);
 	sprintf(title, "ADC counts in Layer%i", iLayer + 1);
