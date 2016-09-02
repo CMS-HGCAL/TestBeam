@@ -39,7 +39,7 @@ options.register('chainSequence',
                  0,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
-                 '0: if runType is PED then do Digi, if runType is HGC_Run then do Digi and Reco; 1: do Digi, 3: do both Digi and Reco (only Reco not implemented so far), 4: do event display sequence')
+                 '0: if runType is PED then do Digi, if runType is HGC_Run then do Digi and Reco (not implemented yet); 1: do Digi; 2: only Reco (not implemented yet); 3: Digi + highgain_correlation_cm; 4: event display sequence; 5: highgain_correlation_cm + event display sequence')
 
 options.register('nSpills',
                  15,
@@ -48,13 +48,13 @@ options.register('nSpills',
                  'Number of spills in run')
 
 options.register('pedestalsHighGain',
-                 'CondObjects/data/Ped_HighGain_OneLayer_H2CERN.txt',
+                 'CondObjects/data/Ped_HighGain_L8.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Path to high gain pedestals file')
 
 options.register('pedestalsLowGain',
-                 'CondObjects/data/Ped_LowGain_OneLayer_H2CERN.txt',
+                 'CondObjects/data/Ped_LowGain_L8.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Path to low gain pedestals file')
@@ -63,7 +63,7 @@ options.output = "test_output.root"
 
 options.parseArguments()
 
-print options
+# print options # <--- A better option is to call test_cfg is called with "print" argument e.g. cmsRun test_cfg.py print dataFolder=example1 outputFolder=example2 ...
 
 if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
@@ -121,7 +121,7 @@ process.output = cms.OutputModule("PoolOutputModule",
 # process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Display.root") )
 if (options.chainSequence == 1):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Digi.root"%(options.outputFolder,options.runType,options.runNumber)))
-elif (options.chainSequence == 3 or options.chainSequence == 4):
+elif (options.chainSequence == 3 or options.chainSequence == 4 or options.chainSequence == 5):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco.root"%(options.outputFolder,options.runType,options.runNumber)))
 # process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco.root") )
 #process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Layer.root") )
@@ -140,14 +140,16 @@ elif (options.chainSequence == 3 or options.chainSequence == 4):
 #################Produces Clusters of Recos(7cells, 19cells and all cells(full hexagons only))################
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.LayerSumAnalyzer)
 
+################Miscellaneous##############################################################################
+#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.FourLayerRecHitPlotterMax)
+
 if (options.chainSequence == 1):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
 elif (options.chainSequence == 3):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
-    # process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter)
 elif (options.chainSequence == 4):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
-# process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
-#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.FourLayerRecHitPlotterMax)
-#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.LayerSumAnalyzer)
+elif (options.chainSequence == 5):
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm*process.hgcaltbrechitsplotter_highgain_new)
+
 process.end = cms.EndPath(process.output)
