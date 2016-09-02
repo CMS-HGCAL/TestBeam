@@ -98,7 +98,7 @@ if __name__ == "__main__":
                 if (not(os.path.isdir(dqmOutputFolder+"/Detailed"))):
                     os.system("mkdir -p "+dqmOutputFolder+"/Detailed")
                 if (runTypeToProcess == "HGCRun"):
-                    subprocess.call("cd %s && eval `scram runtime -sh` && cd - && root -b -q \"DumpPlotsReco.C++(\\\"%s/HGCRun_Output_%06d_Reco.root\\\", \\\"%s\\\", %d)\""%(cmsswSource, outputFolder, runToProcess, dqmOutputFolder, runToProcess, nSpills), shell=True)
+                    subprocess.call("cd %s && eval `scram runtime -sh` && cd - && root -b -q \"DumpPlotsReco.C++(\\\"%s/HGCRun_Output_%06d_Reco.root\\\", \\\"%s\\\", %d, %d)\""%(cmsswSource, outputFolder, runToProcess, dqmOutputFolder, runToProcess, nSpills), shell=True)
                 elif (runTypeToProcess == "PED"):
                     subprocess.call("cd %s && eval `scram runtime -sh` && cd - && root -b -q \"DumpPlotsDigi.C++(\\\"%s/PED_Output_%06d_Digi.root\\\", \\\"%s\\\", %d)\""%(cmsswSource, outputFolder, runToProcess, dqmOutputFolder, runToProcess), shell=True)
             else:

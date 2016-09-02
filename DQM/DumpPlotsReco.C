@@ -251,7 +251,7 @@ void DumpPlotsReco(TString inputFileName, TString outputFolder, Int_t runNumber,
     ReverseXAxis(h_EventDisplay);
     eventNumber = eventNumber%EVENTSPERSPILL;
     histogramName = Form("EventDisplay_Event%d_Layer%d", eventNumber, layerNumber);
-    outputPlotName = (outputFolder + Form("/")) + histogramName + Form("_%06d.png", runNumber);
+    outputPlotName = (outputFolder + Form("/Detailed/")) + histogramName + Form("_%06d.png", runNumber);
     plotCanvas->SaveAs(outputPlotName);
     delete h_EventDisplay;
   } // loop over events ends here
