@@ -82,7 +82,7 @@ if __name__ == "__main__":
                 pedestalsHighGain = "%s/Ped_HighGain_OneLayer_%06d.txt"%(outputFolder, runToProcess)
                 pedestalsLowGain = "%s/Ped_LowGain_OneLayer_%06d.txt"%(outputFolder, runToProcess)
             elif (runTypeToProcess == "HGCRun"):
-                chainSequence = 4
+                chainSequence = 5
                 nSpills = 1
                 pedestalsHighGain = "%s/CondObjects/data/Ped_HighGain_L8.txt"%(cmsswSource)
                 pedestalsLowGain = "%s/CondObjects/data/Ped_LowGain_L8.txt"%(cmsswSource)
@@ -98,7 +98,7 @@ if __name__ == "__main__":
                 if (not(os.path.isdir(dqmOutputFolder+"/Detailed"))):
                     os.system("mkdir -p "+dqmOutputFolder+"/Detailed")
                 if (runTypeToProcess == "HGCRun"):
-                    subprocess.call("cd %s && eval `scram runtime -sh` && cd - && root -b -q \"DumpPlotsReco.C++(\\\"%s/HGCRun_Output_%06d_Reco.root\\\", \\\"%s\\\", %d)\""%(cmsswSource, outputFolder, runToProcess, dqmOutputFolder, runToProcess), shell=True)
+                    subprocess.call("cd %s && eval `scram runtime -sh` && cd - && root -b -q \"DumpPlotsReco.C++(\\\"%s/HGCRun_Output_%06d_Reco.root\\\", \\\"%s\\\", %d)\""%(cmsswSource, outputFolder, runToProcess, dqmOutputFolder, runToProcess, nSpills), shell=True)
                 elif (runTypeToProcess == "PED"):
                     subprocess.call("cd %s && eval `scram runtime -sh` && cd - && root -b -q \"DumpPlotsDigi.C++(\\\"%s/PED_Output_%06d_Digi.root\\\", \\\"%s\\\", %d)\""%(cmsswSource, outputFolder, runToProcess, dqmOutputFolder, runToProcess), shell=True)
             else:
