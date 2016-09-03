@@ -82,7 +82,9 @@ if (options.runType == "PED"):
 
 ################################
 process = cms.Process("unpack")
-
+process.maxEvents = cms.untracked.PSet(
+    input = cms.untracked.int32(options.maxEvents)
+)
 
 ####################################
 process.load('HGCal.StandardSequences.RawToDigi_cff')
@@ -94,7 +96,7 @@ process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(options.runNumber), ### maybe this should be read from the file
                             #fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
                             fileNames=cms.untracked.vstring("file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber)), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
-                            nSpills=cms.untracked.uint32(options.nSpills)
+                            nSpills=cms.untracked.uint32(options.nSpills),
 )
 
 
