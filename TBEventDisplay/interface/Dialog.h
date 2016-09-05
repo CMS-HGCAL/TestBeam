@@ -1,7 +1,7 @@
 #ifndef FILEDIALOG_H
 #define FILEDIALOG_H
 //-----------------------------------------------------------------------------
-// Original Author:  Harrison B. Prosper 
+// Original Author:  Harrison B. Prosper
 //-----------------------------------------------------------------------------
 #include <iostream>
 #include <vector>
@@ -15,35 +15,35 @@
 class Dialog
 {
 public:
-  
-  Dialog(const TGWindow* window, const TGWindow* main);
-          
-  
-  ~Dialog();
 
-  ///
-  std::string SelectFile(EFileDialogMode dlg_type=kFDOpen, 
-                         std::string inidir=".",
-                         std::string inifilename="");
+	Dialog(const TGWindow* window, const TGWindow* main);
 
-  ///
-  
-  void SetText(std::string title, 
-               std::string text, 
-               UInt_t w=600, 
-               UInt_t h=300);
-  
-  ///
-  std::string IniDir();
 
-  ///
-  std::string GetInput(std::string prompt, std::string defstr="");
+	~Dialog();
+
+	///
+	std::string SelectFile(EFileDialogMode dlg_type = kFDOpen,
+	                       std::string inidir = ".",
+	                       std::string inifilename = "");
+
+	///
+
+	void SetText(std::string title,
+	             std::string text,
+	             UInt_t w = 600,
+	             UInt_t h = 300);
+
+	///
+	std::string IniDir();
+
+	///
+	std::string GetInput(std::string prompt, std::string defstr = "");
 
 private:
-  const TGWindow* window_; 
-  const TGWindow* main_;
-  std::string _filename;
-  std::string _inidir;
+	const TGWindow* window_;
+	const TGWindow* main_;
+	std::string _filename;
+	std::string _inidir;
 };
 
 
@@ -53,27 +53,27 @@ class FileDialog
 {
 public:
 
-  FileDialog();
+	FileDialog();
 
-  ///
-  FileDialog(const TGWindow* window,
-	     const TGWindow* main,
-	     EFileDialogMode dlg_type=kFDOpen,
-	     std::string inidir=".",
-	     std::string inifilename="");
+	///
+	FileDialog(const TGWindow* window,
+	           const TGWindow* main,
+	           EFileDialogMode dlg_type = kFDOpen,
+	           std::string inidir = ".",
+	           std::string inifilename = "");
 
-  ///
-  ~FileDialog();
+	///
+	~FileDialog();
 
-  ///
-  std::string Filename();
+	///
+	std::string Filename();
 
-  ///
-  std::string IniDir();
+	///
+	std::string IniDir();
 
- private:
-  std::string _filename;
-  std::string _inidir;
+private:
+	std::string _filename;
+	std::string _inidir;
 };
 
 
@@ -81,16 +81,16 @@ public:
 class HelpDialog
 {
 public:
-  HelpDialog();
+	HelpDialog();
 
-  ///
-  HelpDialog(const TGWindow* main,
-	     std::string title,
-	     std::string text,
-	     UInt_t w=600,
-	     UInt_t h=300);
-  
-  ///
-  ~HelpDialog();
+	///
+	HelpDialog(const TGWindow* main,
+	           std::string title,
+	           std::string text,
+	           UInt_t w = 600,
+	           UInt_t h = 300);
+
+	///
+	~HelpDialog();
 };
 #endif

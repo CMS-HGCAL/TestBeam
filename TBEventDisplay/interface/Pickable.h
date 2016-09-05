@@ -13,26 +13,26 @@
 //-----------------------------------------------------------------------------
 class Pickable : public TQObject
 {
- public:
-  Pickable();
-  virtual ~Pickable();
-  
-  void AddElement(TEveElement* element);
-  void Selected(TEveElement* element);
-  void Clear();
-  TEveElement* operator[](int id);
+public:
+	Pickable();
+	virtual ~Pickable();
 
-  void Selected(int id);     //*SIGNAL*
-  void Cleared();            //*SIGNAL*
-  
- private:
-  TEveSelection* _selection;
-  std::map<TEveElement*, int> _element2id;
-  std::map<int, TEveElement*> _id2element;
-  int _id;
+	void AddElement(TEveElement* element);
+	void Selected(TEveElement* element);
+	void Clear();
+	TEveElement* operator[](int id);
 
- public:
-  ClassDef(Pickable,0)       // Needed to get signals to work
+	void Selected(int id);     //*SIGNAL*
+	void Cleared();            //*SIGNAL*
+
+private:
+	TEveSelection* _selection;
+	std::map<TEveElement*, int> _element2id;
+	std::map<int, TEveElement*> _id2element;
+	int _id;
+
+public:
+	ClassDef(Pickable, 0)      // Needed to get signals to work
 };
 
 #endif

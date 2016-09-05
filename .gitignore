@@ -34,5 +34,9 @@
 # patch
 *.rej
 
+#For DQM scripts
+DQM/*_C*
+DQM/hgcalDQM_log
+DQM/hgcalDQM_log.old
 
 doc/doxygen
