@@ -190,8 +190,7 @@ RecHitPlotter_HighGain_CM_Correction::analyze(const edm::Event& event, const edm
 	  }
 	  else if(doCommonMode_CM_){
 	    AllCells_Ped->Fill(RecHit.energyHigh());
-            CellType type = (CellType)((RecHit.id()).cellType());  
-	    h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh() - CM.getCommonModeNoise((RecHit.id()).layer() - 1, type, (RecHit.id()).iu(), (RecHit.id()).iv()));
+	    h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()][(RecHit.id()).layer() -1]->Fill(RecHit.energyHigh() - CM.getCommonModeNoise(RecHit.id()));
           }  
 	   
           Noise_2D_Profile->Fill((64*(eid.iskiroc()-1) + eid.ichan()),RecHit.energyHigh() - CM.getCommonModeNoise((RecHit.id()).layer() -1, CellType::FullCell));

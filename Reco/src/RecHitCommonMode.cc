@@ -88,9 +88,12 @@ RecHitCommonMode::evaluate()
 }
 
 float 
-RecHitCommonMode::getCommonModeNoise(int layer, CellType type, int iu, int iv)
+RecHitCommonMode::getCommonModeNoise(HGCalTBDetId id)
 {
-
+      int layer = id.layer() - 1;
+      CellType type = (CellType)(id.cellType());
+      int iu = id.iu();
+      int iv = id.iv();
       float CMNoise(0);
       switch(type){
         case FullCell: CMNoise = FullCell_CMNoise[layer]; break;

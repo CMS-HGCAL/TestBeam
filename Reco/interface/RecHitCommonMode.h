@@ -39,7 +39,7 @@ public:
 	~RecHitCommonMode();
    
         void evaluate();
-        float getCommonModeNoise(int layer, CellType type, int iu, int iv);
+        float getCommonModeNoise(HGCalTBDetId id);
         float getCommonModeNoise(int layer, CellType type, std::string const& = "");
 
 private:
