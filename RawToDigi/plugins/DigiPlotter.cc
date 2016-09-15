@@ -71,7 +71,7 @@ private:
 	bool DEBUG = 0;
 	HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
-	std::string mapfile_ = "HGCal/CondObjects/data/map_FNAL_SB2_Layer16.txt";
+	std::string mapfile_ = "HGCal/CondObjects/data/map_CERN_8Layers_Sept2016.txt";
 	struct {
 		HGCalElectronicsMap emap_;
 	} essource_;

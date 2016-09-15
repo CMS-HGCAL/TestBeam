@@ -93,7 +93,7 @@ private:
 	struct {
 		HGCalElectronicsMap emap_;
 	} essource_;
-	string mapfile_ = "HGCal/CondObjects/data/map_FNAL_SB2_Layer16.txt";
+	string mapfile_ = "HGCal/CondObjects/data/map_CERN_8Layers_Sept2016.txt";
 	int sensorsize = 128;
 	std::vector<std::pair<double, double>> CellXY;
 	std::pair<double, double> CellCentreXY;
