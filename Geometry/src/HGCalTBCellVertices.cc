@@ -8,7 +8,7 @@
 using namespace std;
 
 HGCalTBTopology Top;
-double delta = 0.00001;//needed for comparing two doubles while deciding if the cell is within a sensor
+double delta = 0.001;//needed for comparing two doubles while deciding if the cell is within a sensor
 
 HGCalTBCellVertices::HGCalTBCellVertices()
 {
@@ -23,7 +23,7 @@ HGCalTBCellVertices::HGCalTBCellVertices()
 }
 
 
-std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize, bool flipX)
+std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int celltype, int sensorsize, bool flipX)
 {
 	bool ValidFlag   = Top.iu_iv_valid(layer, sensor_iu, sensor_iv, iu, iv, sensorsize);
 	double vertex_x_tmp = 0., vertex_y_tmp = 0.;
@@ -36,7 +36,13 @@ std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(i
 			if(fabs(vertex_x_tmp) <= Xmax(iv, fabs(vertex_y_tmp)) + delta) {
 				auto point = RotateLayer(std::make_pair(vertex_x_tmp, vertex_y_tmp), TEST_BEAM_LAYER_ROTATION);
 //				if(flipX==true) point.first=-point.first;
-				Cell_co.push_back(point);
+				if(celltype == 1){
+					if(iii < 4) Cell_co.push_back(point);
+				   }	
+				else if(celltype == 4){
+						if((iii != 1) || (iii != 2) ) Cell_co.push_back(point);
+					}
+				else Cell_co.push_back(point);
 			}
 		}
 		return Cell_co;
@@ -48,7 +54,7 @@ std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(i
 }
 
 
-std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize, bool flipX)
+std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int celltype, int sensorsize, bool flipX)
 {
 	double centre_x_tmp = 0., centre_y_tmp = 0.;
 	bool ValidFlag   = Top.iu_iv_valid(layer, sensor_iu, sensor_iv, iu, iv, sensorsize);
@@ -57,6 +63,8 @@ std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int laye
 		centre_y_tmp = iv * vy0;
 		auto point = RotateLayer(std::make_pair(centre_x_tmp, centre_y_tmp), TEST_BEAM_LAYER_ROTATION);
 //		if(flipX==true) point.first = - point.first;
+		if(celltype == 1) point.second = point.second -  delta;
+                if(celltype == 4) point.second = point.second +  delta;
 		return point;
 	} else return std::make_pair(-123456, -123456); //iu_iv_Valid() is sufficient to decide if a given iu,iv is a valid sensor index but this is done if some future need may arise.
 
