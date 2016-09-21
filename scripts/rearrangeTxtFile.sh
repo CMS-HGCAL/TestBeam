@@ -24,9 +24,35 @@ fi
 mkdir ${outDir}
 
 
-awk -v dir=${dir} -f f.awk $file
+rm $dir/* -Rf
+awk -v baseDir=${dir} -f scripts/rearrangeTxtFile.awk $file
 
 
+IFS=$'\n'
+for run in $dir/RUN_*
+do
+	boards=`ls $run/*.txt | sed 's|.*-BOARD_||;s|.txt||' | sort | uniq`
+	spills=`ls $run/*.txt |  sed 's|-BOARD_.*||' | sort | uniq | sed 's|.*SPILL_||;s|-EVENT_| |'`
+	run=`basename $run | sed 's|RUN_||'`
+	
+	mkdir -p $outDir/RUN_${run}
+
+	for spillevent in $spills
+	do
+		spill=`echo $spillevent | cut -d ' ' -f 1`
+		event=`echo $spillevent | cut -d ' ' -f 2`
+#		echo $spill " -- " $event
+		paste $dir/RUN_${run}/SPILL_${spill}-EVENT_${event}-BOARD_* | sed -e 's|[[:space:]]RUN.*||' > $outDir/RUN_${run}/SPILL_${spill}-EVENT_${event}.txt
+	done
+	cat $outDir/RUN_${run}/SPILL_*-EVENT_*.txt > $outDir/RUN_$run.txt
+#	cat $dir/RUN_${run}/SPILL_*-EVENT_*-BOARD_*.txt	> $outDir/RUN_$run.txt
+		
+done
+
+
+
+exit 0
+cat $dir/RUN_*/SPILL_*-EVENT_*-BOARD_*.txt > $outDir/RUN_
 # take the list of spills and create the subdirs
 run_fills=`grep STARTING $file | awk '{print $7, $9}'`
 # take the list of boards and create the subdirs
