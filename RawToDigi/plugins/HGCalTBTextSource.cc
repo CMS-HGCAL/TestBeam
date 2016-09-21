@@ -9,12 +9,36 @@ int trigcountperspillflag = 0;
 unsigned int Events_Per_Spill = 0;
 unsigned int spillcounter = 0;
 unsigned int tmp_event = 0;
-//unsigned int Number_Of_Events_Per_Spill = 150;
-//unsigned int Number_Of_Spills = 8;
 int Number_Of_SKIROC_Data_Words = 64;
 int Number_Of_SKIROC_Words = 68;
 
 string buffer1 = "0 0 0x00000000   0x00000000";
+
+
+bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType)
+{
+
+	if (!(fileNames().size())) return false; // need a file...
+	if (m_file == 0) {
+		std::string name = fileNames()[0].c_str(); /// \todo FIX in order to take several files
+		if (name.find("file:") == 0) name = name.substr(5);
+		m_file = fopen(name.c_str(), "r");
+		if (m_file == 0) {
+			throw cms::Exception("FileNotFound") << "Unable to open file " << name;
+		}
+		m_event = 0;
+	}
+	if (feof(m_file)) return false;
+	if (!readLines()) return false;
+
+	m_event++; /// \todo get eventID from file?
+	id = edm::EventID(m_run, 1, m_event);
+
+	time = (edm::TimeValue_t) m_time;
+	return true;
+}
+
+// each time it returns true, then the event is complete and can be saved in EDM format
 bool HGCalTBTextSource::readLines()
 {
 	m_lines.clear();
@@ -91,18 +115,20 @@ void HGCalTBTextSource::produce(edm::Event & e)
 {
 	std::auto_ptr<FEDRawDataCollection> bare_product(new  FEDRawDataCollection());
 
-//        cout<<endl<<"Size= "<<m_lines.size()<<endl;
 	// here we parse the data
 	std::vector<uint16_t> skiwords;
 	// make sure there are an even number of 32-bit-words (a round number of 64 bit words...
 	if (m_lines.size() % 2) {
-		skiwords.push_back(0);
-		skiwords.push_back(0);
+		skiwords.push_back(0); // one word of 16bits
+		skiwords.push_back(0); // one word of 16bits
 	}
-	for (std::vector<std::string>::const_iterator i = m_lines.begin(); i != m_lines.end(); i++) {
+
+	for (std::vector<std::string>::const_iterator i = m_lines.begin(); i != m_lines.end(); ++i) {
 		uint32_t a, b, c, d;
-		sscanf(i->c_str(), "%x %x %x %x", &a, &b, &c, &d);
-//                cout<<endl<<" Here "<<dec<<a<<dec<<" "<<b<<hex<<" "<<c<<hex<<" "<<d<<endl;
+		sscanf(i->c_str(), "%x %x %x %x", &a, &b, &c, &d); //what this words are?
+#ifdef DEBUG
+		std::cout << "[DEBUG] " << dec << a << dec << " " << b << hex << " " << c << hex << " " << d << std::endl;
+#endif
 		skiwords.push_back(uint16_t(c >> 16));
 		skiwords.push_back(uint16_t(d >> 16));
 		skiwords.push_back(uint16_t(c));
@@ -111,7 +137,6 @@ void HGCalTBTextSource::produce(edm::Event & e)
 
 	FEDRawData& fed = bare_product->FEDData(m_sourceId);
 	size_t len = sizeof(uint16_t) * skiwords.size();
-//        cout<<endl<<" Len= "<<len<<endl;
 	fed.resize(len);
 	memcpy(fed.data(), &(skiwords[0]), len);
 
