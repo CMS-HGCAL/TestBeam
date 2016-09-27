@@ -43,7 +43,7 @@ BEGIN{
 	#print "[DEBUG EVENT HEADER]", eventID, eventTime, triggerTime
 	file=sprintf("SPILL_%02d-EVENT_%06d-BOARD_%02d.txt", spillID, eventID, boardID)
 	printf("RUN=%06d\tSPILL=%02d\tEVENT=%06d\tGLOBALTIME=%s\tBOARD=%02d\n", run, spillID, eventID, spillTime, boardID) >> dir"/"file
-	print "T "triggerTime, eventTime >> dir"/"file
+	print triggerTime, eventTime >> dir"/"file
 }
 
 (NF==4){
