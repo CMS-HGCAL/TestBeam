@@ -42,7 +42,7 @@ do
 		spill=`echo $spillevent | cut -d ' ' -f 1`
 		event=`echo $spillevent | cut -d ' ' -f 2`
 #		echo $spill " -- " $event
-		paste $dir/RUN_${run}/SPILL_${spill}-EVENT_${event}-BOARD_* | sed -e 's|[[:space:]]RUN.*BOARD|\tBOARD|g' > $outDir/RUN_${run}/SPILL_${spill}-EVENT_${event}.txt
+		paste $dir/RUN_${run}/SPILL_${spill}-EVENT_${event}-BOARD_* | sed -e 's|[[:space:]]RUN.*BOARD{,1}|\tBOARD|g' > $outDir/RUN_${run}/SPILL_${spill}-EVENT_${event}.txt
 	done
 	cat $outDir/RUN_${run}/SPILL_*-EVENT_*.txt > $outDir/RUN_$run.txt
 #	cat $dir/RUN_${run}/SPILL_*-EVENT_*-BOARD_*.txt	> $outDir/RUN_$run.txt
