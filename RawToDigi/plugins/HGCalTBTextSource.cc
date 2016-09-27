@@ -74,7 +74,8 @@ bool HGCalTBTextSource::readLines()
 		fgets(buff, 1000, m_file);
 
 		// loop over one line of the text file
-		std::istringstream buffer(std::string(buff));
+		std::string b = buff;
+		std::istringstream buffer(b);
 		unsigned int board_counter=0;
 		while( buffer.peek()!=EOF){ //buffer.good() gives compilation errors
 			// read the data of the two skirocs of one board
