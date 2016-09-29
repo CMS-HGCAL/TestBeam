@@ -1,12 +1,11 @@
 <lcgdict>
   <class name="HGCalTBTrack" ClassVersion="0">
    <version ClassVersion="0" checksum="2994556361"/>
-	</class>
+  </class>
   <class name="std::vector<HGCalTBTrack>"/>
   <class name="edm::Wrapper<vector<HGCalTBTrack> >"/>
-
-  <class name="HGCalTBRecHit" ClassVersion="0">
-   <version ClassVersion="0" checksum="3094752182"/>
+  <class name="HGCalTBRecHit" ClassVersion="-1">
+   <version ClassVersion="-1" checksum="2098716783"/>
   </class>
   <class name="std::vector<HGCalTBRecHit>"/>
   <class name="edm::SortedCollection<HGCalTBRecHit,edm::StrictWeakOrdering<HGCalTBRecHit> >"/>
