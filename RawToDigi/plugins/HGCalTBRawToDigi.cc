@@ -126,7 +126,9 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 					if(ski <= 32) {
 						int ptradc1 = ptr - ichan * 2 - (ski - ski_down);
 						int ptradc2 = ptr - ichan * 2 - (ski - ski_down) -  128;
-						digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF), gray_to_binary( pdata[ptradc2] & 0xFFF), 0);
+						if((pdata[ptradc1] != 0xFFFF) && (pdata[ptradc2] != 0xFFFF)){
+							digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF), gray_to_binary( pdata[ptradc2] & 0xFFF), 0);
+							}
 //                                        cout<<endl<<dec<<"SKI= "<<ski<<" chan= "<<ichan<<" "<<ptradc1<<" "<<ptradc2<<" "<<" High= "<<hex<<(pdata[ptradc1])<<dec<<"  "<<gray_to_binary(pdata[ptradc1] & 0xFFF)<<" Low= "<<hex<<( pdata[ptradc2] & 0xFFF)<<"  "<<dec<<gray_to_binary( pdata[ptradc2] & 0xFFF)<<endl;
 					}
 
