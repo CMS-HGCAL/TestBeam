@@ -34,15 +34,18 @@ BEGIN{
 		eventID=$9
 		eventTime=$13
 		triggerTime=$16
+		DANGER="true"
 	}else{
 		eventID=$5
 		eventTime=$9
 		triggerTime=$12
+		DANGER="false"
 	}
+	eventID++ # cannot start at 0
 	
 	#print "[DEBUG EVENT HEADER]", eventID, eventTime, triggerTime
 	file=sprintf("SPILL_%02d-EVENT_%06d-BOARD_%02d.txt", spillID, eventID, boardID)
-	printf("RUN=%06d\tSPILL=%02d\tEVENT=%06d\tGLOBALTIME=%s\tBOARD=%02d\n", run, spillID, eventID, spillTime, boardID) >> dir"/"file
+	printf("RUN=%06d\tSPILL=%02d\tEVENT=%06d\tGLOBALTIME=%s\tBOARD=%02d\tDANGER=%s\n", run, spillID, eventID, spillTime, boardID, DANGER) >> dir"/"file
 	print triggerTime, eventTime >> dir"/"file
 }
 

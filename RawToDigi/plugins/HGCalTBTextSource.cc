@@ -3,7 +3,7 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBTextSource.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include "HGCal/Geometry/interface/HGCalTBSpillParameters.h"
-
+//#define DEBUG
 /**
 RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=09	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=12	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=14	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=17	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=18	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=19	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=22	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=23
 T 0x0072D911 0xBEC20B15	T 0x0072D93F 0xBED19F54	T 0x0072D96E 0xBED19F56	T 0x0072D99D 0x3A11F91F	T 0x0072D9CC 0x40DACEB1	T 0x0072D9FA 0xC5EAE85C	T 0x00000000 0xBED19F52	T 0x00000000 0x57B86176
@@ -26,7 +26,11 @@ bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& t
 	if (feof(m_file)) return false;
 
 	// read the header
-	readHeader();
+	while(readHeader() == false) {
+		if (feof(m_file)) return false;
+		// have to skip the data lines and return false
+		readLines();
+	}
 
 	// now try to read from the file
 	if (!readLines()) return false;
@@ -44,13 +48,18 @@ bool HGCalTBTextSource::readHeader()
 	char buffer[1024]; // typically 605 chars
 	buffer[0] = 0;     //init buffer
 	fgets(buffer, 1000, m_file); // read the header line
-
+	std::string b = buffer;
+#ifdef DEBUG
+	std::cout << "------------------------------\n";
+	std::cout << b << std::endl;
+#endif
+	if(b.find("DANGER=true") != std::string::npos) return false;
 //RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=09	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=12	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=14	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=17	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=18	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=19	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=22	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=23
 
-	if(sscanf(buffer, "RUN=%u\tSPILL=%u\tEVENT=%u\tGLOBALTIME=%x", &m_run, &m_spill, &m_event, &m_time)!=4){
+	if(sscanf(buffer, "RUN=%u\tSPILL=%u\tEVENT=%u\tGLOBALTIME=%x", &m_run, &m_spill, &m_event, &m_time) != 4) {
 		return false; // what to do?
 	}
-	
+
 	// here count the number of boards for this event
 
 	return true;
@@ -60,39 +69,40 @@ bool HGCalTBTextSource::readHeader()
 // each time it returns true, then the event is complete and can be saved in EDM format
 bool HGCalTBTextSource::readLines()
 {
-	max_boards=0;
-	for( auto board :m_lines){
+	max_boards = 0;
+	for( auto board : m_lines) {
 		board.clear();
 	}
 
-	char buff[1024]; buff[0] = 0;
+	char buff[1024];
+	buff[0] = 0;
 	unsigned int data_sk0, data_sk1;
 
 	// loop over all the lines
-	while(feof(m_file)){
-		buff[0]=0;
+	for(unsigned int i = 0; i < 69 && !feof(m_file); ++i) {
+		buff[0] = 0;
 		fgets(buff, 1000, m_file);
 
 		// loop over one line of the text file
 		std::string b = buff;
 		std::istringstream buffer(b);
-		unsigned int board_counter=0;
-		while( buffer.peek()!=EOF){ //buffer.good() gives compilation errors
+		unsigned int board_counter = 0;
+		while( buffer.peek() != EOF) { //buffer.good() gives compilation errors
 			// read the data of the two skirocs of one board
 			buffer >> data_sk0 >> data_sk1;
-			
+
 			++board_counter;
 			//continue for all the boards
-			
+
 			// extra security
 			m_lines[board_counter].push_back(data_sk0);
 			m_lines[board_counter].push_back(data_sk1);
-			if(board_counter>max_boards) max_boards=board_counter;
+			if(board_counter > max_boards) max_boards = board_counter;
 		}
 	}
 
 //		if(sscanf(buffer, "Event header for event %x with (200ns) timestamp %x", &tmp_event, &m_time) == 2) {
-		
+
 	return !m_lines.empty();
 }
 
@@ -104,9 +114,9 @@ void HGCalTBTextSource::produce(edm::Event & e)
 	std::vector<uint32_t> skiwords;
 	// make sure there are an even number of 32-bit-words (a round number of 64 bit words...
 
-	for (unsigned int i_board =0 ; i_board<max_boards; ++i_board){
+	for (unsigned int i_board = 0 ; i_board < max_boards; ++i_board) {
 		auto board = m_lines[i_board];
-		for (auto skiword : board){
+		for (auto skiword : board) {
 			skiwords.push_back(skiword);
 		}
 	}
