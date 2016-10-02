@@ -87,9 +87,10 @@ bool HGCalTBTextSource::readLines()
 		std::string b = buff;
 		std::istringstream buffer(b);
 		unsigned int board_counter = 0;
+		if(i < 1 && i > 64) continue;
 		while( buffer.peek() != EOF) { //buffer.good() gives compilation errors
 			// read the data of the two skirocs of one board
-			buffer >> data_sk0 >> data_sk1;
+			buffer >> data_sk1 >> data_sk0;
 
 			++board_counter;
 			//continue for all the boards
@@ -111,18 +112,19 @@ void HGCalTBTextSource::produce(edm::Event & e)
 	std::auto_ptr<FEDRawDataCollection> bare_product(new  FEDRawDataCollection());
 
 	// here we parse the data
-	std::vector<uint32_t> skiwords;
+	std::vector<uint16_t> skiwords;
 	// make sure there are an even number of 32-bit-words (a round number of 64 bit words...
 
 	for (unsigned int i_board = 0 ; i_board < max_boards; ++i_board) {
 		auto board = m_lines[i_board];
 		for (auto skiword : board) {
+                        skiwords.push_back(skiword >> 16);
 			skiwords.push_back(skiword);
 		}
 	}
 
 	FEDRawData& fed = bare_product->FEDData(m_sourceId);
-	size_t len = sizeof(uint32_t) * skiwords.size();
+	size_t len = sizeof(uint16_t) * skiwords.size();
 	fed.resize(len);
 	memcpy(fed.data(), &(skiwords[0]), len);
 
