@@ -87,7 +87,7 @@ bool HGCalTBTextSource::readLines()
 		std::string b = buff;
 		std::istringstream buffer(b);
 		unsigned int board_counter = 0;
-		if(i < 1 && i > 64) continue;
+		if(i < 1 && i > 64) continue;// Only these are data words, the rest dont interest us for now
 		while( buffer.peek() != EOF) { //buffer.good() gives compilation errors
 			// read the data of the two skirocs of one board
 			buffer >> data_sk1 >> data_sk0;
