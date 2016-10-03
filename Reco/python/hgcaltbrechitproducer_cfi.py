@@ -7,5 +7,6 @@ hgcaltbrechits = cms.EDProducer("HGCalTBRecHitProducer",
                                 pedestalHigh = cms.string('CondObjects/data/Ped_HighGain_L8.txt'),
                                 gainLow = cms.string(''),
                                 gainHigh = cms.string(''),
+                                LG2HG = cms.double(9.),
+                                gainThr = cms.double(1800.)
                                 )
-

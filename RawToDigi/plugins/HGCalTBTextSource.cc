@@ -5,6 +5,7 @@
 using namespace std;
 unsigned int runcounter = 0;
 int runflag = 0;
+int DangerFlag = 0;// Catch Danger and push back -10000
 int trigcountperspillflag = 0;
 unsigned int Events_Per_Spill = 0;
 unsigned int spillcounter = 0;
@@ -14,7 +15,7 @@ unsigned int tmp_event = 0;
 int Number_Of_SKIROC_Data_Words = 64;
 int Number_Of_SKIROC_Words = 68;
 
-string buffer1 = "0 0 0x00000000   0x00000000";
+string buffer1 = "0 0 0xFFFFFFFF   0xFFFFFFFF";
 bool HGCalTBTextSource::readLines()
 {
 	m_lines.clear();
@@ -70,12 +71,21 @@ bool HGCalTBTextSource::readLines()
 		                if(strstr(buffer,"CKOV= 1")) cout<<endl<<"CKOV= 1"<<endl;
 		                else cout<<endl<<"CKOV= 0"<<endl;
 		*/
+
 		if(sscanf(buffer, "Event header for event %x with (200ns) timestamp %x", &tmp_event, &m_time) == 2) {
+			DangerFlag = 0;
 			continue;
 		}
+
+		if(sscanf(buffer, "DANGER: stale event warning! Event header for event %x with (200ns) timestamp %x", &tmp_event, &m_time) == 2){
+			DangerFlag = 1;
+			continue;
+		}	
+
 //                if(strstr(buffer, "Event")) continue;
 		counter++;
-		if(runcounter < EVENTSPERSPILL && counter <= Number_Of_SKIROC_Data_Words) m_lines.push_back(buffer);
+		if((DangerFlag == 0) && runcounter < EVENTSPERSPILL && counter <= Number_Of_SKIROC_Data_Words) m_lines.push_back(buffer);
+                if((DangerFlag == 1) && runcounter < EVENTSPERSPILL && counter <= Number_Of_SKIROC_Data_Words) m_lines.push_back(buffer1);
 		if(runcounter < EVENTSPERSPILL && counter == Number_Of_SKIROC_Words) {
 			runcounter++;
 //                   cout<<endl<<" Reached Here 1"<<endl;

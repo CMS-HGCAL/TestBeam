@@ -17,23 +17,29 @@ public:
 
 	HGCalTBRecHit();
 	// by default a recHit is greated with no flag
-	HGCalTBRecHit(const DetId& id, float energyLow, float energyHigh, float time, uint32_t flags = 0); // when constructing from digis using 2 gains for the ADC
+	//	HGCalTBRecHit(const DetId& id, float energyLow, float energyHigh, float time, uint32_t flags = 0); // when constructing from digis using 2 gains for the ADC
+	HGCalTBRecHit(const DetId& id, float energyLow, float energyHigh, float time, double LG2HG, double gainThrE, uint32_t flags = 0); // when constructing from digis using 2 gains for the ADC
 	/// get the id
 	HGCalTBDetId id() const
 	{
 		return HGCalTBDetId(detid());
 	}
 	/////  bool isRecovered() const;
-	float _energyLow, _energyHigh;
+	float _energyLow, _energyHigh, _energy;
 
-	float energyLow()
+	float energyLow() const
 	{
 		return _energyLow;
 	};
 
-	float energyHigh()
+	float energyHigh() const
 	{
 		return _energyHigh;
+	};
+
+	float energy() const
+	{
+	  return _energy;
 	};
 
 };

@@ -6,7 +6,9 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg)
 	  _pedestalLow_filename(cfg.getParameter<std::string>("pedestalLow")),
 	  _pedestalHigh_filename(cfg.getParameter<std::string>("pedestalHigh")),
 	  _gainsLow_filename(cfg.getParameter<std::string>("gainLow")),
-	  _gainsHigh_filename(cfg.getParameter<std::string>("gainHigh"))
+	  _gainsHigh_filename(cfg.getParameter<std::string>("gainHigh")),
+	  _LG2HG_value(cfg.getParameter<double>("LG2HG")),
+	  _gainThr_value(cfg.getParameter<double>("gainThr"))
 {
 	produces <HGCalTBRecHitCollection>(outputCollectionName);
 
@@ -64,7 +66,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 			float energyLow = digi[iSample].adcLow() - pedestal_low_value * adcToGeV_low_value;
 			float energyHigh = digi[iSample].adcHigh() - pedestal_high_value * adcToGeV_high_value;
 
-			HGCalTBRecHit recHit(digi.detid(), energyLow, energyHigh, digi[iSample].tdc()); ///\todo use time calibration!
+			//			HGCalTBRecHit recHit(digi.detid(), energyLow, energyHigh, digi[iSample].tdc()); ///\todo use time calibration!
+			HGCalTBRecHit recHit(digi.detid(), energyLow, energyHigh, digi[iSample].tdc(), _LG2HG_value, _gainThr_value * adcToGeV_high_value); ///\todo use time calibration!
 
 #ifdef DEBUG
 			std::cout << recHit << std::endl;
