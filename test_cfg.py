@@ -101,6 +101,12 @@ process.source = cms.Source("HGCalTBTextSource",
 
 
 
+#process.MessageLogger.cerr.FwkReport.reportEvery = 1
+process.options = cms.untracked.PSet(
+    wantSummary = cms.untracked.bool(True),
+#    SkipEvent = cms.untracked.vstring('ProductNotFound'),
+)
+
 ######
 process.hgcaltbdigisplotter.pedestalsHighGain = cms.untracked.string(options.pedestalsHighGain)
 process.hgcaltbdigisplotter.pedestalsLowGain  = cms.untracked.string(options.pedestalsLowGain)
@@ -130,6 +136,7 @@ elif (options.chainSequence == 3 or options.chainSequence == 4 or options.chainS
 #process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Cluster.root") )
 
 
+process.shervin = cms.Path()
 ########Activate this to produce event displays#########################################
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
 
@@ -155,3 +162,4 @@ elif (options.chainSequence == 5):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm*process.hgcaltbrechitsplotter_highgain_new)
 
 process.end = cms.EndPath(process.output)
+process.schedule = cms.Schedule(process.shervin, process.end)

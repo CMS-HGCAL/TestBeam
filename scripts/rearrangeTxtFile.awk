@@ -30,6 +30,7 @@ BEGIN{
 #Event header for event 0 with (200ns) timestamp 0xBEC20B15  global tts(us)  0x0072D911 and CKOV= 0
 #DANGER: stale event warning!
 (/Event header/){
+	T_old=strtonum(triggerTime)
 	if(match($0, "DANGER")){
 		eventID=$9
 		eventTime=$13
@@ -41,8 +42,18 @@ BEGIN{
 		triggerTime=$12
 		DANGER="false"
 	}
+	if(eventID==0){
+		T_old=strtonum(triggerTime)
+	}
 	eventID++ # cannot start at 0
-	
+	T=strtonum(triggerTime)
+
+	if(T-T_old> 50000){
+		print spillID, eventID, T, T_old, T-T_old, ntriggers
+		ntriggers=0
+	}else{
+		ntriggers+=1
+	}
 	#print "[DEBUG EVENT HEADER]", eventID, eventTime, triggerTime
 	file=sprintf("SPILL_%02d-EVENT_%06d-BOARD_%02d.txt", spillID, eventID, boardID)
 	printf("RUN=%06d\tSPILL=%02d\tEVENT=%06d\tGLOBALTIME=%s\tBOARD=%02d\tDANGER=%s\n", run, spillID, eventID, spillTime, boardID, DANGER) >> dir"/"file
