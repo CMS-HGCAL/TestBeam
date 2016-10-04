@@ -49,7 +49,7 @@ BEGIN{
 	T=strtonum(triggerTime)
 
 	if(T-T_old> 50000){
-		print spillID, eventID, T, T_old, T-T_old, ntriggers
+#		print spillID, eventID, T, T_old, T-T_old, ntriggers
 		ntriggers=0
 	}else{
 		ntriggers+=1
