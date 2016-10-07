@@ -22,7 +22,7 @@ public:
 		kGood = 0,
 		kHighGainSaturated,
 		kLowGainSaturated
-	}
+	};
 
 
 	HGCalTBRecHit();
@@ -33,7 +33,7 @@ public:
 	HGCalTBDetId id() const
 	{
 		return HGCalTBDetId(detid());
-	}
+	};
 	/////  bool isRecovered() const;
 	float _energyLow, _energyHigh;
 
