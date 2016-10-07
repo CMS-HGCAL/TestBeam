@@ -22,13 +22,6 @@ using namespace std;
 // class declaration
 //
 
-enum CellType{
-  FullCell = 0,
-  CalibPad = 1,
-  HalfCell = 2,
-  MBandMerged = 3,
-  OuterCalib = 4
-};    
 
 
 class RecHitCommonMode
@@ -40,7 +33,7 @@ public:
    
         void evaluate();
         float getCommonModeNoise(HGCalTBDetId id);
-        float getCommonModeNoise(int layer, CellType type, std::string const& = "");
+        float getCommonModeNoise(int layer, HGCalTBDetId::CellType type, std::string const& = "");
 
 private:
 

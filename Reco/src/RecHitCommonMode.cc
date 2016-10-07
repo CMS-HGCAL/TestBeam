@@ -51,22 +51,22 @@ RecHitCommonMode::evaluate()
           HGCalTBRecHit hit = (*rechit);
           if(hit.energyHigh() > 100)continue;
           CellType type = (CellType)((rechit->id()).cellType());
-          if(type == FullCell){     
+          if(type == HGCalTBDetId::kCellTypeStandard){     
             Full_Cell[(rechit->id()).layer() - 1]->Fill(hit.energyHigh()); 
           }
-	  else if(type == HalfCell){
+		  else if(type == HGCalTBDetId::kCellTypeHalfCell){
 	    Cell_counter_Half[(rechit->id()).layer() - 1]+= 1;
 	    Average_Pedestal_Per_Event_Half[(rechit->id()).layer() - 1] += hit.energyHigh(); 
 	  }
-	  else if(type == CalibPad){
+		  else if(type == HGCalTBDetId::kCellTypeCalibInner){
 	    Cell_counter_Calib_Pad[(rechit->id()).layer() - 1]++;
 	    Average_Pedestal_Per_Event_Calib_Pad[(rechit->id()).layer() - 1] += hit.energyHigh(); 
 	  } 
-	  else if(type == MBandMerged && ( ((rechit->id()).iu() == 4 && (rechit->id()).iv() == 3) || ((rechit->id()).iu() == -7 && (rechit->id()).iv() == 4) || ((rechit->id()).iu() == 7 && (rechit->id()).iv() == -3) || ((rechit->id()).iu() == -4 && (rechit->id()).iv() == -3) ) ){
+		  else if(type == HGCalTBDetId::kCellTypeMerged && ( ((rechit->id()).iu() == 4 && (rechit->id()).iv() == 3) || ((rechit->id()).iu() == -7 && (rechit->id()).iv() == 4) || ((rechit->id()).iu() == 7 && (rechit->id()).iv() == -3) || ((rechit->id()).iu() == -4 && (rechit->id()).iv() == -3) ) ){
 	    Cell_counter_MB[(rechit->id()).layer() - 1]+=1;
 	    Average_Pedestal_Per_Event_MB[(rechit->id()).layer() - 1] += hit.energyHigh(); 
 	  }
-	  else if(type == MBandMerged && ( ((rechit->id()).iu() == -4 && (rechit->id()).iv() == 6) || ((rechit->id()).iu() == -2 && (rechit->id()).iv() == 6) || ((rechit->id()).iu() == 4 && (rechit->id()).iv() == -7) || ((rechit->id()).iu() == 2 && (rechit->id()).iv() == -6) ) ){
+		  else if(type == HGCalTBDetId::kCellTypeMerged && ( ((rechit->id()).iu() == -4 && (rechit->id()).iv() == 6) || ((rechit->id()).iu() == -2 && (rechit->id()).iv() == 6) || ((rechit->id()).iu() == 4 && (rechit->id()).iv() == -7) || ((rechit->id()).iu() == 2 && (rechit->id()).iv() == -6) ) ){
 	    Cell_counter_Merged_Cell[(rechit->id()).layer() - 1]+=1;
 	    Average_Pedestal_Per_Event_Merged_Cell[(rechit->id()).layer() - 1] += hit.energyHigh(); 
 	  }

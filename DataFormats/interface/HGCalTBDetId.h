@@ -32,9 +32,14 @@ public:
 	static const int kHGCalZsideOffset       = 31;
 	static const int kHGCalZsideMask         = 0x1;
 
-	static const int kCellTypeStandard      =   0;
-	static const int kCellTypeCalibInner    =   1;
-	static const int kCellTypeCalibOuter    =   2;
+	enum CellType{
+		kCellTypeStandard = 0,
+		kCellTypeCalibInner = 1,
+		kCellTypeHalfCell = 2,
+		kCellTypeMerged = 3,
+		kCellTypeCalibOuter = 4
+	};    
+
 
 	/** Create a null cellid*/
 	HGCalTBDetId();
