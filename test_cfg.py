@@ -6,7 +6,7 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 
 options.register('dataFolder',
-                 '/afs/cern.ch/work/r/rchatter/Final_Event_Builder/CMSSW_8_0_1/src/HGCal/tmpOut',
+                 '/afs/cern.ch/work/r/rchatter/Final_Event_Builder/CMSSW_8_0_1/src/HGCal/tmpOut/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw text input')
@@ -101,12 +101,6 @@ process.source = cms.Source("HGCalTBTextSource",
 
 
 
-#process.MessageLogger.cerr.FwkReport.reportEvery = 1
-process.options = cms.untracked.PSet(
-    wantSummary = cms.untracked.bool(True),
-#    SkipEvent = cms.untracked.vstring('ProductNotFound'),
-)
-
 ######
 process.hgcaltbdigisplotter.pedestalsHighGain = cms.untracked.string(options.pedestalsHighGain)
 process.hgcaltbdigisplotter.pedestalsLowGain  = cms.untracked.string(options.pedestalsLowGain)
@@ -136,7 +130,6 @@ elif (options.chainSequence == 3 or options.chainSequence == 4 or options.chainS
 #process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Cluster.root") )
 
 
-process.shervin = cms.Path()
 ########Activate this to produce event displays#########################################
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
 
@@ -155,13 +148,10 @@ process.shervin = cms.Path()
 if (options.chainSequence == 1):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
 elif (options.chainSequence == 3):
-#    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
     process.p =cms.Path(process.hgcaltbdigis)
-    # process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter)
 elif (options.chainSequence == 4):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
 elif (options.chainSequence == 5):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm*process.hgcaltbrechitsplotter_highgain_new)
 
 process.end = cms.EndPath(process.output)
-process.schedule = cms.Schedule(process.shervin, process.end)

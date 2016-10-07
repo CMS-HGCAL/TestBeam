@@ -1,8 +1,11 @@
 #include <iostream>
 #include <sstream>
+#include <string>
+#include "stdlib.h"
 #include "HGCal/RawToDigi/plugins/HGCalTBTextSource.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include "HGCal/Geometry/interface/HGCalTBSpillParameters.h"
+using namespace std;
 //#define DEBUG
 /**
 RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=09	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=12	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=14	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=17	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=18	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=19	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=22	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=23
@@ -24,7 +27,6 @@ bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& t
 		m_event = 0;
 	}
 	if (feof(m_file)) return false;
-
 	// read the header
 	while(readHeader() == false) {
 		if (feof(m_file)) return false;
@@ -38,7 +40,8 @@ bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& t
 	id = edm::EventID(m_run, m_spill, m_event);
 
 	time = (edm::TimeValue_t) m_time;
-	return true;
+	if(m_spill <= NSpills) return true;
+	else return false;
 }
 
 // sets m_run, m_spill, m_even, m_time
@@ -70,11 +73,11 @@ bool HGCalTBTextSource::readHeader()
 bool HGCalTBTextSource::readLines()
 {
 	max_boards = 0;
-	for( auto board : m_lines) {
+	for( auto& board : m_lines) {
 		board.clear();
 	}
 
-	char buff[1024];
+	char buff[1024], buff_SK0[1024], buff_SK1[1024];
 	buff[0] = 0;
 	unsigned int data_sk0, data_sk1;
 
@@ -82,35 +85,33 @@ bool HGCalTBTextSource::readLines()
 	for(unsigned int i = 0; i < 69 && !feof(m_file); ++i) {
 		buff[0] = 0;
 		fgets(buff, 1000, m_file);
-
 		// loop over one line of the text file
 		std::string b = buff;
 		std::istringstream buffer(b);
 		unsigned int board_counter = 0;
-		if(i < 1 && i > 64) continue;// Only these are data words, the rest dont interest us for now
-		while( buffer.peek() != EOF) { //buffer.good() gives compilation errors
+		if((i < 1) || (i > 64)) continue;// Only these are data words, the rest dont interest us for now
+		while( buffer.peek() != EOF && board_counter < MAXLAYERS) { //buffer.good() gives compilation errors
 			// read the data of the two skirocs of one board
-			buffer >> data_sk1 >> data_sk0;
-
-			++board_counter;
+			buffer >> buff_SK1;
+			buffer >> buff_SK0;
+			data_sk0 = strtoul(buff_SK0,NULL,0);
+			data_sk1 = strtoul(buff_SK1,NULL,0);
 			//continue for all the boards
-
 			// extra security
 			m_lines[board_counter].push_back(data_sk0);
 			m_lines[board_counter].push_back(data_sk1);
+			
+			++board_counter;
 			if(board_counter > max_boards) max_boards = board_counter;
 		}
 	}
-
 //		if(sscanf(buffer, "Event header for event %x with (200ns) timestamp %x", &tmp_event, &m_time) == 2) {
-
 	return !m_lines.empty();
 }
 
 void HGCalTBTextSource::produce(edm::Event & e)
 {
 	std::auto_ptr<FEDRawDataCollection> bare_product(new  FEDRawDataCollection());
-
 	// here we parse the data
 	std::vector<uint16_t> skiwords;
 	// make sure there are an even number of 32-bit-words (a round number of 64 bit words...
@@ -127,7 +128,6 @@ void HGCalTBTextSource::produce(edm::Event & e)
 	size_t len = sizeof(uint16_t) * skiwords.size();
 	fed.resize(len);
 	memcpy(fed.data(), &(skiwords[0]), len);
-
 	e.put(bare_product);
 }
 
