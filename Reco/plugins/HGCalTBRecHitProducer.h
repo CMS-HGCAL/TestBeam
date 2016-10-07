@@ -41,6 +41,7 @@ private:
 	std::string _pedestalLow_filename, _pedestalHigh_filename;
 	std::string _gainsLow_filename, _gainsHigh_filename;
 	unsigned int _adcSaturation;
+	double _LG2HG_value;
 };
 
 

@@ -7,23 +7,12 @@ HGCalTBRecHit::HGCalTBRecHit() : CaloRecHit()
 }
 
 
-HGCalTBRecHit::HGCalTBRecHit(const DetId& id, float energyLow, float energyHigh, float time, uint32_t flags) :
-	CaloRecHit(id, energyHigh, time, flags),
+HGCalTBRecHit::HGCalTBRecHit(const DetId& id, float energy, float energyLow, float energyHigh, float time, uint32_t flags) :
+	CaloRecHit(id, energy, time, flags),
 	_energyLow(energyLow),
 	_energyHigh(energyHigh)
 {
 
-	// setting the default energy
-	if(checkFlag(kLowGainSaturated)){
-		setEnergy(-1);
-	} else {
-		if ( checkFlag(kHighGainSaturated) ){
-			setEnergy(energyLow);
-		} else setEnergy(energyHigh);
-	}
-
-	///\todo set the default recHit energy to the highGain values unless saturated
-	setEnergy( ( energyHigh < _highGainSaturationThreshold ) ? energyHigh : energyLow *);
 }
 
 std::ostream& operator<<(std::ostream& s, const HGCalTBRecHit& hit)

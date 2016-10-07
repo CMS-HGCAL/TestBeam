@@ -8,6 +8,5 @@ hgcaltbrechits = cms.EDProducer("HGCalTBRecHitProducer",
                                 gainLow = cms.string(''),
                                 gainHigh = cms.string(''),
                                 LG2HG = cms.double(9.),
-                                gainThr = cms.double(1800.)
-                                adcSaturation = cms.uint32(2000),
+                                adcSaturation = cms.uint32(1800),
                               )
