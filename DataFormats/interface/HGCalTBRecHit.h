@@ -8,12 +8,22 @@
 /** \class HGCalTBRecHit
  *
  * \author Jeremy Mans
+ *
+ * \todo fix the energy threshold for low gain saturation in a different way: now it's hardcoded
  */
+#define _lowGainSaturationThreshold 2000
 
 class HGCalTBRecHit : public CaloRecHit
 {
 public:
 	typedef DetId key_type;
+
+	enum Flags {
+		kGood = 0,
+		kHighGainSaturated,
+		kLowGainSaturated
+	}
+
 
 	HGCalTBRecHit();
 	// by default a recHit is greated with no flag
@@ -35,6 +45,13 @@ public:
 	{
 		return _energyHigh;
 	};
+
+	// set the flags 
+	void setFlag(int flag) {setFlagField(1, flag, 1);}; // flagBits_|= (0x1 << flag);}
+	void unsetFlag(int flag) {setFlagField(0, flag, 1);}; //_ &= ~(0x1 << flag);}
+ 
+	// check if the flag is true
+	bool checkFlag(int flag) const {return flagField(flag, 1);}; //flagBits_ & ( 0x1<<flag);}
 
 };
 
