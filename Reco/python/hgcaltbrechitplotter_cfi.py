@@ -33,5 +33,6 @@ FourLayerRecHitPlotterMax = cms.EDAnalyzer("FourLayerRecHitPlotterMax",
                               )
 
 LayerSumAnalyzer = cms.EDAnalyzer("Layer_Sum_Analyzer",
-               HGCALTBRECHITS = cms.InputTag("hgcaltbrechits","","unpack" )
+                                  HGCALTBRECHITS = cms.InputTag("hgcaltbrechits","","unpack" ),
+                                  CERN_8layers_config = cms.int32(1)
                               )
