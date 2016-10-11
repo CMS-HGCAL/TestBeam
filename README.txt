@@ -48,3 +48,14 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Ou
 
 
 cmsRun test_cfg.py >> /dev/null
+
+
+** new event-based reco **
+sh scripts/rearrangeTxtFile.sh input.txt
+   >> need fix to rearrange HGCRun type. Produce output.txt
+
+cmsRun test_cfg_newEB.py nSpills=9 chainSequence=6 pedestalsHighGain=CondObjects/data/Ped_HighGain_L8.txt pedestalsLowGain=CondObjects/data/Ped_LowGain_L8.txt runNumber=930 configuration=2 runType=HGCRun
+   >> chainSequence=6 to run Layer_Sum_Analyzer 
+   >> configuration=1 (2) to select weights for 5X0 (25X0) 8 layers cern runs
+   >> test_cfg_newEB.py to be fixed when rearrangeTxtFile.sh works properly
+
