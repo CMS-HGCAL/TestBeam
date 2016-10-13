@@ -209,6 +209,10 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 	}
 
         for(int iL=0; iL<MAXLAYERS; ++iL){
+	  if(CERN_8layers_config_ == 0){
+	    Weights_8L[iL] = 1.;
+	    X0_8L[iL] = 0.;
+	  }
 	  if(CERN_8layers_config_ == 1){
 	    Weights_8L[iL] = LayerWeight_8L_conf1[iL];
 	    X0_8L[iL] = X0depth_8L_conf1[iL];

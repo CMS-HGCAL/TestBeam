@@ -62,7 +62,7 @@ options.register('pedestalsLowGain',
                  'Path to low gain pedestals file')
 
 options.register('configuration',
-                 1,
+                 0,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  '1 if 8Layers with 5X0 sampling the center of the shower only; 2 if 8Layers with 25X0 sampling up to the tail of the shower')
