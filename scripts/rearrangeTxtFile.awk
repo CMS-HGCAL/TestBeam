@@ -11,7 +11,7 @@ BEGIN{
 	spillTime=$7
 	run=$9
 #	print "[DEBUG SPILL]", spillID, spillTime, run
-	dir=sprintf("%s/RUN_%06d", baseDir, run)
+	dir=sprintf("%s/RUN_%06d/SPILL_%02d", baseDir, run, spillID)
 	system("mkdir -p "dir)
 }
 

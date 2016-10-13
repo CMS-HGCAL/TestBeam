@@ -1,7 +1,9 @@
 #!/bin/bash
 file=$1
-dir=tmp
-outDir=tmpOut
+tmpdir=/dev/shm/$USER/
+splitDir=$tmpdir/split
+mergeDir=$tmpdir/merge
+finalDir=tmpOut
 
 #STARTING SPILL READ AT TIME (1us): 0x01EE8310 RUN: 878 EVENT: 400
 #Board header: on FMC-IO 9, trig_count in mem= 400, sk_status = 1
@@ -12,41 +14,38 @@ outDir=tmpOut
 #sk0.0 sk0.1 sk1.0 sk1.1 etc
 
 
-echo ${file}
-if [  -e "${dir}" ];then 
-	rm ${dir} -Rf
+echo "[`basename $0`] Processing file: ${file}"
+if [  -e "${tmpdir}" ];then 
+	rm ${tmpdir}/* -Rf
 fi
-
-mkdir ${dir}
-if [ -e "${outDir}" ];then 
-	rm ${outDir} -Rf
-fi
-mkdir ${outDir}
+mkdir -p $tmpdir/{split,merge}/
 
 
-rm $dir/* -Rf
-awk -v baseDir=${dir} -f scripts/rearrangeTxtFile.awk $file
+awk -v baseDir=${splitDir} -f scripts/rearrangeTxtFile.awk $file
 
 
 IFS=$'\n'
-for run in $dir/RUN_*
+for run in $splitDir/RUN_*
 do
-	boards=`ls $run/*.txt | sed 's|.*-BOARD_||;s|.txt||' | sort | uniq`
-	spills=`ls $run/*.txt |  sed 's|-BOARD_.*||' | sort | uniq | sed 's|.*SPILL_||;s|-EVENT_| |'`
+	spills=`ls --color=none -d $splitDir/RUN_000930/SPILL_* | sed 's|.*SPILL_||' | sort -n`
 	run=`basename $run | sed 's|RUN_||'`
-	
-	mkdir -p $outDir/RUN_${run}
+	mkdir -p $mergeDir/RUN_${run}
 
-	for spillevent in $spills
+	for spill in $spills
 	do
-		spill=`echo $spillevent | cut -d ' ' -f 1`
-		event=`echo $spillevent | cut -d ' ' -f 2`
-#		echo $spill " -- " $event
-		paste $dir/RUN_${run}/SPILL_${spill}-EVENT_${event}-BOARD_* | sed -e 's|[[:space:]]RUN.*BOARD{,1}|\tBOARD|g' > $outDir/RUN_${run}/SPILL_${spill}-EVENT_${event}.txt
-	done
-	cat $outDir/RUN_${run}/SPILL_*-EVENT_*.txt > $outDir/RUN_$run.txt
-#	cat $dir/RUN_${run}/SPILL_*-EVENT_*-BOARD_*.txt	> $outDir/RUN_$run.txt
+		echo $spill
+		#tmp/RUN_000930/SPILL_01/SPILL_01-EVENT_000400-BOARD_23.txt
+		#boards=`ls ${dir}/RUN_${run}/SPILL_${spill}/*.txt | sed 's|.*-BOARD_||;s|.txt||' | sort | uniq`
 		
+		events=`ls ${splitDir}/RUN_${run}/SPILL_${spill}/*.txt | sed 's|.*EVENT_\([0-9]*\)-BOARD_.*|\1|;s|.txt||' | sort | uniq`
+		for event in $events
+		do
+#		echo $spill " -- " $event
+			paste $splitDir/RUN_${run}/SPILL_${spill}/SPILL_${spill}-EVENT_${event}-BOARD_* | sed -e 's|[[:space:]]RUN.*BOARD{,1}|\tBOARD|g' > $mergeDir/RUN_${run}/SPILL_${spill}-EVENT_${event}.txt
+		done
+	done
+	cat $mergeDir/RUN_${run}/SPILL_*-EVENT_*.txt > $finalDir/RUN_$run.txt
+	
 done
 
 
