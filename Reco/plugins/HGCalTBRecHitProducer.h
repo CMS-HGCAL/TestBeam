@@ -22,6 +22,8 @@
 #include "HGCal/CondObjects/interface/HGCalCondObjects.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/CondObjects/interface/HGCalTBNumberingScheme.h"
+#include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
+#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 //#define DEBUG
 
 
@@ -41,7 +43,10 @@ private:
 	std::string _pedestalLow_filename, _pedestalHigh_filename;
 	std::string _gainsLow_filename, _gainsHigh_filename;
 	int _adcSaturation;
-	double _LG2HG_value;
+	std::vector<double> _LG2HG_value;
+	struct {
+	  HGCalElectronicsMap emap_;
+        } essource_;
 };
 
 
