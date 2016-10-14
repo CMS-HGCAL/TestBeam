@@ -47,26 +47,34 @@
 const bool ELECTRONS(1);// uses > *CELLS_THRESHOLD
 const bool PIONS(0);// uses > PION_*CELLS_THRESHOLD and < *CELLS_THRESHOLD
 
-double Layer_Z[16]  = {1.2, 2., 3.5, 4.3, 5.8, 6.3, 8.7, 9.5, 11.4, 12.2, 13.8, 14.6, 16.6, 17.4, 20., 20.8};
+//double Layer_Z[16]  = {1.2, 2., 3.5, 4.3, 5.8, 6.3, 8.7, 9.5, 11.4, 12.2, 13.8, 14.6, 16.6, 17.4, 20., 20.8};
 
-double ADCtoMIP[16] =  {17.32, 17.16, 16.45, 17.39, 17.75, 17.27, 16.55, 16.25, 17.52, 17.18, 17.10, 17.88, 15.87, 16.71, 16.92, 15.72};
-double MIP2ParticleCalib = 1.3;  // FIXME for CERN
+//double ADCtoMIP_CERN[16] =  {17.32, 17.16, 16.45, 17.39, 17.75, 17.27, 16.55, 16.25, 17.52, 17.18, 17.10, 17.88, 15.87, 16.71, 16.92, 15.72};
+double ADCtoMIP_CERN[16] =  {17.24, 16.92, 17.51, 16.4, 17.35, 17.49, 16.29, 16.32, 1., 1., 1., 1., 1., 1., 1., 1.};
+double ADCtoMIP_FNAL[16] =  {1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
+
+//double MIP2ParticleCalib = 1.3;  // FNAL to proton 120GeV
+double MIP2ParticleCalib = 1.06;  // CERN to pion 125GeV
 
 //double ADCtoMIP[16] = {16.02,16.85,15.36,14.73,10.66,15.64,16.52,14.24,10.07,14.42,16.14,17.33,16.61,16.84,15.79,16.43};// one MIP is equal to _ADCtoMIP_ ADC Counts
 //double LayerWeight[16] = {0.6374029601923652, 0.7392021202456731, 0.6374273268336504, 0.7392021202456731, 0.6374273268336504, 0.8861075434658853, 0.8487578715427883, 1.0330129666860974, 0.8487578715427883, 1.0330129666860974, 0.8487578715427883, 1.5226977107534714, 1.2714189609610644, 1.5226977107534714, 1.2714189609610644, 1.5226977107534714};// X0 weights
 
 //double LayerWeight[16] = {1.4091566745180932, 0.7020676448403224, 0.6054055986179145, 0.7020676448403224, 0.6054055986179145, 0.8415931435769973, 0.8061197656138868, 0.9811186423136724, 0.8061197656138868, 0.9811186423136724, 0.8061197656138868, 1.4462036381025891, 1.2075480996058319, 1.4462036381025891, 1.2075480996058319, 1.4462036381025891};
 
+double LayerWeight_16L_FNAL[16] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.}; 
+double X0depth_16L_FNAL[16] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.}; 
 
-double LayerWeight_8L_conf1[16] = {33.074, 13.184, 14.17, 9.788, 9.766, 9.766, 16.339, 14.129};
-double X0depth_8L_conf1[16] = {6.268, 1.131, 1.131, 1.362, 0.574, 1.301, 0.574, 2.42};
-double LayerWeight_8L_conf2[16] = {35.866, 30.864, 28.803, 23.095, 20.657, 19.804, 36.322, 27.451};
-double X0depth_8L_conf2[16] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021};
+double LayerWeight_8L_conf1[16] = {33.074, 13.184, 14.17, 9.788, 9.766, 9.766, 16.339, 14.129, 0., 0., 0., 0., 0., 0., 0., 0.};
+double X0depth_8L_conf1[16] = {6.268, 1.131, 1.131, 1.362, 0.574, 1.301, 0.574, 2.42, 0., 0., 0., 0., 0., 0., 0., 0.};
+double LayerWeight_8L_conf2[16] = {35.866, 30.864, 28.803, 23.095, 20.657, 19.804, 36.322, 27.451, 0., 0., 0., 0., 0., 0., 0., 0.};
+double X0depth_8L_conf2[16] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021, 0., 0., 0., 0., 0., 0., 0., 0.};
 double weights2GeV = 1.e-03;
+double weights2MIP = 52.8/63.6;   // rescale weights from mean to MPV
 
 //double LayerWeight[16] = {0.4847555727337982, 1.0214605968539232, 0.4847555727337982, 1.0214605968539232, 0.4847555727337982, 1.1420105918768606, 0.6423912113800805, 1.2625605868997982, 0.6423912113800805, 1.2625605868997982, 0.6423912113800805, 1.6643939036429232, 0.9576624886726451, 1.6643939036429232, 0.9576624886726451, 1.6643939036429232};// dE/dx weights
 
-double LayerSumWeight = 1.;
+//double LayerSumWeight = 1.;
+
 const int CMTHRESHOLD = 30;// anything less than this value is added to the commonmode sum
 
 // applied to all layers sum after commonmode subtraction and the ADC to MIP conversion
@@ -97,7 +105,7 @@ private:
 
 	// ----------member data ---------------------------
 	edm::EDGetToken HGCalTBRecHitCollection_;
-        int CERN_8layers_config_;
+        int layers_config_;
 
 	struct {
 		HGCalElectronicsMap emap_;
@@ -110,8 +118,9 @@ private:
 	HGCalTBCellVertices TheCell;
         double maxdist = (1 + sqrt (3) / 2) * HGCAL_TB_CELL::FULL_CELL_SIDE;  // <<< FIXME maxdist > HGCAL_TB_CELL::FULL_CELL_SIDE !!
 
-        double Weights_8L[MAXLAYERS];
-        double X0_8L[MAXLAYERS];
+        double Weights_L[MAXLAYERS];
+        double X0_L[MAXLAYERS];
+        double ADCtoMIP[MAXLAYERS];
 
         TH1F *h_CM_layer[MAXSKIROCS];
 	TH1F *h_sum_layer[MAXLAYERS], *h_layer_seven[MAXLAYERS], *h_layer_nineteen[MAXLAYERS], *h_Seed_layer[MAXLAYERS];
@@ -147,7 +156,7 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 	usesResource("TFileService");
 	edm::Service<TFileService> fs;
 	HGCalTBRecHitCollection_ = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
-	CERN_8layers_config_ = iConfig.getParameter<int>("CERN_8layers_config");
+	layers_config_ = iConfig.getParameter<int>("layers_config");
 
 	//booking the histos
 	for(int layer = 0; layer < MAXLAYERS; layer++) {
@@ -209,17 +218,25 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 	}
 
         for(int iL=0; iL<MAXLAYERS; ++iL){
-	  if(CERN_8layers_config_ == 0){
-	    Weights_8L[iL] = 1.;
-	    X0_8L[iL] = 0.;
+	  if(layers_config_ == 0){
+	    Weights_L[iL] = LayerWeight_16L_FNAL[iL];
+	    X0_L[iL] = X0depth_16L_FNAL[iL];
+	    ADCtoMIP[iL] = ADCtoMIP_FNAL[iL];
 	  }
-	  if(CERN_8layers_config_ == 1){
-	    Weights_8L[iL] = LayerWeight_8L_conf1[iL];
-	    X0_8L[iL] = X0depth_8L_conf1[iL];
-	  }
-	  if(CERN_8layers_config_ == 2){
-	    Weights_8L[iL] = LayerWeight_8L_conf2[iL];
-	    X0_8L[iL] = X0depth_8L_conf2[iL]; 
+	  else{
+	    ADCtoMIP[iL] = ADCtoMIP_CERN[iL];
+	    if(layers_config_ == 1){
+	      Weights_L[iL] = LayerWeight_8L_conf1[iL];
+	      X0_L[iL] = X0depth_8L_conf1[iL];
+	    }
+	    if(layers_config_ == 2){
+	      Weights_L[iL] = LayerWeight_8L_conf2[iL];
+	      X0_L[iL] = X0depth_8L_conf2[iL]; 
+	    }
+	    if(layers_config_ == -1){
+	      Weights_L[iL] = 1.;
+	      X0_L[iL] = 0.;
+	    }
 	  }
 	}
 
@@ -403,10 +420,10 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     h_layer_seven[iL]->Fill(sevencells_sum[iL]);
     h_layer_nineteen[iL]->Fill(nineteencells_sum[iL]);
 
-    float layerE1 = seedEnergy[iL] * ( (ADCtoMIP[iL*2]+ ADCtoMIP[iL*2+1])/2. * weights2GeV * Weights_8L[iL] + 1.);
-    float layerE7 = sevencells_sum[iL] * ((ADCtoMIP[iL*2]+ ADCtoMIP[iL*2+1])/2.  * weights2GeV * Weights_8L[iL] + 1.);
-    float layerE19 = nineteencells_sum[iL] * ( (ADCtoMIP[iL*2]+ ADCtoMIP[iL*2+1])/2. * weights2GeV * Weights_8L[iL] + 1.);
-    float layerEAll = allcells_sum[iL] * ( (ADCtoMIP[iL*2]+ ADCtoMIP[iL*2+1])/2. * weights2GeV * Weights_8L[iL] + 1.);
+    float layerE1 = seedEnergy[iL] * (ADCtoMIP[iL] * weights2GeV * weights2MIP * Weights_L[iL] + 1.);
+    float layerE7 = sevencells_sum[iL] * (ADCtoMIP[iL] * weights2GeV * weights2MIP * Weights_L[iL] + 1.);
+    float layerE19 = nineteencells_sum[iL] * (ADCtoMIP[iL] * weights2GeV * weights2MIP * Weights_L[iL] + 1.);
+    float layerEAll = allcells_sum[iL] * (ADCtoMIP[iL] * weights2GeV * weights2MIP * Weights_L[iL] + 1.);
 
     h_sum_layer_AbsW[iL]->Fill(layerEAll);
     h_Seed_layer_AbsW[iL]->Fill(layerE1);
@@ -473,7 +490,7 @@ Layer_Sum_Analyzer::beginJob()
 		throw cms::Exception("Unable to load electronics map");
 	}
 
-	for(int iii = 0; iii < 16; iii++)
+	for(int iii = 0; iii < MAXLAYERS; iii++)
 		ADCtoMIP[iii] = ADCtoMIP[iii] / MIP2ParticleCalib; // Converting response to 120 GeV protons to MIPs
 	/*
 	        for(int iii= 0; iii<16;iii++){

@@ -1,4 +1,5 @@
 #include "HGCal/Reco/plugins/HGCalTBRecHitProducer.h"
+#include <iostream>
 
 HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg)
 	: outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
@@ -8,9 +9,17 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg)
 	  _gainsLow_filename(cfg.getParameter<std::string>("gainLow")),
 	  _gainsHigh_filename(cfg.getParameter<std::string>("gainHigh")),
 	  _adcSaturation(cfg.getParameter<int>("adcSaturation")),
-	  _LG2HG_value(cfg.getParameter<std::vector<double> >("LG2HG"))
+	  _LG2HG_value(cfg.getParameter<std::vector<double> >("LG2HG_CERN")),
+	  _mapFile(cfg.getParameter<std::string>("mapFile"))
 {
 	produces <HGCalTBRecHitCollection>(outputCollectionName);
+	//	std::cout << " >>> _LG2HG_value size = " << _LG2HG_value.size() << std::endl;
+
+	HGCalCondObjectTextIO io(0);
+	edm::FileInPath fip(_mapFile);
+        if (!io.load(fip.fullPath(), essource_.emap_)) {
+	  throw cms::Exception("Unable to load electronics map");
+	};
 
 }
 
