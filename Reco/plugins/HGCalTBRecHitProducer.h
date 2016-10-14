@@ -44,6 +44,7 @@ private:
 	std::string _gainsLow_filename, _gainsHigh_filename;
 	int _adcSaturation;
 	std::vector<double> _LG2HG_value;
+	std::string _mapFile;
 	struct {
 	  HGCalElectronicsMap emap_;
         } essource_;
