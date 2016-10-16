@@ -6,6 +6,9 @@
 	@Author: Ryan Quinn <ryan>
 		7 July 2016
 		quinn@physics.umn.edu
+		
+		With modifications by
+                Shin-Shan Eiko Yu <syu@cern.ch> and Vieri Candelise <vieri.candelise@cern.ch>
 */
 
 
@@ -14,6 +17,7 @@
 #include <memory>
 #include <iostream>
 #include "TH2Poly.h"
+#include "TProfile.h"
 #include "TH1F.h"
 #include "TF1.h"
 #include <sstream>
@@ -43,8 +47,6 @@
 
 // chooses which particle to look at. Inverts threshold filtering.
 // if nothing is selected, electrons are the default
-const bool ELECTRONS(1);// uses > *CELLS_THRESHOLD
-const bool PIONS(0);// uses > PION_*CELLS_THRESHOLD and < *CELLS_THRESHOLD
 
 double Layer_Z[16]  = {1.2, 2., 3.5, 4.3, 5.8, 6.3, 8.7, 9.5, 11.4, 12.2, 13.8, 14.6, 16.6, 17.4, 20., 20.8};
 
@@ -61,6 +63,7 @@ double LayerWeight[16] = {1.};
 
 double LayerSumWeight = 1.;
 const int CMTHRESHOLD = 30;// anything less than this value is added to the commonmode sum
+const int LGCMTHRESHOLD =3; // common-mode noise for low-gain (need to be double checked, Eiko)
 
 // applied to all layers sum after commonmode subtraction and the ADC to MIP conversion
 const double ALLCELLS_THRESHOLD = 50.;
@@ -70,6 +73,9 @@ const double PION_ALLCELLS_THRESHOLD = 15.;
 const double PION_7CELLS_THRESHOLD = -100.;
 const double PION_19CELLS_THRESHOLD = -100.;
 
+const int NTYPES=6;                                           
+const int NCHIPS=2;                                           
+const int NCHANS=64;                                          
 
 using namespace std;
 
@@ -84,7 +90,10 @@ public:
 	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
-	virtual void beginJob() override;
+
+        bool ELECTRONS;
+        bool PIONS;
+ 	virtual void beginJob() override;
 	void analyze(const edm::Event& , const edm::EventSetup&) override;
 	virtual void endJob() override;
 
@@ -102,7 +111,16 @@ private:
 	TH1F *h_sum_layer[MAXLAYERS], *h_layer_seven[MAXLAYERS], *h_layer_nineteen[MAXLAYERS], *h_sum_all, *h_seven_all, *h_nineteen_all;
 	TH1F *h_x_layer[MAXLAYERS], *h_y_layer[MAXLAYERS];
 	TH2F *h_x_y_layer[MAXLAYERS];
-	TH2F *HighGain_LowGain_2D;
+
+       // added by Eiko and Vieri                                                                                                                           
+
+
+        TH2F *HighGain_LowGain_2D_lct[MAXLAYERS][NCHIPS][NTYPES];
+        TProfile *pf_HighGain_LowGain_2D_cmremoved_lct[MAXLAYERS][NCHIPS][NTYPES];
+
+        TProfile *pf_HighGain_LowGain_2D_lcc[MAXLAYERS][NCHIPS][NCHANS];
+//         TProfile *pf_HighGain_LowGain_2D_cmremoved_lcc[MAXLAYERS][NCHIPS][NCHANS];
+
 	int SPILL = 0, EVENT = 0, LAYER = 0;
 
 	map<int, double> AllCells[MAXLAYERS];
@@ -119,6 +137,21 @@ private:
 
 Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 {
+
+  // check if it's an electron or pion beam
+  if(iConfig.getParameter<std::string>("particleType")=="electron")
+    {
+      ELECTRONS=true;
+      PIONS=false;
+    }
+  else if(iConfig.getParameter<std::string>("particleType")=="pion")
+    {
+      ELECTRONS=false;
+      PIONS=true;
+    }
+ 
+  if(ELECTRONS)std::cout << "running on electron sample" << std::endl;
+  if(PIONS)std::cout << "running on pion sample" << std::endl;
 
 	// initialization
 	usesResource("TFileService");
@@ -141,7 +174,33 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 		h_x_layer[layer] = fs->make<TH1F>(Xname.str().c_str(), Xname.str().c_str(), 2000, -10., 10. );
 		h_y_layer[layer] = fs->make<TH1F>(Yname.str().c_str(), Yname.str().c_str(), 2000, -10., 10. );
 		h_x_y_layer[layer] = fs->make<TH2F>(X_Y_name.str().c_str(), X_Y_name.str().c_str(), 2000, -10., 10., 2000, -10., 10. );
-	}
+		
+		for(int ik = 0; ik < NCHIPS; ik++){
+		  for(int ij= 0; ij < NCHANS; ij++){
+		    stringstream name3;
+		    name3 << "pf_HighGain_LowGain_2D_lcc" << layer+1 << Form("%02i",ik+1) << Form("%02i",ij);
+		    pf_HighGain_LowGain_2D_lcc[layer][ik][ij] = fs->make<TProfile>(name3.str().c_str(), name3.str().c_str(),4000,0,4000);
+		    pf_HighGain_LowGain_2D_lcc[layer][ik][ij] -> Sumw2();
+// 		    stringstream name4;
+// 		    name4 << "pf_HighGain_LowGain_2D_cmremoved_lcc" << layer+1 << Form("%02i",ik+1) << Form("%02i",ij);
+// 		    pf_HighGain_LowGain_2D_cmremoved_lcc[layer][ik][ij] = fs->make<TProfile>(name4.str().c_str(), name4.str().c_str(),4000,0,4000);
+//                  pf_HighGain_LowGain_2D_cmremoved_lcc[layer][ik][ij] -> Sumw2();
+		  } // end of loop over channels, 0-63                                                                                                                                
+		  for(int im= 0; im < NTYPES; im++){
+		    stringstream name3;
+		    name3 << "HighGain_LowGain_2D_lct" << layer+1 << Form("%02i",ik+1) << Form("%02i",im);
+		    HighGain_LowGain_2D_lct[layer][ik][im] = fs->make<TH2F>(name3.str().c_str(), name3.str().c_str(),4000,0,4000,4000,0,4000);
+		    HighGain_LowGain_2D_lct[layer][ik][im] -> Sumw2();
+
+		    stringstream name4;
+		    name4 << "pf_HighGain_LowGain_2D_cmremoved_lct" << layer+1 << Form("%02i",ik+1) << Form("%02i",im);
+		    pf_HighGain_LowGain_2D_cmremoved_lct[layer][ik][im] = fs->make<TProfile>(name4.str().c_str(), name4.str().c_str(),4000,0,4000);
+		    pf_HighGain_LowGain_2D_cmremoved_lct[layer][ik][im] -> Sumw2();
+
+		  } // end of loop over types                                                                                                                                         
+		} // end loop over skirocs   
+
+	} // end of loop over layers
 
 	h_sum_all = fs->make<TH1F>("AllCells_Sum_AllLayers", "AllCells_Sum_AllLayers", 40010, -10, 40000);
 	h_sum_all->Sumw2();
@@ -149,7 +208,6 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 	h_seven_all->Sumw2();
 	h_nineteen_all = fs->make<TH1F>("Cells19_Sum_AllLayers", "19Cells_Sum_AllLayers", 40010, -10, 40000);
 	h_nineteen_all->Sumw2();
-	HighGain_LowGain_2D = fs->make<TH2F>("HighGain_LowGain_2D", "HighGain_LowGain_2D", 4000, 0, 4000, 4000, 0, 4000);
 }//constructor ends here
 
 
@@ -188,9 +246,26 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
 
 	// looping over each rechit to fill histogram
 	bool FIRST(1);
-	double commonmode, max, max_x, max_y;
-	commonmode = max = max_x = max_y = 0.;
-	int cm_num = 0;
+	double commonmode,max, max_x, max_y;
+	commonmode=max = max_x = max_y = 0.;
+	int cm_num=0;
+
+	// added by Eiko for high/low gain
+	double commonmode_HG[MAXLAYERS][NCHIPS][NTYPES], commonmode_LG[MAXLAYERS][NCHIPS][NTYPES];
+	int cm_num_HG[MAXLAYERS][NCHIPS][NTYPES];
+        int cm_num_LG[MAXLAYERS][NCHIPS][NTYPES];
+	
+	for(int il=0; il<MAXLAYERS; il++){
+	  for(int ic=0; ic<NCHIPS; ic++){
+	    for(int it=0; it<NTYPES; it++){
+	      commonmode_HG[il][ic][it]=0.;
+	      commonmode_LG[il][ic][it]=0.;
+	      cm_num_HG[il][ic][it]=0;
+	      cm_num_LG[il][ic][it]=0;
+	    }	    
+	  }
+	}
+
 	for(auto Rechit : *Rechits) {
 
 		//getting electronics ID
@@ -199,7 +274,15 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
 
 		//getting X and Y coordinates
 		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), sensorsize);
-		HighGain_LowGain_2D->Fill(Rechit.energyLow(), Rechit.energyHigh());
+		int type = (Rechit.id()).cellType();
+		int n_layer = (Rechit.id()).layer()-1;
+		int skiroc_chip = (eid.iskiroc()-1)%2;
+                int chan = eid.ichan();
+		//		std::cout << "n_layer = " << n_layer << "\t" << type << "\t" << skiroc_chip << "\t" << chan << std::endl;                                                    
+  
+                HighGain_LowGain_2D_lct[n_layer][skiroc_chip][type]->Fill(Rechit.energyLow(),Rechit.energyHigh());
+                pf_HighGain_LowGain_2D_lcc[n_layer][skiroc_chip][chan]->Fill(Rechit.energyLow(),Rechit.energyHigh());
+ 
 		if((Rechit.id()).cellType() != 0) continue;
 
 		if(FIRST) {
@@ -217,15 +300,47 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
 			max_y = CellCentreXY.second;
 		}
 
-		if((Rechit.energyHigh()) / ADCtoMIP[LAYER] <= CMTHRESHOLD) {
-
-			commonmode += Rechit.energyHigh();
-			cm_num++;
+		if((Rechit.energyHigh()) / ADCtoMIP[LAYER] <= CMTHRESHOLD) {		  
+		  commonmode_HG[n_layer][skiroc_chip][type] += Rechit.energyHigh();
+		  cm_num_HG[n_layer][skiroc_chip][type]++;
+		  commonmode += Rechit.energyHigh();
+		  cm_num++;
 		}
+		if((Rechit.energyLow())/ADCtoMIP[LAYER] <= LGCMTHRESHOLD){
+		  commonmode_LG[n_layer][skiroc_chip][type] += Rechit.energyLow();
+		  cm_num_LG[n_layer][skiroc_chip][type]++;
+                }
 
 	}//Rechit loop ends here
 
-	commonmode /= cm_num;
+	commonmode = cm_num ==0? 0: commonmode/cm_num;
+	for(int il=0; il<MAXLAYERS; il++){
+	  for(int ic=0; ic<NCHIPS; ic++){
+	    for(int it=0; it<NTYPES; it++){
+	      commonmode_HG[il][ic][it] = cm_num_HG[il][ic][it]==0? 0: commonmode_HG[il][ic][it]/cm_num_HG[il][ic][it];
+	      commonmode_LG[il][ic][it] = cm_num_LG[il][ic][it]==0? 0: commonmode_LG[il][ic][it]/cm_num_LG[il][ic][it]; // added by Eiko	
+	      // std::cout << "common mode_HG[" << il << "]["<< ic << "][" << it << "] = " << commonmode_HG[il][ic][it] << std::endl; 
+	      // std::cout << "common mode_LG[" << il << "][" << ic << "][" << it << "] = " << commonmode_LG[il][ic][it] << std::endl;                                               
+	    }
+	  }
+	}
+
+	//      now plot histograms after subtracting common mode                                                                                                               
+	for(auto Rechit : *Rechits){
+	  uint32_t EID = essource_.emap_.detId2eid(Rechit.id());
+	  HGCalTBElectronicsId eid(EID);
+	  int type = (Rechit.id()).cellType();
+	  int n_layer = (Rechit.id()).layer()-1;
+	  int skiroc_chip = (eid.iskiroc()-1)%2;
+	  //	  int chan = eid.ichan();
+	  pf_HighGain_LowGain_2D_cmremoved_lct[n_layer][skiroc_chip][type]->Fill(Rechit.energyLow()-commonmode_LG[n_layer][skiroc_chip][type],
+										 Rechit.energyHigh()-commonmode_HG[n_layer][skiroc_chip][type]);
+	  // 	  pf_HighGain_LowGain_2D_cmremoved_lcc[n_layer][skiroc_chip][chan]->Fill(Rechit.energyLow()-commonmode_LG[n_layer][skiroc_chip][type],
+	  // 										 Rechit.energyHigh()-commonmode_HG[n_layer][skiroc_chip][type]);
+
+	}
+
+    
 
 	edm::Handle<HGCalTBRecHitCollection> Rechits1;
 	event.getByToken(HGCalTBRecHitCollection_, Rechits1);
@@ -305,12 +420,11 @@ Layer_Sum_Analyzer::beginJob()
 void
 Layer_Sum_Analyzer::endJob()
 {
-
 	double allcells, sevencells, nineteencells;
 	bool doAllCells, do7Cells, do19Cells;
-	ofstream fs1;
-	fs1.open("/home/daq/CMSSW_8_0_1/src/HGCal/HGC_CERN_Time_Synch.txt");
-	fs1 << "# " << "Event Num" << "\t" << "Time(us)" << "\t" << "Delta t(us)" << "\t" << "Cluster x[cm]" << "\t" << "Cluster y[cm]" << endl;
+	// ofstream fs1;
+	// fs1.open("/home/daq/CMSSW_8_0_1/src/HGCal/HGC_CERN_Time_Synch.txt");
+	// fs1 << "# " << "Event Num" << "\t" << "Time(us)" << "\t" << "Delta t(us)" << "\t" << "Cluster x[cm]" << "\t" << "Cluster y[cm]" << endl;
 	for(int event = 0; event < (SPILL + 1) * EVENTSPERSPILL; event++) {
 		allcells = sevencells = nineteencells = 0.;
 		doAllCells = do7Cells = do19Cells = false;
@@ -366,12 +480,12 @@ Layer_Sum_Analyzer::endJob()
 				h_y_layer[layer]->Fill(Y_Layer[layer][event]);
 				h_x_y_layer[layer]->Fill(X_Layer[layer][event], Y_Layer[layer][event]);
 				cout << endl << "   " << layer << "     " << X_Layer[layer][event] << "     " << Y_Layer[layer][event] << endl;
-				fs1 << event + 1 << "\t" << 200 * Time_Stamp[event + 1] / 1000. << "\t" << 200 * Delta_Time_Stamp[event + 1] / 1000. << "\t" << X_Layer[layer][event] << "\t" << Y_Layer[layer][event] << endl;
+				// fs1 << event + 1 << "\t" << 200 * Time_Stamp[event + 1] / 1000. << "\t" << 200 * Delta_Time_Stamp[event + 1] / 1000. << "\t" << X_Layer[layer][event] << "\t" << Y_Layer[layer][event] << endl;
 //                                fs1<<event<<"	"<<layer<<"	"<<X_Layer[layer][event]<<"	"<<Y_Layer[layer][event]<<"	"<<Layer_Z[layer]<<"	"<<endl;
 			}
 		}
 	}
-	fs1.close();
+	// fs1.close();
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------

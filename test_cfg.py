@@ -17,12 +17,6 @@ options.register('outputFolder',
                  VarParsing.VarParsing.varType.string,
                  'Result of processing')
 
-# options.register('commonPrefix',
-#                  '',
-#                  VarParsing.VarParsing.multiplicity.singleton,
-#                  VarParsing.VarParsing.varType.string,
-#                  'Input file to process')
-
 options.register('runNumber',
                  850,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -34,6 +28,7 @@ options.register('runType',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Type of run: HGCRun for run with beam on, PED for pedestal run, Unknown otherwise')
+
 
 options.register('chainSequence',
                  0,
@@ -59,6 +54,22 @@ options.register('pedestalsLowGain',
                  VarParsing.VarParsing.varType.string,
                  'Path to low gain pedestals file')
 
+
+options.register ('particle',
+                  'electron',
+                  VarParsing.VarParsing.multiplicity.singleton,
+                  VarParsing.VarParsing.varType.string,
+                  "particle type")
+
+
+options.register ('energy',
+                  '20GeV',
+                  VarParsing.VarParsing.multiplicity.singleton,
+                  VarParsing.VarParsing.varType.string,
+                  "energy of beam")
+
+
+## This output is disabled since we do not need edm root files (Eiko)
 options.output = "test_output.root"
 
 options.parseArguments()
@@ -68,8 +79,9 @@ options.parseArguments()
 if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
 
-if not os.path.isdir(options.outputFolder):
-    os.system("mkdir -p " + options.outputFolder)
+directory=options.particle+"/"+options.energy
+if not os.path.isdir(directory):
+    os.system("mkdir -p " + directory)
 
 if (options.runType != "PED" and options.runType != "HGCRun"):
     sys.exit("Error: only runtypes PED and HGCRun supported for now; given runType was %s"%(options.runType))
@@ -115,43 +127,28 @@ process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
 
 process.dumpDigi = cms.EDAnalyzer("HGCalDigiDump")
 
+process.LayerSumAnalyzer.particleType = cms.string(options.particle)
+
 
 process.output = cms.OutputModule("PoolOutputModule",
 			fileName = cms.untracked.string(options.output)
                                  )
 
-# process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Display.root") )
 if (options.chainSequence == 1):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Digi.root"%(options.outputFolder,options.runType,options.runNumber)))
 elif (options.chainSequence == 3 or options.chainSequence == 4 or options.chainSequence == 5):
-    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco.root"%(options.outputFolder,options.runType,options.runNumber)))
-# process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco.root") )
-#process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Layer.root") )
-#process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Cluster.root") )
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_%s_Output_%06d_Reco.root"%(directory,options.particle+options.energy,options.runType,options.runNumber)))
 
-
-########Activate this to produce event displays#########################################
-#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
-
-################Not needed for DQM purposes, produces digi histograms for each channel, and the pedestal txt file needed for Digi->Reco
-#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
-
-################Produces Reco histograms for each channel as well as a scatter plot of the Reco per channel#############
-#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
-
-#################Produces Clusters of Recos(7cells, 19cells and all cells(full hexagons only))################
-#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.LayerSumAnalyzer)
-
-################Miscellaneous##############################################################################
-#process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.FourLayerRecHitPlotterMax)
 
 if (options.chainSequence == 1):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
 elif (options.chainSequence == 3):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
-elif (options.chainSequence == 4):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
+elif (options.chainSequence == 4): 
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.LayerSumAnalyzer)
 elif (options.chainSequence == 5):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm*process.hgcaltbrechitsplotter_highgain_new)
 
-process.end = cms.EndPath(process.output)
+
+## Disabled since we do not need EDM root files (Eiko)
+#process.end = cms.EndPath(process.output)
