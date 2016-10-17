@@ -36,9 +36,9 @@ options.register('runType',
                  'Type of run: HGCRun for run with beam on, PED for pedestal run, Unknown otherwise')
 
 options.register('chainSequence',
-                 0,
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.int,
+                 "",
+                 VarParsing.VarParsing.multiplicity.list,
+                 VarParsing.VarParsing.varType.string,
                  '0: if runType is PED then do Digi, if runType is HGC_Run then do Digi and Reco (not implemented yet); 1: do Digi; 2: only Reco (not implemented yet); 3: Digi + highgain_correlation_cm; 4: event display sequence; 5: highgain_correlation_cm + event display sequence')
 
 
@@ -95,7 +95,10 @@ process.source = cms.Source("HGCalTBTextSource",
 )
 ## [source module]
 
-
+process.options = cms.untracked.PSet(
+    wantSummary = cms.untracked.bool(True),
+#    SkipEvent = cms.untracked.vstring('ProductNotFound'),
+)
 ######
 process.hgcaltbdigisplotter.pedestalsHighGain = cms.untracked.string(options.pedestalsHighGain)
 process.hgcaltbdigisplotter.pedestalsLowGain  = cms.untracked.string(options.pedestalsLowGain)
@@ -115,11 +118,11 @@ process.output = cms.OutputModule("PoolOutputModule",
 			fileName = cms.untracked.string(options.output)
                                  )
 
-# process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Display.root") )
-if (options.chainSequence == 1):
-    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Digi.root"%(options.outputFolder,options.runType,options.runNumber)))
-elif (options.chainSequence == 3 or options.chainSequence == 4 or options.chainSequence == 5):
-    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco.root"%(options.outputFolder,options.runType,options.runNumber)))
+process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output.root") )
+#if (options.chainSequence == 1):
+#    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Digi.root"%(options.outputFolder,options.runType,options.runNumber)))
+#elif (options.chainSequence == 3 or options.chainSequence == 4 or options.chainSequence == 5):
+#    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco.root"%(options.outputFolder,options.runType,options.runNumber)))
 # process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco.root") )
 #process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Layer.root") )
 #process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Cluster.root") )
@@ -140,13 +143,21 @@ elif (options.chainSequence == 3 or options.chainSequence == 4 or options.chainS
 ################Miscellaneous##############################################################################
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.FourLayerRecHitPlotterMax)
 
-if (options.chainSequence == 1):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
-elif (options.chainSequence == 3):
-    process.p =cms.Path(process.hgcaltbdigis)
-elif (options.chainSequence == 4):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
-elif (options.chainSequence == 5):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm*process.hgcaltbrechitsplotter_highgain_new)
+process.p = cms.Path()
+for seq in options.chainSequence:
+    if(seq == "DIGI"):
+        process.p *= process.hgcaltbdigis
+    if(seq == "DIGIPLOT" or seq == "PED"):
+        process.p *= process.hgcaltbdigisplotter
+    if(seq == "RECO"):
+        process.p *= process.hgcaltbrechits
+# if (options.chainSequence == 1):
+#     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
+# elif (options.chainSequence == 3):
+#     process.p =cms.Path(process.hgcaltbdigis)
+# elif (options.chainSequence == 4):
+#     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
+# elif (options.chainSequence == 5):
+#     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm*process.hgcaltbrechitsplotter_highgain_new)
 
 process.end = cms.EndPath(process.output)

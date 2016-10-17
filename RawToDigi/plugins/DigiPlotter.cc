@@ -234,20 +234,17 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				std::cout << std::endl << " Layer = " << detId.layer() << " Sensor IU = " << detId.sensorIU() << " Sensor IV = " << detId.sensorIV() << " Cell iu = " << detId.iu() << " Cell iu = " << detId.iv() << std::endl;
 #endif
 				if(!IsCellValid.iu_iv_valid(detId, sensorsize))  continue;
-					std::pair<double, double> CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(detId, sensorsize);
+				std::pair<double, double> CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(detId, sensorsize);
 				double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + 0.0001) : (CellCentreXY.first - 0.0001) ;
 				double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + 0.0001) : (CellCentreXY.second - 0.0001);
+
 				int nsample = 0;
 				h_digi_layer[nsample][detId.layer() - 1]->Fill(iux , iyy, SKI[nsample].adcLow());
 				h_digi_layer_profile[nsample][detId.layer() - 1]->Fill(counter1++, SKI[nsample].adcLow(), 1);
-//				h_digi_layer_summed[nsample][detId.layer() - 1]->Fill(ADC_Sum_SKI_Layer[eid.iskiroc() - 2*(detId.layer() - 1) - 1][detId.layer() - 1][0]);
 				if(eid.iskiroc() > 0)	h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][nsample]->Fill(SKI[nsample].adcLow());
 				nsample = 1;
 				h_digi_layer[nsample][detId.layer() - 1]->Fill(iux , iyy, SKI[nsample - 1].adcHigh());
-//				Noise_2D_Profile[nsample][detId.layer() - 1]->Fill();
 				h_digi_layer_profile[nsample][detId.layer() - 1]->Fill(counter2++, SKI[nsample - 1].adcHigh(), 1);
-//				h_digi_layer_summed[nsample][detId.layer() - 1]->Fill(ADC_Sum_SKI_Layer[eid.iskiroc() - 2*(detId.layer() - 1) - 1][detId.layer() - 1][1]);
-//                                        if(((SKI.detid()).cellType() != 4) && (eid.ichan() == 0) ) std::cout<<std::endl<<"SKIROC=  "<<eid.iskiroc()<<" Chan= "<<eid.ichan()<<" u= "<<n_cell_iu<<" v = "<<n_cell_iv<<std::endl;
 				if(eid.iskiroc() > 0)	h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][nsample]->Fill(SKI[nsample - 1].adcHigh());
 			}
 			
@@ -277,21 +274,23 @@ DigiPlotter::endJob()
 	int Code = 0;
 	int SENSOR_IX = 0;
 	int SENSOR_IV = 0;
-	std::ofstream fs1, fs2;
-	fs1.open(m_pedestalsHighGain.c_str());
-	fs1 << "SCHEME_CODE 0" << std::endl;
-	fs1 << "# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE" << std::endl;
-	fs2.open(m_pedestalsLowGain.c_str());
-	fs2 << "SCHEME_CODE 0" << std::endl;
-	fs2 << "# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE" << std::endl;
+	std::ofstream f_highGain, f_lowGain;
+
+	f_highGain.open(m_pedestalsHighGain.c_str());
+	f_highGain << "SCHEME_CODE 0" << std::endl;
+	f_highGain << "# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE" << std::endl;
+
+	f_lowGain.open(m_pedestalsLowGain.c_str());
+	f_lowGain << "SCHEME_CODE 0" << std::endl;
+	f_lowGain << "# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE" << std::endl;
 
 	for(int ISkiroc = 1; ISkiroc <= MAXSKIROCS; ISkiroc++) {
 		for(int Channel = 0; Channel < SKIROC::NCHANNELS; Channel++) {
 			HGCalTBElectronicsId ElId(ISkiroc, Channel);
 			HGCalTBDetId DetId = essource_.emap_.eid2detId(ElId);
 			if(DetId.layer() != 0) {
-				fs1 << " " << Code << " " << DetId.layer() << " " << SENSOR_IX << " " << SENSOR_IV << " " << DetId.iu() << " " << DetId.iv() << " " << " " << DetId.cellType() << " " << h_digi_layer_channel[ISkiroc - 1][Channel][1]->GetMean() << std::endl;
-				fs2 << " " << Code << " " << DetId.layer() << " " << SENSOR_IX << " " << SENSOR_IV << " " << DetId.iu() << " " << DetId.iv() << " " << " " << DetId.cellType() << " " << h_digi_layer_channel[ISkiroc - 1][Channel][0]->GetMean() << std::endl;
+				f_highGain << " " << Code << " " << DetId.layer() << " " << SENSOR_IX << " " << SENSOR_IV << " " << DetId.iu() << " " << DetId.iv() << " " << " " << DetId.cellType() << " " << h_digi_layer_channel[ISkiroc - 1][Channel][1]->GetMean() << std::endl;
+				f_lowGain << " " << Code << " " << DetId.layer() << " " << SENSOR_IX << " " << SENSOR_IV << " " << DetId.iu() << " " << DetId.iv() << " " << " " << DetId.cellType() << " " << h_digi_layer_channel[ISkiroc - 1][Channel][0]->GetMean() << std::endl;
 			}
 		}
 	}
