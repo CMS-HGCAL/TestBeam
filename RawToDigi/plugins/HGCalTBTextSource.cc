@@ -40,7 +40,6 @@ bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& t
 	id = edm::EventID(m_run, m_spill, m_event);
 
 	time = (edm::TimeValue_t) m_time;
-	if(m_spill <= NSpills) return true;
 	else return false;
 }
 

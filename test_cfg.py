@@ -41,11 +41,6 @@ options.register('chainSequence',
                  VarParsing.VarParsing.varType.int,
                  '0: if runType is PED then do Digi, if runType is HGC_Run then do Digi and Reco (not implemented yet); 1: do Digi; 2: only Reco (not implemented yet); 3: Digi + highgain_correlation_cm; 4: event display sequence; 5: highgain_correlation_cm + event display sequence')
 
-options.register('nSpills',
-                 15,
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.int,
-                 'Number of spills in run')
 
 options.register('pedestalsHighGain',
                  'CondObjects/data/Ped_HighGain_L8.txt',
@@ -91,14 +86,13 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 process.load('HGCal.StandardSequences.LocalReco_cff')
 process.load('HGCal.StandardSequences.dqm_cff')
 
-
+## [source module]
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(options.runNumber), ### maybe this should be read from the file
                             #fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
                             fileNames=cms.untracked.vstring("file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber)), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
-                            nSpills=cms.untracked.uint32(options.nSpills),
 )
-
+## [source module]
 
 
 ######

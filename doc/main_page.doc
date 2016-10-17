@@ -2,7 +2,11 @@
 \mainpage 
 \tableofcontents
 
-Download instructions: \ref instructions_
+\section INSTRUCTIONS_ Download instructions
+\subpage INSTRUCTIONS_PAGE
+
+\section TXTFORMAT_ Txt file format 
+\subpage TXTFORMAT_PAGE
 
 \section INPUTS_ Input files:
  - channel mapping: file that contains the conversion between electronicID (SKIROC chip number) to detector ID (DetId)
