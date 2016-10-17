@@ -1,9 +1,13 @@
 #!/bin/bash
 file=$1
-tmpdir=/dev/shm/$USER/
+tmpdir=/dev/shm/$USER
 splitDir=$tmpdir/split
 mergeDir=$tmpdir/merge
-finalDir=tmpOut
+finalDir=$2
+
+splitDir=$splitDir/`basename $file .txt`
+mergeDir=$mergeDir/`basename $file .txt`
+finalFile=$finalDir/`basename $file` || exit
 
 #STARTING SPILL READ AT TIME (1us): 0x01EE8310 RUN: 878 EVENT: 400
 #Board header: on FMC-IO 9, trig_count in mem= 400, sk_status = 1
@@ -15,82 +19,44 @@ finalDir=tmpOut
 
 
 echo "[`basename $0`] Processing file: ${file}"
-if [  -e "${tmpdir}" ];then 
-	rm ${tmpdir}/* -Rf
+if [ -e "${finalFile}" ];then
+	echo "[`basename $0`] Final file ${finalFile} exists"
+	exit 0
 fi
-mkdir -p $tmpdir/{split,merge}/
+
+if [ ! -e "${tmpdir}" ];then 
+	mkdir -p $tmpdir/{split,merge}/ || exit 1
+fi
 
 
-awk -v baseDir=${splitDir} -f scripts/rearrangeTxtFile.awk $file
-
+awk -v baseDir=${splitDir} -f scripts/rearrangeTxtFile.awk $file || exit 1
 
 IFS=$'\n'
 for run in $splitDir/RUN_*
 do
-	spills=`ls --color=none -d $splitDir/RUN_000930/SPILL_* | sed 's|.*SPILL_||' | sort -n`
+	
 	run=`basename $run | sed 's|RUN_||'`
+	spills=`ls --color=none -d $splitDir/RUN_${run}/SPILL_* | sed 's|.*SPILL_||' | sort -n`
 	mkdir -p $mergeDir/RUN_${run}
 
 	for spill in $spills
 	do
-		echo $spill
+		echo "[`basename $0`] Merging spillID: $spill"
 		#tmp/RUN_000930/SPILL_01/SPILL_01-EVENT_000400-BOARD_23.txt
 		#boards=`ls ${dir}/RUN_${run}/SPILL_${spill}/*.txt | sed 's|.*-BOARD_||;s|.txt||' | sort | uniq`
 		
 		events=`ls ${splitDir}/RUN_${run}/SPILL_${spill}/*.txt | sed 's|.*EVENT_\([0-9]*\)-BOARD_.*|\1|;s|.txt||' | sort | uniq`
 		for event in $events
 		do
-#		echo $spill " -- " $event
-			paste $splitDir/RUN_${run}/SPILL_${spill}/SPILL_${spill}-EVENT_${event}-BOARD_* | sed -e 's|[[:space:]]RUN.*BOARD{,1}|\tBOARD|g' > $mergeDir/RUN_${run}/SPILL_${spill}-EVENT_${event}.txt
+			(paste $splitDir/RUN_${run}/SPILL_${spill}/SPILL_${spill}-EVENT_${event}-BOARD_* | sed -e 's|[[:space:]]RUN.*BOARD{,1}|\tBOARD|g' > $mergeDir/RUN_${run}/SPILL_${spill}-EVENT_${event}.txt) &
 		done
+		wait
 	done
-	cat $mergeDir/RUN_${run}/SPILL_*-EVENT_*.txt > $finalDir/RUN_$run.txt
+	cat $mergeDir/RUN_${run}/SPILL_*-EVENT_*.txt > $finalFile || exit 1
 	
 done
 
+rm {$splitDir,$mergeDir}/ -Rf
 
 
 exit 0
-cat $dir/RUN_*/SPILL_*-EVENT_*-BOARD_*.txt > $outDir/RUN_
-# take the list of spills and create the subdirs
-run_fills=`grep STARTING $file | awk '{print $7, $9}'`
-# take the list of boards and create the subdirs
-echo "[INFO] Now reordering files" 
-
-
-IFS=$'\n'
-for run_fill in ${run_fills}
-do
-	let spillID=$spillID+1
-	run=`echo $run_fill | awk '{print $2}'`
-	spill=`echo ${run_fill} | awk '{print $1}'`
-
-	dir=tmp/$spillID-$spill/
-	events=`ls -1 ${dir}/*  | sort -n | uniq | grep dat | sed 's|.dat||'`
-	boards=`ls -1 tmp/*/ |grep -v tmp | sort -n | uniq | sed '/^$/ d'`
-	echo "Spill: $spill" 
-	for event in ${events}
-	do
-		for board in ${boards}
-		do
-			f=${dir}/$board/$event.dat
-			if [ ! -e "$f" ];then continue; fi
-			cat $f >> ${outDir}/$spillID-$event.dat
-		done
-		cat ${outDir}/${spillID}-${event}.dat >> ${outDir}/${spillID}.dat
-	done
-	
-done
-
-
-# IFS=$'\n'
-
-# 	if [ ! -d "${dir}/${run}/${board}" ];then
-# 		mkdir ${dir}/${run}/${boardID}-${board} -p
-# 	fi
-
-# done
-
-
-
-
