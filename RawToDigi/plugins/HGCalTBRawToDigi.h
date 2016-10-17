@@ -12,7 +12,6 @@
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
 
 
-#include "HGCal/DataFormats/interface/SKIROCParameters.h"
 
 #include <iostream>
 

@@ -6,7 +6,7 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 
 options.register('dataFolder',
-                 '/afs/cern.ch/work/r/rchatter/Final_Event_Builder/CMSSW_8_0_1/src/HGCal/tmpOut/',
+                 './',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw text input')
@@ -67,6 +67,7 @@ if not os.path.isdir(options.outputFolder):
     os.system("mkdir -p " + options.outputFolder)
 
 if (options.runType != "PED" and options.runType != "HGCRun"):
+    print options
     sys.exit("Error: only runtypes PED and HGCRun supported for now; given runType was %s"%(options.runType))
 
 if (options.runType == "PED"):

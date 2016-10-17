@@ -78,7 +78,7 @@ class HGCalTBTextSource : public edm::ProducerSourceFromFiles
 
 public:
 	explicit HGCalTBTextSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :  edm::ProducerSourceFromFiles(pset, desc, true),
-		m_file(0),
+		m_file(0)
 	{
 		m_sourceId = pset.getUntrackedParameter<int>("fed", 1000); /// \todo read from file
 		produces<FEDRawDataCollection>();
@@ -103,7 +103,7 @@ private:
 	bool readHeader(void);
 	bool readLines(void);
 
-	std::array< std::array< std::vector < unsigned int> , MAXLAYERS>, MAXSKIROCS_PER_BOARD> m_lines;
+	std::array< std::array< std::vector < unsigned int> ,  MAXSKIROCS_PER_BOARD >, MAXLAYERS > m_lines;
 	FILE* m_file;
 	unsigned int m_time;
 	unsigned int m_event, m_run, m_spill, max_boards;

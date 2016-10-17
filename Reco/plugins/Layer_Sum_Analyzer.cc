@@ -40,7 +40,6 @@
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
-#include "HGCal/Geometry/interface/HGCalTBSpillParameters.h"
 
 // chooses which particle to look at. Inverts threshold filtering.
 // if nothing is selected, electrons are the default

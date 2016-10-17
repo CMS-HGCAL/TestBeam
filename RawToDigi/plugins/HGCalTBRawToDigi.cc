@@ -1,8 +1,15 @@
-#include <iostream>
 #include "HGCal/RawToDigi/plugins/HGCalTBRawToDigi.h"
+
+// provides the maximum number of layers and number of skirocs per board
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
-#include "HGCal/Geometry/interface/HGCalTBSpillParameters.h"
-using namespace std;
+
+// provide the number of channels in a skiroc and number of samples
+#include "HGCal/DataFormats/interface/SKIROCParameters.h"
+
+//#define DEBUG
+#ifdef DEBUG
+#include <iostream>
+#endif
 
 unsigned int gray_to_binary (unsigned int gray);
 
@@ -42,9 +49,7 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 		digis = std::auto_ptr<SKIROC2DigiCollection>(new SKIROC2DigiCollection(nSkirocs * SKIROC::NCHANNELS * SKIROC::MAXSAMPLES));
 		const uint16_t* pdata = (const uint16_t*)(fed.data());
 
-		// we start from the back...
-		size_t ptr = fed.size() / sizeof(uint16_t) - 1;
-		size_t ski = 0;
+		size_t ski = 0; // the skirocs have an absolute numbering, start counting from the first board till the last
 		for (unsigned int i_board = 0 ; i_board < nBoards; ++i_board) {
 			for(size_t i_skiroc = 0; i_skiroc < MAXSKIROCS_PER_BOARD; ++i_skiroc) {
 				for (int ichan = 0; ichan < SKIROC::NCHANNELS; ichan++) {
@@ -53,13 +58,13 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 						HGCalTBDetId did = essource_.emap_.eid2detId(eid);
 						digis->addDataFrame(did);
 #ifdef DEBUG
-						if(i_board == 0 && i_skiroc == 0) std::cout << (pdata & 0xFFF) << (pdata++ & 0xFFF) << (pdata & 0xFFF) << std::endl;
+						if(i_board == 0) std::cout << (*pdata & 0xFFF) << "\t" << (*(pdata+1) & 0xFFF) << "\t" << (*(pdata+2) & 0xFFF) << std::endl;
 #endif
-						digis->backDataFrame().setSample(0, gray_to_binary(pdata++ & 0xFFF), gray_to_binary( pdata++ & 0xFFF), 0);
-
+						digis->backDataFrame().setSample(0, gray_to_binary(*(pdata) & 0xFFF), gray_to_binary( *(pdata+1) & 0xFFF), 0);
+						pdata++;pdata++;
 					}
 				}
-				++ski;
+				++ski; //increment the absolute ID of the skiroc
 			}
 		}
 

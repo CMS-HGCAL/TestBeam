@@ -4,8 +4,6 @@
 #include "stdlib.h"
 #include "HGCal/RawToDigi/plugins/HGCalTBTextSource.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
-#include "HGCal/Geometry/interface/HGCalTBSpillParameters.h"
-using namespace std;
 #define TXTLINES 69
 
 //#define DEBUG
@@ -42,7 +40,7 @@ bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& t
 	id = edm::EventID(m_run, m_spill, m_event);
 
 	time = (edm::TimeValue_t) m_time;
-	else return false;
+	return true;
 }
 
 // sets m_run, m_spill, m_even, m_time
@@ -75,7 +73,9 @@ bool HGCalTBTextSource::readLines()
 {
 	max_boards = 0;
 	for( auto& board : m_lines) {
-		board.clear();
+		for( auto& skiroc : board){
+			skiroc.clear();
+		}
 	}
 
 	char buff[1024], buff_SK[1024];
@@ -86,25 +86,26 @@ bool HGCalTBTextSource::readLines()
 	for(unsigned int i = 0; i < TXTLINES && !feof(m_file); ++i) {
 		buff[0] = 0;
 		fgets(buff, 1000, m_file);
+		if((i < 1) || (i > 64)) continue;// Only these are data words, the rest dont interest us for now
 		// loop over one line of the text file
 		std::string b = buff;
 		std::istringstream buffer(b);
 		unsigned int board_counter = 0;
-		if((i < 1) || (i > 64)) continue;// Only these are data words, the rest dont interest us for now
-		while( buffer.peek() != EOF && buffer.good()) {
+
+		while( buffer.peek() != '\n' && buffer.good()) {
 			//continue for all the boards
 			for(size_t iSkiroc = 0; iSkiroc < MAXSKIROCS_PER_BOARD; ++iSkiroc) {
 				// read the data of the one skiroc of one board
 				buffer >> buff_SK;
 				data_sk = strtoul(buff_SK, NULL, 0);
 				m_lines[board_counter][iSkiroc].push_back(data_sk);
-				//m_lines[board_counter].push_back(data_sk1);
 			}
 			++board_counter;
 			if(board_counter > max_boards) max_boards = board_counter;
 		}
+
 	}
-	return !m_lines.empty();
+	return true;
 }
 
 /** DATA in the FEDRAWDATA in the following order:
@@ -118,10 +119,10 @@ void HGCalTBTextSource::produce(edm::Event & e)
 	std::vector<uint16_t> skiwords;
 	// make sure there are an even number of 32-bit-words (a round number of 64 bit words...
 
-	for (unsigned int i_board = 0 ; i_board < max_boards; ++i_board) {
+	for (size_t i_board = 0 ; i_board < max_boards; ++i_board) {
 		for(size_t i_skiroc = 0; i_skiroc < MAXSKIROCS_PER_BOARD; ++i_skiroc) {
-			auto board = m_lines[i_board][i_skiroc];
-			for (auto skiword : board) {
+			auto& board = m_lines[i_board][i_skiroc];
+			for (auto& skiword : board) {
 				skiwords.push_back(skiword >> 16);
 				skiwords.push_back(skiword);
 			}
