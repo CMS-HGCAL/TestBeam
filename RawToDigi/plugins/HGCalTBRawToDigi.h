@@ -19,6 +19,9 @@
 /**
  * \class HGCal/RawToDigi/plugins/HGCalTBRawToDigi.h HGCalTBRawToDigi.h HGCalTBRawToDigi
  * \brief Produces a digi collection starting from FEDRawData
+ * \author Shervin Nourbakhsh (UMN)
+ * \author Rajdeep Mohan Chatterjee (UMN)
+ * \author Jeremy Mans (UMN)
  */
 
 

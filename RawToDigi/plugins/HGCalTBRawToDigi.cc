@@ -5,6 +5,7 @@
 using namespace std;
 
 unsigned int gray_to_binary (unsigned int gray);
+
 HGCalTBRawToDigi::HGCalTBRawToDigi(edm::ParameterSet const& conf):
 	dataTag_(conf.getParameter<edm::InputTag>("InputLabel")),
 	fedId_(conf.getUntrackedParameter<int>("fedId")),
@@ -36,52 +37,32 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 	const FEDRawData& fed = rawraw->FEDData(fedId_);
 	if (fed.size() != 0) { /// \todo Exception if 0????
 		// we can figure out the number of samples from the size of the raw data
-		int nsamples = fed.size() / (sizeof(uint16_t) * SKIROC::NCHANNELS * 2); // 2 is for ADC and TDC
-		digis = std::auto_ptr<SKIROC2DigiCollection>(new SKIROC2DigiCollection(nsamples));
+		size_t nSkirocs = fed.size() / (sizeof(uint16_t) * SKIROC::NCHANNELS * SKIROC::MAXSAMPLES);
+		size_t nBoards = nSkirocs / MAXSKIROCS_PER_BOARD;
+		digis = std::auto_ptr<SKIROC2DigiCollection>(new SKIROC2DigiCollection(nSkirocs * SKIROC::NCHANNELS * SKIROC::MAXSAMPLES));
 		const uint16_t* pdata = (const uint16_t*)(fed.data());
 
 		// we start from the back...
-		int ptr = fed.size() / sizeof(uint16_t) - 1;
-		/*
-				printf("Starting on SKIROC %x\n", pdata[ptr]);
-				ptr--; // now we are pointing at a relatively-useless header word
-				ptr--; // now we are pointing at the first TDC word
-		*/
+		size_t ptr = fed.size() / sizeof(uint16_t) - 1;
+		size_t ski = 0;
+		for (unsigned int i_board = 0 ; i_board < nBoards; ++i_board) {
+			for(size_t i_skiroc = 0; i_skiroc < MAXSKIROCS_PER_BOARD; ++i_skiroc) {
+				for (int ichan = 0; ichan < SKIROC::NCHANNELS; ichan++) {
+					HGCalTBElectronicsId eid(ski, ichan);
+					if (essource_.emap_.existsEId(eid.rawId())) {
+						HGCalTBDetId did = essource_.emap_.eid2detId(eid);
+						digis->addDataFrame(did);
+#ifdef DEBUG
+						if(i_board == 0 && i_skiroc == 0) std::cout << (pdata & 0xFFF) << (pdata++ & 0xFFF) << (pdata & 0xFFF) << std::endl;
+#endif
+						digis->backDataFrame().setSample(0, gray_to_binary(pdata++ & 0xFFF), gray_to_binary( pdata++ & 0xFFF), 0);
 
-		for (int ichan = 0; ichan < SKIROC::NCHANNELS; ichan++) {
-			for (int ski = MAXSKIROCS; ski >= 0; ski--) {
-				HGCalTBElectronicsId eid(ski, ichan);
-				if (!essource_.emap_.existsEId(eid.rawId())) {
-//					std::cout << "We do not have a mapping for " << eid;
-				} else {
-					HGCalTBDetId did = essource_.emap_.eid2detId(eid);
-					digis->addDataFrame(did);
-					if((ski % 2) == 0){
-						if((ichan % 2) == 0){
-							ptradc1 = ptr - ichan*2 - (((MAXSKIROCS - ski)/2)*(4*SKIROC::NCHANNELS));
-							ptradc2 = ptr - ichan*2 - (((MAXSKIROCS - ski)/2)*(4*SKIROC::NCHANNELS)) -  (2*SKIROC::NCHANNELS);
-						}
-						else{
-                                                        ptradc1 = ptr - (ichan*2 - 1) - (((MAXSKIROCS - ski)/2)*(4*SKIROC::NCHANNELS));
-                                                        ptradc2 = ptr - (ichan*2 - 1) - (((MAXSKIROCS - ski)/2)*(4*SKIROC::NCHANNELS)) -  (2*SKIROC::NCHANNELS);
-                                                }
 					}
-					else{
-                                                if((ichan % 2) == 0){
-                                                        ptradc1 = ptr - (ichan*2 + 2) - (((MAXSKIROCS - ski)/2)*(4*SKIROC::NCHANNELS));
-                                                        ptradc2 = ptr - (ichan*2 + 2) - (((MAXSKIROCS - ski)/2)*(4*SKIROC::NCHANNELS)) -  (2*SKIROC::NCHANNELS);
-                                                }
-                                                else{
-                                                        ptradc1 = ptr - (ichan*2 + 1) - (((MAXSKIROCS - ski)/2)*(4*SKIROC::NCHANNELS));
-                                                        ptradc2 = ptr - (ichan*2 + 1) - (((MAXSKIROCS - ski)/2)*(4*SKIROC::NCHANNELS)) -  (2*SKIROC::NCHANNELS);
-                                                }
-                                        }
-					digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF), gray_to_binary( pdata[ptradc2] & 0xFFF), 0);
-//                                        cout<<endl<<dec<<"SKI= "<<ski<<" chan= "<<ichan<<" "<<ptradc1<<" "<<ptradc2<<" "<<" High= "<<hex<<(pdata[ptradc1])<<dec<<"  "<<gray_to_binary(pdata[ptradc1] & 0xFFF)<<" Low= "<<hex<<( pdata[ptradc2] & 0xFFF)<<"  "<<dec<<gray_to_binary( pdata[ptradc2] & 0xFFF)<<endl;
 				}
-			}//loop over skirocs
+				++ski;
+			}
 		}
-//                 }
+
 
 	}// fed size > 0
 

@@ -46,30 +46,32 @@
 	\section EXAMPLE Usage example in your python cfg:
 	\code
 	process.source = cms.Source("HGCalTBTextSource",
-	  fileNames=cms.untracked.vstring("file:myfile1.txt"), 
+	  fileNames=cms.untracked.vstring("file:myfile1.txt"),
 	)
 	\endcode
 
 	Return to the main page: \ref index
 
-	\example test_cfg.py 
+	\example test_cfg.py
 
 */
 
 /**
  * \class HGCalTBTextSource HGCal/RawToDigi/plugins/HGCalTBTextSource.h
  *
- * \brief convert data from txt file to FEDRawData
+ * \brief Convert data from txt file to FEDRawData
  *
  * \details
  * For info about the txt input format see: \ref TXTFORMAT_PAGE
- * \author Shervin Nourbakhsh
- * \author Rajdeep Mohan Chatterjee
- * \author Jeremy Mans
+ * \author Shervin Nourbakhsh (UMN)
+ * \author Rajdeep Mohan Chatterjee (UMN)
+ * \author Jeremy Mans (UMN)
  *
  * \todo fedID is taken from cfg, it should be taken from the txt file
  *
- * \example test_cfg.py source module
+ * DATA in the FEDRAWDATA in the following order:
+ * BOARD, SKIROC, CHANNEL
+ * so [Board0 [Skiroc0 [Channel0][Channel1][Channel2]...][Skiroc1 [Channel0][Channel1][Channel2]...]]
  */
 class HGCalTBTextSource : public edm::ProducerSourceFromFiles
 {
@@ -92,11 +94,16 @@ public:
 
 private:
 	bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&);
-	virtual void produce(edm::Event & e);
+
+	/** DATA in the FEDRAWDATA in the following order:
+	 * BOARD, SKIROC, CHANNEL
+	 * so [Board0 [Skiroc0 [Channel0][Channel1][Channel2]...][Skiroc1 [Channel0][Channel1][Channel2]...]]
+	 */
+	virtual void produce(edm::Event & e); ///test
 	bool readHeader(void);
 	bool readLines(void);
 
-	std::array< std::vector < unsigned int> , MAXLAYERS> m_lines;
+	std::array< std::array< std::vector < unsigned int> , MAXLAYERS>, MAXSKIROCS_PER_BOARD> m_lines;
 	FILE* m_file;
 	unsigned int m_time;
 	unsigned int m_event, m_run, m_spill, max_boards;

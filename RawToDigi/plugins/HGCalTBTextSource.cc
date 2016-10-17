@@ -6,6 +6,8 @@
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include "HGCal/Geometry/interface/HGCalTBSpillParameters.h"
 using namespace std;
+#define TXTLINES 69
+
 //#define DEBUG
 /**
 RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=09	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=12	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=14	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=17	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=18	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=19	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=22	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=23
@@ -76,12 +78,12 @@ bool HGCalTBTextSource::readLines()
 		board.clear();
 	}
 
-	char buff[1024], buff_SK0[1024], buff_SK1[1024];
+	char buff[1024], buff_SK[1024];
 	buff[0] = 0;
-	unsigned int data_sk0, data_sk1;
+	unsigned int data_sk;
 
 	// loop over all the lines
-	for(unsigned int i = 0; i < 69 && !feof(m_file); ++i) {
+	for(unsigned int i = 0; i < TXTLINES && !feof(m_file); ++i) {
 		buff[0] = 0;
 		fgets(buff, 1000, m_file);
 		// loop over one line of the text file
@@ -89,25 +91,26 @@ bool HGCalTBTextSource::readLines()
 		std::istringstream buffer(b);
 		unsigned int board_counter = 0;
 		if((i < 1) || (i > 64)) continue;// Only these are data words, the rest dont interest us for now
-		while( buffer.peek() != EOF && board_counter < MAXLAYERS) { //buffer.good() gives compilation errors
-			// read the data of the two skirocs of one board
-			buffer >> buff_SK1;
-			buffer >> buff_SK0;
-			data_sk0 = strtoul(buff_SK0,NULL,0);
-			data_sk1 = strtoul(buff_SK1,NULL,0);
+		while( buffer.peek() != EOF && buffer.good()) {
 			//continue for all the boards
-			// extra security
-			m_lines[board_counter].push_back(data_sk0);
-			m_lines[board_counter].push_back(data_sk1);
-			
+			for(size_t iSkiroc = 0; iSkiroc < MAXSKIROCS_PER_BOARD; ++iSkiroc) {
+				// read the data of the one skiroc of one board
+				buffer >> buff_SK;
+				data_sk = strtoul(buff_SK, NULL, 0);
+				m_lines[board_counter][iSkiroc].push_back(data_sk);
+				//m_lines[board_counter].push_back(data_sk1);
+			}
 			++board_counter;
 			if(board_counter > max_boards) max_boards = board_counter;
 		}
 	}
-//		if(sscanf(buffer, "Event header for event %x with (200ns) timestamp %x", &tmp_event, &m_time) == 2) {
 	return !m_lines.empty();
 }
 
+/** DATA in the FEDRAWDATA in the following order:
+ * BOARD, SKIROC, CHANNEL
+ * so [Board0 [Skiroc0 [Channel0][Channel1][Channel2]...][Skiroc1 [Channel0][Channel1][Channel2]...]]
+ */
 void HGCalTBTextSource::produce(edm::Event & e)
 {
 	std::auto_ptr<FEDRawDataCollection> bare_product(new  FEDRawDataCollection());
@@ -116,10 +119,12 @@ void HGCalTBTextSource::produce(edm::Event & e)
 	// make sure there are an even number of 32-bit-words (a round number of 64 bit words...
 
 	for (unsigned int i_board = 0 ; i_board < max_boards; ++i_board) {
-		auto board = m_lines[i_board];
-		for (auto skiword : board) {
-                        skiwords.push_back(skiword >> 16);
-			skiwords.push_back(skiword);
+		for(size_t i_skiroc = 0; i_skiroc < MAXSKIROCS_PER_BOARD; ++i_skiroc) {
+			auto board = m_lines[i_board][i_skiroc];
+			for (auto skiword : board) {
+				skiwords.push_back(skiword >> 16);
+				skiwords.push_back(skiword);
+			}
 		}
 	}
 
@@ -138,7 +143,6 @@ void HGCalTBTextSource::fillDescriptions(edm::ConfigurationDescriptions& descrip
 	desc.setComment("TEST");
 	desc.addUntracked<int>("run", 101);
 	desc.addUntracked<std::vector<std::string> >("fileNames");
-	desc.addUntracked<unsigned int>("nSpills", 6);
 	descriptions.add("source", desc);
 }
 
