@@ -58,10 +58,11 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 						HGCalTBDetId did = essource_.emap_.eid2detId(eid);
 						digis->addDataFrame(did);
 #ifdef DEBUG
-						if(i_board == 0) std::cout << (*pdata & 0xFFF) << "\t" << (*(pdata+1) & 0xFFF) << "\t" << (*(pdata+2) & 0xFFF) << std::endl;
+						if(i_board == 0) std::cout << (*pdata & 0xFFF) << "\t" << (*(pdata + 1) & 0xFFF) << "\t" << (*(pdata + 2) & 0xFFF) << std::endl;
 #endif
-						digis->backDataFrame().setSample(0, gray_to_binary(*(pdata) & 0xFFF), gray_to_binary( *(pdata+1) & 0xFFF), 0);
-						pdata++;pdata++;
+						digis->backDataFrame().setSample(0, gray_to_binary(*(pdata) & 0xFFF), gray_to_binary( *(pdata + 1) & 0xFFF), 0);
+						pdata++;
+						pdata++;
 					}
 				}
 				++ski; //increment the absolute ID of the skiroc

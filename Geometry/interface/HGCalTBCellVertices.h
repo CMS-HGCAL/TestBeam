@@ -25,8 +25,8 @@ public:
 	HGCalTBCellVertices();	///< Constructor from cell \b iu & \b iv, valid sensorSizes are 128 and 256
 
 	std::vector<std::pair<double, double>> GetCellCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize, bool flipX = false); ///< returns the coordinates of each vertex of cell in the lab frame \b (x,y)
-	
-	
+
+
 	inline std::vector<std::pair<double, double>> GetCellCoordinatesForPlots(const HGCalTBDetId& detId, int sensorSize)
 	{
 		return GetCellCoordinatesForPlots(detId.layer(), detId.sensorIU(), detId.sensorIV(), detId.iu(), detId.iv(), sensorSize);

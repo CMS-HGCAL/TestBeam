@@ -17,8 +17,8 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg)
 
 	HGCalCondObjectTextIO io(0);
 	edm::FileInPath fip(_mapFile);
-        if (!io.load(fip.fullPath(), essource_.emap_)) {
-	  throw cms::Exception("Unable to load electronics map");
+	if (!io.load(fip.fullPath(), essource_.emap_)) {
+		throw cms::Exception("Unable to load electronics map");
 	};
 
 }

@@ -73,7 +73,7 @@ bool HGCalTBTextSource::readLines()
 {
 	max_boards = 0;
 	for( auto& board : m_lines) {
-		for( auto& skiroc : board){
+		for( auto& skiroc : board) {
 			skiroc.clear();
 		}
 	}

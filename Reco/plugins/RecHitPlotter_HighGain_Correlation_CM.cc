@@ -209,7 +209,7 @@ RecHitPlotter_HighGain_Correlation_CM::analyze(const edm::Event& event, const ed
 //             double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
 //               Cell_counter++;
 //               Average_Pedestal_Per_Event_Full += RecHit1.energyHigh();
-               if(RecHit1.energyHigh() > 32.) continue;
+		if(RecHit1.energyHigh() > 32.) continue;
 		if((RecHit1.id()).cellType() == 0) {
 //                       Full_Cell[(RecHit1.id()).layer() - 1]->Fill(RecHit1.energyHigh());
 			Cell_counter[(RecHit1.id()).layer() - 1]++;

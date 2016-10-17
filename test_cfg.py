@@ -147,12 +147,14 @@ process.p = cms.Path()
 for seq in options.chainSequence:
     if(seq == "DIGI"):
         process.p *= process.hgcaltbdigis
-    if(seq == "DIGIPLOT" or seq == "PED"):
+    if(seq == "DIGIDQM" or seq == "PED"):
         process.p *= process.hgcaltbdigisplotter
         if(seq == "PED"):
             process.hgcaltbdigisplotter.dumpNewPedestals = cms.untracked.bool(True)
     if(seq == "RECO"):
         process.p *= process.hgcaltbrechits
+    if(seq == "RECODQM"):
+        process.p *= process.hgcaltbrechitsplotter_highgain_new
 # if (options.chainSequence == 1):
 #     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
 # elif (options.chainSequence == 3):

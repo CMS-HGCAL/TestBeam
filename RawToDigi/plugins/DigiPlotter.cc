@@ -6,7 +6,7 @@
 /**\class DigiPlotter DigiPlotter.cc HGCal/DigiPlotter/plugins/DigiPlotter.cc
 
    Description: Plugin to make 2D and 1D histograms of digis
-   
+
    Implementation:
    \author Rajdeep Mohan Chatterjee
    \author Shervin Nourbakhsh
@@ -162,13 +162,13 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig):
 					}
 //Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
 					h_digi_layer[i_sample][nlayers]->AddBin(CellXY.size(), CellXs, CellYs);
-					
+
 
 				}//loop over iu
 			}//loop over iv
 		}//loop over nlayers
 	}//loop over i_samples
-	
+
 	m_pedestalsHighGain = iConfig.getUntrackedParameter<std::string>("pedestalsHighGain", "");
 	m_pedestalsLowGain = iConfig.getUntrackedParameter<std::string>("pedestalsLowGain", "");
 	_dumpNewPedestals  = iConfig.getUntrackedParameter<bool>("dumpNewPedestals", false);
@@ -220,7 +220,7 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				uint32_t EID = essource_.emap_.detId2eid(SKI.detid());
 				HGCalTBElectronicsId eid(EID);
 				if(!IsCellValid.iu_iv_valid(detId, sensorsize))  continue;
-;
+				;
 //                                ADC_Sum_SKI_Layer[eid.iskiroc() - 2*(n_layer - 1) - 1][n_layer - 1][1] += SKI_1[0].adcHigh();
 //                                ADC_Sum_SKI_Layer[eid.iskiroc() - 2*(n_layer - 1) - 1][n_layer - 1][0] += SKI_1[0].adcLow();
 //                                Cell_Count_SKI_Layer[eid.iskiroc() - 2*(n_layer - 1) - 1][n_layer - 1] += 1;
@@ -250,7 +250,7 @@ DigiPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 				h_digi_layer_profile[nsample][detId.layer() - 1]->Fill(counter2++, SKI[nsample - 1].adcHigh(), 1);
 				if(eid.iskiroc() > 0)	h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][nsample]->Fill(SKI[nsample - 1].adcHigh());
 			}
-			
+
 		}
 	} else {
 		edm::LogWarning("DQM") << "No SKIROC2 Digis";
@@ -274,30 +274,30 @@ DigiPlotter::beginJob()
 void
 DigiPlotter::endJob()
 {
-	if(_dumpNewPedestals){
-	int Code = 0;
-	int SENSOR_IX = 0;
-	int SENSOR_IV = 0;
-	std::ofstream f_highGain, f_lowGain;
+	if(_dumpNewPedestals) {
+		int Code = 0;
+		int SENSOR_IX = 0;
+		int SENSOR_IV = 0;
+		std::ofstream f_highGain, f_lowGain;
 
-	f_highGain.open(m_pedestalsHighGain.c_str());
-	f_highGain << "SCHEME_CODE 0" << std::endl;
-	f_highGain << "# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE" << std::endl;
+		f_highGain.open(m_pedestalsHighGain.c_str());
+		f_highGain << "SCHEME_CODE 0" << std::endl;
+		f_highGain << "# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE" << std::endl;
 
-	f_lowGain.open(m_pedestalsLowGain.c_str());
-	f_lowGain << "SCHEME_CODE 0" << std::endl;
-	f_lowGain << "# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE" << std::endl;
+		f_lowGain.open(m_pedestalsLowGain.c_str());
+		f_lowGain << "SCHEME_CODE 0" << std::endl;
+		f_lowGain << "# CODE  LAYER SENSOR_IX SENSOR_IV  IX  IV TYPE  VALUE" << std::endl;
 
-	for(int ISkiroc = 1; ISkiroc <= MAXSKIROCS; ISkiroc++) {
-		for(int Channel = 0; Channel < SKIROC::NCHANNELS; Channel++) {
-			HGCalTBElectronicsId ElId(ISkiroc, Channel);
-			HGCalTBDetId DetId = essource_.emap_.eid2detId(ElId);
-			if(DetId.layer() != 0) {
-				f_highGain << " " << Code << " " << DetId.layer() << " " << SENSOR_IX << " " << SENSOR_IV << " " << DetId.iu() << " " << DetId.iv() << " " << " " << DetId.cellType() << " " << h_digi_layer_channel[ISkiroc - 1][Channel][1]->GetMean() << std::endl;
-				f_lowGain << " " << Code << " " << DetId.layer() << " " << SENSOR_IX << " " << SENSOR_IV << " " << DetId.iu() << " " << DetId.iv() << " " << " " << DetId.cellType() << " " << h_digi_layer_channel[ISkiroc - 1][Channel][0]->GetMean() << std::endl;
+		for(int ISkiroc = 1; ISkiroc <= MAXSKIROCS; ISkiroc++) {
+			for(int Channel = 0; Channel < SKIROC::NCHANNELS; Channel++) {
+				HGCalTBElectronicsId ElId(ISkiroc, Channel);
+				HGCalTBDetId DetId = essource_.emap_.eid2detId(ElId);
+				if(DetId.layer() != 0) {
+					f_highGain << " " << Code << " " << DetId.layer() << " " << SENSOR_IX << " " << SENSOR_IV << " " << DetId.iu() << " " << DetId.iv() << " " << " " << DetId.cellType() << " " << h_digi_layer_channel[ISkiroc - 1][Channel][1]->GetMean() << std::endl;
+					f_lowGain << " " << Code << " " << DetId.layer() << " " << SENSOR_IX << " " << SENSOR_IV << " " << DetId.iu() << " " << DetId.iv() << " " << " " << DetId.cellType() << " " << h_digi_layer_channel[ISkiroc - 1][Channel][0]->GetMean() << std::endl;
+				}
 			}
 		}
-	}
 	}
 }
 
