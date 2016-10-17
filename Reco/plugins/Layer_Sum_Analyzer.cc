@@ -309,7 +309,7 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     Energy_LowGain_2D->Fill(Rechit.energy(), Rechit.energyHigh());
     
     // needed? FIXME
-    if(n_cell_type != 0) continue;
+    if(n_cell_type != 0 && n_cell_type != 4) continue;
     
     if(Rechit.energy() > max[n_layer]) {      
       max[n_layer] = Rechit.energy();
@@ -326,9 +326,10 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
   //	std::cout << " >>> found commonmode = " << commonmode << std::endl;
 
 
-  for(int iS=0; iS<MAXSKIROCS; ++iS){
-    commonmode[iS] = commonmode[iS]/cm_num[iS];
-    //    std::cout << " value = " << commonmode[iS] << std::endl;
+  for(int iS=0; iS<MAXSKIROCS/2.; ++iS){
+    commonmode[2*iS] = (commonmode[2*iS]+commonmode[2*iS+1])/(cm_num[2*iS]+cm_num[2*iS+1]);
+    commonmode[2*iS+1] = (commonmode[2*iS]+commonmode[2*iS+1])/(cm_num[2*iS]+cm_num[2*iS+1]);
+    //    std::cout << " 2*iS = " << 2*iS << " value = " << commonmode[iS] << std::endl;
   }
 
 
@@ -364,13 +365,14 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit1.id()).layer(), (Rechit1.id()).sensorIU(), (Rechit1.id()).sensorIV(), (Rechit1.id()).iu(), (Rechit1.id()).iv(), sensorsize);
 
     //FIXME >> needed?
-    if(eCellType != 0) continue;
+    if(eCellType != 0 && eCellType != 1 && eCellType != 4) continue;
 
     //    std::cout << Rechit1.energy() << std::endl;
 
     radius[eLayer] = sqrt( pow(CellCentreXY.first - max_x[eLayer], 2) + pow(CellCentreXY.second - max_y[eLayer], 2) );
 
     float energyCMsub = (Rechit1.energy() - commonmode[eSkiroc]) / ADCtoMIP[eSkiroc];
+    if(eCellType == 1) energyCMsub = (Rechit1.energy()) / ADCtoMIP[eSkiroc];
     //    std::cout << "val = " << commonmode[eSkiroc] << std::endl;
     if(energyCMsub > CMTHRESHOLD){
       allcells_sum[eLayer] += energyCMsub;
