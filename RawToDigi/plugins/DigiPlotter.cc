@@ -89,6 +89,7 @@ private:
 	int Cell_Count_SKI_Layer[2][4]; // 2 SKIROCs per layer, High gain and low gain ADC HARD CODED
 	std::string m_pedestalsHighGain;
 	std::string m_pedestalsLowGain;
+	bool _dumpNewPedestals;
 };
 
 //
@@ -102,7 +103,8 @@ private:
 //
 // constructors and destructor
 //
-DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
+DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig):
+	_dumpNewPedestals(false)
 {
 	//now do what ever initialization is needed
 	usesResource("TFileService");
@@ -169,6 +171,7 @@ DigiPlotter::DigiPlotter(const edm::ParameterSet& iConfig)
 	
 	m_pedestalsHighGain = iConfig.getUntrackedParameter<std::string>("pedestalsHighGain", "");
 	m_pedestalsLowGain = iConfig.getUntrackedParameter<std::string>("pedestalsLowGain", "");
+	_dumpNewPedestals  = iConfig.getUntrackedParameter<bool>("dumpNewPedestals", false);
 }//contructor ends here
 
 
@@ -271,6 +274,7 @@ DigiPlotter::beginJob()
 void
 DigiPlotter::endJob()
 {
+	if(_dumpNewPedestals){
 	int Code = 0;
 	int SENSOR_IX = 0;
 	int SENSOR_IV = 0;
@@ -294,6 +298,7 @@ DigiPlotter::endJob()
 			}
 		}
 	}
+	}
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
@@ -308,6 +313,7 @@ DigiPlotter::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
 	// descriptions.addDefault(desc);
 	desc.addUntracked<std::string>("pedestalsHighGain", "");
 	desc.addUntracked<std::string>("pedestalsLowGain", "");
+	desc.addUntracked<bool>("dumpNewPedestals", false);
 	descriptions.add("hgcaltbdigisplotter", desc);
 }
 

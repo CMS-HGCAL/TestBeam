@@ -149,6 +149,8 @@ for seq in options.chainSequence:
         process.p *= process.hgcaltbdigis
     if(seq == "DIGIPLOT" or seq == "PED"):
         process.p *= process.hgcaltbdigisplotter
+        if(seq == "PED"):
+            process.hgcaltbdigisplotter.dumpNewPedestals = cms.untracked.bool(True)
     if(seq == "RECO"):
         process.p *= process.hgcaltbrechits
 # if (options.chainSequence == 1):
