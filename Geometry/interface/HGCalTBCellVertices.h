@@ -26,6 +26,12 @@ public:
 
 	std::vector<std::pair<double, double>> GetCellCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize, bool flipX = false); ///< returns the coordinates of each vertex of cell in the lab frame \b (x,y)
 
+
+	inline std::vector<std::pair<double, double>> GetCellCoordinatesForPlots(const HGCalTBDetId& detId, int sensorSize)
+	{
+		return GetCellCoordinatesForPlots(detId.layer(), detId.sensorIU(), detId.sensorIV(), detId.iu(), detId.iv(), sensorSize);
+	}
+
 	inline std::vector<std::pair<double, double>> GetCellCoordinatesForPlots(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize)
 	{
 		return GetCellCoordinates(layer, sensor_iu, sensor_iv, iu, iv, sensorsize, true);
@@ -33,6 +39,10 @@ public:
 
 	std::pair<double, double> GetCellCentreCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize, bool flipX = false); ///< returns the center of the cell in absolute coordinates: \b (x,y)
 
+	inline 	std::pair<double, double> GetCellCentreCoordinatesForPlots(const HGCalTBDetId& detId, int sensorSize)
+	{
+		return GetCellCentreCoordinatesForPlots(detId.layer(), detId.sensorIU(), detId.sensorIV(), detId.iu(), detId.iv(), sensorSize);
+	}
 	inline 	std::pair<double, double> GetCellCentreCoordinatesForPlots(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize)
 	{
 		return GetCellCentreCoordinates(layer, sensor_iu, sensor_iv, iu, iv, sensorsize, true);
@@ -41,6 +51,7 @@ public:
 
 //  void CellType(int iu, int v, bool ValidFlag);// 1 for full hex, 2 for half hex and 3 for the pentagons(to be implemented later)
 private:
+
 	double a = HGCAL_TB_CELL::FULL_CELL_SIDE; // Size in terms of 1 unit of x/y co-ordinates of a cell side which is 0.064 cm
 	double x_a = sqrt(3) / 2; // cosine pi/6
 	double y_a = 1 / 2.; // sine pi/6

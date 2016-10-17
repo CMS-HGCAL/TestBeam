@@ -12,13 +12,15 @@
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
 
 
-#include "HGCal/DataFormats/interface/SKIROCParameters.h"
 
 #include <iostream>
 
 /**
  * \class HGCal/RawToDigi/plugins/HGCalTBRawToDigi.h HGCalTBRawToDigi.h HGCalTBRawToDigi
  * \brief Produces a digi collection starting from FEDRawData
+ * \author Shervin Nourbakhsh (UMN)
+ * \author Rajdeep Mohan Chatterjee (UMN)
+ * \author Jeremy Mans (UMN)
  */
 
 
@@ -36,5 +38,5 @@ private:
 	struct {
 		HGCalElectronicsMap emap_;
 	} essource_;
-
+	int ptradc1, ptradc2;// location HG,LG SKI,Channel in the pushed vector of 16 bit words.
 };

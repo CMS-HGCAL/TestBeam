@@ -6,7 +6,9 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 
 options.register('dataFolder',
-                 './',
+                 #'/afs/cern.ch/work/r/rchatter/Final_Event_Builder/CMSSW_8_0_1/src/HGCal/tmpOut/',
+                 #'/afs/cern.ch/user/a/amartell/public/HGCal/TB_data/'
+                 'tmpOut/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw text input')
@@ -36,11 +38,16 @@ options.register('runType',
                  'Type of run: HGCRun for run with beam on, PED for pedestal run, Unknown otherwise')
 
 options.register('chainSequence',
-                 "",
-                 VarParsing.VarParsing.multiplicity.list,
-                 VarParsing.VarParsing.varType.string,
+                 0,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
                  '0: if runType is PED then do Digi, if runType is HGC_Run then do Digi and Reco (not implemented yet); 1: do Digi; 2: only Reco (not implemented yet); 3: Digi + highgain_correlation_cm; 4: event display sequence; 5: highgain_correlation_cm + event display sequence')
 
+options.register('nSpills',
+                 15,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Number of spills in run')
 
 options.register('pedestalsHighGain',
                  'CondObjects/data/Ped_HighGain_L8.txt',
@@ -54,7 +61,16 @@ options.register('pedestalsLowGain',
                  VarParsing.VarParsing.varType.string,
                  'Path to low gain pedestals file')
 
+options.register('configuration',
+                 -1,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 '-1 ADCtoMIP CERN; 0 ADCtoMIP FNAL; 1 if 8Layers with 5X0 sampling the center of the shower only; 2 if 8Layers with 25X0 sampling up to the tail of the shower')
+
+
+
 options.output = "test_output.root"
+options.maxEvents = -1
 
 options.parseArguments()
 
@@ -67,7 +83,6 @@ if not os.path.isdir(options.outputFolder):
     os.system("mkdir -p " + options.outputFolder)
 
 if (options.runType != "PED" and options.runType != "HGCRun"):
-    print options
     sys.exit("Error: only runtypes PED and HGCRun supported for now; given runType was %s"%(options.runType))
 
 if (options.runType == "PED"):
@@ -87,18 +102,16 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 process.load('HGCal.StandardSequences.LocalReco_cff')
 process.load('HGCal.StandardSequences.dqm_cff')
 
-## [source module]
+
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(options.runNumber), ### maybe this should be read from the file
                             #fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
                             fileNames=cms.untracked.vstring("file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber)), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+                            nSpills=cms.untracked.uint32(options.nSpills),
 )
-## [source module]
 
-process.options = cms.untracked.PSet(
-    wantSummary = cms.untracked.bool(True),
-#    SkipEvent = cms.untracked.vstring('ProductNotFound'),
-)
+
+
 ######
 process.hgcaltbdigisplotter.pedestalsHighGain = cms.untracked.string(options.pedestalsHighGain)
 process.hgcaltbdigisplotter.pedestalsLowGain  = cms.untracked.string(options.pedestalsLowGain)
@@ -118,15 +131,25 @@ process.output = cms.OutputModule("PoolOutputModule",
 			fileName = cms.untracked.string(options.output)
                                  )
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output.root") )
-#if (options.chainSequence == 1):
-#    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Digi.root"%(options.outputFolder,options.runType,options.runNumber)))
-#elif (options.chainSequence == 3 or options.chainSequence == 4 or options.chainSequence == 5):
-#    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco.root"%(options.outputFolder,options.runType,options.runNumber)))
+# process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Display.root") )
+if (options.chainSequence == 1):
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Digi.root"%(options.outputFolder,options.runType,options.runNumber)))
+elif (options.chainSequence == 3 or options.chainSequence == 4 or options.chainSequence == 5 or options.chainSequence == 6):
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco.root"%(options.outputFolder,options.runType,options.runNumber)))
 # process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco.root") )
 #process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Layer.root") )
 #process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Cluster.root") )
 
+
+
+if(options.configuration == "-1"):
+    process.LayerSumAnalyzer.layers_config = cms.int32(-1)
+elif(options.configuration == "0"):
+    process.LayerSumAnalyzer.layers_config = cms.int32(0)
+elif(options.configuration == "1"):
+    process.LayerSumAnalyzer.layers_config = cms.int32(1)
+elif(options.configuration == "2"):
+    process.LayerSumAnalyzer.layers_config = cms.int32(2)
 
 ########Activate this to produce event displays#########################################
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
@@ -143,25 +166,15 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Ou
 ################Miscellaneous##############################################################################
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.FourLayerRecHitPlotterMax)
 
-process.p = cms.Path()
-for seq in options.chainSequence:
-    if(seq == "DIGI"):
-        process.p *= process.hgcaltbdigis
-    if(seq == "DIGIDQM" or seq == "PED"):
-        process.p *= process.hgcaltbdigisplotter
-        if(seq == "PED"):
-            process.hgcaltbdigisplotter.dumpNewPedestals = cms.untracked.bool(True)
-    if(seq == "RECO"):
-        process.p *= process.hgcaltbrechits
-    if(seq == "RECODQM"):
-        process.p *= process.hgcaltbrechitsplotter_highgain_new
-# if (options.chainSequence == 1):
-#     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
-# elif (options.chainSequence == 3):
-#     process.p =cms.Path(process.hgcaltbdigis)
-# elif (options.chainSequence == 4):
-#     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
-# elif (options.chainSequence == 5):
-#     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm*process.hgcaltbrechitsplotter_highgain_new)
+if (options.chainSequence == 1):
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
+elif (options.chainSequence == 3):
+    process.p =cms.Path(process.hgcaltbdigis)
+elif (options.chainSequence == 4):
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
+elif (options.chainSequence == 5):
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm*process.hgcaltbrechitsplotter_highgain_new)
+elif (options.chainSequence == 6):
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.LayerSumAnalyzer)
 
 process.end = cms.EndPath(process.output)

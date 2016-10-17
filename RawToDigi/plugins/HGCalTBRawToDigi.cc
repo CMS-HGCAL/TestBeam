@@ -1,11 +1,18 @@
-#include <iostream>
 #include "HGCal/RawToDigi/plugins/HGCalTBRawToDigi.h"
+
+// provides the maximum number of layers and number of skirocs per board
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
-#include "HGCal/Geometry/interface/HGCalTBSpillParameters.h"
-using namespace std;
+
+// provide the number of channels in a skiroc and number of samples
+#include "HGCal/DataFormats/interface/SKIROCParameters.h"
+
+//#define DEBUG
+#ifdef DEBUG
+#include <iostream>
+#endif
 
 unsigned int gray_to_binary (unsigned int gray);
-int counter = 0;
+
 HGCalTBRawToDigi::HGCalTBRawToDigi(edm::ParameterSet const& conf):
 	dataTag_(conf.getParameter<edm::InputTag>("InputLabel")),
 	fedId_(conf.getUntrackedParameter<int>("fedId")),
@@ -36,114 +43,32 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 	//
 	const FEDRawData& fed = rawraw->FEDData(fedId_);
 	if (fed.size() != 0) { /// \todo Exception if 0????
-		int ski_up = 2;
-		int ski_down = 1;
 		// we can figure out the number of samples from the size of the raw data
-		int nsamples = fed.size() / (sizeof(uint16_t) * SKIROC::NCHANNELS * 2); // 2 is for ADC and TDC
-		digis = std::auto_ptr<SKIROC2DigiCollection>(new SKIROC2DigiCollection(nsamples));
+		size_t nSkirocs = fed.size() / (sizeof(uint16_t) * SKIROC::NCHANNELS * SKIROC::MAXSAMPLES);
+		size_t nBoards = nSkirocs / MAXSKIROCS_PER_BOARD;
+		digis = std::auto_ptr<SKIROC2DigiCollection>(new SKIROC2DigiCollection(nSkirocs * SKIROC::NCHANNELS * SKIROC::MAXSAMPLES));
 		const uint16_t* pdata = (const uint16_t*)(fed.data());
 
-		// we start from the back...
-		int ptr = fed.size() / sizeof(uint16_t) - 1;
-		/*
-				printf("Starting on SKIROC %x\n", pdata[ptr]);
-				ptr--; // now we are pointing at a relatively-useless header word
-				ptr--; // now we are pointing at the first TDC word
-		*/
-		counter++;
-		if(counter > EVENTSPERSPILL) {
-			ski_up = 4;
-			ski_down = 3;
-		}
-
-		if(counter > EVENTSPERSPILL * 2 ) {
-			ski_up = 6;
-			ski_down = 5;
-		}
-		if(counter > EVENTSPERSPILL * 3) {
-			ski_up = 8;
-			ski_down = 7;
-		}
-		if(counter > EVENTSPERSPILL * 4) {
-			ski_up = 10;
-			ski_down = 9;
-		}
-		if(counter > EVENTSPERSPILL * 5) {
-			ski_up = 12;
-			ski_down = 11;
-		}
-		if(counter > EVENTSPERSPILL * 6) {
-			ski_up = 14;
-			ski_down = 13;
-		}
-		if(counter > EVENTSPERSPILL * 7) {
-			ski_up = 16;
-			ski_down = 15;
-		}
-		if(counter > EVENTSPERSPILL * 8 ) {
-			ski_up = 18;
-			ski_down = 17;
-		}
-		if(counter > EVENTSPERSPILL * 9) {
-			ski_up = 20;
-			ski_down = 19;
-		}
-		if(counter > EVENTSPERSPILL * 10) {
-			ski_up = 22;
-			ski_down = 21;
-		}
-		if(counter > EVENTSPERSPILL * 11 ) {
-			ski_up = 24;
-			ski_down = 23;
-		}
-		if(counter > EVENTSPERSPILL * 12) {
-			ski_up = 26;
-			ski_down = 25;
-		}
-		if(counter > EVENTSPERSPILL * 13) {
-			ski_up = 28;
-			ski_down = 27;
-		}
-		if(counter > EVENTSPERSPILL * 14) {
-			ski_up = 30;
-			ski_down = 29;
-		}
-		if(counter > EVENTSPERSPILL * 15) {
-			ski_up = 32;
-			ski_down = 31;
-		}
-
-		if(counter == EVENTSPERSPILL * MAXLAYERS) counter = 0;
-//                for (int ski = 2; ski >= 1; ski--) {
-		for (int ichan = 0; ichan < SKIROC::NCHANNELS; ichan++) {
-			for (int ski = ski_down; ski <= ski_up; ski++) {
-				HGCalTBElectronicsId eid(ski, ichan);
-				if (!essource_.emap_.existsEId(eid.rawId())) {
-//					std::cout << "We do not have a mapping for " << eid;
-				} else {
-					HGCalTBDetId did = essource_.emap_.eid2detId(eid);
-					digis->addDataFrame(did);
-					if(ski <= 32) {
-						int ptradc1 = ptr - ichan * 2 - (ski - ski_down);
-						int ptradc2 = ptr - ichan * 2 - (ski - ski_down) -  128;
-						digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF), gray_to_binary( pdata[ptradc2] & 0xFFF), 0);
-//                                        cout<<endl<<dec<<"SKI= "<<ski<<" chan= "<<ichan<<" "<<ptradc1<<" "<<ptradc2<<" "<<" High= "<<hex<<(pdata[ptradc1])<<dec<<"  "<<gray_to_binary(pdata[ptradc1] & 0xFFF)<<" Low= "<<hex<<( pdata[ptradc2] & 0xFFF)<<"  "<<dec<<gray_to_binary( pdata[ptradc2] & 0xFFF)<<endl;
+		size_t ski = 0; // the skirocs have an absolute numbering, start counting from the first board till the last
+		for (unsigned int i_board = 0 ; i_board < nBoards; ++i_board) {
+			for(size_t i_skiroc = 0; i_skiroc < MAXSKIROCS_PER_BOARD; ++i_skiroc) {
+				for (int ichan = 0; ichan < SKIROC::NCHANNELS; ichan++) {
+					HGCalTBElectronicsId eid(ski, ichan);
+					if (essource_.emap_.existsEId(eid.rawId())) {
+						HGCalTBDetId did = essource_.emap_.eid2detId(eid);
+						digis->addDataFrame(did);
+#ifdef DEBUG
+						if(i_board == 0) std::cout << (*pdata & 0xFFF) << "\t" << (*(pdata + 1) & 0xFFF) << "\t" << (*(pdata + 2) & 0xFFF) << std::endl;
+#endif
+						digis->backDataFrame().setSample(0, gray_to_binary(*(pdata) & 0xFFF), gray_to_binary( *(pdata + 1) & 0xFFF), 0);
+						pdata++;
+						pdata++;
 					}
-
-					/*
-					                                        else{
-					                                              int ptradc1 = ptr - ichan*2 + (ski_up - ski) ;
-					                                              int ptradc2 = ptr - ichan*2 + (ski_up - ski) -  128;
-					//						cout<<endl<<dec<<" Layer= "<<did.layer()<<" SKI= "<<eid.iskiroc()<<" chan= "<<ichan<<" "<<ptradc1<<" "<<ptradc2<<" "<<" High= "<<hex<<(pdata[ptradc1])<<dec<<"  "<<gray_to_binary(pdata[ptradc1] & 0xFFF)<<" Low= "<<hex<<( pdata[ptradc2] & 0xFFF)<<"  "<<dec<<gray_to_binary( pdata[ptradc2] & 0xFFF)<<endl;
-					                                              digis->backDataFrame().setSample(0, gray_to_binary(pdata[ptradc1] & 0xFFF),gray_to_binary( pdata[ptradc2] & 0xFFF),0);
-
-					                                             }
-					*/
-
 				}
-			}//loop over skirocs
+				++ski; //increment the absolute ID of the skiroc
+			}
 		}
-//                 }
+
 
 	}// fed size > 0
 

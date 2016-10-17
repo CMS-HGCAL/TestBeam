@@ -5,6 +5,6 @@ hgcaltbdigis = cms.EDProducer("HGCalTBRawToDigi",
                             fedId=cms.untracked.int32(1000), ## list of FEDs should be know from the setup
                             
                             electronicsMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_8Layers_Sept2016.txt"), ### electronicsMap written by hand
-                            
+                              dumpNewPedestals = cms.bool(False),
 )
 
