@@ -9,11 +9,21 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg)
 	  _gainsLow_filename(cfg.getParameter<std::string>("gainLow")),
 	  _gainsHigh_filename(cfg.getParameter<std::string>("gainHigh")),
 	  _adcSaturation(cfg.getParameter<int>("adcSaturation")),
-	  _LG2HG_value(cfg.getParameter<std::vector<double> >("LG2HG_CERN")),
-	  _mapFile(cfg.getParameter<std::string>("mapFile"))
+	  //_LG2HG_value(cfg.getParameter<std::vector<double> >("LG2HG_CERN")),
+	  //_mapFile(cfg.getParameter<std::string>("mapFile")),
+	  _layers_config(cfg.getParameter<int>("layers_config"))
 {
 	produces <HGCalTBRecHitCollection>(outputCollectionName);
 	//	std::cout << " >>> _LG2HG_value size = " << _LG2HG_value.size() << std::endl;
+
+	if(_layers_config == 0){
+	  _LG2HG_value = cfg.getParameter<std::vector<double> >("LG2HG_FNAL");
+	  _mapFile = cfg.getParameter<std::string>("mapFile_FNAL");
+	}
+	else{
+	  _LG2HG_value = cfg.getParameter<std::vector<double> >("LG2HG_CERN");
+	  _mapFile = cfg.getParameter<std::string>("mapFile_CERN");
+	}
 
 	HGCalCondObjectTextIO io(0);
 	edm::FileInPath fip(_mapFile);
@@ -81,6 +91,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
 			uint32_t EID = essource_.emap_.detId2eid(recHit.id());
 			HGCalTBElectronicsId eid(EID);
+
 
 			energy = ( energyHigh < _adcSaturation ) ? energyHigh : energyLow * _LG2HG_value.at(eid.iskiroc() - 1);
 			recHit.setEnergy(energy);

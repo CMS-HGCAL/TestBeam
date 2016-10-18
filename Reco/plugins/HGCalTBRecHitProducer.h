@@ -45,6 +45,7 @@ private:
 	int _adcSaturation;
 	std::vector<double> _LG2HG_value;
 	std::string _mapFile;
+	int _layers_config;
 	struct {
 	  HGCalElectronicsMap emap_;
         } essource_;
