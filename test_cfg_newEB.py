@@ -144,12 +144,16 @@ elif (options.chainSequence == 3 or options.chainSequence == 4 or options.chainS
 
 if(options.configuration == "-1"):
     process.LayerSumAnalyzer.layers_config = cms.int32(-1)
+    process.hgcaltbrechits.layers_config = cms.int32(-1)
 elif(options.configuration == "0"):
     process.LayerSumAnalyzer.layers_config = cms.int32(0)
+    process.hgcaltbrechits.layers_config = cms.int32(0)
 elif(options.configuration == "1"):
     process.LayerSumAnalyzer.layers_config = cms.int32(1)
+    process.hgcaltbrechits.layers_config = cms.int32(1)
 elif(options.configuration == "2"):
     process.LayerSumAnalyzer.layers_config = cms.int32(2)
+    process.hgcaltbrechits.layers_config = cms.int32(2)
 
 ########Activate this to produce event displays#########################################
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
