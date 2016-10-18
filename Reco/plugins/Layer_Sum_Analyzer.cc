@@ -112,7 +112,7 @@ private:
 	struct {
 		HGCalElectronicsMap emap_;
 	} essource_;
-	string mapfile_ = "HGCal/CondObjects/data/map_CERN_8Layers_Sept2016.txt";
+        string mapfile_;
 	int sensorsize = 128;
 	std::vector<std::pair<double, double>> CellXY;
 	std::pair<double, double> CellCentreXY;
@@ -238,9 +238,11 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 	    Weights_L[iL] = LayerWeight_16L_FNAL[iL];
 	    X0_L[iL] = X0depth_16L_FNAL[iL];
 	    ADCtoMIP[iL] = ADCtoMIP_FNAL[iL];
+	    mapfile_ = iConfig.getParameter<std::string>("mapFile_FNAL");
 	  }
 	  else{
 	    ADCtoMIP[iL] = ADCtoMIP_CERN[iL];
+	    mapfile_ = iConfig.getParameter<std::string>("mapFile_CERN");
 	    if(layers_config_ == 1){
 	      Weights_L[iL] = LayerWeight_8L_conf1[iL];
 	      X0_L[iL] = X0depth_8L_conf1[iL];
@@ -255,6 +257,8 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 	    }
 	  }
 	}
+
+
 
 
 }//constructor ends here
