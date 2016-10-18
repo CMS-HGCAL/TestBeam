@@ -1,5 +1,9 @@
+<use name="root"/>
+<use name="FWCore/Framework"/>
+<use name="HGCal/CondObjects" />
+<use name="HGCal/Geometry"/>
+<use name="HGCal/DataFormats"/>
 <export>
    <lib name="1"/>
 </export>
-
 
