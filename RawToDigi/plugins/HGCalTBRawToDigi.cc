@@ -11,6 +11,8 @@
 #include <iostream>
 #endif
 
+using namespace std;
+
 unsigned int gray_to_binary (unsigned int gray);
 
 HGCalTBRawToDigi::HGCalTBRawToDigi(edm::ParameterSet const& conf):
@@ -49,23 +51,29 @@ void HGCalTBRawToDigi::produce(edm::Event& e, const edm::EventSetup& c)
 		digis = std::auto_ptr<SKIROC2DigiCollection>(new SKIROC2DigiCollection(nSkirocs * SKIROC::NCHANNELS * SKIROC::MAXSAMPLES));
 		const uint16_t* pdata = (const uint16_t*)(fed.data());
 
-		size_t ski = 0; // the skirocs have an absolute numbering, start counting from the first board till the last
+//		size_t ski = 0; // the skirocs have an absolute numbering, start counting from the first board till the last(Activate post consistent change in the EMAP)
 		for (unsigned int i_board = 0 ; i_board < nBoards; ++i_board) {
-			for(size_t i_skiroc = 0; i_skiroc < MAXSKIROCS_PER_BOARD; ++i_skiroc) {
-				for (int ichan = 0; ichan < SKIROC::NCHANNELS; ichan++) {
-					HGCalTBElectronicsId eid(ski, ichan);
+//The way the entries have been pushed they correspond to the Map a Ski 2,1,4,3,6,5...16,15 so for a simpler logic the EMAP will have to be modified that will be done later.
+//                        for(size_t i_skiroc = 0; i_skiroc < MAXSKIROCS_PER_BOARD; ++i_skiroc) {//(Activate Post consistent change in EMAP)
+			for(size_t i_skiroc = MAXSKIROCS_PER_BOARD; i_skiroc >= 1; i_skiroc--) {//(De-Activate Post consistent change in EMAP)
+				for (int ichan = SKIROC::NCHANNELS - 1; ichan >= 0; ichan--) {
+//					HGCalTBElectronicsId eid(ski, ichan);//(Activate Post consistent change in EMAP)
+                                        HGCalTBElectronicsId eid(2*i_board + i_skiroc, ichan);//(De-Activate Post consistent change in EMAP)
 					if (essource_.emap_.existsEId(eid.rawId())) {
 						HGCalTBDetId did = essource_.emap_.eid2detId(eid);
 						digis->addDataFrame(did);
 #ifdef DEBUG
 						if(i_board == 0) std::cout << (*pdata & 0xFFF) << "\t" << (*(pdata + 1) & 0xFFF) << "\t" << (*(pdata + 2) & 0xFFF) << std::endl;
+cout<<endl<<dec<<"SKI= "<<(2*i_board + i_skiroc )<<" chan= "<<ichan<<" "<<" High= "<<hex<<*(pdata)<<dec<<"  "<<gray_to_binary(*(pdata) & 0xFFF)<<" Low= "<<hex<<(*(pdata + SKIROC::NCHANNELS))<<"  "<<dec<<gray_to_binary(*(pdata + SKIROC::NCHANNELS) & 0xFFF)<<endl;
 #endif
-						digis->backDataFrame().setSample(0, gray_to_binary(*(pdata) & 0xFFF), gray_to_binary( *(pdata + 1) & 0xFFF), 0);
-						pdata++;
-						pdata++;
+
+						digis->backDataFrame().setSample(0, gray_to_binary(*(pdata + SKIROC::NCHANNELS) & 0xFFF), gray_to_binary( *(pdata) & 0xFFF), 0);
 					}
+				pdata++;//Note this has to be outside the if condition, as for the test channel we wont enter the if condition but still have to increment the pointer address
 				}
-				++ski; //increment the absolute ID of the skiroc
+//We have pushed back the high gain and low gain entries which are independent FED entries for all SKIROC::NCHANNELS so we need to jump by SKIROC::NCHANNELS
+				pdata = pdata + SKIROC::NCHANNELS;
+//				++ski; //increment the absolute ID of the skiroc(Activate post consistent change in the EMAP)
 			}
 		}
 

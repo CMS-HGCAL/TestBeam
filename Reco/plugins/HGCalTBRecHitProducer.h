@@ -2,7 +2,6 @@
 #define HGCALTBRECHITPRODUCER_H
 /** \class Reco/plugins/HGCalTBRecHitProducer.h HGCalTBRecHitProducer HGCalTBRecHitProducer
 	\brief
-
 	\author Shervin Nourbakhsh
  */
 
@@ -45,9 +44,10 @@ private:
 	int _adcSaturation;
 	std::vector<double> _LG2HG_value;
 	std::string _mapFile;
+	int _layers_config;
 	struct {
-		HGCalElectronicsMap emap_;
-	} essource_;
+	  HGCalElectronicsMap emap_;
+        } essource_;
 };
 
 
