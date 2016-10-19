@@ -40,7 +40,6 @@
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
-#include "HGCal/Geometry/interface/HGCalTBSpillParameters.h"
 
 // chooses which particle to look at. Inverts threshold filtering.
 // if nothing is selected, electrons are the default
@@ -504,18 +503,19 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
       tp_E7oSumL_vs_layer->Fill(iL, sevencells_sum[iL]/E7SumL_R);
       tp_E19oSumL_vs_layer->Fill(iL, nineteencells_sum[iL]/E19SumL_R);
     }
-    h_sum_all->Fill(EAllSumL_R);
-    h_seven_all->Fill(E7SumL_R);
-    h_nineteen_all->Fill(E19SumL_R);
-
-    h_sum_all_AbsW_Mip->Fill(EAllSumL_AbsW_Mip);
-    h_seven_all_AbsW_Mip->Fill(E7SumL_AbsW_Mip);
-    h_nineteen_all_AbsW_Mip->Fill(E19SumL_AbsW_Mip);
-
-    h_sum_all_AbsW_GeV->Fill(EAllSumL_AbsW_GeV);
-    h_seven_all_AbsW_GeV->Fill(E7SumL_AbsW_GeV);
-    h_nineteen_all_AbsW_GeV->Fill(E19SumL_AbsW_GeV);
   }
+  h_sum_all->Fill(EAllSumL_R);
+  h_seven_all->Fill(E7SumL_R);
+  h_nineteen_all->Fill(E19SumL_R);
+  
+  h_sum_all_AbsW_Mip->Fill(EAllSumL_AbsW_Mip);
+  h_seven_all_AbsW_Mip->Fill(E7SumL_AbsW_Mip);
+  h_nineteen_all_AbsW_Mip->Fill(E19SumL_AbsW_Mip);
+  
+  h_sum_all_AbsW_GeV->Fill(EAllSumL_AbsW_GeV);
+  h_seven_all_AbsW_GeV->Fill(E7SumL_AbsW_GeV);
+  h_nineteen_all_AbsW_GeV->Fill(E19SumL_AbsW_GeV);
+  
   
 }// analyze ends here
 
