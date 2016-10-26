@@ -451,9 +451,9 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     float layerE19_Mip = nineteencells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
     float layerEAll_Mip = allcells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
 
-    float layerE1_GeV = seedEnergy[iL] * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
-    float layerE7_GeV = sevencells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
-    float layerE19_GeV = nineteencells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
+    float layerE1_GeV = seedEnergy[iL] * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
+    float layerE7_GeV = sevencells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
+    float layerE19_GeV = nineteencells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
     float layerEAll_GeV = allcells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
 
     h_sum_layer_AbsW_Mip[iL]->Fill(layerEAll_Mip);
