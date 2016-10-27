@@ -209,7 +209,7 @@ RecHitPlotter_HighGain_Correlation_CM::analyze(const edm::Event& event, const ed
 //             double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
 //               Cell_counter++;
 //               Average_Pedestal_Per_Event_Full += RecHit1.energyHigh();
-//               if(RecHit1.energyHigh() > 100) continue;
+               if(RecHit1.energyHigh() > 32.) continue;
 		if((RecHit1.id()).cellType() == 0) {
 //                       Full_Cell[(RecHit1.id()).layer() - 1]->Fill(RecHit1.energyHigh());
 			Cell_counter[(RecHit1.id()).layer() - 1]++;
@@ -245,7 +245,7 @@ RecHitPlotter_HighGain_Correlation_CM::analyze(const edm::Event& event, const ed
 	}
 
 	for(auto RecHit : *Rechits) {
-//                if(RecHit.energyHigh() > 100) continue;
+//                if(RecHit.energyHigh() > 32.) continue;
 		if(!IsCellValid.iu_iv_valid((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize))  continue;
 		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize);
 //                double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;

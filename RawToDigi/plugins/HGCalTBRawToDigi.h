@@ -36,5 +36,5 @@ private:
 	struct {
 		HGCalElectronicsMap emap_;
 	} essource_;
-
+	int ptradc1, ptradc2;// location HG,LG SKI,Channel in the pushed vector of 16 bit words.
 };
