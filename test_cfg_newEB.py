@@ -8,13 +8,14 @@ options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, file
 options.register('dataFolder',
                  #'/afs/cern.ch/work/r/rchatter/Final_Event_Builder/CMSSW_8_0_1/src/HGCal/tmpOut/',
                  #'/afs/cern.ch/user/a/amartell/public/HGCal/TB_data/'
-                 'tmpOut/',
+                 #'/tmp/amartell/rearrangedTxtFiles/',
+                 '/afs/cern.ch/user/a/amartell/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw text input')
 
 options.register('outputFolder',
-                 '/tmp/',
+                 '/tmp/amartell/output/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Result of processing')
@@ -102,13 +103,14 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 process.load('HGCal.StandardSequences.LocalReco_cff')
 process.load('HGCal.StandardSequences.dqm_cff')
 
+#print "root://eoscms.cern.ch//eos/cms/%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber)
 
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(options.runNumber), ### maybe this should be read from the file
-                            #fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+                            #fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXE
                             fileNames=cms.untracked.vstring("file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber)), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
                             nSpills=cms.untracked.uint32(options.nSpills),
-)
+                            )
 
 
 
