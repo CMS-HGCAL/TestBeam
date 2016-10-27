@@ -168,15 +168,15 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 	  h_layer_seven[layer] = fs->make<TH1F>(Form("sum7_Layer%d", layer+1),"",  40010, -10, 40000);
 	  h_layer_nineteen[layer] = fs->make<TH1F>(Form("sum19_Layer%d", layer+1), "", 40010, -10, 40000);
 
-	  h_sum_layer_AbsW_Mip[layer] = fs->make<TH1F>(Form("sumAll_Layer%d_AbsW_Mip", layer+1), "", 40010, -10, 40000);
-	  h_Seed_layer_AbsW_Mip[layer] = fs->make<TH1F>(Form("h_Seed_layer%d_AbsW_Mip",layer+1), Form("h_Seed_layer%d",layer+1), 40010, -10, 40000);
-	  h_layer_seven_AbsW_Mip[layer] = fs->make<TH1F>(Form("sum7_Layer%d_AbsW_Mip", layer+1),"",  40010, -10, 40000);
-	  h_layer_nineteen_AbsW_Mip[layer] = fs->make<TH1F>(Form("sum19_Layer%d_AbsW_Mip", layer+1), "", 40010, -10, 40000);
+	  h_sum_layer_AbsW_Mip[layer] = fs->make<TH1F>(Form("sumAll_Layer%d_AbsW_Mip", layer+1), "", 40010, -10, 4.e6);
+	  h_Seed_layer_AbsW_Mip[layer] = fs->make<TH1F>(Form("h_Seed_layer%d_AbsW_Mip",layer+1), Form("h_Seed_layer%d",layer+1), 40010, -10, 4.e6);
+	  h_layer_seven_AbsW_Mip[layer] = fs->make<TH1F>(Form("sum7_Layer%d_AbsW_Mip", layer+1),"",  40010, -10, 4.e6);
+	  h_layer_nineteen_AbsW_Mip[layer] = fs->make<TH1F>(Form("sum19_Layer%d_AbsW_Mip", layer+1), "", 40010, -10, 4.e6);
 
-	  h_sum_layer_AbsW_GeV[layer] = fs->make<TH1F>(Form("sumAll_Layer%d_AbsW_GeV", layer+1), "", 40010, -10, 40000);
-	  h_Seed_layer_AbsW_GeV[layer] = fs->make<TH1F>(Form("h_Seed_layer%d_AbsW_GeV",layer+1), Form("h_Seed_layer%d",layer+1), 40010, -10, 40000);
-	  h_layer_seven_AbsW_GeV[layer] = fs->make<TH1F>(Form("sum7_Layer%d_AbsW_GeV", layer+1),"",  40010, -10, 40000);
-	  h_layer_nineteen_AbsW_GeV[layer] = fs->make<TH1F>(Form("sum19_Layer%d_AbsW_GeV", layer+1), "", 40010, -10, 40000);
+	  h_sum_layer_AbsW_GeV[layer] = fs->make<TH1F>(Form("sumAll_Layer%d_AbsW_GeV", layer+1), "", 5100, -10, 500);
+	  h_Seed_layer_AbsW_GeV[layer] = fs->make<TH1F>(Form("h_Seed_layer%d_AbsW_GeV",layer+1), Form("h_Seed_layer%d",layer+1), 5100, -10, 500);
+	  h_layer_seven_AbsW_GeV[layer] = fs->make<TH1F>(Form("sum7_Layer%d_AbsW_GeV", layer+1),"",  5100, -10, 500);
+	  h_layer_nineteen_AbsW_GeV[layer] = fs->make<TH1F>(Form("sum19_Layer%d_AbsW_GeV", layer+1), "", 5100, -10, 500);
 
 	  h_x_layer[layer] = fs->make<TH1F>(Form("X_Layer%d", layer+1), "", 2000, -10., 10. );
 	  h_y_layer[layer] = fs->make<TH1F>(Form("Y_Layer%d", layer+1), "", 2000, -10., 10. );
@@ -198,16 +198,16 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 	h_sum_all->Sumw2();
 	h_seven_all->Sumw2();
 	h_nineteen_all->Sumw2();
-	h_sum_all_AbsW_Mip = fs->make<TH1F>("h_sumAll_AllLayers_AbsW_Mip", "", 40010, -10, 40000);
-	h_seven_all_AbsW_Mip = fs->make<TH1F>("h_sum7_AllLayers_AbsW_Mip", "", 40010, -10, 40000);
-	h_nineteen_all_AbsW_Mip = fs->make<TH1F>("h_sum19_AllLayers_AbsW_Mip", "", 40010, -10, 40000);
+	h_sum_all_AbsW_Mip = fs->make<TH1F>("h_sumAll_AllLayers_AbsW_Mip", "", 40010, -10, 4.e6);
+	h_seven_all_AbsW_Mip = fs->make<TH1F>("h_sum7_AllLayers_AbsW_Mip", "", 40010, -10, 4.e6);
+	h_nineteen_all_AbsW_Mip = fs->make<TH1F>("h_sum19_AllLayers_AbsW_Mip", "", 40010, -10, 4.e6);
 	h_sum_all_AbsW_Mip->Sumw2();
 	h_seven_all_AbsW_Mip->Sumw2();
 	h_nineteen_all_AbsW_Mip->Sumw2();
 
-	h_sum_all_AbsW_GeV = fs->make<TH1F>("h_sumAll_AllLayers_AbsW_GeV", "", 40010, -10, 40000);
-	h_seven_all_AbsW_GeV = fs->make<TH1F>("h_sum7_AllLayers_AbsW_GeV", "", 40010, -10, 40000);
-	h_nineteen_all_AbsW_GeV = fs->make<TH1F>("h_sum19_AllLayers_AbsW_GeV", "", 40010, -10, 40000);
+	h_sum_all_AbsW_GeV = fs->make<TH1F>("h_sumAll_AllLayers_AbsW_GeV", "", 5100, -10, 500);
+	h_seven_all_AbsW_GeV = fs->make<TH1F>("h_sum7_AllLayers_AbsW_GeV", "", 5100, -10, 500);
+	h_nineteen_all_AbsW_GeV = fs->make<TH1F>("h_sum19_AllLayers_AbsW_GeV", "", 5100, -10, 500);
 	h_sum_all_AbsW_GeV->Sumw2();
 	h_seven_all_AbsW_GeV->Sumw2();
 	h_nineteen_all_AbsW_GeV->Sumw2();
@@ -460,6 +460,11 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     h_Seed_layer_AbsW_Mip[iL]->Fill(layerE1_Mip);
     h_layer_seven_AbsW_Mip[iL]->Fill(layerE7_Mip);
     h_layer_nineteen_AbsW_Mip[iL]->Fill(layerE19_Mip);
+
+    h_sum_layer_AbsW_GeV[iL]->Fill(layerEAll_GeV);
+    h_Seed_layer_AbsW_GeV[iL]->Fill(layerE1_GeV);
+    h_layer_seven_AbsW_GeV[iL]->Fill(layerE7_GeV);
+    h_layer_nineteen_AbsW_GeV[iL]->Fill(layerE19_GeV);
     
     tp_E1_vs_layer->Fill(iL+1, seedEnergy[iL]);
     tp_E7_vs_layer->Fill(iL+1, sevencells_sum[iL]);
