@@ -395,9 +395,8 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     int n_layer = (Rechit.id()).layer() - 1;
     int n_cell_type = (Rechit.id()).cellType();
     int n_skiroc = (eid.iskiroc() - 1)%2;
+    int n_skiroc0 = eid.iskiroc() - 1;
     int chan = eid.ichan();
-
-    cout <<"n_skiroc="<<eid.iskiroc()<<"     "<<"n_skiroc-1%2==" << n_skiroc << endl;
 
     //getting X and Y coordinates
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), sensorsize);
@@ -418,8 +417,8 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     }
 
     if((Rechit.energy()) / ADCtoMIP[n_layer] <= CMTHRESHOLD) {
-      commonmode[n_skiroc] += Rechit.energy();
-      cm_num[n_skiroc]++;
+      commonmode[n_skiroc0] += Rechit.energy();
+      cm_num[n_skiroc0]++;
     }
 
   }//Rechit loop ends here
