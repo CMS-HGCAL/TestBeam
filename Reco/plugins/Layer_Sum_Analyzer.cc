@@ -86,6 +86,9 @@ const double PION_ALLCELLS_THRESHOLD = 15.;
 const double PION_7CELLS_THRESHOLD = -100.;
 const double PION_19CELLS_THRESHOLD = -100.;
 
+const int NTYPES=6;                                           
+const int NCHIPS=2;                                           
+const int NCHANS=64;                                          
 
 using namespace std;
 
@@ -103,6 +106,9 @@ private:
 	virtual void beginJob() override;
 	void analyze(const edm::Event& , const edm::EventSetup&) override;
 	virtual void endJob() override;
+        
+        bool ELECTRONS;
+        bool PIONS;
 
 	// ----------member data ---------------------------
 	edm::EDGetToken HGCalTBRecHitCollection_;
@@ -142,8 +148,14 @@ private:
 
 	TH2F *HighGain_LowGain_2D;
 	TH2F *Energy_LowGain_2D;
+       
+	// added by Eiko and Vieri                                                                                                                           
+        TH2F *HighGain_LowGain_2D_lct[MAXLAYERS][NCHIPS][NTYPES];
+        TProfile *pf_HighGain_LowGain_2D_cmremoved_lct[MAXLAYERS][NCHIPS][NTYPES];
+        TProfile *pf_HighGain_LowGain_2D_lcc[MAXLAYERS][NCHIPS][NCHANS];
+        TProfile *pf_HighGain_LowGain_2D_cmremoved_lcc[MAXLAYERS][NCHIPS][NCHANS];
 
-        int EVENT = 0;
+	int SPILL = 0, EVENT = 0, LAYER = 0;
 
 	map<int, double> Time_Stamp;
 	map<int, double> Delta_Time_Stamp;
@@ -151,9 +163,24 @@ private:
 };
 
 
-
 Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 {
+  
+  // check if it's an electron or pion beam
+  //if(iConfig.getParameter<std::string>("particleType")=="electron")
+  //  {
+ //     ELECTRONS=true;
+ //     PIONS=false;
+ //   }
+ // else if(iConfig.getParameter<std::string>("particleType")=="pion")
+ //   {
+ //     ELECTRONS=false;
+ //     PIONS=true;
+ //   }
+ 
+  //if(ELECTRONS)std::cout << "running on electron sample" << std::endl;
+  //if(PIONS)std::cout << "running on pion sample" << std::endl;
+
   std::cout << " welcome costruttore MAXSKIROCS = " << MAXSKIROCS << std::endl;
 	// initialization
 	usesResource("TFileService");
@@ -224,7 +251,35 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 	tp_E1oE7_vs_layer = fs->make<TProfile>("tp_E1oE7_vs_layer", "", MAXLAYERS+1, 0, MAXLAYERS+1);
 	tp_E1oE19_vs_layer = fs->make<TProfile>("tp_E1oE19_vs_layer", "", MAXLAYERS+1, 0, MAXLAYERS+1);
 	tp_E7oE19_vs_layer = fs->make<TProfile>("tp_E7oE19_vs_layer", "", MAXLAYERS+1, 0, MAXLAYERS+1);
-	
+       
+	 for (int layer = 0; layer < MAXLAYERS; layer++) {	
+	   for (int ik = 0; ik < NCHIPS; ik++){
+	      for (int ij= 0; ij < NCHANS; ij++){
+	         stringstream name3;
+	         name3 << "pf_HighGain_LowGain_2D_lcc" << layer+1 << Form("%02i",ik+1) << Form("%02i",ij);
+	         pf_HighGain_LowGain_2D_lcc[layer][ik][ij] = fs->make<TProfile>(name3.str().c_str(), name3.str().c_str(),4000,0,4000);
+	         pf_HighGain_LowGain_2D_lcc[layer][ik][ij] -> Sumw2();
+ 	         stringstream name4;
+ 	         name4 << "pf_HighGain_LowGain_2D_cmremoved_lcc" << layer+1 << Form("%02i",ik+1) << Form("%02i",ij);
+ 	         pf_HighGain_LowGain_2D_cmremoved_lcc[layer][ik][ij] = fs->make<TProfile>(name4.str().c_str(), name4.str().c_str(),4000,0,4000);
+                 pf_HighGain_LowGain_2D_cmremoved_lcc[layer][ik][ij] -> Sumw2();
+	         } // end of loop over channels, 0-63                                                                                                                                
+	         
+	         for(int im= 0; im < NTYPES; im++){
+	         stringstream name3;
+	         name3 << "HighGain_LowGain_2D_lct" << layer+1 << Form("%02i",ik+1) << Form("%02i",im);
+	         HighGain_LowGain_2D_lct[layer][ik][im] = fs->make<TH2F>(name3.str().c_str(), name3.str().c_str(),4000,0,4000,4000,0,4000);
+	         HighGain_LowGain_2D_lct[layer][ik][im] -> Sumw2();
+
+	         stringstream name4;
+	         name4 << "pf_HighGain_LowGain_2D_cmremoved_lct" << layer+1 << Form("%02i",ik+1) << Form("%02i",im);
+	         pf_HighGain_LowGain_2D_cmremoved_lct[layer][ik][im] = fs->make<TProfile>(name4.str().c_str(), name4.str().c_str(),4000,0,4000);
+	         pf_HighGain_LowGain_2D_cmremoved_lct[layer][ik][im] -> Sumw2();
+            
+	      } // end of loop over types                                                                                                                                         
+           } // end loop over skirocs   
+	} // end of loop over layers
+
 
         //loading the proper weights
         if(MAXLAYERS != 8) {
@@ -257,8 +312,7 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 	  }
 	}
 
-
-
+	cout << "end of contructor" << endl;
 
 }//constructor ends here
 
@@ -278,21 +332,43 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
 {
 
   //  std::cout << " >>> Layer_Sum_Analyzer::analyze " << std::endl;
-  EVENT = (event.id()).event();
+        EVENT = (event.id()).event();
+        LAYER = (((event.id()).event() - 1)) % MAXLAYERS;
+	if((event.id()).event() == 1) {
+	  Time_Temp = event.time().value();
+	  Time_Stamp[EVENT] = Time_Temp;
+	  Delta_Time_Stamp[EVENT] = 0.;
+	} else {
+	  Time_Stamp[EVENT] = event.time().value();
+	  Delta_Time_Stamp[EVENT] = event.time().value() - Time_Temp;
+	  Time_Temp = event.time().value();
+	}	 
 
-  if((event.id()).event() == 1) {
-    Time_Temp = event.time().value();
-    Time_Stamp[EVENT] = Time_Temp;
-    Delta_Time_Stamp[EVENT] = 0.;
-  } else {
-    Time_Stamp[EVENT] = event.time().value();
-    Delta_Time_Stamp[EVENT] = event.time().value() - Time_Temp;
-    Time_Temp = event.time().value();
-  }
-  
+	// added by Eiko for high/low gain
+	double commonmode_HG[MAXLAYERS][NCHIPS][NTYPES], commonmode_LG[MAXLAYERS][NCHIPS][NTYPES];
+	int cm_num_HG[MAXLAYERS][NCHIPS][NTYPES];
+        int cm_num_LG[MAXLAYERS][NCHIPS][NTYPES];
+	
+        for (int il=0; il<MAXLAYERS; il++) {
+	   for (int ic=0; ic<NCHIPS; ic++) {
+	      for (int it=0; it<NTYPES; it++) {
+	         commonmode_HG[il][ic][it]=0.;
+	    	 commonmode_LG[il][ic][it]=0.;
+	    	 cm_num_HG[il][ic][it]=0;
+	    	 cm_num_LG[il][ic][it]=0;	    
+	      }
+	    }
+         }	
+
   //opening Rechits
   edm::Handle<HGCalTBRecHitCollection> Rechits;
   event.getByToken(HGCalTBRecHitCollection_, Rechits);
+ 
+  //eiko definition
+  //bool FIRST(1);
+  double commonmode2,max2, max_x2, max_y2;
+  commonmode2=max2 = max_x2 = max_y2 = 0.;
+  int cm_num2=0;
   
   // looping over each rechit to fill histogram
   double commonmode[MAXSKIROCS];
@@ -318,15 +394,20 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     
     int n_layer = (Rechit.id()).layer() - 1;
     int n_cell_type = (Rechit.id()).cellType();
-    int n_skiroc = eid.iskiroc() - 1;
+    int n_skiroc = (eid.iskiroc() - 1)%2;
+    int chan = eid.ichan();
 
+    cout <<"n_skiroc="<<eid.iskiroc()<<"     "<<"n_skiroc-1%2==" << n_skiroc << endl;
 
     //getting X and Y coordinates
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), sensorsize);
+    //		std::cout << "n_layer = " << n_layer << "\t" << type << "\t" << skiroc_chip << "\t" << chan << std::endl;                                                    
+    HighGain_LowGain_2D_lct[n_layer][n_skiroc][n_cell_type]->Fill(Rechit.energyLow(),Rechit.energyHigh());
+    pf_HighGain_LowGain_2D_lcc[n_layer][n_skiroc][chan]->Fill(Rechit.energyLow(),Rechit.energyHigh());
+ 
 
     HighGain_LowGain_2D->Fill(Rechit.energyLow(), Rechit.energyHigh());
     Energy_LowGain_2D->Fill(Rechit.energy(), Rechit.energyHigh());
-    
     // needed? FIXME
     if(n_cell_type != 0 && n_cell_type != 4) continue;
     
@@ -343,14 +424,23 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
 
   }//Rechit loop ends here
   //	std::cout << " >>> found commonmode = " << commonmode << std::endl;
-
-
+    
   for(int iS=0; iS<MAXSKIROCS/2.; ++iS){
     commonmode[2*iS] = (commonmode[2*iS]+commonmode[2*iS+1])/(cm_num[2*iS]+cm_num[2*iS+1]);
     commonmode[2*iS+1] = (commonmode[2*iS]+commonmode[2*iS+1])/(cm_num[2*iS]+cm_num[2*iS+1]);
     //    std::cout << " 2*iS = " << 2*iS << " value = " << commonmode[iS] << std::endl;
   }
-
+	commonmode2 = cm_num2 ==0? 0: commonmode2/cm_num2;
+       for(int il=0; il<MAXLAYERS; il++){
+	for(int ic=0; ic<NCHIPS; ic++){
+	  for(int it=0; it<NTYPES; it++){
+	    commonmode_HG[il][ic][it] = cm_num_HG[ic][it]==0? 0: commonmode_HG[il][ic][it]/cm_num_HG[il][ic][it];
+	    commonmode_LG[il][ic][it] = cm_num_LG[ic][it]==0? 0: commonmode_LG[il][ic][it]/cm_num_LG[il][ic][it]; // added by Eiko	
+	    // std::cout << "common mode_HG[" << ic << "][" << it << "] = " << commonmode_HG[ic][it] << std::endl; 
+	    // std::cout << "common mode_LG[" << ic << "][" << it << "] = " << commonmode_LG[ic][it] << std::endl;                                               
+	  }
+	}
+      }
 
   edm::Handle<HGCalTBRecHitCollection> Rechits1;
   event.getByToken(HGCalTBRecHitCollection_, Rechits1);
@@ -377,8 +467,12 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
 	  
     int eLayer = (Rechit1.id()).layer()-1;
     int eCellType = (Rechit1.id()).cellType();
-    //int eSkiroc = eid.iskiroc() - 1;
-
+    int n_skiroc = (eid.iskiroc() - 1)%2;
+    int chan = eid.ichan();
+    
+    pf_HighGain_LowGain_2D_cmremoved_lct[eLayer][n_skiroc][eCellType]->Fill(Rechit1.energyLow()-commonmode_LG[eLayer][n_skiroc][eCellType],Rechit1.energyHigh()-commonmode_HG[eLayer][n_skiroc][eCellType]);
+    
+    pf_HighGain_LowGain_2D_cmremoved_lcc[eLayer][n_skiroc][chan]->Fill(Rechit1.energyLow()-commonmode_LG[eLayer][n_skiroc][eCellType],Rechit1.energyHigh()-commonmode_HG[eLayer][n_skiroc][eCellType]);
 
     //getting X and Y coordinates
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit1.id()).layer(), (Rechit1.id()).sensorIU(), (Rechit1.id()).sensorIV(), (Rechit1.id()).iu(), (Rechit1.id()).iv(), sensorsize);
@@ -408,7 +502,6 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
       sevencells_sum[eLayer] += energyCMsub;
       sevennum[eLayer]++;
     }
-
     //FIXME navigation to 19cells
     if((radius[eLayer] < 1.95 * maxdist && nineteennum[eLayer] < 19) && (energyCMsub > CMTHRESHOLD)){
 //			nineteencells_sum += (LayerWeight[LAYER]*(Rechit1.energyHigh() - commonmode))/ ADCtoMIP[LAYER];
@@ -418,12 +511,10 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
       nineteennum[eLayer]++;
     }
   }
-
   for(int iS=0; iS<MAXSKIROCS; ++iS){
     //    std::cout << "iS = " << iS << " CM = " << commonmode[iS] << std::endl; 
     h_CM_layer[iS]->Fill(commonmode[iS]);
   }
- 
 
   float E1SumL_R = 0.;
   float E7SumL_R = 0.;
@@ -451,9 +542,9 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     float layerE19_Mip = nineteencells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
     float layerEAll_Mip = allcells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
 
-    float layerE1_GeV = seedEnergy[iL] * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
-    float layerE7_GeV = sevencells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
-    float layerE19_GeV = nineteencells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
+    float layerE1_GeV = seedEnergy[iL] * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
+    float layerE7_GeV = sevencells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
+    float layerE19_GeV = nineteencells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
     float layerEAll_GeV = allcells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
 
     h_sum_layer_AbsW_Mip[iL]->Fill(layerEAll_Mip);
@@ -515,7 +606,6 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
   h_sum_all_AbsW_GeV->Fill(EAllSumL_AbsW_GeV);
   h_seven_all_AbsW_GeV->Fill(E7SumL_AbsW_GeV);
   h_nineteen_all_AbsW_GeV->Fill(E19SumL_AbsW_GeV);
-  
   
 }// analyze ends here
 
