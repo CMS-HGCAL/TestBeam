@@ -55,7 +55,10 @@ sh scripts/rearrangeTxtFile.sh input.txt
    >> CERN raw data rearranged in /eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/
    
 cmsRun test_cfg_newEB.py chainSequence=6 pedestalsHighGain=CondObjects/data/Ped_HighGain_L8.txt pedestalsLowGain=CondObjects/data/Ped_LowGain_L8.txt runNumber=930 configuration=2 runType=HGCRun
-   >> chainSequence=6 to run Layer_Sum_Analyzer 
+   >> chainSequence=1 Runs on Digis produces pedestal files in the path specifienfied under pedestalsHighGain and pedestalsLowGain
+   >> chainSequence=4 Runs event Display analyzer
+   >> chainSequence=5 Runs on Recos for each cell of the detector across layers. Use for pion, muon and pedestal run. Correlation across cells as implemented by Kai-Yu are evaluated. 		
+   >> chainSequence=6 to run Layer_Sum_Analyzer: Evaluates for each layer as well as summed across layers: Max hit, Max hit + 6 nearest neighbours(7 cells), 19 cells and All cells --- WITH EACH CELL PICKED SUBJECT TO A 2 MIP CUT. Results are available considering only the energy deposited in Silicon, and with dE/dx weights to recover the total energy deposited in the absorbers and the silicon sensors.
    >> configuration=-1 ADCtoMIP for CERN (0 = ADCtoMIP for FNAL) 
    >> configuration=1 (2) to select weights for 5X0 (25X0) 8 layers cern runs
    >> test_cfg_newEB.py to load the reqarranged .txt:
