@@ -67,8 +67,7 @@ double Return_RMS(double mean_sq, double mean)
 	return sqrt(mean_sq - mean * mean);
 }
 bool DoCommonMode = 1;
-bool PED = 0;
-bool UP = 1;
+int Event_multiple = 1;
 
 edm::Service<TFileService> fs;
 class RecHitPlotter_HighGain_New : public edm::one::EDAnalyzer<edm::one::SharedResources>
@@ -99,37 +98,9 @@ private:
 	std::pair<double, double> CellCentreXY;
 	std::vector<std::pair<double, double>>::const_iterator it;
 	const static int NLAYERS  = 1;
-	double Mean_SUM[128] = {0.};
-	double Mean_SQ_SUM[128] = {0.};
-	double Mean_PROD_SUM[128][128] = { {0.} };
-	double Diff_IJ_SUM[128][128] = { {0.} };
-	double Mean_i = 0.;
-	double Mean_j = 0.;
-	double RMS_i = 0.;
-	double RMS_j = 0.;
-	double Correlation = 0.;
-	double Covariance = 0.;
-	TH2F *Covar_hist;
-	TH2F *Correl_hist;
-	TH2F *DiffIJ_hist;
-//TH2D *Covar_hist =  new TH2D("Covar_hist","Covar_hist",nphistar_bins-1,phistar_var,nphistar_bins-1,phistar_var);
-//TH2D *Correl_hist =  new TH2D("Correl_hist","Correl_hist",nphistar_bins-1,phistar_var,nphistar_bins-1,phistar_var);
-
-
 	int Sensor_Iu = 0;
 	int Sensor_Iv = 0;
-	double ADC_Chan[128][9000];
-	TH1F    *h_RecHit_layer_summed[MAXLAYERS];
-	TH1F* Sum_Cluster_ADC;
-	TH1F* Sum_Cluster_Max;
-	TH1F* AllCells_Ped;
-	TH1F* AllCells_CM;
-	TProfile* SKI1_Ped_Event;
-	TProfile* SKI2_Ped_Event;
-	TH1F* CG_X;
-	TH1F* CG_Y;
 	char name[50], title[50];
-	double ExtrapolateZ = 20.;// distance along Z the tracks are extrapolated by(in cm) to hit the first layer.
 };
 
 //
@@ -148,25 +119,6 @@ RecHitPlotter_HighGain_New::RecHitPlotter_HighGain_New(const edm::ParameterSet& 
 	//now do what ever initialization is needed
 	HGCalTBRecHitCollection_ = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 //Booking 2 "hexagonal" histograms to display the sum of Rechits and the Occupancy(Hit > 5 GeV) in 1 sensor in 1 layer. To include all layers soon. Also the 1D Rechits per cell in a sensor is booked here.
-	Covar_hist  = fs->make<TH2F>("Covar_hist", "Covar_hist", 128, 0, 128, 128, 0, 128);
-	Correl_hist = fs->make<TH2F>("Correl_hist", "Correl_hist", 128, 0, 128, 128, 0, 128);
-	DiffIJ_hist = fs->make<TH2F>("DiffIJ_hist", "DiffIJ_hist", 128, 0, 128, 128, 0, 128);
-	CG_X = fs->make<TH1F>("CG_X", "CG X[cm]", 100, -5, 5);
-	CG_Y = fs->make<TH1F>("CG_Y", "CG Y[cm]", 100, -5, 5);
-	AllCells_Ped = fs->make<TH1F>("AllCells_Ped", "AllCells_Ped", 500, -250, 250);
-	AllCells_CM = fs->make<TH1F>("AllCells_CM", "AllCells_CM", 500, -250, 250);
-	SKI1_Ped_Event = fs->make<TProfile>("SKI1_Ped_Event", "Profile per event of pedestal for SKI1", 5000, 1, 5000, 0, 400);
-	SKI2_Ped_Event = fs->make<TProfile>("SKI2_Ped_Event", "Profile per event of pedestal for SKI2", 5000, 1, 5000, 0, 400);
-	Sum_Cluster_ADC = fs->make<TH1F>("Sum_Cluster_ADC", "Sum_Cluster_ADC",  1000, -4000., 4000.);
-	Sum_Cluster_Max = fs->make<TH1F>("Sum_Cluster_Max", "Sum_Cluster_Max",  1000, -4000., 4000.);
-	for(int nlayers = 0; nlayers < MAXLAYERS; nlayers++) {
-		sprintf(name, "FullLayer_RecHits_Layer%i_Summed", nlayers + 1);
-		sprintf(title, "Sum of RecHits Layer%i Summed over the cells", nlayers + 1);
-		h_RecHit_layer_summed[nlayers] = fs->make<TH1F>(name, title, 4000, -2000., 2000.);
-		h_RecHit_layer_summed[nlayers]->GetXaxis()->SetTitle("RecHits[GeV]");
-	}//loop over layers end here
-
-
 }//contructor ends here
 
 
@@ -219,12 +171,8 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 	edm::Handle<HGCalTBRecHitCollection> Rechits1;
 	event.getByToken(HGCalTBRecHitCollection_, Rechits1);
 
-	double Average_Pedestal_Per_Event1_Full = 0, Average_Pedestal_Per_Event1_Half = 0, Average_Pedestal_Per_Event2_Full = 0, Average_Pedestal_Per_Event2_Half = 0;
-	int Cell_counter1_Full = 0, Cell_counter2_Full = 0, Cell_counter1_Half = 0, Cell_counter2_Half = 0;
-	double iux_Max = 0., iyy_Max = 0.;
-	int ADC_TMP = 0;
-
-	int Sum_Cluster_Tmp = 0;
+	double Average_Pedestal_Per_Event_Full = 0, Average_Pedestal_Per_Event_Half = 0, Average_Pedestal_Per_Event_MB = 0, Average_Pedestal_Per_Event_Merged = 0;
+	int Cell_counter_Full = 0, Cell_counter_Half = 0, Cell_counter_MB = 0, Cell_counter_Merged = 0;
 
 	/*
 		for(auto Track : *Tracks) {
@@ -234,100 +182,57 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 
 	for(auto RecHit1 : *Rechits1) {
 		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit1.id()).layer(), (RecHit1.id()).sensorIU(), (RecHit1.id()).sensorIV(), (RecHit1.id()).iu(), (RecHit1.id()).iv(), sensorsize);
-		double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
-		double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-		if((RecHit1.energyHigh() > ADC_TMP)) {
 
-			ADC_TMP = RecHit1.energyHigh();
-			iux_Max = iux;
-			iyy_Max = iyy;
-		}
-		if(RecHit1.energyHigh() > 20.) continue;
-//             if(UP && fabs(iux - iux_Max) > 0. && fabs(iyy - iyy_Max) > 0. && RecHit1.energyHigh()< 2000000.){
-		if(((RecHit1.id()).cellType() == 0) || ((RecHit1.id()).cellType() == 5)) {
+		if(RecHit1.energyHigh() > 30.) continue;
 
-			if(( iyy >= -0.25 )) {
-				Cell_counter1_Full++;
-				Average_Pedestal_Per_Event1_Full += RecHit1.energyHigh();
-			}
+		if(((RecHit1.id()).cellType() == 0) || ((RecHit1.id()).cellType() == 4)) {
 
-			if((iyy <= -0.5)) {
-				Cell_counter2_Full++;
-				Average_Pedestal_Per_Event2_Full += RecHit1.energyHigh();
-			}
-
-			/*
-			                      Cell_counter1_Full++;
-			                      Average_Pedestal_Per_Event1_Full += RecHit1.energyHigh();
-					      Cell_counter2_Full++;
-			                      Average_Pedestal_Per_Event2_Full += RecHit1.energyHigh();
-			*/
-		}
-
-		if(((RecHit1.id()).cellType() == 2) || ((RecHit1.id()).cellType() == 3) || ((RecHit1.id()).cellType() == 4) ) {
-
-			if(((iyy >= -0.25 ))) {
-				Cell_counter1_Half++;
-				Average_Pedestal_Per_Event1_Half += RecHit1.energyHigh();
-			}
-			if(((iyy <= -0.5))) {
-				Cell_counter2_Half++;
-				Average_Pedestal_Per_Event2_Half += RecHit1.energyHigh();
-			}
-		}
-
-//               }
-
-
-		if(!UP) {
-			if(((RecHit1.id()).cellType() == 0)) {
-
-				if((iux <= -0.25 && iux >= -3.25) && (iyy <= -0.25 && iyy >= -5.25 ) && (RecHit1.id()).cellType() == 0) {
-					Cell_counter1_Full++;
-					Average_Pedestal_Per_Event1_Full += RecHit1.energyHigh();
-				}
-
-				if((iux >= -0.25 && iux <= 3.25) && (iyy <= -0.25 && iyy >= -5.25 ) && (RecHit1.id()).cellType() == 0) {
-					Cell_counter2_Full++;
-					Average_Pedestal_Per_Event2_Full += RecHit1.energyHigh();
-				}
-			}
-
-			if(((RecHit1.id()).cellType() == 2) || ((RecHit1.id()).cellType() == 3) || ((RecHit1.id()).cellType() == 4) ) {
-
-				if((iux <= 0.25 && iyy >= -0.25 ) || (iux < -0.5) ) {
-					Cell_counter1_Half++;
-					Average_Pedestal_Per_Event1_Half += RecHit1.energyHigh();
-				}
-				if((iux >= 0.25 && iyy <= -0.5) || (iux >= 0.5) ) {
-					Cell_counter2_Half++;
-					Average_Pedestal_Per_Event2_Half += RecHit1.energyHigh();
-				}
-			}
+				Cell_counter_Full++;
+				Average_Pedestal_Per_Event_Full += RecHit1.energyHigh();
 
 		}
 
+		if((RecHit1.id()).cellType() == 5) {
+
+                                Cell_counter_Merged++;
+                                Average_Pedestal_Per_Event_Merged += RecHit1.energyHigh();
+                        
+                }
+
+		if((RecHit1.id()).cellType() == 3) {
+
+                                Cell_counter_MB++;
+                                Average_Pedestal_Per_Event_MB += RecHit1.energyHigh();
+
+                }
+
+		if((RecHit1.id()).cellType() == 2) {
+
+				Cell_counter_Half++;
+				Average_Pedestal_Per_Event_Half += RecHit1.energyHigh();
+			
+		}
 
 	}
-	if(ADC_TMP > 50.) {
-		CG_X->Fill(iux_Max);
-		CG_Y->Fill(iyy_Max);
-		Sum_Cluster_Max->Fill(ADC_TMP);
-//   cout<<endl<<" X= "<<CG_X<<" Y= "<<CG_Y<<" Max ADC= "<<ADC_TMP<<endl;
-	}
-
 	TH2Poly *h_RecHit_layer[MAXLAYERS];
-	int evId = event.id().event() - 1;
-	int iLayer = (evId % (MAXLAYERS * EVENTSPERSPILL)) / (EVENTSPERSPILL);
-	cout << endl << " iLayer= " << iLayer << endl;
-	h_RecHit_layer[iLayer] = fs->make<TH2Poly>();
-	sprintf(name, "FullLayer_ADC%i_Layer%i_Event%i", 0, iLayer + 1, evId);
-	sprintf(title, "ADC counts in Layer%i", iLayer + 1);
-	h_RecHit_layer[iLayer]->SetName(name);
-	h_RecHit_layer[iLayer]->SetTitle(title);
-	InitTH2Poly(*h_RecHit_layer[iLayer]);
+	int evId = event.id().event();
+	int spillId = event.luminosityBlock();
+	if(((evId - 1)%Event_multiple) == 0){
+		for(int iLayer = 1; iLayer<= MAXLAYERS; iLayer++){
+			h_RecHit_layer[iLayer - 1] = fs->make<TH2Poly>();
+			sprintf(name, "FullLayer_ADC%i_Layer%i_Spill%i_Event%i", 0, iLayer, spillId, evId);
+			sprintf(title, "ADC counts in Layer%i Spill%i Event%i", iLayer, spillId, evId);
+			h_RecHit_layer[iLayer -1]->SetName(name);
+			h_RecHit_layer[iLayer -1]->SetTitle(title);
+			InitTH2Poly(*h_RecHit_layer[iLayer -1]);
+		}		
+	}
+
+	
 
 	for(auto RecHit : *Rechits) {
+		if(((evId - 1)%Event_multiple) != 0) continue;
+		
 		if(!IsCellValid.iu_iv_valid((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize))  continue;
 		int n_layer = (RecHit.id()).layer();
 		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize);
@@ -335,76 +240,29 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 		double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
 		uint32_t EID = essource_.emap_.detId2eid(RecHit.id());
 		HGCalTBElectronicsId eid(EID);
-		AllCells_Ped->Fill(RecHit.energyHigh());
-		if(RecHit.energyHigh() > 55) cout << endl << " Energy= " << RecHit.energyHigh() << " u= " << iux << " v= " << iyy << " event number= " << event.id().event() << endl;
-//                if((RecHit.id()).iu() == 4 && (RecHit.id()).iv() == 2) continue;
 		if(!DoCommonMode) {
-			h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh());
+			h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy());
 		}
-		if(((RecHit.id()).cellType() == 0 ) || ((RecHit.id()).cellType() == 5) ) {
-			if((iyy >= -0.25 ) ) {
-				if(!PED && DoCommonMode) {
-					if((RecHit.id()).cellType() == 0) {
-						h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, (RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Full / (Cell_counter1_Full))) );
-
-					}
-					Sum_Cluster_Tmp += (RecHit.energyHigh());
-				}
-				h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Full / (Cell_counter1_Full)));
-				if(DoCommonMode) {
-					AllCells_CM->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Full / (Cell_counter1_Full)));
-				}
-//                          Sum_Cluster_ADC->Fill(RecHit.energyHigh()- (Average_Pedestal_Per_Event1_Full/(Cell_counter1_Full)));
-//                          CG_X->Fill(iux);
-//                          CG_Y->Fill(iyy);
-			} else if(( iyy < -0.50 )) {
-				if(!PED && DoCommonMode) {
-					if((RecHit.id()).cellType() == 0) h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, (RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Full / (Cell_counter2_Full))) );
-					Sum_Cluster_Tmp += (RecHit.energyHigh());
-
-				}
-				h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Full / (Cell_counter2_Full)));
-				if(DoCommonMode) {
-					AllCells_CM->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Full / (Cell_counter2_Full)));
-				}
-//                          Sum_Cluster_ADC->Fill(RecHit.energyHigh()- (Average_Pedestal_Per_Event2_Full/(Cell_counter2_Full)));
-//                          CG_X->Fill(iux);
-//                          CG_Y->Fill(iyy);
+		else{//If Common mode subtraction is enabled
+			if(((RecHit.id()).cellType() == 0 ) || ((RecHit.id()).cellType() == 4) ) {
+				h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, (RecHit.energy() - (Average_Pedestal_Per_Event_Full / (Cell_counter_Full))) );
 			}
-		}
-		if((RecHit.id()).cellType() == 1 ) {
-			if(!PED) h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh());
-			if(DoCommonMode) {
-				AllCells_CM->Fill(RecHit.energyHigh());
-			}
-		}
-		if(((RecHit.id()).cellType() != 5) && ((RecHit.id()).cellType() != 1) && ((RecHit.id()).cellType() != 0)) {
-			if((iyy >= -0.25 ) ) {
-				if(!PED && DoCommonMode) {
-					h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Half / Cell_counter1_Half) );
-
-				}
-//				h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Half / Cell_counter1_Half));
-				if(DoCommonMode) {
-					AllCells_CM->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event1_Half / (Cell_counter1_Half)));
-				}
-			}
-			if(( iyy < -0.50 )) {
-				if(!PED && DoCommonMode) {
-					h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Half / Cell_counter2_Half) );
-
-				}
-				h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Half / Cell_counter2_Half));
-				if(DoCommonMode) {
-					AllCells_CM->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event2_Half / (Cell_counter2_Half)));
-				}
+			if((RecHit.id()).cellType() == 1 ) {
+				h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy());
 			}
 
-		}
+			if((RecHit.id()).cellType() != 2 ) {
+				h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy() - (Average_Pedestal_Per_Event_Half / Cell_counter_Half) );
+			}
+			if((RecHit.id()).cellType() != 3 ) {
+                                h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy() - (Average_Pedestal_Per_Event_MB/Cell_counter_MB) );
+                        }
+			if((RecHit.id()).cellType() != 5 ) {
+                                h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy() - (Average_Pedestal_Per_Event_Merged/Cell_counter_Merged) );
+                        }
 
-	}
-
-	if(Sum_Cluster_Tmp > 2. ) Sum_Cluster_ADC->Fill(Sum_Cluster_Tmp);
+		}//else common mode condition
+	}//Rechits loop ends here
 
 
 }//analyze method ends here

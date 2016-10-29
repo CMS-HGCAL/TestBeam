@@ -94,18 +94,48 @@ private:
 	const static int celly = 15;
 	int Sensor_Iu = 0;
 	int Sensor_Iv = 0;
-	TH1F* Full_Cell[MAXLAYERS];
-	TH1F* Half_Cell[MAXLAYERS];
-	TH1F* MB_Cell[MAXLAYERS];
-	TH1F* Calib_Pads[MAXLAYERS];
-	TH1F* Merged_Cell[MAXLAYERS];
+  int Eventnumber=0;
+  int Eventnumber_1=Eventnumber;
+  int pre_Layer=0;
+  /*double h_p_Channel[128][6000][MAXLAYERS];
+  double l_p_Channel[128][6000][MAXLAYERS];
+  double h_A_Channel[128][6000][MAXLAYERS];
+  double l_A_Channel[128][6000][MAXLAYERS];*/
+  double ADC_Channel[4][128][6000][MAXLAYERS];
+  TH2F* h_pre_CM_Final[MAXLAYERS];
+  TH2F* l_pre_CM_Final[MAXLAYERS];
+  TH2F* h_post_CM_Final[MAXLAYERS];
+  TH2F* l_post_CM_Final[MAXLAYERS];
+  TH2F* l_pre_CM_Final_Compare[MAXLAYERS];
+  TH2F* h_pre_CM_AllLayer_Final;
+  TH2F* l_pre_CM_AllLayer_Final;
+  TH2F* h_post_CM_AllLayer_Final;
+  TH2F* l_post_CM_AllLayer_Final;
+  //TH2F* Calculate_Correlation1= new TH2F("Calculate_Correlation1","correlation",2000, -1000., 1000., 2000, -1000., 1000.);
+  //TH2F* Calculate_Correlation2= new TH2F("Calculate_Correlation2","correlation",2000, -1000., 1000., 2000, -1000., 1000.);
+  //TH2F* Calculate_Correlation3= new TH2F("Calculate_Correlation3","correlation",2000, -1000., 1000., 2000, -1000., 1000.);
+  //TH2F* Calculate_Correlation4= new TH2F("Calculate_Correlation4","correlation",2000, -1000., 1000., 2000, -1000., 1000.);
+	TH1F* h_Full_Cell[2][MAXLAYERS];
+	TH1F* h_Half_Cell[2][MAXLAYERS];
+	TH1F* h_MB_Cell[2][MAXLAYERS];
+	TH1F* h_Calib_Pads[2][MAXLAYERS];
+	TH1F* h_Merged_Cell[2][MAXLAYERS];
+  TH1F* l_Full_Cell[2][MAXLAYERS];
+  TH1F* l_Half_Cell[2][MAXLAYERS];
+  TH1F* l_MB_Cell[2][MAXLAYERS];
+  TH1F* l_Calib_Pads[2][MAXLAYERS];
+  TH1F* l_Merged_Cell[2][MAXLAYERS];
 	TH1F  *h_digi_layer_channel[MAXSKIROCS][64][MAXLAYERS];
 //        TH2F  *h_digi_layer_channel_CM[2][64];
 	TH1F* Sum_Cluster_ADC;
 	TH1F* AllCells_Ped;
 	TH1F* AllCells_CM;
+  TH1F* h_Correlation_CellArea[2][MAXLAYERS];
+  TH1F* h_Correlation_CellPerimeter[2][MAXLAYERS];
+  TH1F* l_Correlation_CellArea[2][MAXLAYERS];
+  TH1F* l_Correlation_CellPerimeter[2][MAXLAYERS];
 	TH2F* Noise_2D_Profile;
-	char name[50], title[50];
+  char name[50], title[50],xtitle[50],ytitle[50];
 };
 
 //
@@ -133,25 +163,72 @@ RecHitPlotter_HighGain_Correlation_CM::RecHitPlotter_HighGain_Correlation_CM(con
 	sprintf(title, "Noise 2D Profile Layer");
 	Noise_2D_Profile = fs->make<TH2F>(name, title, 2048, 0, 2048, 8000, -4000, 4000);
 	for(int ILayer = 0; ILayer < MAXLAYERS; ILayer++) {
-		sprintf(name, "Full_Cell_Layer_%i", ILayer);
-		sprintf(title, "Full Cell Layer %i", ILayer);
-		Full_Cell[ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
-		sprintf(name, "Half_Cell_Layer_%i", ILayer);
-		sprintf(title, "Half Cell Layer %i", ILayer);
-		Half_Cell[ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
-		sprintf(name, "MB_Cell_Layer_%i", ILayer);
-		sprintf(title, "MB Cell Layer %i", ILayer);
-		MB_Cell[ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
-		sprintf(name, "Calib_Pads_Layer_%i", ILayer);
-		sprintf(title, "Calib Pads Layer %i", ILayer);
-		Calib_Pads[ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
-		sprintf(name, "Merged_Cell_Layer_%i", ILayer);
-		sprintf(title, "Merged Cell Layer %i", ILayer);
-		Merged_Cell[ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
+	  for(int ISkiroc=1;ISkiroc<3;++ISkiroc){
+	    //printf("ISkiroc=%d\n",ISkiroc);
+	    sprintf(name, "HighGainCommonModeVsCellArea_%i", ILayer+1);
+	    sprintf(title, "HighGainCommonMode Noise Vs CellArea Layer %i", ILayer+1);
+	    h_Correlation_CellArea[ISkiroc-1][ILayer] = fs->make<TH1F>(name, title, 1000, 0., 1.5);
+	    h_Correlation_CellArea[ISkiroc-1][ILayer]->GetXaxis()->SetTitle("Area[cm^{2}]");
+	    h_Correlation_CellArea[ISkiroc-1][ILayer]->GetYaxis()->SetTitle("Common Mode Noise");
+	    h_Correlation_CellArea[ISkiroc-1][ILayer]->SetMarkerStyle(20);
+
+	    sprintf(name, "HighGainCommonModeVsCellPerimeter_%i", ILayer+1);
+	    sprintf(title, "HighGainCommonMode Noise Vs CellPerimeter Layer %i", ILayer+1);
+	    h_Correlation_CellPerimeter[ISkiroc-1][ILayer] = fs->make<TH1F>(name, title, 1000, 0., 5.);
+	    h_Correlation_CellPerimeter[ISkiroc-1][ILayer]->GetXaxis()->SetTitle("Perimeter[cm]");
+	    h_Correlation_CellPerimeter[ISkiroc-1][ILayer]->GetYaxis()->SetTitle("Common Mode Noise");
+	    h_Correlation_CellPerimeter[ISkiroc-1][ILayer]->SetMarkerStyle(20);
+	    
+	    sprintf(name, "LowGainCommonModeVsCellArea_%i", ILayer+1);
+	    sprintf(title, "LowgainCommonMode Noise Vs CellArea Layer %i", ILayer+1);
+	    l_Correlation_CellArea[ISkiroc-1][ILayer] = fs->make<TH1F>(name, title, 1000, 0., 1.5);
+	    l_Correlation_CellArea[ISkiroc-1][ILayer]->GetXaxis()->SetTitle("Area[cm^{2}]");
+	    l_Correlation_CellArea[ISkiroc-1][ILayer]->GetYaxis()->SetTitle("Common Mode Noise");
+	    l_Correlation_CellArea[ISkiroc-1][ILayer]->SetMarkerStyle(20);
+
+	    sprintf(name, "LowGainCommonModeVsCellPerimeter_%i", ILayer+1);
+	    sprintf(title, "LoGainCommonMode Noise Vs CellPerimeter Layer %i", ILayer+1);
+	    l_Correlation_CellPerimeter[ISkiroc-1][ILayer] = fs->make<TH1F>(name, title, 1000, 0., 5.);
+	    l_Correlation_CellPerimeter[ISkiroc-1][ILayer]->GetXaxis()->SetTitle("Perimeter[cm]");
+	    l_Correlation_CellPerimeter[ISkiroc-1][ILayer]->GetYaxis()->SetTitle("Common Mode Noise");
+	    l_Correlation_CellPerimeter[ISkiroc-1][ILayer]->SetMarkerStyle(20);
+	  
+	    sprintf(name, "H_Full_Cell_Layer_%i_Ski%d", ILayer+1,ISkiroc);
+	    sprintf(title, "H_Full Cell Layer %i Ski %d", ILayer+1,ISkiroc);
+		h_Full_Cell[ISkiroc-1][ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
+		sprintf(name, "H_Half_Cell_Layer_%i_Ski%d", ILayer+1,ISkiroc);
+		sprintf(title, "H_Half Cell Layer %i Ski %d", ILayer+1,ISkiroc);
+		h_Half_Cell[ISkiroc-1][ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
+		sprintf(name, "H_MB_Cell_Layer_%i_Ski%d", ILayer+1,ISkiroc);
+		sprintf(title, "H_MB Cell Layer %i Ski %d", ILayer+1,ISkiroc);
+		h_MB_Cell[ISkiroc-1][ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
+		sprintf(name, "H_Calib_Pads_Layer_%i_Ski%d", ILayer+1,ISkiroc);
+		sprintf(title, "H_Calib Pads Layer %i Ski %d", ILayer+1,ISkiroc);
+		h_Calib_Pads[ISkiroc-1][ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
+		sprintf(name, "H_Merged_Cell_Layer_%i_Ski%d", ILayer+1,ISkiroc);
+		sprintf(title, "H_Merged Cell Layer %i Ski %d", ILayer+1,ISkiroc);
+		h_Merged_Cell[ISkiroc-1][ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
+
+		sprintf(name, "L_Full_Cell_Layer_%i_Ski%d", ILayer+1,ISkiroc);
+		sprintf(title, "L_Full Cell Layer %i Ski %d", ILayer+1,ISkiroc);
+		l_Full_Cell[ISkiroc-1][ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
+		sprintf(name, "L_Half_Cell_Layer_%i_Ski%d", ILayer+1,ISkiroc);
+		sprintf(title, "L_Half Cell Layer %i Ski %d", ILayer+1,ISkiroc);
+		l_Half_Cell[ISkiroc-1][ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
+		sprintf(name, "L_MB_Cell_Layer_%i_Ski%d", ILayer+1,ISkiroc);
+		sprintf(title, "L_MB Cell Layer %i Ski %d", ILayer+1,ISkiroc);
+		l_MB_Cell[ISkiroc-1][ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
+		sprintf(name, "L_Calib_Pads_Layer_%i_Ski%d", ILayer+1,ISkiroc);
+		sprintf(title, "L_Calib Pads Layer %i Ski %d", ILayer+1,ISkiroc);
+		l_Calib_Pads[ISkiroc-1][ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
+		sprintf(name, "L_Merged_Cell_Layer_%i_Ski%d", ILayer+1,ISkiroc);
+		sprintf(title, "L_Merged Cell Layer %i Ski %d", ILayer+1,ISkiroc);
+		l_Merged_Cell[ISkiroc-1][ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
+	  }
 		for(int ISkiroc = 1; ISkiroc <= MAXSKIROCS; ISkiroc++) {
 			for(int Channel = 0; Channel < 64; Channel++) {
-				sprintf(name, "Ski_%i_Channel_%i_Layer_%i", ISkiroc, Channel, ILayer);
-				sprintf(title, "Ski %i Channel %i Layer %i", ISkiroc, Channel, ILayer);
+				sprintf(name, "Ski_%i_Channel_%i_Layer_%i", ISkiroc, Channel, ILayer+1);
+				sprintf(title, "Ski %i Channel %i Layer %i", ISkiroc, Channel, ILayer+1);
 				h_digi_layer_channel[ISkiroc - 1][Channel][ILayer] = fs->make<TH1F>(name, title, 1000, -500., 500.);
 				/*
 				        			 sprintf(name, "Ski_%i_Channel_%i_CM",ISkiroc,Channel);
@@ -160,8 +237,59 @@ RecHitPlotter_HighGain_Correlation_CM::RecHitPlotter_HighGain_Correlation_CM(con
 				*/
 			}
 		}
-	}
+		sprintf(name,"h_pre_CM_correlation_Layer%d",ILayer+1);
+		sprintf(title,"h_pre_CM_correlation_Layer%d",ILayer+1);
+		h_pre_CM_Final[ILayer] = fs->make<TH2F>(name,title, 128, 0, 128, 128, 0 ,128);
+		h_pre_CM_Final[ILayer] -> GetXaxis()-> SetTitle("Channel");
+		h_pre_CM_Final[ILayer] -> GetYaxis()-> SetTitle("Channel");
 
+		sprintf(name,"h_post_CM_correlation_Layer%d",ILayer+1);
+                sprintf(title,"h_post_CM_correlation_Layer%d",ILayer+1);
+                h_post_CM_Final[ILayer] = fs->make<TH2F>(name,title, 128, 0, 128, 128, 0 ,128);
+                h_post_CM_Final[ILayer] -> GetXaxis()-> SetTitle("Channel");
+                h_post_CM_Final[ILayer] -> GetYaxis()-> SetTitle("Channel");
+
+		sprintf(name,"l_pre_CM_correlation_Layer%d",ILayer+1);
+		sprintf(title,"l_pre_CM_correlation_Layer%d",ILayer+1);
+                l_pre_CM_Final[ILayer] = fs->make<TH2F>(name,title, 128, 0, 128, 128, 0 ,128);
+                l_pre_CM_Final[ILayer] -> GetXaxis()-> SetTitle("Channel");
+		l_pre_CM_Final[ILayer] -> GetYaxis()-> SetTitle("Channel");
+
+                sprintf(name,"l_post_CM_correlation_Layer%d",ILayer+1);
+                sprintf(title,"l_post_CM_correlation_Layer%d",ILayer+1);
+                l_post_CM_Final[ILayer] = fs->make<TH2F>(name,title, 128, 0, 128, 128, 0 ,128);
+		l_post_CM_Final[ILayer] -> GetXaxis()-> SetTitle("Channel");
+                l_post_CM_Final[ILayer] -> GetYaxis()-> SetTitle("Channel");
+
+		//sprintf(name,"h_post_CM_correlation_Layer%d_C",ILayer+1);
+                //sprintf(title,"h_post_CM_correlation_Layer%d_C",ILayer+1);
+                //l_pre_CM_Final_Compare[ILayer] = fs->make<TH2F>(name,title, 128, 0, 127, 128, 0 ,127);
+                //l_pre_CM_Final_Compare[ILayer] -> GetXaxis()-> SetTitle("Channel");
+		//l_pre_CM_Final_Compare[ILayer] -> GetYaxis()-> SetTitle("Channel");
+	}
+	sprintf(name,"h_pre_CM_correlation_AllLayers");
+	sprintf(title,"h_pre_CM_correlation_AllLayers");
+	h_pre_CM_AllLayer_Final = fs->make<TH2F>(name,title, 128*8, 0, 128*8, 128*8, 0 ,128*8);
+	h_pre_CM_AllLayer_Final -> GetXaxis()-> SetTitle("Channel");
+	h_pre_CM_AllLayer_Final -> GetYaxis()-> SetTitle("Channel");
+
+	sprintf(name,"h_post_CM_correlation_AllLayers");
+	sprintf(title,"h_post_CM_correlation_AllLayers");
+	h_post_CM_AllLayer_Final = fs->make<TH2F>(name,title, 128*8, 0, 128*8, 128*8, 0 ,128*8);
+	h_post_CM_AllLayer_Final -> GetXaxis()-> SetTitle("Channel");
+	h_post_CM_AllLayer_Final -> GetYaxis()-> SetTitle("Channel");
+
+	sprintf(name,"l_pre_CM_correlation_AllLayers");
+	sprintf(title,"l_pre_CM_correlation_AllLayers");
+	l_pre_CM_AllLayer_Final = fs->make<TH2F>(name,title, 128*8, 0, 128*8, 128*8, 0 ,128*8);
+	l_pre_CM_AllLayer_Final -> GetXaxis()-> SetTitle("Channel");
+	l_pre_CM_AllLayer_Final -> GetYaxis()-> SetTitle("Channel");
+
+	sprintf(name,"l_post_CM_correlation_AllLayers");
+	sprintf(title,"l_post_CM_correlation_AllLayers");
+	l_post_CM_AllLayer_Final = fs->make<TH2F>(name,title, 128*8, 0, 128*8, 128*8, 0 ,128*8);
+	l_post_CM_AllLayer_Final -> GetXaxis()-> SetTitle("Channel");
+	l_post_CM_AllLayer_Final -> GetYaxis()-> SetTitle("Channel");
 }//contructor ends here
 
 
@@ -182,7 +310,6 @@ RecHitPlotter_HighGain_Correlation_CM::~RecHitPlotter_HighGain_Correlation_CM()
 void
 RecHitPlotter_HighGain_Correlation_CM::analyze(const edm::Event& event, const edm::EventSetup& setup)
 {
-
 	using namespace edm;
 
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
@@ -190,91 +317,124 @@ RecHitPlotter_HighGain_Correlation_CM::analyze(const edm::Event& event, const ed
 	edm::Handle<HGCalTBRecHitCollection> Rechits1;
 	event.getByToken(HGCalTBRecHitCollection_, Rechits1);
 
-	double Average_Pedestal_Per_Event_Full[MAXLAYERS] = {0};
-	int Cell_counter[MAXLAYERS] = {0};
-	double Average_Pedestal_Per_Event_Half[MAXLAYERS] = {0};
-	int Cell_counter_Half[MAXLAYERS] = {0};
-	double Average_Pedestal_Per_Event_MB[MAXLAYERS] = {0};
-	int Cell_counter_MB[MAXLAYERS] = {0};
-	double Average_Pedestal_Per_Event_Calib_Pad[MAXLAYERS] = {0};
-	int Cell_counter_Calib_Pad[MAXLAYERS] = {0};
-	double Average_Pedestal_Per_Event_Merged_Cell[MAXLAYERS] = {0};
-	int Cell_counter_Merged_Cell[MAXLAYERS] = {0};
+	double h_Average_Pedestal_Per_Event_Full[2][MAXLAYERS]           = {{0}};
+	double l_Average_Pedestal_Per_Event_Full[2][MAXLAYERS]           = {{0}};
+	int    Cell_counter[2][MAXLAYERS]                                = {{0}};   
+	double h_Average_Pedestal_Per_Event_Half[2][MAXLAYERS]           = {{0}};
+	double l_Average_Pedestal_Per_Event_Half[2][MAXLAYERS]           = {{0}};
+	int    Cell_counter_Half[2][MAXLAYERS]                           = {{0}};
+	double h_Average_Pedestal_Per_Event_MB[2][MAXLAYERS]             = {{0}};
+	double l_Average_Pedestal_Per_Event_MB[2][MAXLAYERS]             = {{0}};
+	int    Cell_counter_MB[2][MAXLAYERS]                             = {{0}};
+	double h_Average_Pedestal_Per_Event_Calib_Pad[2][MAXLAYERS]      = {{0}};
+	double l_Average_Pedestal_Per_Event_Calib_Pad[2][MAXLAYERS]      = {{0}};
+	int    Cell_counter_Calib_Pad[2][MAXLAYERS]                      = {{0}};
+	double h_Average_Pedestal_Per_Event_Merged_Cell[2][MAXLAYERS]    = {{0}};
+	double l_Average_Pedestal_Per_Event_Merged_Cell[2][MAXLAYERS]    = {{0}};
+	int    Cell_counter_Merged_Cell[2][MAXLAYERS]                    = {{0}};
 	for(auto RecHit1 : *Rechits1) {
 		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit1.id()).layer(), (RecHit1.id()).sensorIU(), (RecHit1.id()).sensorIV(), (RecHit1.id()).iu(), (RecHit1.id()).iv(), sensorsize);
 		uint32_t EID = essource_.emap_.detId2eid(RecHit1.id());
 		HGCalTBElectronicsId eid(EID);
-//                if((eid.iskiroc()%2 == 1) && (eid.ichan() == 0 || eid.ichan() == 1 )) continue;
-//             double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
-//             double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-//               Cell_counter++;
-//               Average_Pedestal_Per_Event_Full += RecHit1.energyHigh();
-               if(RecHit1.energyHigh() > 32.) continue;
+		if(RecHit1.energyHigh() > 30) continue;
 		if((RecHit1.id()).cellType() == 0) {
-//                       Full_Cell[(RecHit1.id()).layer() - 1]->Fill(RecHit1.energyHigh());
-			Cell_counter[(RecHit1.id()).layer() - 1]++;
-			Average_Pedestal_Per_Event_Full[(RecHit1.id()).layer() - 1] += RecHit1.energyHigh();
-		} else if((RecHit1.id()).cellType() == 2) {
-//		       Half_Cell[(RecHit1.id()).layer() - 1]->Fill(RecHit1.energyHigh());
-			Cell_counter_Half[(RecHit1.id()).layer() - 1]++;
-			Average_Pedestal_Per_Event_Half[(RecHit1.id()).layer() - 1] += RecHit1.energyHigh();
-		} else if(((RecHit1.id()).cellType() == 3) && ( ((RecHit1.id()).iu() == 4 && (RecHit1.id()).iv() == 3) || ((RecHit1.id()).iu() == -7 && (RecHit1.id()).iv() == 4) || ((RecHit1.id()).iu() == 7 && (RecHit1.id()).iv() == -3) || ((RecHit1.id()).iu() == -4 && (RecHit1.id()).iv() == -3) )) {
-//		     MB_Cell[(RecHit1.id()).layer() - 1]->Fill(RecHit1.energyHigh());
-			Cell_counter_MB[(RecHit1.id()).layer() - 1]++;
-			Average_Pedestal_Per_Event_MB[(RecHit1.id()).layer() - 1] += RecHit1.energyHigh();
-		} else if(((RecHit1.id()).cellType() == 3) && (((RecHit1.id()).iu() == -4 && (RecHit1.id()).iv() == 6) || ((RecHit1.id()).iu() == -2 && (RecHit1.id()).iv() == 6) || ((RecHit1.id()).iu() == 4 && (RecHit1.id()).iv() == -7) || ((RecHit1.id()).iu() == 2 && (RecHit1.id()).iv() == -6))) {
-//                     Merged_Cell[(RecHit1.id()).layer() - 1]->Fill(RecHit1.energyHigh());
-			Cell_counter_Merged_Cell[(RecHit1.id()).layer() - 1]++;
-			Average_Pedestal_Per_Event_Merged_Cell[(RecHit1.id()).layer() - 1] += RecHit1.energyHigh();
-		} else if((RecHit1.id()).cellType() == 1) {
-//                      Calib_Pads[(RecHit1.id()).layer() - 1]->Fill(RecHit1.energyHigh());
-			Cell_counter_Calib_Pad[(RecHit1.id()).layer() - 1]++;
-			Average_Pedestal_Per_Event_Calib_Pad[(RecHit1.id()).layer() - 1] += RecHit1.energyHigh();
+		  Cell_counter[(eid.iskiroc() - 1)%2][(RecHit1.id()).layer() - 1]++;
+		  h_Average_Pedestal_Per_Event_Full[(eid.iskiroc() - 1)%2][(RecHit1.id()).layer() - 1] += RecHit1.energyHigh();
+		  l_Average_Pedestal_Per_Event_Full[(eid.iskiroc() - 1)%2][(RecHit1.id()).layer() - 1] += RecHit1.energyLow();
+		}
+		else if((RecHit1.id()).cellType() == 2) {
+		  Cell_counter_Half[(eid.iskiroc() - 1)%2][(RecHit1.id()).layer() - 1]++;
+		  h_Average_Pedestal_Per_Event_Half[(eid.iskiroc() - 1)%2][(RecHit1.id()).layer() - 1] += RecHit1.energyHigh();
+		  l_Average_Pedestal_Per_Event_Half[(eid.iskiroc() - 1)%2][(RecHit1.id()).layer() - 1] += RecHit1.energyLow();
+		}
+		else if(((RecHit1.id()).cellType() == 3)){
+		  Cell_counter_MB[(eid.iskiroc() - 1)%2][(RecHit1.id()).layer() - 1]++;
+		  h_Average_Pedestal_Per_Event_MB[(eid.iskiroc() - 1)%2][(RecHit1.id()).layer() - 1] += RecHit1.energyHigh();
+		  l_Average_Pedestal_Per_Event_MB[(eid.iskiroc() - 1)%2][(RecHit1.id()).layer() - 1] += RecHit1.energyLow();
+		}
+		else if(((RecHit1.id()).cellType() == 5)) {
+		  Cell_counter_Merged_Cell[(eid.iskiroc() - 1)%2][(RecHit1.id()).layer() - 1]++;
+		  h_Average_Pedestal_Per_Event_Merged_Cell[(eid.iskiroc() - 1)%2][(RecHit1.id()).layer() - 1] += RecHit1.energyHigh();
+		  l_Average_Pedestal_Per_Event_Merged_Cell[(eid.iskiroc() - 1)%2][(RecHit1.id()).layer() - 1] += RecHit1.energyLow();
+		}
+		else if((RecHit1.id()).cellType() == 1) {
+		  Cell_counter_Calib_Pad[(eid.iskiroc() - 1)%2][(RecHit1.id()).layer() - 1]++;
+		  h_Average_Pedestal_Per_Event_Calib_Pad[(eid.iskiroc() - 1)%2][(RecHit1.id()).layer() - 1] += RecHit1.energyHigh();
+		  l_Average_Pedestal_Per_Event_Calib_Pad[(eid.iskiroc() - 1)%2][(RecHit1.id()).layer() - 1] += RecHit1.energyLow();
 		}
 
 	}
 
 
 	for(int iii = 0; iii < MAXLAYERS; iii++) {
-		if(Cell_counter[iii] != 0) Full_Cell[iii]->Fill(Average_Pedestal_Per_Event_Full[iii] / Cell_counter[iii]);
-		if(Cell_counter_Half[iii] != 0) Half_Cell[iii]->Fill(Average_Pedestal_Per_Event_Half[iii] / Cell_counter_Half[iii]);
-		if(Cell_counter_MB[iii] != 0) MB_Cell[iii]->Fill(Average_Pedestal_Per_Event_MB[iii] / Cell_counter_MB[iii]);
-		if(Cell_counter_Merged_Cell[iii] != 0) Merged_Cell[iii]->Fill(Average_Pedestal_Per_Event_Merged_Cell[iii] / Cell_counter_Merged_Cell[iii]);
-		if(Cell_counter_Calib_Pad[iii] != 0) Calib_Pads[iii]->Fill(Average_Pedestal_Per_Event_Calib_Pad[iii] / Cell_counter_Calib_Pad[iii]);
-//            cout<<endl<<"iii= "<<iii<<" "<<Cell_counter[iii]<<" "<<Cell_counter_Half[iii]<<" "<<Cell_counter_MB[iii]<<" "<<Cell_counter_Calib_Pad[iii]<<" "<<Cell_counter_Merged_Cell[iii]<<endl;
+	  for(int ISkiroc=0;ISkiroc<2;++ISkiroc){
+	  if(Cell_counter[ISkiroc][iii] != 0) h_Full_Cell[ISkiroc][iii]->Fill(h_Average_Pedestal_Per_Event_Full[ISkiroc][iii] / Cell_counter[ISkiroc][iii]);
+	  if(Cell_counter_Half[ISkiroc][iii] != 0) h_Half_Cell[ISkiroc][iii]->Fill(h_Average_Pedestal_Per_Event_Half[ISkiroc][iii] / Cell_counter_Half[ISkiroc][iii]);
+	  if(Cell_counter_MB[ISkiroc][iii] != 0) h_MB_Cell[ISkiroc][iii]->Fill(h_Average_Pedestal_Per_Event_MB[ISkiroc][iii] / Cell_counter_MB[ISkiroc][iii]);
+	  if(Cell_counter_Merged_Cell[ISkiroc][iii] != 0) h_Merged_Cell[ISkiroc][iii]->Fill(h_Average_Pedestal_Per_Event_Merged_Cell[ISkiroc][iii] / Cell_counter_Merged_Cell[ISkiroc][iii]);
+	  if(Cell_counter_Calib_Pad[ISkiroc][iii] != 0) h_Calib_Pads[ISkiroc][iii]->Fill(h_Average_Pedestal_Per_Event_Calib_Pad[ISkiroc][iii] / Cell_counter_Calib_Pad[ISkiroc][iii]);
+	  
+	  if(Cell_counter[ISkiroc][iii] != 0) l_Full_Cell[ISkiroc][iii]->Fill(l_Average_Pedestal_Per_Event_Full[ISkiroc][iii] / Cell_counter[ISkiroc][iii]);
+	  if(Cell_counter_Half[ISkiroc][iii] != 0) l_Half_Cell[ISkiroc][iii]->Fill(l_Average_Pedestal_Per_Event_Half[ISkiroc][iii] / Cell_counter_Half[ISkiroc][iii]);
+	  if(Cell_counter_MB[ISkiroc][iii] != 0) l_MB_Cell[ISkiroc][iii]->Fill(l_Average_Pedestal_Per_Event_MB[ISkiroc][iii] / Cell_counter_MB[ISkiroc][iii]);
+	  if(Cell_counter_Merged_Cell[ISkiroc][iii] != 0) l_Merged_Cell[ISkiroc][iii]->Fill(l_Average_Pedestal_Per_Event_Merged_Cell[ISkiroc][iii] / Cell_counter_Merged_Cell[ISkiroc][iii]);
+	  if(Cell_counter_Calib_Pad[ISkiroc][iii] != 0) l_Calib_Pads[ISkiroc][iii]->Fill(l_Average_Pedestal_Per_Event_Calib_Pad[ISkiroc][iii] / Cell_counter_Calib_Pad[ISkiroc][iii]);
+	  }
 	}
 
 	for(auto RecHit : *Rechits) {
-//                if(RecHit.energyHigh() > 32.) continue;
 		if(!IsCellValid.iu_iv_valid((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize))  continue;
 		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize);
-//                double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
-//                double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
 		uint32_t EID = essource_.emap_.detId2eid(RecHit.id());
 		HGCalTBElectronicsId eid(EID);
-//                          TF1* Fit2= (TF1*) h_digi_layer_channel[eid.iskiroc()-1][eid.ichan()]->GetFunction("gaus");
+
+		if((RecHit.id()).layer() - 1 != pre_Layer){ 
+		  if((RecHit.id()).layer() - 1 != 0) Eventnumber=Eventnumber_1;
+		  else Eventnumber_1=Eventnumber;
+		}
+		
 		if(!doCommonMode_CM) {
 			h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][(RecHit.id()).layer() - 1]->Fill(RecHit.energyHigh());
 			Noise_2D_Profile->Fill((64 * (eid.iskiroc() - 1) + eid.ichan()), RecHit.energyHigh());
 		}
 		if(doCommonMode_CM) {
 			AllCells_Ped->Fill(RecHit.energyHigh());
-//                             cout<<endl<<" Energy= "<<RecHit.energyHigh()<<" CM = "<<Average_Pedestal_Per_Event_Full[(RecHit.id()).layer() - 1]<<" Cells= "<<Cell_counter[(RecHit.id()).layer() -1]<<endl;
-			if((RecHit.id()).cellType() == 0 || (RecHit.id()).cellType() == 4) h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][(RecHit.id()).layer() - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_Full[(RecHit.id()).layer() - 1] / (Cell_counter[(RecHit.id()).layer() - 1])));
-			else if((RecHit.id()).cellType() == 2 ) h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][(RecHit.id()).layer() - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_Half[(RecHit.id()).layer() - 1] / (Cell_counter_Half[(RecHit.id()).layer() - 1])));
-			else if((RecHit.id()).cellType() == 1) h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][(RecHit.id()).layer() - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_Calib_Pad[(RecHit.id()).layer() - 1] / (Cell_counter_Calib_Pad[(RecHit.id()).layer() - 1])));
-			else if(((RecHit.id()).cellType() == 3) && ( ((RecHit.id()).iu() == 4 && (RecHit.id()).iv() == 3) || ((RecHit.id()).iu() == -7 && (RecHit.id()).iv() == 4) || ((RecHit.id()).iu() == 7 && (RecHit.id()).iv() == -3) || ((RecHit.id()).iu() == -4 && (RecHit.id()).iv() == -3) ) ) {
-				h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][(RecHit.id()).layer() - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_MB[(RecHit.id()).layer() - 1] / (Cell_counter_MB[(RecHit.id()).layer() - 1])));
-			} else if(((RecHit.id()).cellType() == 3) && (((RecHit.id()).iu() == -4 && (RecHit.id()).iv() == 6) || ((RecHit.id()).iu() == -2 && (RecHit.id()).iv() == 6) || ((RecHit.id()).iu() == 4 && (RecHit.id()).iv() == -7) || ((RecHit.id()).iu() == 2 && (RecHit.id()).iv() == -6))) {
-				h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][(RecHit.id()).layer() - 1]->Fill(RecHit.energyHigh() - (Average_Pedestal_Per_Event_Merged_Cell[(RecHit.id()).layer() - 1] / (Cell_counter_Merged_Cell[(RecHit.id()).layer() - 1])));
+			ADC_Channel[0][(64 *((eid.iskiroc() - 1)%2))+eid.ichan()][Eventnumber][(RecHit.id()).layer() - 1]= RecHit.energyHigh();
+			ADC_Channel[1][(64 *((eid.iskiroc() - 1)%2))+eid.ichan()][Eventnumber][(RecHit.id()).layer() - 1]= RecHit.energyLow();
+			if((RecHit.id()).cellType() == 0 || (RecHit.id()).cellType() == 4){
+			  h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][(RecHit.id()).layer() - 1]->Fill(RecHit.energyHigh() - (h_Average_Pedestal_Per_Event_Full[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1])));
+			  ADC_Channel[2][(64 *((eid.iskiroc() - 1)%2))+eid.ichan()][Eventnumber][(RecHit.id()).layer() - 1]= RecHit.energyHigh() - (h_Average_Pedestal_Per_Event_Full[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1]));
+			  ADC_Channel[3][(64 *((eid.iskiroc() - 1)%2))+eid.ichan()][Eventnumber][(RecHit.id()).layer() - 1]= RecHit.energyLow() - (l_Average_Pedestal_Per_Event_Full[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1]));
 			}
-			Noise_2D_Profile->Fill((64 * (eid.iskiroc() - 1) + eid.ichan()), RecHit.energyHigh() - (Average_Pedestal_Per_Event_Full[(RecHit.id()).layer() - 1] / (Cell_counter[(RecHit.id()).layer() - 1])));
+			else if((RecHit.id()).cellType() == 2 ){
+			  h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][(RecHit.id()).layer() - 1]->Fill(RecHit.energyHigh() - (h_Average_Pedestal_Per_Event_Half[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter_Half[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1])));
+			  ADC_Channel[2][(64 *((eid.iskiroc() - 1)%2))+eid.ichan()][Eventnumber][(RecHit.id()).layer() - 1]= RecHit.energyHigh() - (h_Average_Pedestal_Per_Event_Half[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter_Half[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1]));
+			  ADC_Channel[3][(64 *((eid.iskiroc() - 1)%2))+eid.ichan()][Eventnumber][(RecHit.id()).layer() - 1]= RecHit.energyLow() - (l_Average_Pedestal_Per_Event_Half[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter_Half[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1]));
+			}
+			else if((RecHit.id()).cellType() == 1){
+			  h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][(RecHit.id()).layer() - 1]->Fill(RecHit.energyHigh() - (h_Average_Pedestal_Per_Event_Calib_Pad[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter_Calib_Pad[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1])));
+			  ADC_Channel[2][(64 *((eid.iskiroc() - 1)%2))+eid.ichan()][Eventnumber][(RecHit.id()).layer() - 1]= RecHit.energyHigh() - (h_Average_Pedestal_Per_Event_Calib_Pad[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter_Calib_Pad[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1]));
+                          ADC_Channel[3][(64 *((eid.iskiroc() - 1)%2))+eid.ichan()][Eventnumber][(RecHit.id()).layer() - 1]= RecHit.energyLow() - (l_Average_Pedestal_Per_Event_Calib_Pad[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter_Calib_Pad[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1]));
+			}
+			else if(((RecHit.id()).cellType() == 3) ) {
+			  h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][(RecHit.id()).layer() - 1]->Fill(RecHit.energyHigh() - (h_Average_Pedestal_Per_Event_MB[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter_MB[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1])));
+			  ADC_Channel[2][(64 *((eid.iskiroc() - 1)%2))+eid.ichan()][Eventnumber][(RecHit.id()).layer() - 1]= RecHit.energyHigh() - (h_Average_Pedestal_Per_Event_MB[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter_MB[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1]));
+			  ADC_Channel[3][(64 *((eid.iskiroc() - 1)%2))+eid.ichan()][Eventnumber][(RecHit.id()).layer() - 1]= RecHit.energyLow() - (l_Average_Pedestal_Per_Event_MB[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter_MB[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1]));
+			}
+			 else if(((RecHit.id()).cellType() == 5)) {
+			  h_digi_layer_channel[eid.iskiroc() - 1][eid.ichan()][(RecHit.id()).layer() - 1]->Fill(RecHit.energyHigh() - (h_Average_Pedestal_Per_Event_Merged_Cell[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter_Merged_Cell[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1])));
+			  ADC_Channel[2][(64 *((eid.iskiroc() - 1)%2))+eid.ichan()][Eventnumber][(RecHit.id()).layer() - 1]= RecHit.energyHigh() - (h_Average_Pedestal_Per_Event_Merged_Cell[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter_Merged_Cell[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1]));
+			  ADC_Channel[3][(64 *((eid.iskiroc() - 1)%2))+eid.ichan()][Eventnumber][(RecHit.id()).layer() - 1]= RecHit.energyLow() - (l_Average_Pedestal_Per_Event_Merged_Cell[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter_Merged_Cell[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1]));
+			}
+
+			Noise_2D_Profile->Fill((64 * (eid.iskiroc() - 1) + eid.ichan()), RecHit.energyHigh() - (h_Average_Pedestal_Per_Event_Full[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1] / (Cell_counter[(eid.iskiroc() - 1)%2][(RecHit.id()).layer() - 1])));
 		}
 
+		pre_Layer=(RecHit.id()).layer() - 1;
 
 	}
-
-
+	++Eventnumber;
+	//printf("analyze method ends\n");
 }//analyze method ends here
 
 
@@ -293,7 +453,145 @@ RecHitPlotter_HighGain_Correlation_CM::beginJob()
 void
 RecHitPlotter_HighGain_Correlation_CM::endJob()
 {
+  for(int iii = 0; iii < MAXLAYERS; iii++) {
+    for(int ISkiroc=0;ISkiroc<2;++ISkiroc){
+    h_Correlation_CellArea[ISkiroc][iii]->Fill(1.579, h_Merged_Cell[ISkiroc][iii]->GetRMS());
+    h_Correlation_CellArea[ISkiroc][iii]->Fill(1.09,  h_Full_Cell[ISkiroc][iii]->GetRMS());
+    h_Correlation_CellArea[ISkiroc][iii]->Fill(0.978, h_MB_Cell[ISkiroc][iii]->GetRMS());
+    h_Correlation_CellArea[ISkiroc][iii]->Fill(0.545, h_Half_Cell[ISkiroc][iii]->GetRMS());
+    h_Correlation_CellArea[ISkiroc][iii]->Fill(0.15,  h_Calib_Pads[ISkiroc][iii]->GetRMS());
 
+    h_Correlation_CellPerimeter[ISkiroc][iii]->Fill(5.972, h_Merged_Cell[ISkiroc][iii]->GetRMS());
+    h_Correlation_CellPerimeter[ISkiroc][iii]->Fill(3.894, h_Full_Cell[ISkiroc][iii]->GetRMS());
+    h_Correlation_CellPerimeter[ISkiroc][iii]->Fill(3.47,  h_Half_Cell[ISkiroc][iii]->GetRMS());
+    h_Correlation_CellPerimeter[ISkiroc][iii]->Fill(4.156, h_MB_Cell[ISkiroc][iii]->GetRMS());
+    h_Correlation_CellPerimeter[ISkiroc][iii]->Fill(1.44,  h_Calib_Pads[ISkiroc][iii]->GetRMS());
+    
+    l_Correlation_CellArea[ISkiroc][iii]->Fill(1.579, l_Merged_Cell[ISkiroc][iii]->GetRMS());
+    l_Correlation_CellArea[ISkiroc][iii]->Fill(1.09,  l_Full_Cell[ISkiroc][iii]->GetRMS());
+    l_Correlation_CellArea[ISkiroc][iii]->Fill(0.978, l_MB_Cell[ISkiroc][iii]->GetRMS());
+    l_Correlation_CellArea[ISkiroc][iii]->Fill(0.545, l_Half_Cell[ISkiroc][iii]->GetRMS());
+    l_Correlation_CellArea[ISkiroc][iii]->Fill(0.15,  l_Calib_Pads[ISkiroc][iii]->GetRMS());
+
+    l_Correlation_CellPerimeter[ISkiroc][iii]->Fill(5.972, l_Merged_Cell[ISkiroc][iii]->GetRMS());
+    l_Correlation_CellPerimeter[ISkiroc][iii]->Fill(3.894, l_Full_Cell[ISkiroc][iii]->GetRMS());
+    l_Correlation_CellPerimeter[ISkiroc][iii]->Fill(3.47,  l_Half_Cell[ISkiroc][iii]->GetRMS());
+    l_Correlation_CellPerimeter[ISkiroc][iii]->Fill(4.156, l_MB_Cell[ISkiroc][iii]->GetRMS());
+    l_Correlation_CellPerimeter[ISkiroc][iii]->Fill(1.44,  l_Calib_Pads[ISkiroc][iii]->GetRMS());
+    }
+  }
+
+  printf("Eventnumber=%d\n",Eventnumber);
+
+  /* //=========================One Layer Correlation========================
+  for(int layer=0;layer<8;layer++){
+    if(Eventnumber==0)break; 
+    for(int ChX=0;ChX<128;ChX++){
+      // Calculate_Correlation-> Reset();
+      for(int ChY=ChX;ChY<128;ChY++){
+	double sumxy=0,sumx=0,sumy=0,sumx2=0,sumy2=0;
+	double correlation=0;
+	for(int Event=0;Event<Eventnumber;Event++){
+	  //Calculate_Correlation1->Fill(h_p_Channel[ChX][Event][layer],h_p_Channel[ChY][Event][layer]);
+	  //Calculate_Correlation2->Fill(l_p_Channel[ChX][Event][layer],l_p_Channel[ChY][Event][layer]);
+	  Calculate_Correlation3->Fill(h_A_Channel[ChX][Event][layer],h_A_Channel[ChY][Event][layer]);
+          //Calculate_Correlation4->Fill(l_A_Channel[ChX][Event][layer],l_A_Channel[ChY][Event][layer]);
+
+	  sumxy += h_A_Channel[ChX][Event][layer]*h_A_Channel[ChY][Event][layer];
+	  sumx += h_A_Channel[ChX][Event][layer];
+	  sumy += h_A_Channel[ChY][Event][layer];
+	  sumx2 += pow(h_A_Channel[ChX][Event][layer],2);
+	  sumy2 += pow(h_A_Channel[ChY][Event][layer],2);
+	}
+	correlation=((Eventnumber*sumxy)-(sumx*sumy))/(sqrt((Eventnumber*sumx2)-(sumx*sumx))*sqrt((Eventnumber*sumy2)-(sumy*sumy)));
+	
+	//h_pre_CM_Final[layer]->Fill(ChX,ChY,Calculate_Correlation1-> GetCorrelationFactor());
+	//l_pre_CM_Final[layer]->Fill(ChX,ChY,Calculate_Correlation2-> GetCorrelationFactor());
+	l_pre_CM_Final_Compare[layer]->Fill(ChX,ChY,correlation);
+	h_post_CM_Final[layer]->Fill(ChX,ChY,Calculate_Correlation3-> GetCorrelationFactor());
+        //l_post_CM_Final[layer]->Fill(ChX,ChY,Calculate_Correlation4-> GetCorrelationFactor());
+	if(ChX!=ChY){
+	  //h_pre_CM_Final[layer]->Fill(ChY,ChX,Calculate_Correlation1-> GetCorrelationFactor());
+	  //l_pre_CM_Final[layer]->Fill(ChY,ChX,Calculate_Correlation2-> GetCorrelationFactor());
+	  l_pre_CM_Final_Compare[layer]->Fill(ChY,ChX,correlation);
+	  h_post_CM_Final[layer]->Fill(ChY,ChX,Calculate_Correlation3-> GetCorrelationFactor());
+	  //l_post_CM_Final[layer]->Fill(ChY,ChX,Calculate_Correlation4-> GetCorrelationFactor());
+	}
+	//printf("[%d][%d][%d]=%lf\n",ChX,ChY,layer,Calculate_Correlation1-> GetCorrelationFactor());
+	//Calculate_Correlation1-> Reset();
+	//Calculate_Correlation2-> Reset();
+	Calculate_Correlation3-> Reset();
+        //Calculate_Correlation4-> Reset();
+      }
+      printf("Finish Channel[%d] Layer[%d]\n",ChX,layer+1);
+    }
+  }
+  //==========================================================================*/
+
+  //=========================All Layers Correlation===========================
+  for(int layer=0;layer<8;++layer){
+    if(Eventnumber==0)break; 
+    for(int ChX=0;ChX<128;++ChX){
+      // Calculate_Correlation-> Reset();
+      for(int layer2=layer;layer2<8;++layer2){
+	for(int ChY=ChX;ChY<128;ChY++){
+	  double sumxy[4]={0},sumx[4]={0},sumy[4]={0},sumx2[4]={0},sumy2[4]={0},correlation[4]={0};
+	  for(int Event=0;Event<Eventnumber;++Event){
+	    //Calculate_Correlation1->Fill(h_p_Channel[ChX][Event][layer],h_p_Channel[ChY][Event][layer2]);
+	    //Calculate_Correlation2->Fill(l_p_Channel[ChX][Event][layer],l_p_Channel[ChY][Event][layer2]);
+	    //Calculate_Correlation3->Fill(h_A_Channel[ChX][Event][layer],h_A_Channel[ChY][Event][layer2]);
+	    //Calculate_Correlation4->Fill(l_A_Channel[ChX][Event][layer],l_A_Channel[ChY][Event][layer2]);
+	    for(int type=0;type<4;++type){
+	      sumxy[type] += ADC_Channel[type][ChX][Event][layer]*ADC_Channel[type][ChY][Event][layer2];
+	      sumx[type] += ADC_Channel[type][ChX][Event][layer];
+	      sumy[type] += ADC_Channel[type][ChY][Event][layer2];
+	      sumx2[type] += pow(ADC_Channel[type][ChX][Event][layer],2);
+	      sumy2[type] += pow(ADC_Channel[type][ChY][Event][layer2],2);
+	    }
+	  }
+	  for(int type=0;type<4;++type){
+	    correlation[type]=((Eventnumber*sumxy[type])-(sumx[type]*sumy[type]))/(sqrt((Eventnumber*sumx2[type])-(sumx[type]*sumx[type]))*sqrt((Eventnumber*sumy2[type])-(sumy[type]*sumy[type])));
+	  }
+	  if(layer2==layer){
+	    h_pre_CM_Final[layer]->Fill(ChX,ChY,correlation[0]);
+	    l_pre_CM_Final[layer]->Fill(ChX,ChY,correlation[1]);
+	    h_post_CM_Final[layer]->Fill(ChX,ChY,correlation[2]);
+	    l_post_CM_Final[layer]->Fill(ChX,ChY,correlation[3]);
+	    if(ChX!=ChY){
+	      h_pre_CM_Final[layer]->Fill(ChY,ChX,correlation[0]);
+	      l_pre_CM_Final[layer]->Fill(ChY,ChX,correlation[1]);
+	      h_post_CM_Final[layer]->Fill(ChY,ChX,correlation[2]);
+	      l_post_CM_Final[layer]->Fill(ChY,ChX,correlation[3]);
+	    }
+	  }
+	  h_pre_CM_AllLayer_Final->Fill(ChX+(layer*128),ChY+(layer2*128),correlation[0]);
+	  l_pre_CM_AllLayer_Final->Fill(ChX+(layer*128),ChY+(layer2*128),correlation[1]);
+	  h_post_CM_AllLayer_Final->Fill(ChX+(layer*128),ChY+(layer2*128),correlation[2]);
+	  l_post_CM_AllLayer_Final->Fill(ChX+(layer*128),ChY+(layer2*128),correlation[3]);
+	  if(ChX!=ChY){
+	    h_pre_CM_AllLayer_Final->Fill(ChY+(layer*128),ChX+(layer2*128),correlation[0]);
+	    l_pre_CM_AllLayer_Final->Fill(ChY+(layer*128),ChX+(layer2*128),correlation[1]);
+	    h_post_CM_AllLayer_Final->Fill(ChY+(layer*128),ChX+(layer2*128),correlation[2]);
+	    l_post_CM_AllLayer_Final->Fill(ChY+(layer*128),ChX+(layer2*128),correlation[3]);
+	  }
+	  if(layer2!=layer){
+	    h_pre_CM_AllLayer_Final->Fill(ChY+(layer2*128),ChX+(layer*128),correlation[0]);
+	    l_pre_CM_AllLayer_Final->Fill(ChY+(layer2*128),ChX+(layer*128),correlation[1]);
+	    h_post_CM_AllLayer_Final->Fill(ChY+(layer2*128),ChX+(layer*128),correlation[2]);
+	    l_post_CM_AllLayer_Final->Fill(ChY+(layer2*128),ChX+(layer*128),correlation[3]);
+	    if(ChX!=ChY){
+	      h_pre_CM_AllLayer_Final->Fill(ChX+(layer2*128),ChY+(layer*128),correlation[0]);
+	      l_pre_CM_AllLayer_Final->Fill(ChX+(layer2*128),ChY+(layer*128),correlation[1]);
+	      h_post_CM_AllLayer_Final->Fill(ChX+(layer2*128),ChY+(layer*128),correlation[2]);
+	      l_post_CM_AllLayer_Final->Fill(ChX+(layer2*128),ChY+(layer*128),correlation[3]);
+	    }
+	  }
+	}
+      }
+      printf("Finish Channel[%d] Layer[%d]\n",ChX,layer+1);
+    }
+  }
+  //==================================================================================================
 }
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------

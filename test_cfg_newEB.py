@@ -132,11 +132,14 @@ process.output = cms.OutputModule("PoolOutputModule",
 # process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Display.root") )
 if (options.chainSequence == 1):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Digi.root"%(options.outputFolder,options.runType,options.runNumber)))
-elif (options.chainSequence == 3 or options.chainSequence == 4 or options.chainSequence == 5 or options.chainSequence == 6):
+elif (options.chainSequence == 3):
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Unpacker_Digi_Check.root"%(options.outputFolder,options.runType,options.runNumber)))
+elif (options.chainSequence == 4):
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco_EventDisplay.root"%(options.outputFolder,options.runType,options.runNumber)))
+elif (options.chainSequence == 5):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco.root"%(options.outputFolder,options.runType,options.runNumber)))
-# process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco.root") )
-#process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Layer.root") )
-#process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Cluster.root") )
+elif (options.chainSequence == 6):
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco_Cluster.root"%(options.outputFolder,options.runType,options.runNumber)))
 
 
 
@@ -175,7 +178,7 @@ elif (options.chainSequence == 3):
 elif (options.chainSequence == 4):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
 elif (options.chainSequence == 5):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm*process.hgcaltbrechitsplotter_highgain_new)
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
 elif (options.chainSequence == 6):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.LayerSumAnalyzer)
 
