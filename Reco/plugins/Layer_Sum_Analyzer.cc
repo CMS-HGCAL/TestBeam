@@ -41,6 +41,9 @@
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
 
+
+#include "HGCal/Reco/src/ShowerShape.cc"
+
 // chooses which particle to look at. Inverts threshold filtering.
 // if nothing is selected, electrons are the default
 const bool ELECTRONS(1);// uses > *CELLS_THRESHOLD
@@ -49,11 +52,12 @@ const bool PIONS(0);// uses > PION_*CELLS_THRESHOLD and < *CELLS_THRESHOLD
 //double Layer_Z[16]  = {1.2, 2., 3.5, 4.3, 5.8, 6.3, 8.7, 9.5, 11.4, 12.2, 13.8, 14.6, 16.6, 17.4, 20., 20.8};
 
 //double ADCtoMIP_CERN[16] =  {17.32, 17.16, 16.45, 17.39, 17.75, 17.27, 16.55, 16.25, 17.52, 17.18, 17.10, 17.88, 15.87, 16.71, 16.92, 15.72};
+//double ADCtoMIP_CERN[16] =  {17.287,16.9493,17.9461,16.5649,17.4171,17.5042,16.1005,16.4102, 1., 1., 1., 1., 1., 1., 1., 1.};
 double ADCtoMIP_CERN[16] =  {17.24, 16.92, 17.51, 16.4, 17.35, 17.49, 16.29, 16.32, 1., 1., 1., 1., 1., 1., 1., 1.};
 double ADCtoMIP_FNAL[16] =  {1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
 
 //double MIP2ParticleCalib = 1.3;  // FNAL to proton 120GeV
-double MIP2ParticleCalib = 1.06;  // CERN to pion 125GeV
+double MIP2ParticleCalib[16] = {56.29/53.83, 56.21/53.83, 56.28/53.83, 56.28/53.83, 56.33/53.83, 56.36/53.83, 56.42/53.83, 56.40/53.83, 1., 1., 1., 1., 1., 1., 1., 1.}; // CERN to pion 125GeV
 
 //double ADCtoMIP[16] = {16.02,16.85,15.36,14.73,10.66,15.64,16.52,14.24,10.07,14.42,16.14,17.33,16.61,16.84,15.79,16.43};// one MIP is equal to _ADCtoMIP_ ADC Counts
 //double LayerWeight[16] = {0.6374029601923652, 0.7392021202456731, 0.6374273268336504, 0.7392021202456731, 0.6374273268336504, 0.8861075434658853, 0.8487578715427883, 1.0330129666860974, 0.8487578715427883, 1.0330129666860974, 0.8487578715427883, 1.5226977107534714, 1.2714189609610644, 1.5226977107534714, 1.2714189609610644, 1.5226977107534714};// X0 weights
@@ -69,7 +73,8 @@ double LayerWeight_8L_conf2[16] = {35.866, 30.864, 28.803, 23.095, 20.657, 19.80
 double X0depth_8L_conf2[16] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021, 0., 0., 0., 0., 0., 0., 0., 0.};
 double weights2GeV = 1.e-03;
 double MIP2GeV_sim = 52.81e-06;
-double weights2MIP = 52.8/63.6;   // rescale weights from mean to MPV
+//double weights2MIP = 52.8/63.6;   // rescale weights from mean to MPV
+double weights2MIP = 1.;   // rescale weights from mean to MPV
 
 //double LayerWeight[16] = {0.4847555727337982, 1.0214605968539232, 0.4847555727337982, 1.0214605968539232, 0.4847555727337982, 1.1420105918768606, 0.6423912113800805, 1.2625605868997982, 0.6423912113800805, 1.2625605868997982, 0.6423912113800805, 1.6643939036429232, 0.9576624886726451, 1.6643939036429232, 0.9576624886726451, 1.6643939036429232};// dE/dx weights
 
@@ -117,14 +122,23 @@ private:
 	std::pair<double, double> CellCentreXY;
         HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
-        double maxdist = (1 + sqrt (3) / 2) * HGCAL_TB_CELL::FULL_CELL_SIDE;  // <<< FIXME maxdist > HGCAL_TB_CELL::FULL_CELL_SIDE !!
+        double maxdist = (0.5 + sqrt(3) / 2.) * HGCAL_TB_CELL::FULL_CELL_SIDE;  // <<< FIXME maxdist > HGCAL_TB_CELL::FULL_CELL_SIDE !!
+        double maxdist_secNB = (0.5 + sqrt(3)) * HGCAL_TB_CELL::FULL_CELL_SIDE;
+        double maxdist_thirdNB = (0.5 + sqrt(3) * 2.) * HGCAL_TB_CELL::FULL_CELL_SIDE;
 
         double Weights_L[MAXLAYERS];
         double X0_L[MAXLAYERS];
         double ADCtoMIP[MAXLAYERS];
+        double ADCtoMIPup[MAXLAYERS];
+        double ADCtoMIPdw[MAXLAYERS];
 
-        TH1F *h_CM_layer[MAXSKIROCS];
+
+        TH1F *h_CM_layer[MAXLAYERS];
 	TH1F *h_sum_layer[MAXLAYERS], *h_layer_seven[MAXLAYERS], *h_layer_nineteen[MAXLAYERS], *h_Seed_layer[MAXLAYERS];
+        //systematic => MIP +/- 5%
+	TH1F *h_sum_layer_up[MAXLAYERS], *h_layer_seven_up[MAXLAYERS], *h_layer_nineteen_up[MAXLAYERS], *h_Seed_layer_up[MAXLAYERS];
+	TH1F *h_sum_layer_dw[MAXLAYERS], *h_layer_seven_dw[MAXLAYERS], *h_layer_nineteen_dw[MAXLAYERS], *h_Seed_layer_dw[MAXLAYERS];
+        //systematic => MIP +/- 5%
 	TH1F *h_sum_layer_AbsW_Mip[MAXLAYERS], *h_layer_seven_AbsW_Mip[MAXLAYERS], *h_layer_nineteen_AbsW_Mip[MAXLAYERS], *h_Seed_layer_AbsW_Mip[MAXLAYERS];
 	TH1F *h_sum_layer_AbsW_GeV[MAXLAYERS], *h_layer_seven_AbsW_GeV[MAXLAYERS], *h_layer_nineteen_AbsW_GeV[MAXLAYERS], *h_Seed_layer_AbsW_GeV[MAXLAYERS];
       	TH1F *h_x_layer[MAXLAYERS], *h_y_layer[MAXLAYERS];
@@ -132,10 +146,16 @@ private:
 
         TH1F* h_Radius[MAXLAYERS];      
         TH1F *h_E1oE7_layer[MAXLAYERS], *h_E1oE19_layer[MAXLAYERS], *h_E7oE19_layer[MAXLAYERS];
+        TH1F *h_E1oE7_layer_up[MAXLAYERS], *h_E1oE19_layer_up[MAXLAYERS], *h_E7oE19_layer_up[MAXLAYERS];
+        TH1F *h_E1oE7_layer_dw[MAXLAYERS], *h_E1oE19_layer_dw[MAXLAYERS], *h_E7oE19_layer_dw[MAXLAYERS];
 
         TH1F *h_sum_all, *h_seven_all, *h_nineteen_all;
+        TH1F *h_sum_all_up, *h_seven_all_up, *h_nineteen_all_up;
+        TH1F *h_sum_all_dw, *h_seven_all_dw, *h_nineteen_all_dw;
+
         TH1F *h_sum_all_AbsW_Mip, *h_seven_all_AbsW_Mip, *h_nineteen_all_AbsW_Mip;
         TH1F *h_sum_all_AbsW_GeV, *h_seven_all_AbsW_GeV, *h_nineteen_all_AbsW_GeV;
+
         TProfile *tp_E1_vs_layer, *tp_E7_vs_layer, *tp_E19_vs_layer;
         TProfile *tp_E1oSumL_vs_layer, *tp_E7oSumL_vs_layer, *tp_E19oSumL_vs_layer;
         TProfile *tp_E1oE7_vs_layer, *tp_E1oE19_vs_layer, *tp_E7oE19_vs_layer;
@@ -163,11 +183,22 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 
 	//booking the histos
 	for(int layer = 0; layer < MAXLAYERS; layer++) {
+	  h_CM_layer[layer] = fs->make<TH1F>(Form("h_CM_layer%d",layer+1), "", 5000, -500, 500);
+
 	  h_sum_layer[layer] = fs->make<TH1F>(Form("sumAll_Layer%d", layer+1), "", 40010, -10, 40000);
 	  h_Seed_layer[layer] = fs->make<TH1F>(Form("h_Seed_layer%d",layer+1), Form("h_Seed_layer%d",layer+1), 40010, -10, 40000);
 	  h_layer_seven[layer] = fs->make<TH1F>(Form("sum7_Layer%d", layer+1),"",  40010, -10, 40000);
 	  h_layer_nineteen[layer] = fs->make<TH1F>(Form("sum19_Layer%d", layer+1), "", 40010, -10, 40000);
-
+	  //syst 
+	  h_sum_layer_up[layer] = fs->make<TH1F>(Form("sumAll_Layer%d_up", layer+1), "", 40010, -10, 40000);
+	  h_Seed_layer_up[layer] = fs->make<TH1F>(Form("h_Seed_layer%d_up",layer+1), Form("h_Seed_layer%d",layer+1), 40010, -10, 40000);
+	  h_layer_seven_up[layer] = fs->make<TH1F>(Form("sum7_Layer%d_up", layer+1),"",  40010, -10, 40000);
+	  h_layer_nineteen_up[layer] = fs->make<TH1F>(Form("sum19_Layer%d_up", layer+1), "", 40010, -10, 40000);
+	  h_sum_layer_dw[layer] = fs->make<TH1F>(Form("sumAll_Layer%d_dw", layer+1), "", 40010, -10, 40000);
+	  h_Seed_layer_dw[layer] = fs->make<TH1F>(Form("h_Seed_layer%d_dw",layer+1), Form("h_Seed_layer%d",layer+1), 40010, -10, 40000);
+	  h_layer_seven_dw[layer] = fs->make<TH1F>(Form("sum7_Layer%d_dw", layer+1),"",  40010, -10, 40000);
+	  h_layer_nineteen_dw[layer] = fs->make<TH1F>(Form("sum19_Layer%d_dw", layer+1), "", 40010, -10, 40000);
+	  //
 	  h_sum_layer_AbsW_Mip[layer] = fs->make<TH1F>(Form("sumAll_Layer%d_AbsW_Mip", layer+1), "", 40010, -10, 4.e6);
 	  h_Seed_layer_AbsW_Mip[layer] = fs->make<TH1F>(Form("h_Seed_layer%d_AbsW_Mip",layer+1), Form("h_Seed_layer%d",layer+1), 40010, -10, 4.e6);
 	  h_layer_seven_AbsW_Mip[layer] = fs->make<TH1F>(Form("sum7_Layer%d_AbsW_Mip", layer+1),"",  40010, -10, 4.e6);
@@ -186,11 +217,16 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 	  h_E1oE19_layer[layer] = fs->make<TH1F>(Form("h_E1oE19_layer%d",layer+1), Form("h_E1oE19_layer%d",layer+1), 5000, -5, 5);
 	  h_E7oE19_layer[layer] = fs->make<TH1F>(Form("h_E7oE19_layer%d",layer+1), Form("h_E7oE19_layer%d",layer+1), 5000, -5, 5);
 	  h_Radius[layer] = fs->make<TH1F>(Form("h_Radius_layer%d",layer+1), Form("h_Radius_layer%d",layer+1), 5000, 0., 20.);
+	  ///syst
+	  h_E1oE7_layer_up[layer] = fs->make<TH1F>(Form("h_E1oE7_layer%d",layer+1), Form("h_E1oE7_layer%d_up",layer+1), 5000, -5, 5);
+	  h_E1oE19_layer_up[layer] = fs->make<TH1F>(Form("h_E1oE19_layer%d",layer+1), Form("h_E1oE19_layer%d_up",layer+1), 5000, -5, 5);
+	  h_E7oE19_layer_up[layer] = fs->make<TH1F>(Form("h_E7oE19_layer%d",layer+1), Form("h_E7oE19_layer%d_up",layer+1), 5000, -5, 5);
+	  h_E1oE7_layer_dw[layer] = fs->make<TH1F>(Form("h_E1oE7_layer%d",layer+1), Form("h_E1oE7_layer%d_dw",layer+1), 5000, -5, 5);
+	  h_E1oE19_layer_dw[layer] = fs->make<TH1F>(Form("h_E1oE19_layer%d",layer+1), Form("h_E1oE19_layer%d_dw",layer+1), 5000, -5, 5);
+	  h_E7oE19_layer_dw[layer] = fs->make<TH1F>(Form("h_E7oE19_layer%d",layer+1), Form("h_E7oE19_layer%d_dw",layer+1), 5000, -5, 5);
+	  //
 	}
 
-	for(int ski=0; ski<MAXSKIROCS; ++ski) {
-	  h_CM_layer[ski] = fs->make<TH1F>(Form("h_CM_skiroc%d",ski+1), "", 5000, -500, 500);
-	}
 
 	h_sum_all = fs->make<TH1F>("h_sumAll_AllLayers", "", 40010, -10, 40000);
 	h_seven_all = fs->make<TH1F>("h_sum7_AllLayers", "", 40010, -10, 40000);
@@ -198,6 +234,20 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 	h_sum_all->Sumw2();
 	h_seven_all->Sumw2();
 	h_nineteen_all->Sumw2();
+	//////////
+	h_sum_all_up = fs->make<TH1F>("h_sumAll_AllLayers", "", 40010, -10, 40000);
+	h_seven_all_up = fs->make<TH1F>("h_sum7_AllLayers", "", 40010, -10, 40000);
+	h_nineteen_all_up = fs->make<TH1F>("h_sum19_AllLayers", "", 40010, -10, 40000);
+	h_sum_all_up->Sumw2();
+	h_seven_all_up->Sumw2();
+	h_nineteen_all_up->Sumw2();
+	h_sum_all_dw = fs->make<TH1F>("h_sumAll_AllLayers_dw", "", 40010, -10, 40000);
+	h_seven_all_dw = fs->make<TH1F>("h_sum7_AllLayers_dw", "", 40010, -10, 40000);
+	h_nineteen_all_dw = fs->make<TH1F>("h_sum19_AllLayers_dw", "", 40010, -10, 40000);
+	h_sum_all_dw->Sumw2();
+	h_seven_all_dw->Sumw2();
+	h_nineteen_all_dw->Sumw2();
+
 	h_sum_all_AbsW_Mip = fs->make<TH1F>("h_sumAll_AllLayers_AbsW_Mip", "", 40010, -10, 4.e6);
 	h_seven_all_AbsW_Mip = fs->make<TH1F>("h_sum7_AllLayers_AbsW_Mip", "", 40010, -10, 4.e6);
 	h_nineteen_all_AbsW_Mip = fs->make<TH1F>("h_sum19_AllLayers_AbsW_Mip", "", 40010, -10, 4.e6);
@@ -237,10 +287,14 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 	    Weights_L[iL] = LayerWeight_16L_FNAL[iL];
 	    X0_L[iL] = X0depth_16L_FNAL[iL];
 	    ADCtoMIP[iL] = ADCtoMIP_FNAL[iL];
+	    ADCtoMIPup[iL] = ADCtoMIP_FNAL[iL] * 1.05;
+	    ADCtoMIPdw[iL] = ADCtoMIP_FNAL[iL] * 0.95;
 	    mapfile_ = iConfig.getParameter<std::string>("mapFile_FNAL");
 	  }
 	  else{
 	    ADCtoMIP[iL] = ADCtoMIP_CERN[iL];
+	    ADCtoMIPup[iL] = ADCtoMIP_CERN[iL] * 1.05;
+	    ADCtoMIPdw[iL] = ADCtoMIP_CERN[iL] * 0.95;
 	    mapfile_ = iConfig.getParameter<std::string>("mapFile_CERN");
 	    if(layers_config_ == 1){
 	      Weights_L[iL] = LayerWeight_8L_conf1[iL];
@@ -295,15 +349,19 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
   event.getByToken(HGCalTBRecHitCollection_, Rechits);
   
   // looping over each rechit to fill histogram
-  double commonmode[MAXSKIROCS];
-  int cm_num[MAXSKIROCS];
-  for(int iS=0; iS<MAXSKIROCS; ++iS){
-    commonmode[iS] = 0.;
-    cm_num[iS] = 0;
-  }
+  double commonmode[MAXLAYERS];
+  double commonmode_up[MAXLAYERS];
+  double commonmode_dw[MAXLAYERS];
+  int cm_num[MAXLAYERS];   int cm_num_up[MAXLAYERS];   int cm_num_dw[MAXLAYERS];
   double max[MAXLAYERS], max_x[MAXLAYERS], max_y[MAXLAYERS];
   for(int iL=0; iL<MAXLAYERS; ++iL){
     max[iL] = max_x[iL] = max_y[iL] = 0.;
+    commonmode[iL] = 0.;
+    commonmode_up[iL] = 0.;
+    commonmode_dw[iL] = 0.;
+    cm_num[iL] = 0;
+    cm_num_up[iL] = 0;
+    cm_num_dw[iL] = 0;
   }
 
   
@@ -318,7 +376,7 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     
     int n_layer = (Rechit.id()).layer() - 1;
     int n_cell_type = (Rechit.id()).cellType();
-    int n_skiroc = eid.iskiroc() - 1;
+    //    int n_skiroc = eid.iskiroc() - 1;
 
 
     //getting X and Y coordinates
@@ -337,98 +395,48 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     }
 
     if((Rechit.energy()) / ADCtoMIP[n_layer] <= CMTHRESHOLD) {
-      commonmode[n_skiroc] += Rechit.energy();
-      cm_num[n_skiroc]++;
+      commonmode[n_layer] += Rechit.energy();
+      cm_num[n_layer]++;
+    }
+
+    if((Rechit.energy()) / ADCtoMIPup[n_layer] <= CMTHRESHOLD) {
+      commonmode_up[n_layer] += Rechit.energy();
+      cm_num_up[n_layer]++;
+    }
+
+    if((Rechit.energy()) / ADCtoMIPdw[n_layer] <= CMTHRESHOLD) {
+      commonmode_dw[n_layer] += Rechit.energy();
+      cm_num_dw[n_layer]++;
     }
 
   }//Rechit loop ends here
   //	std::cout << " >>> found commonmode = " << commonmode << std::endl;
 
 
-  for(int iS=0; iS<MAXSKIROCS/2.; ++iS){
-    commonmode[2*iS] = (commonmode[2*iS]+commonmode[2*iS+1])/(cm_num[2*iS]+cm_num[2*iS+1]);
-    commonmode[2*iS+1] = (commonmode[2*iS]+commonmode[2*iS+1])/(cm_num[2*iS]+cm_num[2*iS+1]);
-    //    std::cout << " 2*iS = " << 2*iS << " value = " << commonmode[iS] << std::endl;
-  }
-
-
-  edm::Handle<HGCalTBRecHitCollection> Rechits1;
-  event.getByToken(HGCalTBRecHitCollection_, Rechits1);
-
-  // looping over each rechit to fill histogram
-  double allcells_sum[MAXLAYERS], sevencells_sum[MAXLAYERS], nineteencells_sum[MAXLAYERS], radius[MAXLAYERS];
-  double seedEnergy[MAXLAYERS];
-  double x_tmp[MAXLAYERS], y_tmp[MAXLAYERS];
-  int num[MAXLAYERS], sevennum[MAXLAYERS], nineteennum[MAXLAYERS];
-
   for(int iL=0; iL<MAXLAYERS; ++iL){
-    allcells_sum[iL] = sevencells_sum[iL] = nineteencells_sum[iL] = radius[iL] = 0.;
-    x_tmp[iL] = y_tmp[iL] = seedEnergy[iL] = 0.;
-    num[iL] = sevennum[iL] = nineteennum[iL] = 0;
-  }
-
-  for(auto Rechit1 : *Rechits1) {
-
-    if(!IsCellValid.iu_iv_valid((Rechit1.id()).layer(), (Rechit1.id()).sensorIU(), (Rechit1.id()).sensorIV(), (Rechit1.id()).iu(), (Rechit1.id()).iv(), sensorsize))  continue;	  
+    commonmode[iL] = commonmode[iL]/cm_num[iL];
+    commonmode_up[iL] = commonmode_up[iL]/cm_num_up[iL];
+    commonmode_dw[iL] = commonmode_dw[iL]/cm_num_dw[iL];
     
-    //getting electronics ID
-    uint32_t EID = essource_.emap_.detId2eid(Rechit1.id());
-    HGCalTBElectronicsId eid(EID);
-	  
-    int eLayer = (Rechit1.id()).layer()-1;
-    int eCellType = (Rechit1.id()).cellType();
-    //int eSkiroc = eid.iskiroc() - 1;
-
-
-    //getting X and Y coordinates
-    CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit1.id()).layer(), (Rechit1.id()).sensorIU(), (Rechit1.id()).sensorIV(), (Rechit1.id()).iu(), (Rechit1.id()).iv(), sensorsize);
-
-    //FIXME >> needed?
-    if(eCellType != 0 && eCellType != 1 && eCellType != 4) continue;
-
-    //    std::cout << Rechit1.energy() << std::endl;
-
-    radius[eLayer] = sqrt( pow(CellCentreXY.first - max_x[eLayer], 2) + pow(CellCentreXY.second - max_y[eLayer], 2) );
-
-    float energyCMsub = (Rechit1.energy() - commonmode[eLayer]) / ADCtoMIP[eLayer];
-    if(eCellType == 1) energyCMsub = (Rechit1.energy()) / ADCtoMIP[eLayer];
-    //    std::cout << "val = " << commonmode[eSkiroc] << std::endl;
-    if(energyCMsub > CMTHRESHOLD){
-      allcells_sum[eLayer] += energyCMsub;
-      if(energyCMsub > seedEnergy[eLayer]) seedEnergy[eLayer] = energyCMsub;
-    }
-    
-    // countin all recHits even below CM threshold
-    num[eLayer]++;
-
-    h_Radius[eLayer]->Fill(radius[eLayer]);
-		
-    //FIXME navigation to 7cells
-    if((radius[eLayer] < maxdist && sevennum[eLayer] < 7) && (energyCMsub > CMTHRESHOLD)){
-      sevencells_sum[eLayer] += energyCMsub;
-      sevennum[eLayer]++;
-    }
-
-    //FIXME navigation to 19cells
-    if((radius[eLayer] < 1.95 * maxdist && nineteennum[eLayer] < 19) && (energyCMsub > CMTHRESHOLD)){
-//			nineteencells_sum += (LayerWeight[LAYER]*(Rechit1.energyHigh() - commonmode))/ ADCtoMIP[LAYER];
-      nineteencells_sum[eLayer] += energyCMsub;
-      x_tmp[eLayer] += CellCentreXY.first * energyCMsub;
-      y_tmp[eLayer] += CellCentreXY.second * energyCMsub;
-      nineteennum[eLayer]++;
-    }
+    h_CM_layer[iL]->Fill(commonmode[iL]);
   }
 
-  for(int iS=0; iS<MAXSKIROCS; ++iS){
-    //    std::cout << "iS = " << iS << " CM = " << commonmode[iS] << std::endl; 
-    h_CM_layer[iS]->Fill(commonmode[iS]);
-  }
+  ShowerShape shosha(Rechits, ADCtoMIP, commonmode, CMTHRESHOLD, max, max_x, max_y);
+  ShowerShape shosha_up(Rechits, ADCtoMIPup, commonmode_up, CMTHRESHOLD, max, max_x, max_y);
+  ShowerShape shosha_dw(Rechits, ADCtoMIPdw, commonmode_dw, CMTHRESHOLD, max, max_x, max_y);
  
-
   float E1SumL_R = 0.;
   float E7SumL_R = 0.;
   float E19SumL_R = 0.;
   float EAllSumL_R = 0.;
+  float E1SumL_Rup = 0.;
+  float E7SumL_Rup = 0.;
+  float E19SumL_Rup = 0.;
+  float EAllSumL_Rup = 0.;
+  float E1SumL_Rdw = 0.;
+  float E7SumL_Rdw = 0.;
+  float E19SumL_Rdw = 0.;
+  float EAllSumL_Rdw = 0.;
 
   float E1SumL_AbsW_Mip = 0.;
   float E7SumL_AbsW_Mip = 0.;
@@ -441,20 +449,40 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
   float EAllSumL_AbsW_GeV = 0.;
 
   for(int iL=0; iL<MAXLAYERS; ++iL){
-    h_sum_layer[iL]->Fill(allcells_sum[iL]);
-    h_Seed_layer[iL]->Fill(seedEnergy[iL]);
-    h_layer_seven[iL]->Fill(sevencells_sum[iL]);
-    h_layer_nineteen[iL]->Fill(nineteencells_sum[iL]);
+    float e1, e7, e19, eAll;
+    shosha.getAllEnergy(iL, e1, e7, e19, eAll);
 
-    float layerE1_Mip = seedEnergy[iL] * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
-    float layerE7_Mip = sevencells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
-    float layerE19_Mip = nineteencells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
-    float layerEAll_Mip = allcells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
+    h_sum_layer[iL]->Fill(eAll);
+    h_Seed_layer[iL]->Fill(e1);
+    h_layer_seven[iL]->Fill(e7);
+    h_layer_nineteen[iL]->Fill(e19);
 
-    float layerE1_GeV = seedEnergy[iL] * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
-    float layerE7_GeV = sevencells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
-    float layerE19_GeV = nineteencells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
-    float layerEAll_GeV = allcells_sum[iL] * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
+    float e1_up, e7_up, e19_up, eAll_up;
+    shosha.getAllEnergy(iL, e1_up, e7_up, e19_up, eAll_up);
+
+    h_sum_layer_up[iL]->Fill(eAll_up);
+    h_Seed_layer_up[iL]->Fill(e1_up);
+    h_layer_seven_up[iL]->Fill(e7_up);
+    h_layer_nineteen_up[iL]->Fill(e19_up);
+
+    float e1_dw, e7_dw, e19_dw, eAll_dw;
+    shosha.getAllEnergy(iL, e1_dw, e7_dw, e19_dw, eAll_dw);
+
+    h_sum_layer_dw[iL]->Fill(eAll_dw);
+    h_Seed_layer_dw[iL]->Fill(e1_dw);
+    h_layer_seven_dw[iL]->Fill(e7_dw);
+    h_layer_nineteen_dw[iL]->Fill(e19_dw);
+
+
+    float layerE1_Mip = e1 * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
+    float layerE7_Mip = e7 * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
+    float layerE19_Mip = e19 * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
+    float layerEAll_Mip = eAll * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
+
+    float layerE1_GeV = e1 * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
+    float layerE7_GeV = e7 * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
+    float layerE19_GeV = e19 * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
+    float layerEAll_GeV = eAll * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
 
     h_sum_layer_AbsW_Mip[iL]->Fill(layerEAll_Mip);
     h_Seed_layer_AbsW_Mip[iL]->Fill(layerE1_Mip);
@@ -466,29 +494,51 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     h_layer_seven_AbsW_GeV[iL]->Fill(layerE7_GeV);
     h_layer_nineteen_AbsW_GeV[iL]->Fill(layerE19_GeV);
     
-    tp_E1_vs_layer->Fill(iL+1, seedEnergy[iL]);
-    tp_E7_vs_layer->Fill(iL+1, sevencells_sum[iL]);
-    tp_E19_vs_layer->Fill(iL+1, nineteencells_sum[iL]);
+    tp_E1_vs_layer->Fill(iL+1, e1);
+    tp_E7_vs_layer->Fill(iL+1, e7);
+    tp_E19_vs_layer->Fill(iL+1, e19);
 
-    if(sevencells_sum[iL] != 0.){
-      h_E1oE7_layer[iL]->Fill(seedEnergy[iL]/sevencells_sum[iL]);
-      tp_E1oE7_vs_layer->Fill(iL+1, seedEnergy[iL]/sevencells_sum[iL]);
+    if(e7 != 0.){
+      h_E1oE7_layer[iL]->Fill(e1/e7);
+      tp_E1oE7_vs_layer->Fill(iL+1, e1/e7);
     }
-    if(nineteencells_sum[iL] != 0){
-      h_E1oE19_layer[iL]->Fill(seedEnergy[iL]/nineteencells_sum[iL]);
-      h_E7oE19_layer[iL]->Fill(sevencells_sum[iL]/nineteencells_sum[iL]);
-      tp_E1oE19_vs_layer->Fill(iL, seedEnergy[iL]/nineteencells_sum[iL]);
-      tp_E7oE19_vs_layer->Fill(iL, sevencells_sum[iL]/nineteencells_sum[iL]);
+    if(e7_up != 0.) h_E1oE7_layer_up[iL]->Fill(e1_up/e7_up);
+    if(e7_dw != 0.) h_E1oE7_layer_dw[iL]->Fill(e1_dw/e7_dw);
+
+
+    if(e19 != 0){
+      h_E1oE19_layer[iL]->Fill(e1/e19);
+      h_E7oE19_layer[iL]->Fill(e7/e19);
+      tp_E1oE19_vs_layer->Fill(iL, e1/e19);
+      tp_E7oE19_vs_layer->Fill(iL, e7/e19);
+    }
+    if(e19_up != 0){
+      h_E1oE19_layer_up[iL]->Fill(e1_up/e19_up);
+      h_E7oE19_layer_up[iL]->Fill(e7_up/e19_up);
+    }
+    if(e19_dw != 0){
+      h_E1oE19_layer_dw[iL]->Fill(e1_dw/e19_dw);
+      h_E7oE19_layer_dw[iL]->Fill(e7_dw/e19_dw);
     }
 
-    h_x_layer[iL]->Fill(x_tmp[iL] / nineteencells_sum[iL]);
-    h_y_layer[iL]->Fill(y_tmp[iL] / nineteencells_sum[iL]);
-    h_x_y_layer[iL]->Fill(x_tmp[iL] / nineteencells_sum[iL], y_tmp[iL] / nineteencells_sum[iL]);
+    float xTmp, yTmp;
+    shosha.getPos(iL, xTmp, yTmp);
+    h_x_layer[iL]->Fill(xTmp / e19);
+    h_y_layer[iL]->Fill(yTmp / e19);
+    h_x_y_layer[iL]->Fill(xTmp / e19,  yTmp / e19);
 
-    E1SumL_R += seedEnergy[iL];
-    E7SumL_R += sevencells_sum[iL];
-    E19SumL_R += nineteencells_sum[iL];
-    EAllSumL_R += allcells_sum[iL];
+    E1SumL_R += e1;
+    E7SumL_R += e7;
+    E19SumL_R += e19;
+    EAllSumL_R += eAll;
+    E1SumL_Rup += e1_up;
+    E7SumL_Rup += e7_up;
+    E19SumL_Rup += e19_up;
+    EAllSumL_Rup += eAll_up;
+    E1SumL_Rdw += e1_dw;
+    E7SumL_Rdw += e7_dw;
+    E19SumL_Rdw += e19_dw;
+    EAllSumL_Rdw += eAll_dw;
 
     E1SumL_AbsW_Mip += layerE1_Mip;
     E7SumL_AbsW_Mip += layerE7_Mip;
@@ -501,7 +551,7 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     EAllSumL_AbsW_GeV += layerEAll_GeV;
   }
 
-
+  /*
   for(int iL=0; iL<MAXLAYERS; ++iL){
     if(E1SumL_R != 0.){
       tp_E1oSumL_vs_layer->Fill(iL, seedEnergy[iL]/E1SumL_R);
@@ -509,9 +559,17 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
       tp_E19oSumL_vs_layer->Fill(iL, nineteencells_sum[iL]/E19SumL_R);
     }
   }
+  */
+
   h_sum_all->Fill(EAllSumL_R);
   h_seven_all->Fill(E7SumL_R);
   h_nineteen_all->Fill(E19SumL_R);
+  h_sum_all_up->Fill(EAllSumL_Rup);
+  h_seven_all_up->Fill(E7SumL_Rup);
+  h_nineteen_all_up->Fill(E19SumL_Rup);
+  h_sum_all_dw->Fill(EAllSumL_Rdw);
+  h_seven_all_dw->Fill(E7SumL_Rdw);
+  h_nineteen_all_dw->Fill(E19SumL_Rdw);
   
   h_sum_all_AbsW_Mip->Fill(EAllSumL_AbsW_Mip);
   h_seven_all_AbsW_Mip->Fill(E7SumL_AbsW_Mip);
@@ -537,7 +595,7 @@ Layer_Sum_Analyzer::beginJob()
 	}
 
 	for(int iii = 0; iii < MAXLAYERS; iii++)
-		ADCtoMIP[iii] = ADCtoMIP[iii] / MIP2ParticleCalib; // Converting response to 120 GeV protons to MIPs
+		ADCtoMIP[iii] = ADCtoMIP[iii] * MIP2ParticleCalib[iii]; // Converting response to 120 GeV protons to MIPs
 	/*
 	        for(int iii= 0; iii<16;iii++){
 	            LayerWeight[iii] += 0.8;
