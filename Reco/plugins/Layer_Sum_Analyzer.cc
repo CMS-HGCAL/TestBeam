@@ -57,7 +57,9 @@ double ADCtoMIP_CERN[16] =  {17.24, 16.92, 17.51, 16.4, 17.35, 17.49, 16.29, 16.
 double ADCtoMIP_FNAL[16] =  {1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
 
 //double MIP2ParticleCalib = 1.3;  // FNAL to proton 120GeV
-double MIP2ParticleCalib[16] = {56.29/53.83, 56.21/53.83, 56.28/53.83, 56.28/53.83, 56.33/53.83, 56.36/53.83, 56.42/53.83, 56.40/53.83, 1., 1., 1., 1., 1., 1., 1., 1.}; // CERN to pion 125GeV
+//500MeV muon/125GeV pion
+double MIP2ParticleCalib[16] = {53.01/56.54, 53.47/56.42, 54.16/56.44, 54.17/56.19, 53.90/56.46, 53.97/56.31, 54.51/56.37, 55.43/56.09, 1., 1., 1., 1., 1., 1., 1., 1.}; // CERN to pion 125GeV
+//double MIP2ParticleCalib[16] = {0.94, 0.94, 0.94, 0.94, 0.94, 0.94, 0.94, 0.94, 1., 1., 1., 1., 1., 1., 1., 1.}; // CERN to pion 125GeV
 
 //double ADCtoMIP[16] = {16.02,16.85,15.36,14.73,10.66,15.64,16.52,14.24,10.07,14.42,16.14,17.33,16.61,16.84,15.79,16.43};// one MIP is equal to _ADCtoMIP_ ADC Counts
 //double LayerWeight[16] = {0.6374029601923652, 0.7392021202456731, 0.6374273268336504, 0.7392021202456731, 0.6374273268336504, 0.8861075434658853, 0.8487578715427883, 1.0330129666860974, 0.8487578715427883, 1.0330129666860974, 0.8487578715427883, 1.5226977107534714, 1.2714189609610644, 1.5226977107534714, 1.2714189609610644, 1.5226977107534714};// X0 weights
@@ -134,31 +136,31 @@ private:
 
 
         TH1F *h_CM_layer[MAXLAYERS];
-	TH1F *h_sum_layer[MAXLAYERS], *h_layer_seven[MAXLAYERS], *h_layer_nineteen[MAXLAYERS], *h_Seed_layer[MAXLAYERS];
+	TH1F *h_eAll_L[MAXLAYERS], *h_e7_L[MAXLAYERS], *h_e19_L[MAXLAYERS], *h_eMax_L[MAXLAYERS];
         //systematic => MIP +/- 5%
-	TH1F *h_sum_layer_up[MAXLAYERS], *h_layer_seven_up[MAXLAYERS], *h_layer_nineteen_up[MAXLAYERS], *h_Seed_layer_up[MAXLAYERS];
-	TH1F *h_sum_layer_dw[MAXLAYERS], *h_layer_seven_dw[MAXLAYERS], *h_layer_nineteen_dw[MAXLAYERS], *h_Seed_layer_dw[MAXLAYERS];
+	TH1F *h_eAll_L_up[MAXLAYERS], *h_e7_L_up[MAXLAYERS], *h_e19_L_up[MAXLAYERS], *h_eMax_L_up[MAXLAYERS];
+	TH1F *h_eAll_L_dw[MAXLAYERS], *h_e7_L_dw[MAXLAYERS], *h_e19_L_dw[MAXLAYERS], *h_eMax_L_dw[MAXLAYERS];
         //systematic => MIP +/- 5%
-	TH1F *h_sum_layer_AbsW_Mip[MAXLAYERS], *h_layer_seven_AbsW_Mip[MAXLAYERS], *h_layer_nineteen_AbsW_Mip[MAXLAYERS], *h_Seed_layer_AbsW_Mip[MAXLAYERS];
-	TH1F *h_sum_layer_AbsW_GeV[MAXLAYERS], *h_layer_seven_AbsW_GeV[MAXLAYERS], *h_layer_nineteen_AbsW_GeV[MAXLAYERS], *h_Seed_layer_AbsW_GeV[MAXLAYERS];
-      	TH1F *h_x_layer[MAXLAYERS], *h_y_layer[MAXLAYERS];
-	TH2F *h_x_y_layer[MAXLAYERS];
+	TH1F *h_eAll_L_AbsW_Mip[MAXLAYERS], *h_e7_L_AbsW_Mip[MAXLAYERS], *h_e19_L_AbsW_Mip[MAXLAYERS], *h_eMax_L_AbsW_Mip[MAXLAYERS];
+	TH1F *h_eAll_L_AbsW_GeV[MAXLAYERS], *h_e7_L_AbsW_GeV[MAXLAYERS], *h_e19_L_AbsW_GeV[MAXLAYERS], *h_eMax_L_AbsW_GeV[MAXLAYERS];
+      	TH1F *h_x_L[MAXLAYERS], *h_y_L[MAXLAYERS];
+	TH2F *h_x_y_L[MAXLAYERS];
 
         TH1F* h_Radius[MAXLAYERS];      
-        TH1F *h_E1oE7_layer[MAXLAYERS], *h_E1oE19_layer[MAXLAYERS], *h_E7oE19_layer[MAXLAYERS];
-        TH1F *h_E1oE7_layer_up[MAXLAYERS], *h_E1oE19_layer_up[MAXLAYERS], *h_E7oE19_layer_up[MAXLAYERS];
-        TH1F *h_E1oE7_layer_dw[MAXLAYERS], *h_E1oE19_layer_dw[MAXLAYERS], *h_E7oE19_layer_dw[MAXLAYERS];
+        TH1F *h_E1oE7_L[MAXLAYERS], *h_E1oE19_L[MAXLAYERS], *h_E7oE19_L[MAXLAYERS];
+        TH1F *h_E1oE7_L_up[MAXLAYERS], *h_E1oE19_L_up[MAXLAYERS], *h_E7oE19_L_up[MAXLAYERS];
+        TH1F *h_E1oE7_L_dw[MAXLAYERS], *h_E1oE19_L_dw[MAXLAYERS], *h_E7oE19_L_dw[MAXLAYERS];
 
-        TH1F *h_sum_all, *h_seven_all, *h_nineteen_all;
-        TH1F *h_sum_all_up, *h_seven_all_up, *h_nineteen_all_up;
-        TH1F *h_sum_all_dw, *h_seven_all_dw, *h_nineteen_all_dw;
+        TH1F *h_eAll_all, *h_e7_all, *h_e19_all;
+        TH1F *h_eAll_all_up, *h_e7_all_up, *h_e19_all_up;
+        TH1F *h_eAll_all_dw, *h_e7_all_dw, *h_e19_all_dw;
 
-        TH1F *h_sum_all_AbsW_Mip, *h_seven_all_AbsW_Mip, *h_nineteen_all_AbsW_Mip;
-        TH1F *h_sum_all_AbsW_GeV, *h_seven_all_AbsW_GeV, *h_nineteen_all_AbsW_GeV;
+        TH1F *h_eAll_all_AbsW_Mip, *h_e7_all_AbsW_Mip, *h_e19_all_AbsW_Mip;
+        TH1F *h_eAll_all_AbsW_GeV, *h_e7_all_AbsW_GeV, *h_e19_all_AbsW_GeV;
 
-        TProfile *tp_E1_vs_layer, *tp_E7_vs_layer, *tp_E19_vs_layer;
-        TProfile *tp_E1oSumL_vs_layer, *tp_E7oSumL_vs_layer, *tp_E19oSumL_vs_layer;
-        TProfile *tp_E1oE7_vs_layer, *tp_E1oE19_vs_layer, *tp_E7oE19_vs_layer;
+        TProfile *tp_E1_vs_L, *tp_E7_vs_L, *tp_E19_vs_L;
+        TProfile *tp_E1oSumL_vs_L, *tp_E7oSumL_vs_L, *tp_E19oSumL_vs_L;
+        TProfile *tp_E1oE7_vs_L, *tp_E1oE19_vs_L, *tp_E7oE19_vs_L;
 
 	TH2F *HighGain_LowGain_2D;
 	TH2F *Energy_LowGain_2D;
@@ -175,145 +177,146 @@ private:
 Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 {
   std::cout << " welcome costruttore MAXSKIROCS = " << MAXSKIROCS << std::endl;
-	// initialization
-	usesResource("TFileService");
-	edm::Service<TFileService> fs;
-	HGCalTBRecHitCollection_ = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
-	layers_config_ = iConfig.getParameter<int>("layers_config");
+  // initialization
+  usesResource("TFileService");
+  edm::Service<TFileService> fs;
+  HGCalTBRecHitCollection_ = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
+  layers_config_ = iConfig.getParameter<int>("layers_config");
+  
+  //booking the histos
+  for(int layer = 0; layer < MAXLAYERS; layer++) {
+    h_CM_layer[layer] = fs->make<TH1F>(Form("h_CM_layer%d",layer+1), "", 5000, -500, 500);
+    
+    h_eAll_L[layer] = fs->make<TH1F>(Form("h_eAll_L%d", layer+1), "", 40010, -10, 40000);
+    h_eMax_L[layer] = fs->make<TH1F>(Form("h_eMax_L%d",layer+1), "", 40010, -10, 40000);
+    h_e7_L[layer] = fs->make<TH1F>(Form("h_e7_L%d", layer+1),"",  40010, -10, 40000);
+    h_e19_L[layer] = fs->make<TH1F>(Form("h_e19_L%d", layer+1), "", 40010, -10, 40000);
+    //syst 
+    h_eAll_L_up[layer] = fs->make<TH1F>(Form("h_eAll_L%d_up", layer+1), "", 40010, -10, 40000);
+    h_eMax_L_up[layer] = fs->make<TH1F>(Form("h_eMax_L%d_up",layer+1), "", 40010, -10, 40000);
+    h_e7_L_up[layer] = fs->make<TH1F>(Form("h_e7_L%d_up", layer+1),"",  40010, -10, 40000);
+    h_e19_L_up[layer] = fs->make<TH1F>(Form("h_e19_L%d_up", layer+1), "", 40010, -10, 40000);
+    h_eAll_L_dw[layer] = fs->make<TH1F>(Form("h_eAll_L%d_dw", layer+1), "", 40010, -10, 40000);
+    h_eMax_L_dw[layer] = fs->make<TH1F>(Form("h_eMax_L%d_dw",layer+1), "", 40010, -10, 40000);
+    h_e7_L_dw[layer] = fs->make<TH1F>(Form("h_e7_L%d_dw", layer+1),"",  40010, -10, 40000);
+    h_e19_L_dw[layer] = fs->make<TH1F>(Form("h_e19_L%d_dw", layer+1), "", 40010, -10, 40000);
+    //
+    h_eAll_L_AbsW_Mip[layer] = fs->make<TH1F>(Form("h_eAll_L%d_AbsW_Mip", layer+1), "", 40010, -10, 4.e6);
+    h_eMax_L_AbsW_Mip[layer] = fs->make<TH1F>(Form("h_eMax_L%d_AbsW_Mip",layer+1), "", 40010, -10, 4.e6);
+    h_e7_L_AbsW_Mip[layer] = fs->make<TH1F>(Form("h_e7_L%d_AbsW_Mip", layer+1),"",  40010, -10, 4.e6);
+    h_e19_L_AbsW_Mip[layer] = fs->make<TH1F>(Form("h_e19_L%d_AbsW_Mip", layer+1), "", 40010, -10, 4.e6);
+    
+    h_eAll_L_AbsW_GeV[layer] = fs->make<TH1F>(Form("h_eAll_L%d_AbsW_GeV", layer+1), "", 5100, -10, 500);
+    h_eMax_L_AbsW_GeV[layer] = fs->make<TH1F>(Form("h_eMax_L%d_AbsW_GeV",layer+1), "", 5100, -10, 500);
+    h_e7_L_AbsW_GeV[layer] = fs->make<TH1F>(Form("h_e7_L%d_AbsW_GeV", layer+1),"",  5100, -10, 500);
+    h_e19_L_AbsW_GeV[layer] = fs->make<TH1F>(Form("h_e19_L%d_AbsW_GeV", layer+1), "", 5100, -10, 500);
+    
+    h_x_L[layer] = fs->make<TH1F>(Form("X_L%d", layer+1), "", 2000, -10., 10. );
+    h_y_L[layer] = fs->make<TH1F>(Form("Y_L%d", layer+1), "", 2000, -10., 10. );
+    h_x_y_L[layer] = fs->make<TH2F>(Form("YvsX_L%d", layer+1), "", 2000, -10., 10., 2000, -10., 10. );
 
-	//booking the histos
-	for(int layer = 0; layer < MAXLAYERS; layer++) {
-	  h_CM_layer[layer] = fs->make<TH1F>(Form("h_CM_layer%d",layer+1), "", 5000, -500, 500);
+    h_E1oE7_L[layer] = fs->make<TH1F>(Form("h_E1oE7_L%d",layer+1), "", 5000, -5, 5);
+    h_E1oE19_L[layer] = fs->make<TH1F>(Form("h_E1oE19_L%d",layer+1), "", 5000, -5, 5);
+    h_E7oE19_L[layer] = fs->make<TH1F>(Form("h_E7oE19_L%d",layer+1), "", 5000, -5, 5);
+    h_Radius[layer] = fs->make<TH1F>(Form("h_Radius_L%d",layer+1), "", 5000, 0., 20.);
+    ///syst
+    h_E1oE7_L_up[layer] = fs->make<TH1F>(Form("h_E1oE7_L%d",layer+1), "", 5000, -5, 5);
+    h_E1oE19_L_up[layer] = fs->make<TH1F>(Form("h_E1oE19_L%d",layer+1), "", 5000, -5, 5);
+    h_E7oE19_L_up[layer] = fs->make<TH1F>(Form("h_E7oE19_L%d",layer+1), "", 5000, -5, 5);
+    h_E1oE7_L_dw[layer] = fs->make<TH1F>(Form("h_E1oE7_L%d",layer+1), "", 5000, -5, 5);
+    h_E1oE19_L_dw[layer] = fs->make<TH1F>(Form("h_E1oE19_L%d",layer+1), "", 5000, -5, 5);
+    h_E7oE19_L_dw[layer] = fs->make<TH1F>(Form("h_E7oE19_L%d",layer+1), "", 5000, -5, 5);
+    //
+  }
+  
 
-	  h_sum_layer[layer] = fs->make<TH1F>(Form("sumAll_Layer%d", layer+1), "", 40010, -10, 40000);
-	  h_Seed_layer[layer] = fs->make<TH1F>(Form("h_Seed_layer%d",layer+1), Form("h_Seed_layer%d",layer+1), 40010, -10, 40000);
-	  h_layer_seven[layer] = fs->make<TH1F>(Form("sum7_Layer%d", layer+1),"",  40010, -10, 40000);
-	  h_layer_nineteen[layer] = fs->make<TH1F>(Form("sum19_Layer%d", layer+1), "", 40010, -10, 40000);
-	  //syst 
-	  h_sum_layer_up[layer] = fs->make<TH1F>(Form("sumAll_Layer%d_up", layer+1), "", 40010, -10, 40000);
-	  h_Seed_layer_up[layer] = fs->make<TH1F>(Form("h_Seed_layer%d_up",layer+1), Form("h_Seed_layer%d",layer+1), 40010, -10, 40000);
-	  h_layer_seven_up[layer] = fs->make<TH1F>(Form("sum7_Layer%d_up", layer+1),"",  40010, -10, 40000);
-	  h_layer_nineteen_up[layer] = fs->make<TH1F>(Form("sum19_Layer%d_up", layer+1), "", 40010, -10, 40000);
-	  h_sum_layer_dw[layer] = fs->make<TH1F>(Form("sumAll_Layer%d_dw", layer+1), "", 40010, -10, 40000);
-	  h_Seed_layer_dw[layer] = fs->make<TH1F>(Form("h_Seed_layer%d_dw",layer+1), Form("h_Seed_layer%d",layer+1), 40010, -10, 40000);
-	  h_layer_seven_dw[layer] = fs->make<TH1F>(Form("sum7_Layer%d_dw", layer+1),"",  40010, -10, 40000);
-	  h_layer_nineteen_dw[layer] = fs->make<TH1F>(Form("sum19_Layer%d_dw", layer+1), "", 40010, -10, 40000);
-	  //
-	  h_sum_layer_AbsW_Mip[layer] = fs->make<TH1F>(Form("sumAll_Layer%d_AbsW_Mip", layer+1), "", 40010, -10, 4.e6);
-	  h_Seed_layer_AbsW_Mip[layer] = fs->make<TH1F>(Form("h_Seed_layer%d_AbsW_Mip",layer+1), Form("h_Seed_layer%d",layer+1), 40010, -10, 4.e6);
-	  h_layer_seven_AbsW_Mip[layer] = fs->make<TH1F>(Form("sum7_Layer%d_AbsW_Mip", layer+1),"",  40010, -10, 4.e6);
-	  h_layer_nineteen_AbsW_Mip[layer] = fs->make<TH1F>(Form("sum19_Layer%d_AbsW_Mip", layer+1), "", 40010, -10, 4.e6);
+  h_eAll_all = fs->make<TH1F>("h_eAll_all", "", 40010, -10, 40000);
+  h_e7_all = fs->make<TH1F>("h_e7_all", "", 40010, -10, 40000);
+  h_e19_all = fs->make<TH1F>("h_e19_all", "", 40010, -10, 40000);
+  h_eAll_all->Sumw2();
+  h_e7_all->Sumw2();
+  h_e19_all->Sumw2();
+  //////////
+  h_eAll_all_up = fs->make<TH1F>("h_eAll_all_up", "", 40010, -10, 40000);
+  h_e7_all_up = fs->make<TH1F>("h_e7_all_up", "", 40010, -10, 40000);
+  h_e19_all_up = fs->make<TH1F>("h_e19_all_up", "", 40010, -10, 40000);
+  h_eAll_all_up->Sumw2();
+  h_e7_all_up->Sumw2();
+  h_e19_all_up->Sumw2();
+  h_eAll_all_dw = fs->make<TH1F>("h_eAll_all_dw", "", 40010, -10, 40000);
+  h_e7_all_dw = fs->make<TH1F>("h_e7_all_dw", "", 40010, -10, 40000);
+  h_e19_all_dw = fs->make<TH1F>("h_e19_all_dw", "", 40010, -10, 40000);
+  h_eAll_all_dw->Sumw2();
+  h_e7_all_dw->Sumw2();
+  h_e19_all_dw->Sumw2();
 
-	  h_sum_layer_AbsW_GeV[layer] = fs->make<TH1F>(Form("sumAll_Layer%d_AbsW_GeV", layer+1), "", 5100, -10, 500);
-	  h_Seed_layer_AbsW_GeV[layer] = fs->make<TH1F>(Form("h_Seed_layer%d_AbsW_GeV",layer+1), Form("h_Seed_layer%d",layer+1), 5100, -10, 500);
-	  h_layer_seven_AbsW_GeV[layer] = fs->make<TH1F>(Form("sum7_Layer%d_AbsW_GeV", layer+1),"",  5100, -10, 500);
-	  h_layer_nineteen_AbsW_GeV[layer] = fs->make<TH1F>(Form("sum19_Layer%d_AbsW_GeV", layer+1), "", 5100, -10, 500);
+ 
+  h_eAll_all_AbsW_Mip = fs->make<TH1F>("h_eAll_all_AbsW_Mip", "", 40010, -10, 4.e6);
+  h_e7_all_AbsW_Mip = fs->make<TH1F>("h_e7_all_AbsW_Mip", "", 40010, -10, 4.e6);
+  h_e19_all_AbsW_Mip = fs->make<TH1F>("h_e19_all_AbsW_Mip", "", 40010, -10, 4.e6);
+  h_eAll_all_AbsW_Mip->Sumw2();
+  h_e7_all_AbsW_Mip->Sumw2();
+  h_e19_all_AbsW_Mip->Sumw2();
+  
+  h_eAll_all_AbsW_GeV = fs->make<TH1F>("h_eAll_all_AbsW_GeV", "", 5100, -10, 500);
+  h_e7_all_AbsW_GeV = fs->make<TH1F>("h_e7_all_AbsW_GeV", "", 5100, -10, 500);
+  h_e19_all_AbsW_GeV = fs->make<TH1F>("h_e19_all_AbsW_GeV", "", 5100, -10, 500);
+  h_eAll_all_AbsW_GeV->Sumw2();
+  h_e7_all_AbsW_GeV->Sumw2();
+  h_e19_all_AbsW_GeV->Sumw2();
+  
+  HighGain_LowGain_2D = fs->make<TH2F>("h2_HGvsLG", "", 4000, 0, 4000, 4000, 0, 4000);
+  Energy_LowGain_2D = fs->make<TH2F>("h2_EvsLG", "", 4000, 0, 4000, 4000, 0, 4000);
+  
+  tp_E1_vs_L = fs->make<TProfile>("tp_E1_vs_L", "", MAXLAYERS+1, 0, MAXLAYERS+1);
+  tp_E7_vs_L = fs->make<TProfile>("tp_E7_vs_L", "", MAXLAYERS+1, 0, MAXLAYERS+1);
+  tp_E19_vs_L = fs->make<TProfile>("tp_E19_vs_L", "", MAXLAYERS+1, 0, MAXLAYERS+1);
+  tp_E1oSumL_vs_L = fs->make<TProfile>("tp_E1oSumL_vs_L", "", MAXLAYERS+1, 0, MAXLAYERS+1);
+  tp_E7oSumL_vs_L = fs->make<TProfile>("tp_E7oSumL_vs_L", "", MAXLAYERS+1, 0, MAXLAYERS+1);
+  tp_E19oSumL_vs_L = fs->make<TProfile>("tp_E19oSumL_vs_L", "", MAXLAYERS+1, 0, MAXLAYERS+1);
+  tp_E1oE7_vs_L = fs->make<TProfile>("tp_E1oE7_vs_L", "", MAXLAYERS+1, 0, MAXLAYERS+1);
+  tp_E1oE19_vs_L = fs->make<TProfile>("tp_E1oE19_vs_L", "", MAXLAYERS+1, 0, MAXLAYERS+1);
+  tp_E7oE19_vs_L = fs->make<TProfile>("tp_E7oE19_vs_L", "", MAXLAYERS+1, 0, MAXLAYERS+1);
+  
+  
+  //loading the proper weights
+  if(MAXLAYERS != 8) {
+    std::cout << " update weights " << std::endl;
+    return;
+  }
 
-	  h_x_layer[layer] = fs->make<TH1F>(Form("X_Layer%d", layer+1), "", 2000, -10., 10. );
-	  h_y_layer[layer] = fs->make<TH1F>(Form("Y_Layer%d", layer+1), "", 2000, -10., 10. );
-	  h_x_y_layer[layer] = fs->make<TH2F>(Form("YvsX_Layer%d", layer+1), "", 2000, -10., 10., 2000, -10., 10. );
-
-	  h_E1oE7_layer[layer] = fs->make<TH1F>(Form("h_E1oE7_layer%d",layer+1), Form("h_E1oE7_layer%d",layer+1), 5000, -5, 5);
-	  h_E1oE19_layer[layer] = fs->make<TH1F>(Form("h_E1oE19_layer%d",layer+1), Form("h_E1oE19_layer%d",layer+1), 5000, -5, 5);
-	  h_E7oE19_layer[layer] = fs->make<TH1F>(Form("h_E7oE19_layer%d",layer+1), Form("h_E7oE19_layer%d",layer+1), 5000, -5, 5);
-	  h_Radius[layer] = fs->make<TH1F>(Form("h_Radius_layer%d",layer+1), Form("h_Radius_layer%d",layer+1), 5000, 0., 20.);
-	  ///syst
-	  h_E1oE7_layer_up[layer] = fs->make<TH1F>(Form("h_E1oE7_layer%d",layer+1), Form("h_E1oE7_layer%d_up",layer+1), 5000, -5, 5);
-	  h_E1oE19_layer_up[layer] = fs->make<TH1F>(Form("h_E1oE19_layer%d",layer+1), Form("h_E1oE19_layer%d_up",layer+1), 5000, -5, 5);
-	  h_E7oE19_layer_up[layer] = fs->make<TH1F>(Form("h_E7oE19_layer%d",layer+1), Form("h_E7oE19_layer%d_up",layer+1), 5000, -5, 5);
-	  h_E1oE7_layer_dw[layer] = fs->make<TH1F>(Form("h_E1oE7_layer%d",layer+1), Form("h_E1oE7_layer%d_dw",layer+1), 5000, -5, 5);
-	  h_E1oE19_layer_dw[layer] = fs->make<TH1F>(Form("h_E1oE19_layer%d",layer+1), Form("h_E1oE19_layer%d_dw",layer+1), 5000, -5, 5);
-	  h_E7oE19_layer_dw[layer] = fs->make<TH1F>(Form("h_E7oE19_layer%d",layer+1), Form("h_E7oE19_layer%d_dw",layer+1), 5000, -5, 5);
-	  //
-	}
-
-
-	h_sum_all = fs->make<TH1F>("h_sumAll_AllLayers", "", 40010, -10, 40000);
-	h_seven_all = fs->make<TH1F>("h_sum7_AllLayers", "", 40010, -10, 40000);
-	h_nineteen_all = fs->make<TH1F>("h_sum19_AllLayers", "", 40010, -10, 40000);
-	h_sum_all->Sumw2();
-	h_seven_all->Sumw2();
-	h_nineteen_all->Sumw2();
-	//////////
-	h_sum_all_up = fs->make<TH1F>("h_sumAll_AllLayers", "", 40010, -10, 40000);
-	h_seven_all_up = fs->make<TH1F>("h_sum7_AllLayers", "", 40010, -10, 40000);
-	h_nineteen_all_up = fs->make<TH1F>("h_sum19_AllLayers", "", 40010, -10, 40000);
-	h_sum_all_up->Sumw2();
-	h_seven_all_up->Sumw2();
-	h_nineteen_all_up->Sumw2();
-	h_sum_all_dw = fs->make<TH1F>("h_sumAll_AllLayers_dw", "", 40010, -10, 40000);
-	h_seven_all_dw = fs->make<TH1F>("h_sum7_AllLayers_dw", "", 40010, -10, 40000);
-	h_nineteen_all_dw = fs->make<TH1F>("h_sum19_AllLayers_dw", "", 40010, -10, 40000);
-	h_sum_all_dw->Sumw2();
-	h_seven_all_dw->Sumw2();
-	h_nineteen_all_dw->Sumw2();
-
-	h_sum_all_AbsW_Mip = fs->make<TH1F>("h_sumAll_AllLayers_AbsW_Mip", "", 40010, -10, 4.e6);
-	h_seven_all_AbsW_Mip = fs->make<TH1F>("h_sum7_AllLayers_AbsW_Mip", "", 40010, -10, 4.e6);
-	h_nineteen_all_AbsW_Mip = fs->make<TH1F>("h_sum19_AllLayers_AbsW_Mip", "", 40010, -10, 4.e6);
-	h_sum_all_AbsW_Mip->Sumw2();
-	h_seven_all_AbsW_Mip->Sumw2();
-	h_nineteen_all_AbsW_Mip->Sumw2();
-
-	h_sum_all_AbsW_GeV = fs->make<TH1F>("h_sumAll_AllLayers_AbsW_GeV", "", 5100, -10, 500);
-	h_seven_all_AbsW_GeV = fs->make<TH1F>("h_sum7_AllLayers_AbsW_GeV", "", 5100, -10, 500);
-	h_nineteen_all_AbsW_GeV = fs->make<TH1F>("h_sum19_AllLayers_AbsW_GeV", "", 5100, -10, 500);
-	h_sum_all_AbsW_GeV->Sumw2();
-	h_seven_all_AbsW_GeV->Sumw2();
-	h_nineteen_all_AbsW_GeV->Sumw2();
-
-	HighGain_LowGain_2D = fs->make<TH2F>("h2_HGvsLG", "", 4000, 0, 4000, 4000, 0, 4000);
-	Energy_LowGain_2D = fs->make<TH2F>("h2_EvsLG", "", 4000, 0, 4000, 4000, 0, 4000);
-
-	tp_E1_vs_layer = fs->make<TProfile>("tp_E1_vs_layer", "", MAXLAYERS+1, 0, MAXLAYERS+1);
-	tp_E7_vs_layer = fs->make<TProfile>("tp_E7_vs_layer", "", MAXLAYERS+1, 0, MAXLAYERS+1);
-	tp_E19_vs_layer = fs->make<TProfile>("tp_E19_vs_layer", "", MAXLAYERS+1, 0, MAXLAYERS+1);
-	tp_E1oSumL_vs_layer = fs->make<TProfile>("tp_E1oSumL_vs_layer", "", MAXLAYERS+1, 0, MAXLAYERS+1);
-	tp_E7oSumL_vs_layer = fs->make<TProfile>("tp_E7oSumL_vs_layer", "", MAXLAYERS+1, 0, MAXLAYERS+1);
-	tp_E19oSumL_vs_layer = fs->make<TProfile>("tp_E19oSumL_vs_layer", "", MAXLAYERS+1, 0, MAXLAYERS+1);
-	tp_E1oE7_vs_layer = fs->make<TProfile>("tp_E1oE7_vs_layer", "", MAXLAYERS+1, 0, MAXLAYERS+1);
-	tp_E1oE19_vs_layer = fs->make<TProfile>("tp_E1oE19_vs_layer", "", MAXLAYERS+1, 0, MAXLAYERS+1);
-	tp_E7oE19_vs_layer = fs->make<TProfile>("tp_E7oE19_vs_layer", "", MAXLAYERS+1, 0, MAXLAYERS+1);
-	
-
-        //loading the proper weights
-        if(MAXLAYERS != 8) {
-	  std::cout << " update weights " << std::endl;
-	  return;
-	}
-
-        for(int iL=0; iL<MAXLAYERS; ++iL){
-	  if(layers_config_ == 0){
-	    Weights_L[iL] = LayerWeight_16L_FNAL[iL];
-	    X0_L[iL] = X0depth_16L_FNAL[iL];
-	    ADCtoMIP[iL] = ADCtoMIP_FNAL[iL];
-	    ADCtoMIPup[iL] = ADCtoMIP_FNAL[iL] * 1.05;
-	    ADCtoMIPdw[iL] = ADCtoMIP_FNAL[iL] * 0.95;
-	    mapfile_ = iConfig.getParameter<std::string>("mapFile_FNAL");
-	  }
-	  else{
-	    ADCtoMIP[iL] = ADCtoMIP_CERN[iL];
-	    ADCtoMIPup[iL] = ADCtoMIP_CERN[iL] * 1.05;
-	    ADCtoMIPdw[iL] = ADCtoMIP_CERN[iL] * 0.95;
-	    mapfile_ = iConfig.getParameter<std::string>("mapFile_CERN");
-	    if(layers_config_ == 1){
-	      Weights_L[iL] = LayerWeight_8L_conf1[iL];
-	      X0_L[iL] = X0depth_8L_conf1[iL];
-	    }
-	    if(layers_config_ == 2){
-	      Weights_L[iL] = LayerWeight_8L_conf2[iL];
-	      X0_L[iL] = X0depth_8L_conf2[iL]; 
-	    }
-	    if(layers_config_ == -1){
-	      Weights_L[iL] = 1.;
-	      X0_L[iL] = 0.;
-	    }
-	  }
-	}
-
-
-
-
+  for(int iL=0; iL<MAXLAYERS; ++iL){
+    if(layers_config_ == 0){
+      Weights_L[iL] = LayerWeight_16L_FNAL[iL];
+      X0_L[iL] = X0depth_16L_FNAL[iL];
+      ADCtoMIP[iL] = ADCtoMIP_FNAL[iL];
+      ADCtoMIPup[iL] = ADCtoMIP_FNAL[iL] * 1.05;
+      ADCtoMIPdw[iL] = ADCtoMIP_FNAL[iL] * 0.95;
+      mapfile_ = iConfig.getParameter<std::string>("mapFile_FNAL");
+    }
+    else{
+      ADCtoMIP[iL] = ADCtoMIP_CERN[iL];
+      ADCtoMIPup[iL] = ADCtoMIP_CERN[iL] * 1.05;
+      ADCtoMIPdw[iL] = ADCtoMIP_CERN[iL] * 0.95;
+      mapfile_ = iConfig.getParameter<std::string>("mapFile_CERN");
+      if(layers_config_ == 1){
+	Weights_L[iL] = LayerWeight_8L_conf1[iL];
+	X0_L[iL] = X0depth_8L_conf1[iL];
+      }
+      if(layers_config_ == 2){
+	Weights_L[iL] = LayerWeight_8L_conf2[iL];
+	X0_L[iL] = X0depth_8L_conf2[iL]; 
+      }
+      if(layers_config_ == -1){
+	Weights_L[iL] = 1.;
+	X0_L[iL] = 0.;
+      }
+    }
+  }
+  
+  
+  
+  
 }//constructor ends here
 
 
@@ -452,26 +455,26 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     float e1, e7, e19, eAll;
     shosha.getAllEnergy(iL, e1, e7, e19, eAll);
 
-    h_sum_layer[iL]->Fill(eAll);
-    h_Seed_layer[iL]->Fill(e1);
-    h_layer_seven[iL]->Fill(e7);
-    h_layer_nineteen[iL]->Fill(e19);
+    h_eAll_L[iL]->Fill(eAll);
+    h_eMax_L[iL]->Fill(e1);
+    h_e7_L[iL]->Fill(e7);
+    h_e19_L[iL]->Fill(e19);
 
     float e1_up, e7_up, e19_up, eAll_up;
     shosha.getAllEnergy(iL, e1_up, e7_up, e19_up, eAll_up);
 
-    h_sum_layer_up[iL]->Fill(eAll_up);
-    h_Seed_layer_up[iL]->Fill(e1_up);
-    h_layer_seven_up[iL]->Fill(e7_up);
-    h_layer_nineteen_up[iL]->Fill(e19_up);
+    h_eAll_L_up[iL]->Fill(eAll_up);
+    h_eMax_L_up[iL]->Fill(e1_up);
+    h_e7_L_up[iL]->Fill(e7_up);
+    h_e19_L_up[iL]->Fill(e19_up);
 
     float e1_dw, e7_dw, e19_dw, eAll_dw;
     shosha.getAllEnergy(iL, e1_dw, e7_dw, e19_dw, eAll_dw);
 
-    h_sum_layer_dw[iL]->Fill(eAll_dw);
-    h_Seed_layer_dw[iL]->Fill(e1_dw);
-    h_layer_seven_dw[iL]->Fill(e7_dw);
-    h_layer_nineteen_dw[iL]->Fill(e19_dw);
+    h_eAll_L_dw[iL]->Fill(eAll_dw);
+    h_eMax_L_dw[iL]->Fill(e1_dw);
+    h_e7_L_dw[iL]->Fill(e7_dw);
+    h_e19_L_dw[iL]->Fill(e19_dw);
 
 
     float layerE1_Mip = e1 * (weights2GeV * weights2MIP * Weights_L[iL] / MIP2GeV_sim + 1.);
@@ -484,48 +487,48 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     float layerE19_GeV = e19 * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
     float layerEAll_GeV = eAll * (weights2GeV * weights2MIP * Weights_L[iL] + 1. * MIP2GeV_sim);
 
-    h_sum_layer_AbsW_Mip[iL]->Fill(layerEAll_Mip);
-    h_Seed_layer_AbsW_Mip[iL]->Fill(layerE1_Mip);
-    h_layer_seven_AbsW_Mip[iL]->Fill(layerE7_Mip);
-    h_layer_nineteen_AbsW_Mip[iL]->Fill(layerE19_Mip);
+    h_eAll_L_AbsW_Mip[iL]->Fill(layerEAll_Mip);
+    h_eMax_L_AbsW_Mip[iL]->Fill(layerE1_Mip);
+    h_e7_L_AbsW_Mip[iL]->Fill(layerE7_Mip);
+    h_e19_L_AbsW_Mip[iL]->Fill(layerE19_Mip);
 
-    h_sum_layer_AbsW_GeV[iL]->Fill(layerEAll_GeV);
-    h_Seed_layer_AbsW_GeV[iL]->Fill(layerE1_GeV);
-    h_layer_seven_AbsW_GeV[iL]->Fill(layerE7_GeV);
-    h_layer_nineteen_AbsW_GeV[iL]->Fill(layerE19_GeV);
+    h_eAll_L_AbsW_GeV[iL]->Fill(layerEAll_GeV);
+    h_eMax_L_AbsW_GeV[iL]->Fill(layerE1_GeV);
+    h_e7_L_AbsW_GeV[iL]->Fill(layerE7_GeV);
+    h_e19_L_AbsW_GeV[iL]->Fill(layerE19_GeV);
     
-    tp_E1_vs_layer->Fill(iL+1, e1);
-    tp_E7_vs_layer->Fill(iL+1, e7);
-    tp_E19_vs_layer->Fill(iL+1, e19);
+    tp_E1_vs_L->Fill(iL+1, e1);
+    tp_E7_vs_L->Fill(iL+1, e7);
+    tp_E19_vs_L->Fill(iL+1, e19);
 
     if(e7 != 0.){
-      h_E1oE7_layer[iL]->Fill(e1/e7);
-      tp_E1oE7_vs_layer->Fill(iL+1, e1/e7);
+      h_E1oE7_L[iL]->Fill(e1/e7);
+      tp_E1oE7_vs_L->Fill(iL+1, e1/e7);
     }
-    if(e7_up != 0.) h_E1oE7_layer_up[iL]->Fill(e1_up/e7_up);
-    if(e7_dw != 0.) h_E1oE7_layer_dw[iL]->Fill(e1_dw/e7_dw);
+    if(e7_up != 0.) h_E1oE7_L_up[iL]->Fill(e1_up/e7_up);
+    if(e7_dw != 0.) h_E1oE7_L_dw[iL]->Fill(e1_dw/e7_dw);
 
 
     if(e19 != 0){
-      h_E1oE19_layer[iL]->Fill(e1/e19);
-      h_E7oE19_layer[iL]->Fill(e7/e19);
-      tp_E1oE19_vs_layer->Fill(iL, e1/e19);
-      tp_E7oE19_vs_layer->Fill(iL, e7/e19);
+      h_E1oE19_L[iL]->Fill(e1/e19);
+      h_E7oE19_L[iL]->Fill(e7/e19);
+      tp_E1oE19_vs_L->Fill(iL, e1/e19);
+      tp_E7oE19_vs_L->Fill(iL, e7/e19);
     }
     if(e19_up != 0){
-      h_E1oE19_layer_up[iL]->Fill(e1_up/e19_up);
-      h_E7oE19_layer_up[iL]->Fill(e7_up/e19_up);
+      h_E1oE19_L_up[iL]->Fill(e1_up/e19_up);
+      h_E7oE19_L_up[iL]->Fill(e7_up/e19_up);
     }
     if(e19_dw != 0){
-      h_E1oE19_layer_dw[iL]->Fill(e1_dw/e19_dw);
-      h_E7oE19_layer_dw[iL]->Fill(e7_dw/e19_dw);
+      h_E1oE19_L_dw[iL]->Fill(e1_dw/e19_dw);
+      h_E7oE19_L_dw[iL]->Fill(e7_dw/e19_dw);
     }
 
     float xTmp, yTmp;
     shosha.getPos(iL, xTmp, yTmp);
-    h_x_layer[iL]->Fill(xTmp / e19);
-    h_y_layer[iL]->Fill(yTmp / e19);
-    h_x_y_layer[iL]->Fill(xTmp / e19,  yTmp / e19);
+    h_x_L[iL]->Fill(xTmp / e19);
+    h_y_L[iL]->Fill(yTmp / e19);
+    h_x_y_L[iL]->Fill(xTmp / e19,  yTmp / e19);
 
     E1SumL_R += e1;
     E7SumL_R += e7;
@@ -561,23 +564,23 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
   }
   */
 
-  h_sum_all->Fill(EAllSumL_R);
-  h_seven_all->Fill(E7SumL_R);
-  h_nineteen_all->Fill(E19SumL_R);
-  h_sum_all_up->Fill(EAllSumL_Rup);
-  h_seven_all_up->Fill(E7SumL_Rup);
-  h_nineteen_all_up->Fill(E19SumL_Rup);
-  h_sum_all_dw->Fill(EAllSumL_Rdw);
-  h_seven_all_dw->Fill(E7SumL_Rdw);
-  h_nineteen_all_dw->Fill(E19SumL_Rdw);
+  h_eAll_all->Fill(EAllSumL_R);
+  h_e7_all->Fill(E7SumL_R);
+  h_e19_all->Fill(E19SumL_R);
+  h_eAll_all_up->Fill(EAllSumL_Rup);
+  h_e7_all_up->Fill(E7SumL_Rup);
+  h_e19_all_up->Fill(E19SumL_Rup);
+  h_eAll_all_dw->Fill(EAllSumL_Rdw);
+  h_e7_all_dw->Fill(E7SumL_Rdw);
+  h_e19_all_dw->Fill(E19SumL_Rdw);
   
-  h_sum_all_AbsW_Mip->Fill(EAllSumL_AbsW_Mip);
-  h_seven_all_AbsW_Mip->Fill(E7SumL_AbsW_Mip);
-  h_nineteen_all_AbsW_Mip->Fill(E19SumL_AbsW_Mip);
+  h_eAll_all_AbsW_Mip->Fill(EAllSumL_AbsW_Mip);
+  h_e7_all_AbsW_Mip->Fill(E7SumL_AbsW_Mip);
+  h_e19_all_AbsW_Mip->Fill(E19SumL_AbsW_Mip);
   
-  h_sum_all_AbsW_GeV->Fill(EAllSumL_AbsW_GeV);
-  h_seven_all_AbsW_GeV->Fill(E7SumL_AbsW_GeV);
-  h_nineteen_all_AbsW_GeV->Fill(E19SumL_AbsW_GeV);
+  h_eAll_all_AbsW_GeV->Fill(EAllSumL_AbsW_GeV);
+  h_e7_all_AbsW_GeV->Fill(E7SumL_AbsW_GeV);
+  h_e19_all_AbsW_GeV->Fill(E19SumL_AbsW_GeV);
   
   
 }// analyze ends here

@@ -163,8 +163,12 @@ ShowerShape::~ShowerShape()
 
 
 void ShowerShape::init(){
-  int ncell1[MAXLAYERS], ncell6[MAXLAYERS], ncell12[MAXLAYERS];
-  int ncell7[MAXLAYERS], ncell19[MAXLAYERS];
+  float ncell1[MAXLAYERS], ncell6[MAXLAYERS], ncell12[MAXLAYERS];
+  float ncell7[MAXLAYERS], ncell19[MAXLAYERS], ncell43[MAXLAYERS];
+
+  //  float ncell1S[MAXLAYERS], ncell6S[MAXLAYERS], ncell12S[MAXLAYERS];
+  //float ncell7S[MAXLAYERS], 
+  float ncell19S[MAXLAYERS], ncell43S[MAXLAYERS];
 
   float deno43[MAXLAYERS], lposx43[MAXLAYERS], lposy43[MAXLAYERS], Dposx43[MAXLAYERS], Dposy43[MAXLAYERS], eccx43[MAXLAYERS], eccy43[MAXLAYERS], eccxy43[MAXLAYERS];
   float deno19[MAXLAYERS], lposx19[MAXLAYERS], lposy19[MAXLAYERS], Dposx19[MAXLAYERS], Dposy19[MAXLAYERS];
@@ -176,10 +180,13 @@ void ShowerShape::init(){
   for(int iL=0; iL<MAXLAYERS; ++iL){
     e1[iL] = e6[iL] = e7[iL] = e12[iL] = e19[iL] = e43[iL] = eAll[iL] = eccentr[iL] = 0.;
     ncell1[iL] = ncell6[iL] = ncell7[iL] = ncell12[iL] = ncell19[iL] = 0;
+    //ncell1S[iL] = ncell6S[iL] = ncell7S[iL] = 
+    ncell43S[iL] = ncell19S[iL] = 0;
     deno43[iL] = lposx43[iL] = lposy43[iL] = Dposx43[iL] = Dposy43[iL] = eccx43[iL] = eccy43[iL] = eccxy43[iL] = 0.;
     deno19[iL] = lposx19[iL] = lposy19[iL] = Dposx19[iL] = Dposy19[iL] =  xEnWeig19[iL] =  yEnWeig19[iL] = 0.;
   } 
 
+  //  std::cout << "loop recHits size = " << Rechits->size() << std::endl;
   for(auto Rechit : *Rechits){
     // looping over each rechit to fill histogram
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), sensorsize);
@@ -194,32 +201,47 @@ void ShowerShape::init(){
 
     radius = sqrt( pow(CellCentreXY.first - maxX[eLayer], 2) + pow(CellCentreXY.second - maxY[eLayer], 2) );
 
-    if(energyCMsub > CMTHRESHOLD) eAll[eLayer] += energyCMsub;
-
     if((radius < maxdist) && (energyCMsub > CMTHRESHOLD)){
+      //      if(ncell1[eLayer] == 1) continue;
+      //      std::cout << " x cell = " << CellCentreXY.first << " y cell = " << CellCentreXY.second << " layer = " << eLayer << std::endl;
+      //      std::cout << " x MAX = " << maxX[eLayer] << " y MAX = " << maxY[eLayer] << std::endl;
+
+      //      std::cout << " id = " << eCellType << " ncell1[eLayer] = " << ncell1[eLayer] << std::endl;
       e1[eLayer] += energyCMsub;
-      ncell1[eLayer]++;
+      if(eCellType == 1 || eCellType == 2) ncell1[eLayer] += 0.;
+      else ncell1[eLayer] += 1;
     }    
     if((radius > maxdist && radius < maxdist_secNB) && (energyCMsub > CMTHRESHOLD)){
+      //      if(ncell6[eLayer] == 6) continue;
       e6[eLayer] += energyCMsub;
-      ++ncell6[eLayer];
+      if(eCellType == 1 || eCellType == 2) ncell6[eLayer] += 0.;
+      else ncell6[eLayer] += 1;
     }    
     if((radius < maxdist_secNB) && (energyCMsub > CMTHRESHOLD)){
+      //      if(ncell7[eLayer] == 7) continue;
       e7[eLayer] += energyCMsub;
-      ncell7[eLayer]++;
+      if(eCellType == 1 || eCellType == 2) ncell7[eLayer] += 0.;
+      else ncell7[eLayer] += 1;
     }    
     if((radius > maxdist_secNB && radius < maxdist_thirdNB) && (energyCMsub > CMTHRESHOLD)){
+      //      if(ncell12[eLayer] == 12) continue;
       e12[eLayer] += energyCMsub;
-      ncell12[eLayer]++;
+      if(eCellType == 1 || eCellType == 2) ncell12[eLayer] += 0.;
+      else ncell12[eLayer] += 1;
     }    
     if((radius < maxdist_thirdNB) && (energyCMsub > CMTHRESHOLD)){
+      //      if(ncell19[eLayer] == 19) continue;
       e19[eLayer] += energyCMsub;
-      ncell19[eLayer]++;
+      if(eCellType == 1 || eCellType == 2) ncell19[eLayer] += 0.;
+      else ncell19[eLayer] += 1;
     }    
-
     if((radius < maxdist_fourthNB) && (energyCMsub > CMTHRESHOLD)){
+      //      if(ncell43[eLayer] == 43) continue;
       e43[eLayer] += energyCMsub;
+      if(eCellType == 1 || eCellType == 2) ncell43[eLayer] += 0.;
+      else ncell43[eLayer] += 1;
     }    
+    if(energyCMsub > CMTHRESHOLD) eAll[eLayer] += energyCMsub;
   }//recHits
 
 
@@ -242,6 +264,9 @@ void ShowerShape::init(){
     double x = CellCentreXY.first;
     double y = CellCentreXY.second;
     if((radius < maxdist_fourthNB) && energyCMsub > CMTHRESHOLD){
+      //      if(ncell43S[eLayer] == 43) continue;
+      if(eCellType == 1 || eCellType == 2) ncell43S[eLayer] += 0.;
+      else ncell43S[eLayer] += 1;
       lposx43[eLayer] += (x) * TMath::Max(0., (log(energyCMsub/e43[eLayer]) + w0) ); 
       lposy43[eLayer] += (y) * TMath::Max(0., (log(energyCMsub/e43[eLayer]) + w0) );       
       Dposx43[eLayer] += (x-maxX[eLayer]) * TMath::Max(0., (log(energyCMsub/e43[eLayer]) + w0) ); 
@@ -255,6 +280,10 @@ void ShowerShape::init(){
     } // radius 4th ring
     
     if((radius < maxdist_thirdNB) && energyCMsub > CMTHRESHOLD){
+      //      if(ncell19S[eLayer] == 19) continue;
+      if(eCellType == 1 || eCellType == 2) ncell19S[eLayer] += 0.;
+      else ncell19S[eLayer] += 1;
+
       xEnWeig19[eLayer] += CellCentreXY.first * energyCMsub;
       yEnWeig19[eLayer] += CellCentreXY.second * energyCMsub;
 
