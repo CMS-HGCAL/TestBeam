@@ -88,11 +88,11 @@ void doPlots(int nLayer, int energyEle, int config){
   else if(nLayer == 8 && config == 2){
     std::string nameFolder = "";
     if(energyEle == 20) nameFolder = "161108_231750";
-    //if(energyEle == 200) nameFolder = "160927_101553";
-
-    if(energyEle == 250) nameFolder = "161108_231833";
+    if(energyEle == 32) nameFolder = "161108_231756";
     if(energyEle == 70) nameFolder = "161109_074724";
     if(energyEle == 100) nameFolder = "161108_231811";
+    if(energyEle == 200) nameFolder = "161109_130453";
+    if(energyEle == 250) nameFolder = "161108_231833";
 
  for(int iFo=0; iFo<2; ++iFo){
  for(int iF=0; iF<1000; ++iF){
