@@ -1,6 +1,11 @@
-add 20GeV.root 1255.root 1256.root 1259.root 1262.root 1265.root 1266.root
-add 32.root 1226.root 1229.root 1230.root 1231.root 1236.root 1237.root 1238.root 1239.root 1241.root 1245.root
-add 70.root 1155.root 1158.root 1159.root 1160.root 1170.root 1171.root
-add 100.root 1205.root 1213.root 1218.root
-add 200.root 1182.root 1183.root 1184.root 1196.root 1198.root
-add 250.root 1293.root 1300.root 1304.root 1306.root 1310.root
+hadd /tmp/amartell/20GeV.root /tmp/amartell/output/HGCRun_Output_001255_Reco.root /tmp/amartell/output/HGCRun_Output_001256_Reco.root /tmp/amartell/output/HGCRun_Output_001259_Reco.root /tmp/amartell/output/HGCRun_Output_001262_Reco.root /tmp/amartell/output/HGCRun_Output_001265_Reco.root /tmp/amartell/output/HGCRun_Output_001266_Reco.root
+
+hadd /tmp/amartell/32.root /tmp/amartell/output/HGCRun_Output_001226_Reco.root /tmp/amartell/output/HGCRun_Output_001229_Reco.root /tmp/amartell/output/HGCRun_Output_001230_Reco.root /tmp/amartell/output/HGCRun_Output_001231_Reco.root /tmp/amartell/output/HGCRun_Output_001236_Reco.root /tmp/amartell/output/HGCRun_Output_001237_Reco.root /tmp/amartell/output/HGCRun_Output_001238_Reco.root /tmp/amartell/output/HGCRun_Output_001239_Reco.root /tmp/amartell/output/HGCRun_Output_001241_Reco.root /tmp/amartell/output/HGCRun_Output_001245_Reco.root
+
+hadd /tmp/amartell/70.root /tmp/amartell/output/HGCRun_Output_001155_Reco.root /tmp/amartell/output/HGCRun_Output_001158_Reco.root /tmp/amartell/output/HGCRun_Output_001159_Reco.root /tmp/amartell/output/HGCRun_Output_001160_Reco.root /tmp/amartell/output/HGCRun_Output_001170_Reco.root /tmp/amartell/output/HGCRun_Output_001171_Reco.root
+
+hadd /tmp/amartell/100.root /tmp/amartell/output/HGCRun_Output_001205_Reco.root /tmp/amartell/output/HGCRun_Output_001213_Reco.root /tmp/amartell/output/HGCRun_Output_001218_Reco.root
+
+hadd /tmp/amartell/200.root /tmp/amartell/output/HGCRun_Output_001182_Reco.root /tmp/amartell/output/HGCRun_Output_001183_Reco.root /tmp/amartell/output/HGCRun_Output_001184_Reco.root /tmp/amartell/output/HGCRun_Output_001196_Reco.root /tmp/amartell/output/HGCRun_Output_001198_Reco.root
+
+hadd /tmp/amartell/250.root /tmp/amartell/output/HGCRun_Output_001293_Reco.root /tmp/amartell/output/HGCRun_Output_001300_Reco.root /tmp/amartell/output/HGCRun_Output_001304_Reco.root /tmp/amartell/output/HGCRun_Output_001306_Reco.root /tmp/amartell/output/HGCRun_Output_001310_Reco.root

@@ -1,6 +1,11 @@
-add 20GeV.root      934.root
-add 32.root 1092.root 1095.root 1100.root 1101.root 1102.root
-add 70.root 870.root 874.root 879.root 884.root 887.root
-add 100.root 1052.root 1053.root 1057.root 1059.root 1060.root 1069.root 1070.root 1072.root 1073.root 
-add 200.root 1028.root 1030.root 1037.root 1039.root 1042.root 1047.root
-add 250.root 942.root 955.root 959.root
+hadd /tmp/amartell/20GeV.root      /tmp/amartell/output/HGCRun_Output_000934_Reco.root
+
+hadd /tmp/amartell/32.root /tmp/amartell/output/HGCRun_Output_001092_Reco.root /tmp/amartell/output/HGCRun_Output_001095_Reco.root /tmp/amartell/output/HGCRun_Output_001100_Reco.root /tmp/amartell/output/HGCRun_Output_001101_Reco.root /tmp/amartell/output/HGCRun_Output_001102_Reco.root
+
+hadd /tmp/amartell/70.root /tmp/amartell/output/HGCRun_Output_00870_Reco.root /tmp/amartell/output/HGCRun_Output_00874_Reco.root /tmp/amartell/output/HGCRun_Output_00879_Reco.root /tmp/amartell/output/HGCRun_Output_00884_Reco.root /tmp/amartell/output/HGCRun_Output_00887_Reco.root
+
+hadd /tmp/amartell/100.root /tmp/amartell/output/HGCRun_Output_001052_Reco.root /tmp/amartell/output/HGCRun_Output_001053_Reco.root /tmp/amartell/output/HGCRun_Output_001057_Reco.root /tmp/amartell/output/HGCRun_Output_001059_Reco.root /tmp/amartell/output/HGCRun_Output_001060_Reco.root /tmp/amartell/output/HGCRun_Output_001069_Reco.root /tmp/amartell/output/HGCRun_Output_001070_Reco.root /tmp/amartell/output/HGCRun_Output_001072_Reco.root /tmp/amartell/output/HGCRun_Output_001073_Reco.root 
+
+hadd /tmp/amartell/200.root /tmp/amartell/output/HGCRun_Output_001028_Reco.root /tmp/amartell/output/HGCRun_Output_001030_Reco.root /tmp/amartell/output/HGCRun_Output_001037_Reco.root /tmp/amartell/output/HGCRun_Output_001039_Reco.root /tmp/amartell/output/HGCRun_Output_001042_Reco.root /tmp/amartell/output/HGCRun_Output_001047_Reco.root
+
+hadd /tmp/amartell/250.root /tmp/amartell/output/HGCRun_Output_00942_Reco.root /tmp/amartell/output/HGCRun_Output_00955_Reco.root /tmp/amartell/output/HGCRun_Output_00959_Reco.root
