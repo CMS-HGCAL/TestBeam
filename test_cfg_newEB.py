@@ -9,8 +9,8 @@ options.register('dataFolder',
                  #'/afs/cern.ch/work/r/rchatter/Final_Event_Builder/CMSSW_8_0_1/src/HGCal/tmpOut/',
                  #'/afs/cern.ch/user/a/amartell/public/HGCal/TB_data/'
                  #'/tmp/amartell/rearrangedTxtFiles/',
-                 #'/afs/cern.ch/user/a/amartell/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',
-                 '~/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',
+                 '/afs/cern.ch/user/a/amartell/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',
+                 #'~/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw text input')
