@@ -34,20 +34,20 @@ void fitResolution(){
   */
 
 
-        
+  /*  
   int nLayers = 8;
   int config = 1;
   int iColors[5] = {kRed, kCyan, kBlue, kGreen+2, kYellow-1};
   int energyP[5] = {20, 70, 100, 200, 250};
-  
+  */
 
 
-  /*        
+                  
   int nLayers = 8;
   int config = 2;
-  int iColors[5] = {kRed, kCyan, kBlue, kGreen+2, kBlack};
+  int iColors[5] = {kRed, kCyan, kBlue, kGreen+2, kYellow-1};
   int energyP[5] = {20, 70, 100, 200, 250};
-  */
+  
 
 
   TGraphErrors* tg[5];
@@ -98,19 +98,6 @@ void fitResolution(){
    TH1F* recoEnergy[5];
    TH1F* recoEnergyRel[5];
 
-  TF1* fitF[5];
-  for(int iP=0; iP<5; ++iP){
-    //    if(nLayers == 28 && iP >=4) continue;
-    fitF[iP] = new TF1(Form("E%d",energyP[iP]), "gaus", 0, 500);
-  }
-
-
-  TF1* fitFRel[5];
-  for(int iP=0; iP<5; ++iP){
-    //    if(nLayers == 28 && iP >=4) continue;
-    fitFRel[iP] = new TF1(Form("E%dR",energyP[iP]), "gaus", 0, 500);
-  }
-
 
   for(int iC=0; iC<5; ++iC){
     //    if(nLayers == 28 && iC >=4) continue;
@@ -122,14 +109,23 @@ void fitResolution(){
 
     recoEnergyRel[iC]->SetLineColor(iColors[iC]);
     recoEnergyRel[iC]->SetLineWidth(2);
-
-    fitF[iC]->SetParameters(recoEnergy[iC]->Integral(), recoEnergy[iC]->GetMean(), recoEnergy[iC]->GetRMS());
-    fitF[iC]->SetLineColor(iColors[iC]);
-
-    fitFRel[iC]->SetParameters(recoEnergyRel[iC]->Integral(), recoEnergyRel[iC]->GetMean(), recoEnergyRel[iC]->GetRMS());
-    fitFRel[iC]->SetLineColor(iColors[iC]);
   }
 
+
+
+  TF1* fitF[5];
+  TF1* fitFRel[5];
+  for(int iP=0; iP<5; ++iP){
+    //    if(nLayers == 28 && iP >=4) continue;
+    fitF[iP] = new TF1(Form("E%d",energyP[iP]), "gaus", recoEnergy[iP]->GetMean() - 0.5 * recoEnergy[iP]->GetRMS(), recoEnergy[iP]->GetMean() + 2.*recoEnergy[iP]->GetRMS());
+    fitFRel[iP] = new TF1(Form("E%dR",energyP[iP]), "gaus", recoEnergy[iP]->GetMean() - 0.5 * recoEnergy[iP]->GetRMS(), recoEnergy[iP]->GetMean() + 2.*recoEnergy[iP]->GetRMS());
+
+    fitF[iP]->SetParameters(recoEnergy[iP]->Integral(), recoEnergy[iP]->GetMean(), recoEnergy[iP]->GetRMS());
+    fitF[iP]->SetLineColor(iColors[iP]);
+
+    fitFRel[iP]->SetParameters(recoEnergyRel[iP]->Integral(), recoEnergy[iP]->GetMean(), recoEnergy[iP]->GetRMS());
+    fitFRel[iP]->SetLineColor(iColors[iP]);
+  }
 
   std::cout << " ci sono " << std::endl;
 
@@ -236,8 +232,8 @@ void fitResolution(){
      tgR[0]->SetPointError(iT+1, 0., 100.*pow(fitFRel[iT]->GetParError(2),2.)/ (1.* energyP[iT]));
 
      tgS[0]->SetPoint(iT+1, energyP[iT], fitFRel[iT]->GetParameter(2) / fitFRel[iT]->GetParameter(1));
-     tgS[0]->SetPointError(iT+1, 0., sqrt( pow(fitFRel[iT]->GetParameter(2) / fitFRel[iT]->GetParameter(1) * sqrt( pow(fitFRel[iT]->GetParError(2)/fitFRel[iT]->GetParameter(2), 2.) +
-														   pow(fitFRel[iT]->GetParError(1)/fitFRel[iT]->GetParameter(1), 2.) ), 2.)  ) );
+     tgS[0]->SetPointError(iT+1, 0., fitFRel[iT]->GetParameter(2) / fitFRel[iT]->GetParameter(1) * sqrt( pow(fitFRel[iT]->GetParError(2)/fitFRel[iT]->GetParameter(2), 2.) +
+													 pow(fitFRel[iT]->GetParError(1)/fitFRel[iT]->GetParameter(1), 2.) ) );
 
 
      //std::cout << " >>> energyP[iT] = " << energyP[iT] << " fitF[iT]->GetParameter(1) / (1.* energyP[iT]) = " << fitF[iT]->GetParameter(1) / (1.* energyP[iT]) << std::endl;
@@ -248,9 +244,14 @@ void fitResolution(){
      tgS[0]->SetPoint(tg[iT]->GetN(), 400, 5);
   }
    leg->Draw("same");
+   if(nLayers != 28){
    chER->Print(Form((folder+"/energyPlots_layers%d_config%d.png").c_str(), nLayers, config), "png");
    chER->Print(Form((folder+"/energyPlots_layers%d_config%d.root").c_str(), nLayers, config), "root");
-
+   }
+   else{
+   chER->Print(Form((folder+"/energyPlots_layers%d.png").c_str(), nLayers), "png");
+   chER->Print(Form((folder+"/energyPlots_layers%d.root").c_str(), nLayers), "root");
+   }
 
 
     /////////TGraph
@@ -262,9 +263,14 @@ void fitResolution(){
     tg[0]->GetYaxis()->SetRangeUser(0., 1.01);
     if(nLayers == 8) tg[0]->GetYaxis()->SetRangeUser(0., 1.01);
     tg[0]->Draw("ap");
+    if(nLayers != 28){
     tgM->Print(Form((folder+"/energy_MeanVsEnergy_layers%d_config%d.png").c_str(), nLayers, config), "png");
     tgM->Print(Form((folder+"/energy_MeanVsEnergy_layers%d_config%d.root").c_str(), nLayers, config), "root");
-
+    }
+    else{
+      tgM->Print(Form((folder+"/energy_MeanVsEnergy_layers%d.png").c_str(), nLayers), "png");
+      tgM->Print(Form((folder+"/energy_MeanVsEnergy_layers%d.root").c_str(), nLayers), "root");
+    }
 
     /*
     /////////TGraph
@@ -282,8 +288,16 @@ void fitResolution(){
     */
 
 
+    TFile outSim(Form("SIM_resolution_layers%d_config%d.root", nLayers, config), "recreate");
+    outSim.cd();
+    tgS[0]->Write("resolution_GeV");
+    outSim.Close();
+
+
+
     gStyle->SetOptFit(1);
-    TF1* fitReso = new TF1("fitReso", "sqrt( pow([0]/sqrt(x), 2.) + pow([1]/x, 2.) + pow([2], 2.))", 10., 300.);
+    TF1* fitReso = new TF1("fitReso", "sqrt( pow([0]/sqrt(x), 2.) + pow([1]/x, 2.) + pow([2], 2.))", 50., 300.);
+    //TF1* fitReso = new TF1("fitReso", "sqrt( pow([0]/sqrt(x), 2.) + pow([2], 2.))", 10., 300.);
     fitReso->SetParName(0, "S");
     fitReso->SetParName(1, "N");
     fitReso->SetParName(2, "C");
@@ -308,8 +322,16 @@ void fitResolution(){
     tgS[0]->GetYaxis()->SetRangeUser(0., 0.3);
     tgS[0]->Draw("ap");
     fitReso->Draw("same");
-    tgResoS->Print(Form((folder+"/energy_SResolutionVsEnergy_layers%d_config%d.png").c_str(), nLayers, config), "png");
-    tgResoS->Print(Form((folder+"/energy_SResolutionVsEnergy_layers%d_config%d.root").c_str(), nLayers, config), "root");
+    if(nLayers != 28){
+      tgResoS->Print(Form((folder+"/energy_SResolutionVsEnergy_layers%d_config%d.png").c_str(), nLayers, config), "png");
+      tgResoS->Print(Form((folder+"/energy_SResolutionVsEnergy_layers%d_config%d.root").c_str(), nLayers, config), "root");
+    }
+    else{
+      tgResoS->Print(Form((folder+"/energy_SResolutionVsEnergy_layers%d.png").c_str(), nLayers), "png");
+      tgResoS->Print(Form((folder+"/energy_SResolutionVsEnergy_layers%d.root").c_str(), nLayers), "root");
+    }
+
+
 
     return;
     ////////////////
