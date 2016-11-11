@@ -26,7 +26,7 @@ void fitResolution(){
 
 
   
-  /*  
+  /*      
   int nLayers = 28;
   int config = 1;
   int iColors[5] = {kRed, kCyan, kBlue, kGreen+2, kYellow-1};
@@ -34,34 +34,32 @@ void fitResolution(){
   */
 
 
-  /*  
+  /*
   int nLayers = 8;
   int config = 1;
   int iColors[5] = {kRed, kCyan, kBlue, kGreen+2, kYellow-1};
   int energyP[5] = {20, 70, 100, 200, 250};
   */
-
-
-                  
+      
   int nLayers = 8;
   int config = 2;
   int iColors[5] = {kRed, kCyan, kBlue, kGreen+2, kYellow-1};
   int energyP[5] = {20, 70, 100, 200, 250};
   
 
-
   TGraphErrors* tg[5];
+  TGraphErrors* tgL[5];
   TGraphErrors* tgR[5];
   TGraphErrors* tgS[5];
   for(int iT=0; iT<5; ++iT){
     //    if(nLayers == 28 && iT >= 4) continue;
     tg[iT] = new TGraphErrors();
     tg[iT]->SetName(Form("mean_E%d", energyP[iT]));
-    //    tg[iT]->SetPoint(0, -1, -1);
-
-    //  tg[iT]->SetLineColor(iColors[iT]);
-    //    tg[iT]->SetMarkerColor(iColors[iT]);
     tg[iT]->SetMarkerStyle(20);
+
+    tgL[iT] = new TGraphErrors();
+    tgL[iT]->SetName(Form("linearity_E%d", energyP[iT]));
+    tgL[iT]->SetMarkerStyle(20);
 
     tgR[iT] = new TGraphErrors();
     tgR[iT]->SetName(Form("resolution_E%d", energyP[iT]));
@@ -228,6 +226,9 @@ void fitResolution(){
      tg[0]->SetPoint(iT+1, energyP[iT], fitFRel[iT]->GetParameter(1)/energyP[iT]);
      tg[0]->SetPointError(iT+1, 0., fitFRel[iT]->GetParError(1) / energyP[iT]);
 
+     tgL[0]->SetPoint(iT+1, energyP[iT], fitFRel[iT]->GetParameter(1));
+     tgL[0]->SetPointError(iT+1, 0., sqrt(pow(fitFRel[iT]->GetParError(1), 2.)) );
+
      tgR[0]->SetPoint(iT+1, 1./energyP[iT], pow(fitFRel[iT]->GetParameter(2),2) / (1.* energyP[iT]) * 100.);
      tgR[0]->SetPointError(iT+1, 0., 100.*pow(fitFRel[iT]->GetParError(2),2.)/ (1.* energyP[iT]));
 
@@ -240,6 +241,7 @@ void fitResolution(){
      //     std::cout << " >>> energyP[iT] = " << energyP[iT] << " Y = " << pow(fitF[iT]->GetParameter(2),2) / (1.* energyP[iT]) * 100. << std::endl;
 
      tg[0]->SetPoint(tg[iT]->GetN(), 400, 5);
+     tgL[0]->SetPoint(tg[iT]->GetN(), 400, 300);
      tgR[0]->SetPoint(tg[iT]->GetN(), 400, 5);
      tgS[0]->SetPoint(tg[iT]->GetN(), 400, 5);
   }
@@ -251,6 +253,25 @@ void fitResolution(){
    else{
    chER->Print(Form((folder+"/energyPlots_layers%d.png").c_str(), nLayers), "png");
    chER->Print(Form((folder+"/energyPlots_layers%d.root").c_str(), nLayers), "root");
+   }
+
+
+
+   /////////TGraph linearity                                                                                                                                                     
+   TCanvas* tgLi = new TCanvas();
+   tgLi->cd();
+   tgL[0]->GetYaxis()->SetTitle("#Sigma E_{i} (GeV)");
+   tgL[0]->GetXaxis()->SetTitle("E_{beam} (GeV)");
+   tgL[0]->GetXaxis()->SetRangeUser(0, 300.);
+   if(nLayers == 8) tg[0]->GetYaxis()->SetRangeUser(0., 1.01);
+   tgL[0]->Draw("ap");
+   if(nLayers != 28){
+     tgLi->Print(Form((folder+"/energy_LinearityVsEnergy_layers%d_config%d.png").c_str(), nLayers, config), "png");
+     tgLi->Print(Form((folder+"/energy_LinearityVsEnergy_layers%d_config%d.root").c_str(), nLayers, config), "root");
+   }
+   else{
+     tgLi->Print(Form((folder+"/energy_LinearityVsEnergy_layers%d.png").c_str(), nLayers), "png");
+     tgLi->Print(Form((folder+"/energy_LinearityVsEnergy_layers%d.root").c_str(), nLayers), "root");
    }
 
 
@@ -291,23 +312,43 @@ void fitResolution(){
     TFile outSim(Form("SIM_resolution_layers%d_config%d.root", nLayers, config), "recreate");
     outSim.cd();
     tgS[0]->Write("resolution_GeV");
+    tgL[0]->Write("linerity_GeV");
     outSim.Close();
 
 
 
     gStyle->SetOptFit(1);
-    TF1* fitReso = new TF1("fitReso", "sqrt( pow([0]/sqrt(x), 2.) + pow([1]/x, 2.) + pow([2], 2.))", 50., 300.);
-    //TF1* fitReso = new TF1("fitReso", "sqrt( pow([0]/sqrt(x), 2.) + pow([2], 2.))", 10., 300.);
-    fitReso->SetParName(0, "S");
-    fitReso->SetParName(1, "N");
-    fitReso->SetParName(2, "C");
-    
-    /*
-    TF1* fitReso = new TF1("fitReso", "sqrt( pow([0]/sqrt(x), 2.) + pow([2], 2.))", 10., 250.);
-    fitReso->SetParName(0, "S");
-    fitReso->SetParName(1, "C");
-    */
 
+
+    TF1* fitReso;
+    //fit 3par all                                                                                                 
+    //        int type = 1;                                                                                                
+    //fit 3par tail                                                                                                
+    //            int type = 2;
+    //fit 2par all                                                                                                 
+            int type = 3;                                                                                            
+    if(type == 1){
+      fitReso = new TF1("fitReso", "sqrt( pow([0]/sqrt(x), 2.) + pow([1]/x, 2.) + pow([2], 2.))", 10., 300.);
+      fitReso->SetParName(0, "S");
+      fitReso->SetParName(1, "N");
+      fitReso->SetParName(2, "C");
+      fitReso->SetParLimits(1, 0., 0.16);
+      //    fitResoM->SetParLimits(2, 0.0001, 0.05);                                                               
+    }
+    if(type == 3){
+      fitReso = new TF1("fitReso", "sqrt( pow([0]/sqrt(x), 2.) + pow([1], 2.))", 10., 300.);
+      fitReso->SetParName(0, "S");
+      fitReso->SetParName(1, "C");
+      //    fitResoM->SetParLimits(1, 0., 0.05);                                                                  
+      //    fitResoM->SetParLimits(1, 0.0001, 0.05);                                                              
+    }
+    if(type == 2){
+      fitReso = new TF1("fitReso", "sqrt( pow([0]/sqrt(x), 2.) + pow([1]/x, 2.) + pow([2], 2.))", 50., 300.);
+      fitReso->SetParName(0, "S");
+      fitReso->SetParName(1, "N");
+      fitReso->SetParName(2, "C");
+      fitReso->SetParLimits(1, 0., 0.16);
+    }
     tgS[0]->Fit("fitReso", "R");
     fitReso->SetLineColor(kGreen+2);
     fitReso->SetLineWidth(2);
@@ -331,8 +372,47 @@ void fitResolution(){
       tgResoS->Print(Form((folder+"/energy_SResolutionVsEnergy_layers%d.root").c_str(), nLayers), "root");
     }
 
+    //    float X0value = 0;
+    TGraphErrors* tM[5];
+    for(int iT=0; iT<5; ++iT){
+      tM[iT] = (TGraphErrors*)inF[iT]->Get("enLayer_MIP");
+      tM[iT]->SetName(Form("enLayer_MIP_E%d", energyP[iT]));
+      
+      tM[iT]->SetMarkerStyle(20);
+      tM[iT]->SetMarkerColor(iColors[iT]);
+      tM[iT]->SetLineColor(iColors[iT]);
+      tM[iT]->SetLineWidth(2);
+      tM[iT]->SetLineStyle(iT);
+    }
+
+    TFile newOUT(Form("analyzed_SIM_layers%d_config%d.root", nLayers, config), "recreate");
+    newOUT.cd();
+    for(int iT=0; iT<5; ++iT){
+      //      tM[iT]->SetName(Form("enLayer_MIP_E%d", energyP[iT]));
+      tM[iT]->Write(Form("enLayer_MIP_E%d", energyP[iT]));
+    }
+    newOUT.Close();
 
 
+    TCanvas* cTM = new TCanvas();
+    cTM->cd();
+    tM[0]->GetXaxis()->SetTitle("shower depth (X_{0})");
+    tM[0]->GetYaxis()->SetTitle("#Sigma_{layer} E_{layer} (MIP)");
+    tM[0]->GetXaxis()->SetRangeUser(0., 30.);
+    tM[0]->GetYaxis()->SetRangeUser(0., 2.e3);
+    tM[0]->Draw("ap");
+    for(int iT=1; iT<5; ++iT){
+      tM[iT]->Draw("p, same");
+    }
+    leg->Draw("same");
+    if(nLayers != 28){
+      cTM->Print(Form((folder+"/enLayer_MIP_nLayer%d_config%d.png").c_str(), nLayers, config), "png");
+      cTM->Print(Form((folder+"/enLayer_MIP_nLayer%d_config%d.root").c_str(), nLayers, config), "root");
+    }
+    else{
+      cTM->Print(Form((folder+"/enLayer_MIP_nLayer%d.png").c_str(), nLayers), "png");
+      cTM->Print(Form((folder+"/enLayer_MIP_nLayer%d.root").c_str(), nLayers), "root");
+        }
     return;
     ////////////////
     TFile* inF2[5];

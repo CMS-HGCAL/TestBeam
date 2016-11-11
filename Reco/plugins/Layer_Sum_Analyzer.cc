@@ -56,11 +56,17 @@ const bool PIONS(0);// uses > PION_*CELLS_THRESHOLD and < *CELLS_THRESHOLD
 double ADCtoMIP_CERN[16] =  {17.24, 16.92, 17.51, 16.4, 17.35, 17.49, 16.29, 16.32, 1., 1., 1., 1., 1., 1., 1., 1.};
 double ADCtoMIP_FNAL[16] =  {1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
 
-//double MIP2ParticleCalib = 1.3;  // FNAL to proton 120GeV
+
+
+// pion MPV = 55.16;
+// muon MPV = 51.91;
+// muon Mean = 63.28;
+
+
 //500MeV muon/125GeV pion
-//double MIP2ParticleCalib[16] = {53.01/56.54, 53.47/56.42, 54.16/56.44, 54.17/56.19, 53.90/56.46, 53.97/56.31, 54.51/56.37, 55.43/56.09, 1., 1., 1., 1., 1., 1., 1., 1.}; // CERN MPV muon to pion 125GeV
-//double MIP2ParticleCalib[16] = {73.80/56.54, 73.67/56.42, 74.11/56.44, 74.22/56.19, 76.11/56.46, 74.63/56.31, 76.57/56.37, 74.94/56.09, 1., 1., 1., 1., 1., 1., 1., 1.}; // CERN Mean muon to pion 125GeV
-double MIP2ParticleCalib = 1.33;  // CERN mean muon to pion 125GeV
+double MIP2ParticleCalib = 1.147;  // CERN mean muon to pion 125GeV EMM physics list
+//double MIP2ParticleCalib = 0.94;  // CERN mpv muon to pion 125GeV EMM physics list
+
 
 //double ADCtoMIP[16] = {16.02,16.85,15.36,14.73,10.66,15.64,16.52,14.24,10.07,14.42,16.14,17.33,16.61,16.84,15.79,16.43};// one MIP is equal to _ADCtoMIP_ ADC Counts
 //double LayerWeight[16] = {0.6374029601923652, 0.7392021202456731, 0.6374273268336504, 0.7392021202456731, 0.6374273268336504, 0.8861075434658853, 0.8487578715427883, 1.0330129666860974, 0.8487578715427883, 1.0330129666860974, 0.8487578715427883, 1.5226977107534714, 1.2714189609610644, 1.5226977107534714, 1.2714189609610644, 1.5226977107534714};// X0 weights
@@ -75,10 +81,10 @@ double X0depth_8L_conf1[16] = {6.268, 1.131, 1.131, 1.362, 0.574, 1.301, 0.574, 
 double LayerWeight_8L_conf2[16] = {35.866, 30.864, 28.803, 23.095, 20.657, 19.804, 36.322, 27.451, 0., 0., 0., 0., 0., 0., 0., 0.};
 double X0depth_8L_conf2[16] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021, 0., 0., 0., 0., 0., 0., 0., 0.};
 double weights2GeV = 1.e-03;
-//double MIP2GeV_sim = 52.81e-06;
-//double MIP2GeV_sim = 54.07e-06;
-double MIP2GeV_sim = 74.76e-06; //mean muon
-//double weights2MIP = 52.8/63.6;   // rescale weights from mean to MPV
+
+double MIP2GeV_sim = 63.28e-06; //mean muon   EMM physics list
+//double MIP2GeV_sim = 51.91e-06; //mpv muon EMM pysics list
+
 double weights2MIP = 1.;   // rescale weights from mean to MPV
 
 //double LayerWeight[16] = {0.4847555727337982, 1.0214605968539232, 0.4847555727337982, 1.0214605968539232, 0.4847555727337982, 1.1420105918768606, 0.6423912113800805, 1.2625605868997982, 0.6423912113800805, 1.2625605868997982, 0.6423912113800805, 1.6643939036429232, 0.9576624886726451, 1.6643939036429232, 0.9576624886726451, 1.6643939036429232};// dE/dx weights

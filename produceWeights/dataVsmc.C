@@ -27,7 +27,7 @@ void dataVsmc(){
                
   int nLayers = 8;
   int config = 2;
-  int iColors[3] = {kRed, kBlue, kGreen+2};
+  int iColors[5] = {kRed, kBlue, kGreen+2, kRed, kBlue};
   //  int energyP[3] = {20, 70, 100, 200, 250};
   
   TFile* inF[4];
@@ -37,19 +37,23 @@ void dataVsmc(){
   inF[3] = TFile::Open("DATA_resolution_layers8_config2.root");
 
 
-  TGraphErrors* tgCfg1[3];
-  TGraphErrors* tgCfg2[3];
+  TGraphErrors* tgCfg1[5];
+  TGraphErrors* tgCfg2[5];
 
   tgCfg1[0] = (TGraphErrors*)inF[0]->Get("resolution_GeV");
   tgCfg1[1] = (TGraphErrors*)inF[2]->Get("resolution_GeV");
   tgCfg1[2] = (TGraphErrors*)inF[2]->Get("resolution_Mip");
+  tgCfg1[3] = (TGraphErrors*)inF[0]->Get("linerity_GeV");
+  tgCfg1[4] = (TGraphErrors*)inF[2]->Get("linearity_GeV");
 
   tgCfg2[0] = (TGraphErrors*)inF[1]->Get("resolution_GeV");
   tgCfg2[1] = (TGraphErrors*)inF[3]->Get("resolution_GeV");
   tgCfg2[2] = (TGraphErrors*)inF[3]->Get("resolution_Mip");
+  tgCfg2[3] = (TGraphErrors*)inF[1]->Get("linerity_GeV");
+  tgCfg2[4] = (TGraphErrors*)inF[3]->Get("linearity_GeV");
 
 
-  for(int iT=0; iT<3; ++iT){
+  for(int iT=0; iT<5; ++iT){
     tgCfg1[iT]->SetMarkerStyle(20);
     tgCfg2[iT]->SetMarkerStyle(20);
 
@@ -59,7 +63,7 @@ void dataVsmc(){
 
   std::cout << " ci sono " << std::endl;
 
-  TLegend *legTGM = new TLegend(0.65,0.65,0.85,0.85,NULL,"brNDC");
+  TLegend *legTGM = new TLegend(0.45,0.65,0.65,0.85,NULL,"brNDC");
   legTGM->SetTextFont(42);
   legTGM->SetFillColor(kWhite);
   legTGM->SetLineColor(kWhite);
@@ -69,7 +73,7 @@ void dataVsmc(){
   legTGM->AddEntry(tgCfg1[1], "data GeV", "pl");
   //  legTGM->AddEntry(tgCfg1[2], "data Mip", "l");
 
-  TLegend *legTGM2 = new TLegend(0.65,0.65,0.85,0.85,NULL,"brNDC");
+  TLegend *legTGM2 = new TLegend(0.45,0.65,0.65,0.85,NULL,"brNDC");
   legTGM2->SetTextFont(42);
   legTGM2->SetFillColor(kWhite);
   legTGM2->SetLineColor(kWhite);
@@ -123,6 +127,32 @@ void dataVsmc(){
   chER2->Print("dataVsMC/SimGeV_DataGeV_layers8_config2.png", "png");
   chER2->Print("dataVsMC/SimGeV_DataGeV_layers8_config2.root", "root");
  
+  std::cout << " >>> plot linearity " << std::endl;
+  ////////
+  TCanvas* chLi = new TCanvas();
+  chLi->cd();
+  tgCfg1[3]->GetXaxis()->SetTitle("beam energy GeV");
+  tgCfg1[3]->GetYaxis()->SetTitle("#SigmaE (GeV)");
+  //  tgCfg1[3]->GetYaxis()->SetRangeUser(0., 0.3);
+  tgCfg1[3]->Draw("ap");
+  tgCfg1[4]->Draw("p, same");
+  legTGM->Draw("same");
+  chLi->Print("dataVsMC/linearity_SimGeV_DataGeV_layers8_config1.png", "png");
+  chLi->Print("dataVsMC/linearity_SimGeV_DataGeV_layers8_config1.root", "root");
+  //
+  TCanvas* chLi2 = new TCanvas();
+  chLi2->cd();
+  tgCfg2[3]->GetXaxis()->SetTitle("beam energy GeV");
+  tgCfg2[3]->GetYaxis()->SetTitle("#SigmaE (GeV)");
+  //  tgCfg2[3]->GetYaxis()->SetRangeUser(0., 0.3);
+  tgCfg2[3]->Draw("ap");
+  tgCfg2[4]->Draw("p, same");
+  legTGM2->Draw("same");
+  chLi2->Print("dataVsMC/linearity_SimGeV_DataGeV_layers8_config2.png", "png");
+  chLi2->Print("dataVsMC/linearity_SimGeV_DataGeV_layers8_config2.root", "root");
+  ////////
+
+
 
   TCanvas* chDA = new TCanvas();
   chDA->cd();
@@ -146,5 +176,82 @@ void dataVsmc(){
   chDA2->Print("dataVsMC/DataMip_DataGeV_layers8_config2.png", "png");
   chDA2->Print("dataVsMC/DataMip_DataGeV_layers8_config2.root", "root");
  
- 
+
+  int iColorsM[5] = {kRed, kCyan, kBlue, kGreen+2, kYellow-1};
+  int energyPM[5] = {20, 70, 100, 200, 250};                                                                                                                                   
+
+
+
+  TFile* inFM[4];
+  inFM[0] = TFile::Open("analyzed_DATA_layers8_config1.root");
+  inFM[1] = TFile::Open("analyzed_DATA_layers8_config2.root");
+  inFM[2] = TFile::Open("analyzed_SIM_layers8_config1.root");
+  inFM[3] = TFile::Open("analyzed_SIM_layers8_config2.root");
+
+  TGraphErrors* tgM_daCfg1[5];
+  TGraphErrors* tgM_daCfg2[5];
+  TGraphErrors* tgM_mcCfg1[5];
+  TGraphErrors* tgM_mcCfg2[5];
+  for(int iF=0; iF<5; ++iF){
+    tgM_daCfg1[iF] = (TGraphErrors*)inFM[0]->Get(Form("enLayer_MIP_E%d", energyPM[iF]));
+    tgM_daCfg2[iF] = (TGraphErrors*)inFM[1]->Get(Form("enLayer_MIP_E%d", energyPM[iF]));
+    tgM_mcCfg1[iF] = (TGraphErrors*)inFM[2]->Get(Form("enLayer_MIP_E%d", energyPM[iF]));
+    tgM_mcCfg2[iF] = (TGraphErrors*)inFM[3]->Get(Form("enLayer_MIP_E%d", energyPM[iF]));
+
+    tgM_daCfg1[iF]->SetMarkerStyle(20);
+    tgM_daCfg2[iF]->SetMarkerStyle(20);
+    tgM_mcCfg1[iF]->SetMarkerStyle(21);
+    tgM_mcCfg2[iF]->SetMarkerStyle(21);
+
+    tgM_daCfg1[iF]->SetMarkerColor(iColorsM[iF]);
+    tgM_daCfg2[iF]->SetMarkerColor(iColorsM[iF]);
+    tgM_mcCfg1[iF]->SetMarkerColor(iColorsM[iF]);
+    tgM_mcCfg2[iF]->SetMarkerColor(iColorsM[iF]);
+
+  }
+
+
+  TLegend *legM = new TLegend(0.80,0.70,0.98,0.95,NULL,"brNDC");
+  legM->SetTextFont(42);
+  legM->SetFillColor(kWhite);
+  legM->SetLineColor(kWhite);
+  legM->SetShadowColor(kWhite);
+  for(int iP=0; iP<5; ++iP){
+    legM->AddEntry(tgM_daCfg1[iP], Form("%dGeV", energyPM[iP]), "p");
+  }
+
+
+  TCanvas* cTM = new TCanvas();
+  cTM->cd();
+  tgM_daCfg1[0]->GetXaxis()->SetTitle("shower depth (X_{0})");
+  tgM_daCfg1[0]->GetYaxis()->SetTitle("#Sigma_{layer} E_{layer} (MIP)");
+  tgM_daCfg1[0]->GetXaxis()->SetRangeUser(0., 30.);
+  tgM_daCfg1[0]->GetYaxis()->SetRangeUser(0., 2.5e3);
+  tgM_daCfg1[0]->Draw("ap");
+  tgM_mcCfg1[0]->Draw("p, same");
+  for(int iT=1; iT<5; ++iT){
+    tgM_daCfg1[iT]->Draw("p, same");
+    tgM_mcCfg1[iT]->Draw("p, same");
+  }
+  legM->Draw("same");
+  cTM->Print("dataVsMC/enLayer_MIP_nLayer8_config1.png", "png");
+  cTM->Print("dataVsMC/enLayer_MIP_nLaye8_config1.root", "root");
+
+  TCanvas* cTM2 = new TCanvas();
+  cTM2->cd();
+  tgM_daCfg2[0]->GetXaxis()->SetTitle("shower depth (X_{0})");
+  tgM_daCfg2[0]->GetYaxis()->SetTitle("#Sigma_{layer} E_{layer} (MIP)");
+  tgM_daCfg2[0]->GetXaxis()->SetRangeUser(0., 30.);
+  tgM_daCfg2[0]->GetYaxis()->SetRangeUser(0., 2.5e3);
+  tgM_daCfg2[0]->Draw("ap");
+  tgM_mcCfg2[0]->Draw("p, same");
+  for(int iT=1; iT<5; ++iT){
+    tgM_daCfg2[iT]->Draw("p, same");
+    tgM_mcCfg2[iT]->Draw("p, same");
+  }
+  legM->Draw("same");
+  cTM2->Print("dataVsMC/enLayer_MIP_nLayer8_config2.png", "png");
+  cTM2->Print("dataVsMC/enLayer_MIP_nLaye8_config2.root", "root");
+
+
 }

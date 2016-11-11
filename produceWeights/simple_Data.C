@@ -52,10 +52,10 @@ void simple_Data(int nLayer, int energyEle, int config = 1) {
 
   TFile* inF;
   if(nLayer == 28) inF = TFile::Open(Form("energyLayer_ROOT/outF_28layers_Ele%d.root", energyEle));
-  //  else if(config == 1) inF = TFile::Open(Form("~/public/perShilpi/cfg1_data_okFactor/%dGeV.root", energyEle));
-  //  else if(config == 2) inF = TFile::Open(Form("~/public/perShilpi/cfg2_data_okFactor/%dGeV.root", energyEle));
-  else if(config == 1) inF = TFile::Open(Form("~/public/perShilpi/cfg1_data/%dGeV.root", energyEle));
-  else if(config == 2) inF = TFile::Open(Form("~/public/perShilpi/cfg2_data/%dGeV.root", energyEle));
+  else if(config == 1) inF = TFile::Open(Form("~/public/perShilpi/cfg1_data_Mean/%dGeV.root", energyEle));
+  else if(config == 2) inF = TFile::Open(Form("~/public/perShilpi/cfg2_data_Mean/%dGeV.root", energyEle));
+  //  else if(config == 1) inF = TFile::Open(Form("~/public/perShilpi/cfg1_data_MPV/%dGeV.root", energyEle));
+  //  else if(config == 2) inF = TFile::Open(Form("~/public/perShilpi/cfg2_data_MPV/%dGeV.root", energyEle));
 
   TH1F* enLayer[28];
   TH1F* enLayer_AbsW_Mip[28];

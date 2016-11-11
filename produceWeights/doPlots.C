@@ -57,13 +57,15 @@ void doPlots(int nLayer, int energyEle, int config){
     }
   }
 
+  // pion MPV = 55.16;
+  // muon MPV = 51.91;
+  // muon Mean = 63.28;
 
-
-  float EtoMip = 56.31e-06;  // 125pion MPV response
+  float EtoMip = 55.16e-06;  // 125pion MPV response
 
   float weights2GeV = 1.e-03;
   float weights2MIP = 1.;         // weights with MIP from PDG
-  float MIP2GeV_sim = EtoMip * 74.76e-06 / 56.31e-06;  // recalibrate to mean 500MeV muon response
+  float MIP2GeV_sim = EtoMip * 63.28e-06 / 55.16e-06;  // recalibrate to mean 500MeV muon response
 
   float G4Escale = 1.; // 0.83;   // >>> fix scale in data mc for Si
 
@@ -123,14 +125,17 @@ t->Add(Form(("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/28modu
 
   TH1F* enLayer[28];
   TH1F* enLayerCorr[28];
+  TH1F* enLayerMip[28];
   for(int i=0; i<28; ++i){
     if(nLayer != 28 && i >= 8) continue;
     enLayer[i] = new TH1F(Form("enLayer%d", i+1), "", 5000, 0., 0.5);
     enLayerCorr[i] = new TH1F(Form("enLayerCorr%d", i+1), "", 5000, 0., 10.);
+    enLayerMip[i] = new TH1F(Form("enLayerMip%d", i+1), "", 10000, 0., 10000.);
   }
 
   TH1F* recoEnergy = new TH1F("recoEnergy", "", 5000, 0., 500.);
   TH1F* recoEnergyRel = new TH1F("recoEnergyRel", "", 1000, 0., 2.);
+  TGraphErrors* enLayer_MIP = new TGraphErrors();
 
   double xBeam, yBeam;
   std::vector<float>* simHitLayEn2E = 0;
@@ -153,12 +158,20 @@ t->Add(Form(("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/28modu
       float localE = simHitLayEn2E->at(iS) / G4Escale * ( 1./MIP2GeV_sim * weights2GeV * weights2MIP* dEdX_weights[iS] + 1.);
 
       enLayerCorr[iS]->Fill(localE);
+      enLayerMip[iS]->Fill(simHitLayEn2E->at(iS) / G4Escale * 1./MIP2GeV_sim);
       totEnergy += localE;
     }
     recoEnergy->Fill(totEnergy);
     recoEnergyRel->Fill(totEnergy/(1.*energyEle));
   }
 
+
+  float X0value = 0;
+  for(int i=0; i<nLayer; ++i){
+    X0value += X0val[i];
+    enLayer_MIP->SetPoint(i+1, X0value, enLayerMip[i]->GetMean());
+    enLayer_MIP->SetPointError(i+1, 0, enLayerMip[i]->GetRMS()/enLayerMip[i]->GetEntries());
+  }
 
   TFile* outF;
   if(nLayer == 28) outF = new TFile(Form("energyLayer_ROOT/outF_28layers_Ele%d.root", energyEle), "recreate");
@@ -169,7 +182,9 @@ t->Add(Form(("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/28modu
     if(nLayer != 28 && i >= 8) continue;
     enLayer[i]->Write();
     enLayerCorr[i]->Write();
+    enLayerMip[i]->Write();
   }
+  enLayer_MIP->Write("enLayer_MIP");
   recoEnergy->Write();
   recoEnergyRel->Write();
   outF->Close();
