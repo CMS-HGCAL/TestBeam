@@ -6,7 +6,7 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 
 options.register('dataFolder',
-                 '~/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',
+                 '/afs/cern.ch/user/t/tquast/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw text input')
@@ -68,13 +68,14 @@ options.register('configuration',
 
 
 options.output = "test_output.root"
-options.maxEvents = -1
+options.maxEvents = 1
 
 options.parseArguments()
 
 # print options # <--- A better option is to call test_cfg is called with "print" argument e.g. cmsRun test_cfg.py print dataFolder=example1 outputFolder=example2 ...
 
 if not os.path.isdir(options.dataFolder):
+    print options.dataFolder
     sys.exit("Error: Data folder not found or inaccessible!")
 
 if not os.path.isdir(options.outputFolder):
@@ -119,6 +120,8 @@ process.hgcaltbrechits.pedestalHigh = cms.string(options.pedestalsHighGain)
 process.hgcaltbrechits.gainLow = cms.string('')
 process.hgcaltbrechits.gainHigh = cms.string('')
 
+process.position_resolution_analyzer.randomString = "blablablablabla"
+
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
                               dumpPayload=cms.untracked.bool(True))
 
@@ -140,6 +143,9 @@ elif (options.chainSequence == 5):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco.root"%(options.outputFolder,options.runType,options.runNumber)))
 elif (options.chainSequence == 6):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco_Cluster.root"%(options.outputFolder,options.runType,options.runNumber)))
+elif (options.chainSequence == 6):
+    pass    #TODO
+    #process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco_Cluster.root"%(options.outputFolder,options.runType,options.runNumber)))
 
 
 
@@ -181,5 +187,7 @@ elif (options.chainSequence == 5):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
 elif (options.chainSequence == 6):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.LayerSumAnalyzer)
+elif (options.chainSequence == 7):
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.position_resolution_analyzer)
 
 process.end = cms.EndPath(process.output)
