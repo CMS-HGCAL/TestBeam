@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 position_resolution_analyzer = cms.EDAnalyzer("Position_Resolution_Analyzer",
-                                randomString = cms.string('blabla'),
+                                weightingMethod = cms.string('squaredWeighting'),
                                 HGCALTBRECHITS = cms.InputTag("hgcaltbrechits","","unpack" )#,
                                 #digiCollection = cms.InputTag('hgcaltbdigis'),
                                 #pedestalLow = cms.string('CondObjects/data/Ped_LowGain_L8.txt'),

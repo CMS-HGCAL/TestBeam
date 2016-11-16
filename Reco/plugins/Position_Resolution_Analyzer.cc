@@ -14,6 +14,8 @@
 //#include <memory>
 #include <iostream>
 #include <string>
+#include <vector>
+#include <map>
 //#include "TH2Poly.h"
 //#include "TProfile.h"
 //#include "TH1F.h"
@@ -28,6 +30,7 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "HGCal/Reco/interface/PositionResolutionHelpers.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
@@ -48,7 +51,6 @@ double Layer_Z_Positions[16]  = {1.2, 2., 3.5, 4.3, 5.8, 6.3, 8.7, 9.5, 11.4, 12
 int SensorSize = 128;
                     
 class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
-
 	public:
 		explicit Position_Resolution_Analyzer(const edm::ParameterSet&);
 		~Position_Resolution_Analyzer();
@@ -62,21 +64,27 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		// ----------member data ---------------------------
 		edm::EDGetToken HGCalTBRecHitCollection_;
 		
-		//this is needed to calculate the real x-y positions from u-v
-		HGCalTBCellVertices TheCell;
-		std::pair<double, double> CellCenterXY;
+		WeightingMethod weightingMethod;
+		
+		
 };
-
-
 
 Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterSet& iConfig) {
 	// initialization
 	usesResource("TFileService");
 	edm::Service<TFileService> fs;
 	HGCalTBRecHitCollection_ = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
-	std::string test_string = iConfig.getParameter<std::string>("randomString");
-	std::cout<<"Position_Resolution_Analyzer is initialized with the test_string parameter: "<<test_string<<std::endl;
-	
+
+	//read the weighting method to obtain the central hit point
+	std::string methodString = iConfig.getParameter<std::string>("weightingMethod");
+  
+	if (methodString == "")
+		weightingMethod = SQUAREDWEIGHTING;	
+	else if (methodString == "")
+		weightingMethod = LINEARWEIGHTING;
+	else 
+		weightingMethod = DEFAULT;
+
 }//constructor ends here
 
 Position_Resolution_Analyzer::~Position_Resolution_Analyzer() {
@@ -85,46 +93,45 @@ Position_Resolution_Analyzer::~Position_Resolution_Analyzer() {
 
 // ------------ method called for each event  ------------
 void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setup) {
-
-	//int event_nr = (event.id()).event();
-	//double time = event.time().value();
-
 	//opening Rechits
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_, Rechits);
 
-	for(auto Rechit : *Rechits) {
+	//step 1: Reduce the information to energy deposits/hits in x,y per sensor/layer 
+	std::map<int, SensorHitMap*> Sensors;
+	for(auto Rechit : *Rechits) {	
 		int layer = (Rechit.id()).layer();
-		double iu = (Rechit.id()).iu();
-		double iv = (Rechit.id()).iv();
-		//double energyLow = Rechit.energyLow();
-		//double energyHigh = Rechit.energyHigh();
-		double energy = Rechit.energy();
+		if ( Sensors.find(layer) == Sensors.end() ) {
+			SensorHitMap* newSensor = new SensorHitMap();
+			newSensor->setZ(Layer_Z_Positions[layer]);
+			newSensor->setSensorSize(SensorSize);
+			Sensors[layer] = newSensor;
+		}
+		Sensors[layer]->addHit(Rechit);
+	}
 
-		CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), SensorSize);
-		double iux = CellCenterXY.first;
-		double ivy = CellCenterXY.second;
-		std::cout<<layer<<"  "<<iu<<"  "<<iv<<"  "<<iux<<"  "<<ivy<<"  "<<energy<<std::endl;
-		
 
-		//(Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv()
-		//Rechit.energyHigh(), Rechit.energyLow()
+	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
+		std::cout<<"Layer: "<<it->first<<std::endl;
+		//it->second->printHits();
+		it->second->calculateCenterPosition(method);
+		std::cout<<it->second->getCenterPosition()->first<<"  "<<it->second->getCenterPosition()->second<<std::endl;
 	}
 	
+	//step 2: calculate impact point with technique indicated as the argument
+
+
+	//step 3: fill particle tracks
+
 }// analyze ends here
-
-
 
 void Position_Resolution_Analyzer::beginJob() {
 }
 
-
 void Position_Resolution_Analyzer::endJob() {
 }
 
-
-void
-Position_Resolution_Analyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+void Position_Resolution_Analyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
 	edm::ParameterSetDescription desc;
 	desc.setUnknown();
 	descriptions.addDefault(desc);
