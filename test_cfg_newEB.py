@@ -120,7 +120,7 @@ process.hgcaltbrechits.pedestalHigh = cms.string(options.pedestalsHighGain)
 process.hgcaltbrechits.gainLow = cms.string('')
 process.hgcaltbrechits.gainHigh = cms.string('')
 
-process.position_resolution_analyzer.randomString = "blablablablabla"
+process.position_resolution_analyzer.weightingMethod = "squaredWeighting"
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
                               dumpPayload=cms.untracked.bool(True))

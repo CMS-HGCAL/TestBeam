@@ -78,9 +78,9 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	//read the weighting method to obtain the central hit point
 	std::string methodString = iConfig.getParameter<std::string>("weightingMethod");
   
-	if (methodString == "")
+	if (methodString == "squaredWeighting")
 		weightingMethod = SQUAREDWEIGHTING;	
-	else if (methodString == "")
+	else if (methodString == "linearWeighting")
 		weightingMethod = LINEARWEIGHTING;
 	else 
 		weightingMethod = DEFAULT;
@@ -107,6 +107,8 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			newSensor->setSensorSize(SensorSize);
 			Sensors[layer] = newSensor;
 		}
+
+		//TODO: need to apply global correction to energies, like subtract pedestals?
 		Sensors[layer]->addHit(Rechit);
 	}
 
@@ -114,8 +116,9 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		std::cout<<"Layer: "<<it->first<<std::endl;
 		//it->second->printHits();
-		it->second->calculateCenterPosition(method);
-		std::cout<<it->second->getCenterPosition()->first<<"  "<<it->second->getCenterPosition()->second<<std::endl;
+		it->second->subtractPedestals();
+		it->second->calculateCenterPosition(weightingMethod);
+		std::cout<<it->second->getCenterPosition().first<<"  "<<it->second->getCenterPosition().second<<std::endl;
 	}
 	
 	//step 2: calculate impact point with technique indicated as the argument
