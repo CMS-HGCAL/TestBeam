@@ -15,7 +15,9 @@
 
 class HGCalTBRecHit : public CaloRecHit
 {
+
 public:
+	double* cartesian_coordinates;
 	typedef DetId key_type;
 
 	enum Flags {
@@ -63,6 +65,9 @@ public:
 		return flagField(flag, 1);
 	}; //flagBits_ & ( 0x1<<flag);}
 
+	void setCartesianCoordinates(double x, double y, double z);
+
+	double getCartesianCoordinate(int index);
 };
 
 std::ostream& operator<<(std::ostream& s, const HGCalTBRecHit& hit);
