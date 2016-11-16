@@ -189,6 +189,7 @@ private:
 Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 {
   std::cout << " welcome costruttore MAXSKIROCS = " << MAXSKIROCS << std::endl;
+
   // initialization
   usesResource("TFileService");
   edm::Service<TFileService> fs;
@@ -265,8 +266,7 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
     h_E7oE19_L_dw[layer] = fs->make<TH1F>(Form("h_E7oE19_L%d",layer+1), "", 5000, -5, 5);
     //
   }
-  
-
+ 
   h_eAll_all = fs->make<TH1F>("h_eAll_all", "", 40010, -10, 40000);
   h_e7_all = fs->make<TH1F>("h_e7_all", "", 40010, -10, 40000);
   h_e19_all = fs->make<TH1F>("h_e19_all", "", 40010, -10, 40000);
@@ -478,7 +478,6 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
 
   }//Rechit loop ends here
   //	std::cout << " >>> found commonmode = " << commonmode << std::endl;
-
 
   for(int iL=0; iL<MAXLAYERS; ++iL){
     commonmode[iL] = commonmode[iL]/cm_num[iL];
