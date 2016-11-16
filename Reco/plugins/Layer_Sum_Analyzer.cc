@@ -128,6 +128,8 @@ private:
 	TH1F *h_sum_layer_AbsW_Mip[MAXLAYERS], *h_layer_seven_AbsW_Mip[MAXLAYERS], *h_layer_nineteen_AbsW_Mip[MAXLAYERS], *h_Seed_layer_AbsW_Mip[MAXLAYERS];
 	TH1F *h_sum_layer_AbsW_GeV[MAXLAYERS], *h_layer_seven_AbsW_GeV[MAXLAYERS], *h_layer_nineteen_AbsW_GeV[MAXLAYERS], *h_Seed_layer_AbsW_GeV[MAXLAYERS];
       	TH1F *h_x_layer[MAXLAYERS], *h_y_layer[MAXLAYERS];
+        TH1F *h_x_layer_log[MAXLAYERS], *h_y_layer_log[MAXLAYERS];
+
 	TH2F *h_x_y_layer[MAXLAYERS];
 
         TH1F* h_Radius[MAXLAYERS];      
@@ -180,6 +182,9 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 
 	  h_x_layer[layer] = fs->make<TH1F>(Form("X_Layer%d", layer+1), "", 2000, -10., 10. );
 	  h_y_layer[layer] = fs->make<TH1F>(Form("Y_Layer%d", layer+1), "", 2000, -10., 10. );
+          h_x_layer_log[layer] = fs->make<TH1F>(Form("X_Layer%d_log", layer+1), "", 2000, -10., 10. );
+          h_y_layer_log[layer] = fs->make<TH1F>(Form("Y_Layer%d_log", layer+1), "", 2000, -10., 10. );
+	  
 	  h_x_y_layer[layer] = fs->make<TH2F>(Form("YvsX_Layer%d", layer+1), "", 2000, -10., 10., 2000, -10., 10. );
 
 	  h_E1oE7_layer[layer] = fs->make<TH1F>(Form("h_E1oE7_layer%d",layer+1), Form("h_E1oE7_layer%d",layer+1), 5000, -5, 5);
@@ -356,14 +361,16 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
   event.getByToken(HGCalTBRecHitCollection_, Rechits1);
 
   // looping over each rechit to fill histogram
-  double allcells_sum[MAXLAYERS], sevencells_sum[MAXLAYERS], nineteencells_sum[MAXLAYERS], radius[MAXLAYERS];
+  double allcells_sum[MAXLAYERS], sevencells_sum[MAXLAYERS], nineteencells_sum[MAXLAYERS],  nineteencells_log_sum[MAXLAYERS], radius[MAXLAYERS];
   double seedEnergy[MAXLAYERS];
   double x_tmp[MAXLAYERS], y_tmp[MAXLAYERS];
+  double x_log_tmp[MAXLAYERS], y_log_tmp[MAXLAYERS];
+
   int num[MAXLAYERS], sevennum[MAXLAYERS], nineteennum[MAXLAYERS];
 
   for(int iL=0; iL<MAXLAYERS; ++iL){
-    allcells_sum[iL] = sevencells_sum[iL] = nineteencells_sum[iL] = radius[iL] = 0.;
-    x_tmp[iL] = y_tmp[iL] = seedEnergy[iL] = 0.;
+    allcells_sum[iL] = sevencells_sum[iL] = nineteencells_sum[iL] = nineteencells_log_sum[iL] = radius[iL] = 0.;
+    x_tmp[iL] = y_tmp[iL] = x_log_tmp[iL] = y_log_tmp[iL] = seedEnergy[iL] = 0.;
     num[iL] = sevennum[iL] = nineteennum[iL] = 0;
   }
 
@@ -413,8 +420,11 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     if((radius[eLayer] < 1.95 * maxdist && nineteennum[eLayer] < 19) && (energyCMsub > CMTHRESHOLD)){
 //			nineteencells_sum += (LayerWeight[LAYER]*(Rechit1.energyHigh() - commonmode))/ ADCtoMIP[LAYER];
       nineteencells_sum[eLayer] += energyCMsub;
+      nineteencells_log_sum[eLayer] += log(energyCMsub);
       x_tmp[eLayer] += CellCentreXY.first * energyCMsub;
       y_tmp[eLayer] += CellCentreXY.second * energyCMsub;
+      x_log_tmp[eLayer] += CellCentreXY.first * log(energyCMsub);
+      y_log_tmp[eLayer] += CellCentreXY.second * log(energyCMsub);
       nineteennum[eLayer]++;
     }
   }
@@ -478,6 +488,8 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
 
     h_x_layer[iL]->Fill(x_tmp[iL] / nineteencells_sum[iL]);
     h_y_layer[iL]->Fill(y_tmp[iL] / nineteencells_sum[iL]);
+    h_x_layer_log[iL]->Fill(x_log_tmp[iL] / nineteencells_log_sum[iL]);
+    h_y_layer_log[iL]->Fill(y_log_tmp[iL] / nineteencells_log_sum[iL]);
     h_x_y_layer[iL]->Fill(x_tmp[iL] / nineteencells_sum[iL], y_tmp[iL] / nineteencells_sum[iL]);
 
     E1SumL_R += seedEnergy[iL];
