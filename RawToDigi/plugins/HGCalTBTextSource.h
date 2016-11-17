@@ -21,6 +21,8 @@ class HGCalTBTextSource : public edm::ProducerSourceFromFiles
 
 public:
 	explicit HGCalTBTextSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :  edm::ProducerSourceFromFiles(pset, desc, true),
+		currentFileIndex(-1),
+		newFileIndex(0),
 		m_file(0),
 		NSpills(pset.getUntrackedParameter<unsigned int>("nSpills", 6))
 	{
@@ -38,6 +40,8 @@ public:
 	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 private:
+	int currentFileIndex;	//index of the current file
+	int newFileIndex;
 	bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&);
 	virtual void produce(edm::Event & e);
 	bool readHeader(void);

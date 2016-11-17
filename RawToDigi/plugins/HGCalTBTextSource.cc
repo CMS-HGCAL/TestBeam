@@ -14,11 +14,14 @@ T 0x0072D911 0xBEC20B15	T 0x0072D93F 0xBED19F54	T 0x0072D96E 0xBED19F56	T 0x0072
 */
 
 bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType)
-{
-
+{	
 	if (!(fileNames().size())) return false; // need a file...
-	if (m_file == 0) {
-		std::string name = fileNames()[0].c_str(); /// \todo FIX in order to take several files
+	if (newFileIndex==(int)fileNames().size()) return false;	//do not overshoot in the file name array
+
+	//magic must come here!
+	if (currentFileIndex != newFileIndex) {
+		currentFileIndex = newFileIndex;
+		std::string name = fileNames()[currentFileIndex].c_str(); /// \todo FIX in order to take several files
 		if (name.find("file:") == 0) name = name.substr(5);
 		m_file = fopen(name.c_str(), "r");
 		if (m_file == 0) {
@@ -26,10 +29,16 @@ bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& t
 		}
 		m_event = 0;
 	}
-	if (feof(m_file)) return false;
+	if (feof(m_file)) {
+		newFileIndex++;
+		return setRunAndEventInfo(id, time, evType);
+	}
 	// read the header
 	while(readHeader() == false) {
-		if (feof(m_file)) return false;
+		if (feof(m_file)) {
+			newFileIndex++;
+			return setRunAndEventInfo(id, time, evType);
+		}
 		// have to skip the data lines and return false
 		readLines();
 	}
