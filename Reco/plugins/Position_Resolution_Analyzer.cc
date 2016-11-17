@@ -29,6 +29,9 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
+#include "TH2D.h"
+#include "TStyle.h"
+
 
 
 /**********/
@@ -50,18 +53,23 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		virtual void endJob() override;
 
 		// ----------member data ---------------------------
+		edm::Service<TFileService> fs;
 		edm::EDGetToken HGCalTBRecHitCollection_;
 		
 		WeightingMethod weightingMethod;
 		TrackFittingMethod fittingMethod;		
 		int successfulFitCounter, failedFitCounter;
+		double min_deviation, max_deviation; 	//minimum and maximum value of the deviations for the 2D histogram
+
+		//outputs
+		std::map<int, std::vector<double> >deviations;
 
 };
 
 Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterSet& iConfig) {
+	gStyle->SetOptStat();
 	// initialization
 	usesResource("TFileService");
-	edm::Service<TFileService> fs;
 	HGCalTBRecHitCollection_ = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 
 	//read the weighting method to obtain the central hit point
@@ -83,6 +91,10 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	//initiate some counters that are printed at the end
 	successfulFitCounter = failedFitCounter = 0;
 
+	//initiate the minimum and maximum values for the deviation
+	min_deviation = pow(10., 12);
+	max_deviation = -1.;
+
 }//constructor ends here
 
 Position_Resolution_Analyzer::~Position_Resolution_Analyzer() {
@@ -94,6 +106,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	//opening Rechits
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_, Rechits);
+	//int evId = event.id().event();
 
 	//step 1: Reduce the information to energy deposits/hits in x,y per sensor/layer 
 	std::map<int, SensorHitMap*> Sensors;
@@ -145,9 +158,12 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		deviation  = pow(x_predicted - Sensors[i]->getCenterPosition().first, 2); 
 		deviation += pow(y_predicted - Sensors[i]->getCenterPosition().second, 2);
 		deviation  = sqrt(deviation);
-		std::cout<<"Layer "<<i<<"   dev.="<<deviation<<std::endl;
-	}
+		deviations[i].push_back(deviation);
 
+		//update the deviations on the fly
+		min_deviation = min_deviation > deviation ? deviation: min_deviation;
+		max_deviation = max_deviation < deviation ? deviation: max_deviation;
+	}
 
 }// analyze ends here
 
@@ -159,6 +175,16 @@ void Position_Resolution_Analyzer::endJob() {
 	std::cout<<"END OF FITTING:"<<std::endl<<std::endl;
 	std::cout<<"Succesful fits: "<<successfulFitCounter<<std::endl;
 	std::cout<<"Failed fits: "<<failedFitCounter<<std::endl;
+	
+	std::cout<<"Making deviation TH2D... "<<std::endl;
+	TH2D* deviationHistogram = this->fs->make<TH2D>("positionDeviations", "", nLayers, 0.5, nLayers+0.5, 1000, min_deviation, max_deviation);
+	deviationHistogram->GetXaxis()->SetTitle("n_{Layer}");
+	deviationHistogram->GetYaxis()->SetTitle("deviation_{x-y} [cm]");
+	for(int i=1; i<=nLayers; i++)
+		for(int j=0; j<(int)deviations[i].size(); j++)
+			deviationHistogram->Fill(i, deviations[i][j]);
+	std::cout<<"Done"<<std::endl;
+
 	std::cout<<"*************************************************"<<std::endl;
 }
 

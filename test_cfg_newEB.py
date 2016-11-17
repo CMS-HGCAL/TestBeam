@@ -68,7 +68,7 @@ options.register('configuration',
 
 
 options.output = "test_output.root"
-options.maxEvents = -1
+options.maxEvents = 500
 
 options.parseArguments()
 
@@ -144,9 +144,8 @@ elif (options.chainSequence == 5):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco.root"%(options.outputFolder,options.runType,options.runNumber)))
 elif (options.chainSequence == 6):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco_Cluster.root"%(options.outputFolder,options.runType,options.runNumber)))
-elif (options.chainSequence == 6):
-    pass    #TODO
-    #process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco_Cluster.root"%(options.outputFolder,options.runType,options.runNumber)))
+elif (options.chainSequence == 7):
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Position_Resolution.root"%(options.outputFolder,options.runType,options.runNumber)))
 
 
 
