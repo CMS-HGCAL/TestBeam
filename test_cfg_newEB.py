@@ -68,7 +68,7 @@ options.register('configuration',
 
 
 options.output = "test_output.root"
-options.maxEvents = 500
+options.maxEvents = 1
 
 options.parseArguments()
 
@@ -120,8 +120,9 @@ process.hgcaltbrechits.pedestalHigh = cms.string(options.pedestalsHighGain)
 process.hgcaltbrechits.gainLow = cms.string('')
 process.hgcaltbrechits.gainHigh = cms.string('')
 
-process.position_resolution_analyzer.weightingMethod = "squaredWeighting"
-process.position_resolution_analyzer.fittingMethod = "lineTGraphErrors"
+process.position_resolution_analyzer.weightingMethod = cms.string("squaredWeighting")
+process.position_resolution_analyzer.fittingMethod = cms.string("lineTGraphErrors")
+process.position_resolution_analyzer.make2DGraphs = True    #only for debugging
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
                               dumpPayload=cms.untracked.bool(True))

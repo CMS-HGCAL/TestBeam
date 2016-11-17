@@ -29,8 +29,10 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
-#include "TH2D.h"
 #include "TStyle.h"
+#include "TFile.h"
+#include "TH2D.h"
+#include "TGraph2D.h"
 
 
 
@@ -58,10 +60,12 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		
 		WeightingMethod weightingMethod;
 		TrackFittingMethod fittingMethod;		
+		bool make2DGraphs;
+
 		int successfulFitCounter, failedFitCounter;
 		double min_deviation, max_deviation; 	//minimum and maximum value of the deviations for the 2D histogram
 
-		//outputs
+		//stuff to be written to objects at the end
 		std::map<int, std::vector<double> >deviations;
 
 };
@@ -88,6 +92,9 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	else 
 		fittingMethod = DEFAULTFITTING;
 
+	//making 2DGraphs per event?
+	make2DGraphs = iConfig.getParameter<bool>("make2DGraphs");
+
 	//initiate some counters that are printed at the end
 	successfulFitCounter = failedFitCounter = 0;
 
@@ -106,7 +113,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	//opening Rechits
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_, Rechits);
-	//int evId = event.id().event();
+	int evId = event.id().event();
 
 	//step 1: Reduce the information to energy deposits/hits in x,y per sensor/layer 
 	std::map<int, SensorHitMap*> Sensors;
@@ -142,8 +149,9 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		Tracks[i]->fitTrack(fittingMethod);
 	}
 	
-	//step 4: calculate the predicted impact point by the fit and compare with the true one
-	double x_predicted, y_predicted, layerZ, deviation;
+	std::vector<double> x_predicted_v,y_predicted_v, x_true_v, y_true_v, layerZ_v;
+	double x_predicted, y_predicted, x_true, y_true, layerZ, deviation;
+
 	for (int i=1; i<=nLayers; i++) {
 		layerZ = Sensors[i]->getZ();
 		x_predicted = Tracks[i]->calculatePositionXY(layerZ).first;
@@ -155,15 +163,44 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		}
 		successfulFitCounter++; 
 		
-		deviation  = pow(x_predicted - Sensors[i]->getCenterPosition().first, 2); 
-		deviation += pow(y_predicted - Sensors[i]->getCenterPosition().second, 2);
+		x_true = Sensors[i]->getCenterPosition().first;
+		y_true = Sensors[i]->getCenterPosition().second;
+
+		deviation  = pow(x_predicted - x_true, 2); 
+		deviation += pow(y_predicted - y_true, 2);
 		deviation  = sqrt(deviation);
 		deviations[i].push_back(deviation);
 
 		//update the deviations on the fly
 		min_deviation = min_deviation > deviation ? deviation: min_deviation;
 		max_deviation = max_deviation < deviation ? deviation: max_deviation;
+	
+		//store for the two 2D graphs that are written per event
+		x_predicted_v.push_back(x_predicted);
+		y_predicted_v.push_back(y_predicted);
+		x_true_v.push_back(x_true);
+		y_true_v.push_back(y_true);
+		layerZ_v.push_back(layerZ);
 	}
+
+	if (make2DGraphs) {
+		TGraph2D* graph2D_predicted = fs->make<TGraph2D>(Form("predicted_points_event_%s", std::to_string(evId).c_str()), "", layerZ_v.size(), &(x_predicted_v[0]), &(y_predicted_v[0]), &(layerZ_v[0]));
+		graph2D_predicted->SetTitle(Form("predicted_points_event_%s", std::to_string(evId).c_str()));
+		graph2D_predicted->SetMarkerStyle(21);
+		graph2D_predicted->SetMarkerColor(1);
+		graph2D_predicted->GetXaxis()->SetTitle("x [cm]");
+		graph2D_predicted->GetYaxis()->SetTitle("y [cm]");
+		graph2D_predicted->GetZaxis()->SetTitle("z [cm]");
+
+		TGraph2D* graph2D_true = fs->make<TGraph2D>(Form("true_points_event_%s", std::to_string(evId).c_str()), "", layerZ_v.size(), &(x_true_v[0]), &(y_true_v[0]), &(layerZ_v[0]));
+		graph2D_true->SetTitle(Form("true_points_event_%s", std::to_string(evId).c_str()));
+		graph2D_true->SetMarkerStyle(31);
+		graph2D_true->SetMarkerColor(2);
+		graph2D_true->GetXaxis()->SetTitle("x [cm]");
+		graph2D_true->GetYaxis()->SetTitle("y [cm]");
+		graph2D_true->GetZaxis()->SetTitle("z [cm]");
+	}
+
 
 }// analyze ends here
 
