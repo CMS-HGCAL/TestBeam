@@ -15,6 +15,7 @@
 #include <string>
 #include "TROOT.h"
 #include "TSystem.h"
+#include "../MCanalysis/HGCalTBPlots.C"
 
 #include "/afs/cern.ch/work/a/amartell/ES_P5/CMSSW_7_4_6_patch6/src/MyAnalyzer/ESAnalyzer/macroAnalysis/langausfit.h"
 
@@ -65,7 +66,8 @@ void doPlots(int nLayer, int energyEle, int config){
 
   float weights2GeV = 1.e-03;
   float weights2MIP = 1.;         // weights with MIP from PDG
-  float MIP2GeV_sim = EtoMip * 63.28e-06 / 55.16e-06;  // recalibrate to mean 500MeV muon response
+  //  float MIP2GeV_sim = EtoMip * 63.28e-06 / 55.16e-06;  // recalibrate to mean 500MeV muon response
+  float MIP2GeV_sim = EtoMip * 51.91e-06 / 55.16e-06;  // recalibrate to mean 500MeV muon response
 
   float G4Escale = 1.; // 0.83;   // >>> fix scale in data mc for Si
 
@@ -139,10 +141,15 @@ t->Add(Form(("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/28modu
 
   double xBeam, yBeam;
   std::vector<float>* simHitLayEn2E = 0;
+  std::vector<float>* simHitCellEnE = 0;
+  std::vector<unsigned int>* simHitCellIdE = 0;
   t->SetBranchAddress("simHitLayEn2E", &simHitLayEn2E);
+  t->SetBranchAddress("simHitCellEnE", &simHitCellEnE);
+  t->SetBranchAddress("simHitCellIdE", &simHitCellIdE);
   t->SetBranchAddress("xBeam", &xBeam);
   t->SetBranchAddress("yBeam", &yBeam);
 
+  HexTopology ht1 = false;
 
   //looping over entries
   for(int iE=0; iE<totEntries; ++iE){
@@ -151,8 +158,9 @@ t->Add(Form(("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/28modu
     //    std::cout << " simHitLayEn2E->size() = " << simHitLayEn2E->size() << std::endl;
     if(abs(xBeam) >= 2 || abs(yBeam) >= 2) continue;
     float totEnergy = 0.;
-    for(int iS=0; iS<simHitLayEn2E->size(); ++iS){
-      enLayer[iS]->Fill(simHitLayEn2E->at(iS));
+    /*
+    for(int iS=0; iS<simHitLayEn2E->size(); ++iS){   
+    enLayer[iS]->Fill(simHitLayEn2E->at(iS));
       
       //      std::cout << " E = " simHitLayEn2E->at(iS) << << std::endl;
       float localE = simHitLayEn2E->at(iS) / G4Escale * ( 1./MIP2GeV_sim * weights2GeV * weights2MIP* dEdX_weights[iS] + 1.);
@@ -163,6 +171,31 @@ t->Add(Form(("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/28modu
     }
     recoEnergy->Fill(totEnergy);
     recoEnergyRel->Fill(totEnergy/(1.*energyEle));
+    */
+
+    //////// check single cells
+    std::vector<unsigned int> CellId;
+    std::vector<float> CellE;
+    for(int ii=0; ii<simHitCellIdE->size(); ++ii){
+      CellId.push_back(simHitCellIdE->at(ii));
+      CellE.push_back(simHitCellEnE->at(ii));
+    }
+
+    for(int iS=0; iS<simHitLayEn2E->size(); ++iS){   
+      unsigned int locMaxId = ht1.localMax( (CellId), (CellE), iS+1);
+      double clusterE19 = ht1.cluster((CellId), (CellE), locMaxId, 2, MIP2GeV_sim, 2);
+      //double allcell_nomip = ht1.cluster( (CellId), (CellE), locMaxId, 7, EperMIP, 0);
+      float localE = clusterE19 / G4Escale * ( 1./MIP2GeV_sim * weights2GeV * weights2MIP* dEdX_weights[iS] + 1.);                                                     
+      //double allcell = ht1.cluster( (CellId), (CellE), locMaxId, 7, MIP2GeV_sim, 2);
+      //float localE = allcell / G4Escale * ( 1./MIP2GeV_sim * weights2GeV * weights2MIP* dEdX_weights[iS] + 1.);                                                     
+      
+      enLayerCorr[iS]->Fill(localE);                                                                                                                                             
+      //enLayerMip[iS]->Fill(allcell / G4Escale * 1./MIP2GeV_sim);                                                                                                    
+      enLayerMip[iS]->Fill(clusterE19 / G4Escale * 1./MIP2GeV_sim);                                                                                                    
+      totEnergy += localE; 
+    }
+    recoEnergy->Fill(totEnergy);                   
+    recoEnergyRel->Fill(totEnergy/(1.*energyEle)); 
   }
 
 

@@ -27,7 +27,7 @@ void dataVsmc(){
                
   int nLayers = 8;
   int config = 2;
-  int iColors[5] = {kRed, kBlue, kGreen+2, kRed, kBlue};
+  int iColors[7] = {kRed, kBlue, kGreen+2, kRed, kBlue, kRed, kBlue};
   //  int energyP[3] = {20, 70, 100, 200, 250};
   
   TFile* inF[4];
@@ -37,23 +37,27 @@ void dataVsmc(){
   inF[3] = TFile::Open("DATA_resolution_layers8_config2.root");
 
 
-  TGraphErrors* tgCfg1[5];
-  TGraphErrors* tgCfg2[5];
+  TGraphErrors* tgCfg1[7];
+  TGraphErrors* tgCfg2[7];
 
   tgCfg1[0] = (TGraphErrors*)inF[0]->Get("resolution_GeV");
   tgCfg1[1] = (TGraphErrors*)inF[2]->Get("resolution_GeV");
   tgCfg1[2] = (TGraphErrors*)inF[2]->Get("resolution_Mip");
   tgCfg1[3] = (TGraphErrors*)inF[0]->Get("linerity_GeV");
   tgCfg1[4] = (TGraphErrors*)inF[2]->Get("linearity_GeV");
+  tgCfg1[5] = (TGraphErrors*)inF[0]->Get("mean_GeV");
+  tgCfg1[6] = (TGraphErrors*)inF[2]->Get("mean_GeV");
 
   tgCfg2[0] = (TGraphErrors*)inF[1]->Get("resolution_GeV");
   tgCfg2[1] = (TGraphErrors*)inF[3]->Get("resolution_GeV");
   tgCfg2[2] = (TGraphErrors*)inF[3]->Get("resolution_Mip");
   tgCfg2[3] = (TGraphErrors*)inF[1]->Get("linerity_GeV");
   tgCfg2[4] = (TGraphErrors*)inF[3]->Get("linearity_GeV");
+  tgCfg2[5] = (TGraphErrors*)inF[1]->Get("mean_GeV");
+  tgCfg2[6] = (TGraphErrors*)inF[3]->Get("mean_GeV");
 
 
-  for(int iT=0; iT<5; ++iT){
+  for(int iT=0; iT<7; ++iT){
     tgCfg1[iT]->SetMarkerStyle(20);
     tgCfg2[iT]->SetMarkerStyle(20);
 
@@ -63,7 +67,7 @@ void dataVsmc(){
 
   std::cout << " ci sono " << std::endl;
 
-  TLegend *legTGM = new TLegend(0.45,0.65,0.65,0.85,NULL,"brNDC");
+  TLegend *legTGM = new TLegend(0.45,0.35,0.65,0.55,NULL,"brNDC");
   legTGM->SetTextFont(42);
   legTGM->SetFillColor(kWhite);
   legTGM->SetLineColor(kWhite);
@@ -73,7 +77,7 @@ void dataVsmc(){
   legTGM->AddEntry(tgCfg1[1], "data GeV", "pl");
   //  legTGM->AddEntry(tgCfg1[2], "data Mip", "l");
 
-  TLegend *legTGM2 = new TLegend(0.45,0.65,0.65,0.85,NULL,"brNDC");
+  TLegend *legTGM2 = new TLegend(0.45,0.35,0.65,0.55,NULL,"brNDC");
   legTGM2->SetTextFont(42);
   legTGM2->SetFillColor(kWhite);
   legTGM2->SetLineColor(kWhite);
@@ -126,6 +130,29 @@ void dataVsmc(){
   legTGM2->Draw("same");
   chER2->Print("dataVsMC/SimGeV_DataGeV_layers8_config2.png", "png");
   chER2->Print("dataVsMC/SimGeV_DataGeV_layers8_config2.root", "root");
+
+  //////////
+  TCanvas* chEM = new TCanvas();
+  chEM->cd();
+  tgCfg1[5]->GetXaxis()->SetTitle("beam energy GeV");
+  tgCfg1[5]->GetYaxis()->SetTitle("<#SigmaE> / beam energy");
+  tgCfg1[5]->GetYaxis()->SetRangeUser(0., 1.2);
+  tgCfg1[5]->Draw("ap");
+  tgCfg1[6]->Draw("p, same");
+  legTGM->Draw("same");
+  chEM->Print("dataVsMC/scale_SimGeV_DataGeV_layers8_config1.png", "png");
+  chEM->Print("dataVsMC/scale_SimGeV_DataGeV_layers8_config1.root", "root");
+  //
+  TCanvas* chEM2 = new TCanvas();
+  chEM2->cd();
+  tgCfg2[5]->GetXaxis()->SetTitle("beam energy GeV");
+  tgCfg2[5]->GetYaxis()->SetTitle("<#SigmaE> beam energy");
+  tgCfg2[5]->GetYaxis()->SetRangeUser(0., 1.2);
+  tgCfg2[5]->Draw("ap");
+  tgCfg2[6]->Draw("p, same");
+  legTGM2->Draw("same");
+  chEM2->Print("dataVsMC/scale_SimGeV_DataGeV_layers8_config2.png", "png");
+  chEM2->Print("dataVsMC/scale_SimGeV_DataGeV_layers8_config2.root", "root");
  
   std::cout << " >>> plot linearity " << std::endl;
   ////////

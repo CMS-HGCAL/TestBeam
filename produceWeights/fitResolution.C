@@ -31,21 +31,21 @@ void fitResolution(){
   int config = 1;
   int iColors[5] = {kRed, kCyan, kBlue, kGreen+2, kYellow-1};
   int energyP[5] = {20, 70, 100, 200, 250};
-  */
+  */  
 
 
-  /*
   int nLayers = 8;
   int config = 1;
   int iColors[5] = {kRed, kCyan, kBlue, kGreen+2, kYellow-1};
   int energyP[5] = {20, 70, 100, 200, 250};
-  */
-      
+
+          
+  /*      
   int nLayers = 8;
   int config = 2;
   int iColors[5] = {kRed, kCyan, kBlue, kGreen+2, kYellow-1};
   int energyP[5] = {20, 70, 100, 200, 250};
-  
+  */
 
   TGraphErrors* tg[5];
   TGraphErrors* tgL[5];
@@ -263,7 +263,7 @@ void fitResolution(){
    tgL[0]->GetYaxis()->SetTitle("#Sigma E_{i} (GeV)");
    tgL[0]->GetXaxis()->SetTitle("E_{beam} (GeV)");
    tgL[0]->GetXaxis()->SetRangeUser(0, 300.);
-   if(nLayers == 8) tg[0]->GetYaxis()->SetRangeUser(0., 1.01);
+   tg[0]->GetYaxis()->SetRangeUser(0., 1.2);
    tgL[0]->Draw("ap");
    if(nLayers != 28){
      tgLi->Print(Form((folder+"/energy_LinearityVsEnergy_layers%d_config%d.png").c_str(), nLayers, config), "png");
@@ -282,7 +282,7 @@ void fitResolution(){
     tg[0]->GetXaxis()->SetTitle("E_{beam} (GeV)");
     tg[0]->GetXaxis()->SetRangeUser(0, 300.);
     tg[0]->GetYaxis()->SetRangeUser(0., 1.01);
-    if(nLayers == 8) tg[0]->GetYaxis()->SetRangeUser(0., 1.01);
+    tg[0]->GetYaxis()->SetRangeUser(0., 1.2);
     tg[0]->Draw("ap");
     if(nLayers != 28){
     tgM->Print(Form((folder+"/energy_MeanVsEnergy_layers%d_config%d.png").c_str(), nLayers, config), "png");
@@ -312,6 +312,7 @@ void fitResolution(){
     TFile outSim(Form("SIM_resolution_layers%d_config%d.root", nLayers, config), "recreate");
     outSim.cd();
     tgS[0]->Write("resolution_GeV");
+    tg[0]->Write("mean_GeV");
     tgL[0]->Write("linerity_GeV");
     outSim.Close();
 
@@ -322,11 +323,11 @@ void fitResolution(){
 
     TF1* fitReso;
     //fit 3par all                                                                                                 
-    //        int type = 1;                                                                                                
+    //int type = 1;                                                                                                
     //fit 3par tail                                                                                                
-    //            int type = 2;
+    int type = 2;
     //fit 2par all                                                                                                 
-            int type = 3;                                                                                            
+    //int type = 3;                                                                                            
     if(type == 1){
       fitReso = new TF1("fitReso", "sqrt( pow([0]/sqrt(x), 2.) + pow([1]/x, 2.) + pow([2], 2.))", 10., 300.);
       fitReso->SetParName(0, "S");

@@ -41,7 +41,7 @@ void fitResolution_data(){
   int energyP[6] = {20, 32, 70, 100, 200, 250};
   
 
-  /*                  
+  /*                          
   int nLayers = 8;
   int config = 2;
   int iColors[6] = {kRed, kViolet, kCyan, kBlue, kGreen+2, kYellow-1}; //, kBlack};
@@ -295,6 +295,7 @@ void fitResolution_data(){
 
     TFile outData(Form("DATA_resolution_layers%d_config%d.root", nLayers, config), "recreate");
     outData.cd();
+    tg[0]->Write("mean_GeV");
     tgL[0]->Write("linearity_GeV");
     tgS[0]->Write("resolution_GeV");
     tgR[0]->Write("resolution_Mip");
@@ -312,7 +313,7 @@ void fitResolution_data(){
     //    int type = 1;
 
     //fit 3par tail
-    //    int type = 2;
+    //int type = 2;
 
     //fit 2par all
     int type = 3;

@@ -71,7 +71,6 @@ options.register('configuration',
 
 
 
-options.output = "test_output.root"
 options.maxEvents = -1
 
 options.parseArguments()
@@ -130,9 +129,12 @@ process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
 process.dumpDigi = cms.EDAnalyzer("HGCalDigiDump")
 
 
-process.output = cms.OutputModule("PoolOutputModule",
-			fileName = cms.untracked.string(options.output)
-                                 )
+if (options.chainSequence == 7):
+    options.output = "%s/RECO_type%s_run%06d.root"%(options.outputFolder,options.runType,options.runNumber)
+    process.output = cms.OutputModule("PoolOutputModule",
+                                      fileName = cms.untracked.string(options.output)
+                                      )
+
 
 # process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Display.root") )
 if (options.chainSequence == 1):
@@ -183,5 +185,9 @@ elif (options.chainSequence == 5):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm*process.hgcaltbrechitsplotter_highgain_new)
 elif (options.chainSequence == 6):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.LayerSumAnalyzer)
+elif (options.chainSequence == 7):
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits)
 
-process.end = cms.EndPath(process.output)
+
+if (options.chainSequence == 7):
+    process.end = cms.EndPath(process.output)

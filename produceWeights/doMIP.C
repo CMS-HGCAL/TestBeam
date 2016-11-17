@@ -93,7 +93,8 @@ void doMIP(int nLayer,  int config, int energyEle=0){
   else if(nLayer == 28 && config == 1){
     for(int iFo=0; iFo<2; ++iFo){
       for(int iF=0; iF<1000; ++iF){
-	t->Add(Form("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/28moduleIv3_PhysicsList_FTFP_BERT_EMM/mc/CRAB_PrivateMC/crab_Muon500MeV/161101_141550/000%d/TBGenSim_%d.root", iFo, iF));
+	//	t->Add(Form("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/28moduleIv3_PhysicsList_FTFP_BERT_EMM/mc/CRAB_PrivateMC/crab_Muon500MeV/161101_141550/000%d/TBGenSim_%d.root", iFo, iF));
+t->Add(Form("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/28moduleIv3_PhysicsLst_QGSP_FTFP_BERT/mc/CRAB_PrivateMC/crab_Muon500MeV/161101_141550/000%d/TBGenSim_%d.root", iFo, iF));
       }
     }
   }

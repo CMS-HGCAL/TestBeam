@@ -52,10 +52,22 @@ void simple_Data(int nLayer, int energyEle, int config = 1) {
 
   TFile* inF;
   if(nLayer == 28) inF = TFile::Open(Form("energyLayer_ROOT/outF_28layers_Ele%d.root", energyEle));
-  else if(config == 1) inF = TFile::Open(Form("~/public/perShilpi/cfg1_data_Mean/%dGeV.root", energyEle));
-  else if(config == 2) inF = TFile::Open(Form("~/public/perShilpi/cfg2_data_Mean/%dGeV.root", energyEle));
+  //  else if(config == 1) inF = TFile::Open(Form("~/public/perShilpi/cfg1_data_Mean/%dGeV.root", energyEle));
+  //  else if(config == 2) inF = TFile::Open(Form("~/public/perShilpi/cfg2_data_Mean/%dGeV.root", energyEle));
   //  else if(config == 1) inF = TFile::Open(Form("~/public/perShilpi/cfg1_data_MPV/%dGeV.root", energyEle));
   //  else if(config == 2) inF = TFile::Open(Form("~/public/perShilpi/cfg2_data_MPV/%dGeV.root", energyEle));
+  //bert
+  //  else if(config == 1) inF = TFile::Open(Form("~/public/perShilpi/cfg1_data_MPV_BERT/%dGeV.root", energyEle));
+  //else if(config == 2) inF = TFile::Open(Form("~/public/perShilpi/cfg2_data_MPV_BERT/%dGeV.root", energyEle));
+  //+/- 2cm cut
+  //  else if(config == 1) inF = TFile::Open(Form("~/public/perShilpi/cfg1_data_MPV_pm2cm/%dGeV.root", energyEle));
+  //else if(config == 2) inF = TFile::Open(Form("~/public/perShilpi/cfg2_data_MPV_pm2cm/%dGeV.root", energyEle));
+  else if(config == 1) inF = TFile::Open(Form("~/public/perShilpi/cfg1_data_MPV_logPos/%dGeV.root", energyEle));
+  else if(config == 2) inF = TFile::Open(Form("~/public/perShilpi/cfg2_data_MPV_logPos/%dGeV.root", energyEle));
+
+
+  TH1F* h_X_L1;
+  TH1F* h_Y_L1;
 
   TH1F* enLayer[28];
   TH1F* enLayer_AbsW_Mip[28];
@@ -71,6 +83,11 @@ void simple_Data(int nLayer, int energyEle, int config = 1) {
 
   for(int i=0; i<28; ++i){
     if(nLayer != 28 && i >= 8) continue;
+    if(i == 0){
+      h_X_L1 = (TH1F*)inF->Get("LayerSumAnalyzer/X_L1");
+      h_Y_L1 = (TH1F*)inF->Get("LayerSumAnalyzer/Y_L1");
+    }
+
     enLayer[i] = (TH1F*)inF->Get(Form("LayerSumAnalyzer/h_eAll_L%d", i+1));
     enLayer_AbsW_Mip[i] = (TH1F*)inF->Get(Form("LayerSumAnalyzer/h_eAll_L%d_AbsW_Mip", i+1));
     enLayer_AbsW_GeV[i] = (TH1F*)inF->Get(Form("LayerSumAnalyzer/h_eAll_L%d_AbsW_GeV", i+1));
@@ -269,6 +286,28 @@ void simple_Data(int nLayer, int energyEle, int config = 1) {
 
   // TGraph* Mean_vsE = new TGraph();
   // TGraph* Sigma_vsE = new TGraph();
+
+
+  h_X_L1->Rebin(4);
+  h_Y_L1->Rebin(4);
+
+  TF1* fitF = new TF1("fitF", "gaus", -6, 6);
+  h_X_L1->Fit("fitF");
+
+  TCanvas* cX = new TCanvas();
+  cX->cd();
+  h_X_L1->GetXaxis()->SetTitle("X");
+  h_X_L1->Draw();
+  fitF->Draw("same");
+  cX->Print(Form("position/h_X_L1_Ele%d_cfg%d.png", energyEle, config), "png");
+
+  h_Y_L1->Fit("fitF");
+  TCanvas* cY = new TCanvas();
+  cY->cd();
+  h_Y_L1->GetXaxis()->SetTitle("Y");
+  h_Y_L1->Draw();
+  fitF->Draw("same");
+  cY->Print(Form("position/h_Y_L1_Ele%d_cfg%d.png", energyEle, config), "png");
 
 
 
