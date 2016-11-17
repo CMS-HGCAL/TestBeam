@@ -14,7 +14,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
-
+#include "FWCore/Utilities/interface/Exception.h"
 
 
 //

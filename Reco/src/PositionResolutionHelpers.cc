@@ -149,14 +149,19 @@ void ParticleTrack::addFitPoint(SensorHitMap* sensor){
 
 
 void ParticleTrack::fitTrack(TrackFittingMethod method){
-  switch(method) {
-    case LINEFITTGRAPHERRORS:
-      lastAppliedMethod = LINEFITTGRAPHERRORS;
-      LineFitTGraphErrors();
-      break;
-    default:
-      lastAppliedMethod = DEFAULTFITTING;
-      break;
+  try {
+    switch(method) {
+      case LINEFITTGRAPHERRORS:
+        LineFitTGraphErrors();
+        break;
+      default:
+        lastAppliedMethod = DEFAULTFITTING;
+        break;
+    }
+    lastAppliedMethod = method;      
+  } catch(cms::Exception& iException) {
+    std::cout<<"Fitting method has failed with error code "<< iException <<". Attempting the default fitting."<<std::endl<<std::endl;
+    fitTrack(DEFAULTFITTING);
   }
 }
 
@@ -171,26 +176,21 @@ std::pair<double, double> ParticleTrack::CalculatePositionXY(double z) {
 
 //private functions
 void ParticleTrack::LineFitTGraphErrors(){  
-  
   if (ROOTpol_x == 0) {
     ROOTpol_x = new TF1("ROOTpol_x", "pol1", *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
   }
   if (ROOTpol_y == 0) {
     ROOTpol_y = new TF1("ROOTpol_y", "pol1", *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
   }
-
-  
   TGraph* tmp_graph_x = new TGraphErrors(z.size(), &(z[0]), &(x[0]), &(z_err[0]), &(x_err[0]));
   TGraph* tmp_graph_y = new TGraphErrors(z.size(), &(z[0]), &(y[0]), &(z_err[0]), &(y_err[0]));
   
-  //TODO: Catch exceptions where that does not work
   tmp_graph_x->Fit(ROOTpol_x, "Q");
   tmp_graph_y->Fit(ROOTpol_y, "Q");
-  
+
 }; 
 
 std::pair<double, double> ParticleTrack::PositionFromLineFitTGraphErrors(double z) {
-  //TODO
   return std::make_pair(1,2);
 }
 
