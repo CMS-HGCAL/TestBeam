@@ -76,7 +76,7 @@ class ParticleTrack{
     ~ParticleTrack();
     void addFitPoint(SensorHitMap* sensor);
     void fitTrack(TrackFittingMethod method);
-    std::pair<double, double> CalculatePositionXY(double z);
+    std::pair<double, double> calculatePositionXY(double z);
   private:
     //general information, the fit points
     std::vector<double> x;  
@@ -88,8 +88,8 @@ class ParticleTrack{
     TrackFittingMethod lastAppliedMethod;
 
     //different fit functions
-    void LineFitTGraphErrors();  
-    std::pair<double, double> PositionFromLineFitTGraphErrors(double z);
+    void lineFitTGraphErrors();  
+    std::pair<double, double> positionFromLineFitTGraphErrors(double z);
     TF1* ROOTpol_x;
     TF1* ROOTpol_y;
 };

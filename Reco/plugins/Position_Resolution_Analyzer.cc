@@ -54,7 +54,8 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		
 		WeightingMethod weightingMethod;
 		TrackFittingMethod fittingMethod;		
-		
+		int successfulFitCounter, failedFitCounter;
+
 };
 
 Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterSet& iConfig) {
@@ -78,6 +79,9 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 		fittingMethod = LINEFITTGRAPHERRORS;
 	else 
 		fittingMethod = DEFAULTFITTING;
+
+	//initiate some counters that are printed at the end
+	successfulFitCounter = failedFitCounter = 0;
 
 }//constructor ends here
 
@@ -124,13 +128,38 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		}
 		Tracks[i]->fitTrack(fittingMethod);
 	}
+	
+	//step 4: calculate the predicted impact point by the fit and compare with the true one
+	double x_predicted, y_predicted, layerZ, deviation;
+	for (int i=1; i<=nLayers; i++) {
+		layerZ = Sensors[i]->getZ();
+		x_predicted = Tracks[i]->calculatePositionXY(layerZ).first;
+		y_predicted = Tracks[i]->calculatePositionXY(layerZ).second;
+		if (x_predicted==0 && y_predicted==0)	{
+			//default fitting has been applied, i.e. the regular fit has failed or the selected method is not implemented
+			failedFitCounter++;
+			continue; 	//ignore those cases but count them
+		}
+		successfulFitCounter++; 
+		
+		deviation  = pow(x_predicted - Sensors[i]->getCenterPosition().first, 2); 
+		deviation += pow(y_predicted - Sensors[i]->getCenterPosition().second, 2);
+		deviation  = sqrt(deviation);
+		std::cout<<"Layer "<<i<<"   dev.="<<deviation<<std::endl;
+	}
+
 
 }// analyze ends here
 
-void Position_Resolution_Analyzer::beginJob() {
+void Position_Resolution_Analyzer::beginJob() {	
 }
 
 void Position_Resolution_Analyzer::endJob() {
+	std::cout<<"*************************************************"<<std::endl;
+	std::cout<<"END OF FITTING:"<<std::endl<<std::endl;
+	std::cout<<"Succesful fits: "<<successfulFitCounter<<std::endl;
+	std::cout<<"Failed fits: "<<failedFitCounter<<std::endl;
+	std::cout<<"*************************************************"<<std::endl;
 }
 
 void Position_Resolution_Analyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
