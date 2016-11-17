@@ -38,7 +38,10 @@
 
 /**********/
 //all of this should go into a config file
-double Layer_Z_Positions[16]  = {1.2, 2., 3.5, 4.3, 5.8, 6.3, 8.7, 9.5, 11.4, 12.2, 13.8, 14.6, 16.6, 17.4, 20., 20.8};
+
+double Layer_Z_Positions[17]  = {0.0, 1.2, 2., 3.5, 4.3, 5.8, 6.3, 8.7, 9.5, 11.4, 12.2, 13.8, 14.6, 16.6, 17.4, 20., 20.8};
+//by this convention the first entry is not considered as the layers numbering starts at 1
+
 int nLayers = 8;
 int SensorSize = 128;
 /**********/
