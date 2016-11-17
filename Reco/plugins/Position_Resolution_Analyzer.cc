@@ -16,12 +16,6 @@
 #include <string>
 #include <vector>
 #include <map>
-//#include "TH2Poly.h"
-//#include "TProfile.h"
-//#include "TH1F.h"
-//#include "TF1.h"
-//#include <sstream>
-//#include <fstream>
 #include <math.h>
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
@@ -32,23 +26,17 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "HGCal/Reco/interface/PositionResolutionHelpers.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
-#include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
-//#include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
-//#include "HGCal/Geometry/interface/HGCalTBTopology.h"
-//#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
-//#include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
-//#include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
-//#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
-//#include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
-#include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
-//#include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
-//#include "HGCal/Geometry/interface/HGCalTBSpillParameters.h"
 
-//this should go into a config file
+
+
+/**********/
+//all of this should go into a config file
 double Layer_Z_Positions[16]  = {1.2, 2., 3.5, 4.3, 5.8, 6.3, 8.7, 9.5, 11.4, 12.2, 13.8, 14.6, 16.6, 17.4, 20., 20.8};
+int nLayers = 8;
 int SensorSize = 128;
+/**********/
                     
 class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	public:
@@ -65,7 +53,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		edm::EDGetToken HGCalTBRecHitCollection_;
 		
 		WeightingMethod weightingMethod;
-		
+		TrackFittingMethod fittingMethod;		
 		
 };
 
@@ -77,13 +65,19 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 
 	//read the weighting method to obtain the central hit point
 	std::string methodString = iConfig.getParameter<std::string>("weightingMethod");
-  
 	if (methodString == "squaredWeighting")
 		weightingMethod = SQUAREDWEIGHTING;	
 	else if (methodString == "linearWeighting")
 		weightingMethod = LINEARWEIGHTING;
 	else 
-		weightingMethod = DEFAULT;
+		weightingMethod = DEFAULTWEIGHTING;
+
+	//read the track fitting method
+	methodString = iConfig.getParameter<std::string>("fittingMethod");
+	if (methodString == "lineTGraphErrors")
+		fittingMethod = LINEFITTGRAPHERRORS;
+	else 
+		fittingMethod = DEFAULTFITTING;
 
 }//constructor ends here
 
@@ -107,24 +101,29 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			newSensor->setSensorSize(SensorSize);
 			Sensors[layer] = newSensor;
 		}
-
-		//TODO: need to apply global correction to energies, like subtract pedestals?
 		Sensors[layer]->addHit(Rechit);
 	}
 
-
+	//step 2: calculate impact point with technique indicated as the argument
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
-		std::cout<<"Layer: "<<it->first<<std::endl;
-		//it->second->printHits();
+		//subtract pedestals first
 		it->second->subtractPedestals();
+
+		//now calculate the center positions for each layer
 		it->second->calculateCenterPosition(weightingMethod);
-		std::cout<<it->second->getCenterPosition().first<<"  "<<it->second->getCenterPosition().second<<std::endl;
+		
 	}
 	
-	//step 2: calculate impact point with technique indicated as the argument
-
-
 	//step 3: fill particle tracks
+	std::map<int, ParticleTrack*> Tracks; 	//the integer index indicates which layer is omitted in the track calculation
+	for (int i=1; i<=nLayers; i++) {
+		Tracks[i] = new ParticleTrack();
+		for (int j=1; j<=nLayers; j++) {
+			if (i==j) continue;
+			Tracks[i]->addFitPoint(Sensors[j]);
+		}
+		Tracks[i]->fitTrack(fittingMethod);
+	}
 
 }// analyze ends here
 

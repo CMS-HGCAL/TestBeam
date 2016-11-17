@@ -12,7 +12,7 @@ options.register('dataFolder',
                  'folder containing raw text input')
 
 options.register('outputFolder',
-                 '/tmp/',
+                 '~/outputs/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Result of processing')
@@ -68,7 +68,7 @@ options.register('configuration',
 
 
 options.output = "test_output.root"
-options.maxEvents = 1
+options.maxEvents = -1
 
 options.parseArguments()
 
@@ -121,6 +121,7 @@ process.hgcaltbrechits.gainLow = cms.string('')
 process.hgcaltbrechits.gainHigh = cms.string('')
 
 process.position_resolution_analyzer.weightingMethod = "squaredWeighting"
+process.position_resolution_analyzer.fittingMethod = "lineTGraphErrors"
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
                               dumpPayload=cms.untracked.bool(True))

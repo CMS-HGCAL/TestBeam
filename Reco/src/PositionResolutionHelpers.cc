@@ -1,17 +1,6 @@
 #include "HGCal/Reco/interface/PositionResolutionHelpers.h"
 
 
-
-//Particle_Track implementations
-Particle_Track::Particle_Track(edm::Handle<HGCalTBRecHitCollection> Rechits){;//, HGCalElectronicsMap& emap) {
-}
-
-Particle_Track::~Particle_Track() {
-}
-
-
-
-
 //****   Sensor Hit Maps    ****//
 
 //public functions
@@ -21,12 +10,16 @@ SensorHitMap::SensorHitMap(){
   sensorSize = 128;
 }
 
-void SensorHitMap::setSensorSize(int s){
+void SensorHitMap::setSensorSize(int s) {
   sensorSize = s;
 }
 
-void SensorHitMap::setZ(double z){
+void SensorHitMap::setZ(double z) {
   this->layerZ = z;
+}
+
+double SensorHitMap::getZ() {
+  return this->layerZ;
 }
 
 //reduces the information from the Rechit towards what is necessary for the impact point calculation
@@ -47,7 +40,8 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
   hit->I = energy;
   Hits.push_back(hit);
 
-  if (energyHigh <= 30.0) {
+  //analogous to RecHitPlotter_HighGain_New, only add to pedestals if energyHigh exceeds 30
+  if (energyHigh <= 30.0) { //TODO: make a threshold
     if (cellTypeCount.find(ID) == cellTypeCount.end()) {
       cellTypeCount[ID] = 0;
       pedestalCount[ID] = 0;
@@ -78,35 +72,128 @@ void SensorHitMap::subtractPedestals() {
 }
 
 
-std::pair<double, double> SensorHitMap::calculateCenterPosition(WeightingMethod method) {
+void SensorHitMap::calculateCenterPosition(WeightingMethod method) {
   switch(method){
     case SQUAREDWEIGHTING:
       SensorHitMap::poweredWeighting(2);
+      break;
     case LINEARWEIGHTING:
-    default:
       SensorHitMap::poweredWeighting(1);
+      break;
+    //case NEWMETHOD:
+      //SensorHitMap::newWeightingFunction()
+      //break;
+    default:
+      SensorHitMap::poweredWeighting(2);
   }
-  return centralHitPoint;
 }
 
 std::pair<double, double> SensorHitMap::getCenterPosition() {
   return centralHitPoint;
 }
+std::pair<double, double> SensorHitMap::getCenterPositionError() {
+  return centralHitPointError;
+}
+
 
 //private functions
 void SensorHitMap::poweredWeighting(int exponent) {
+  double threshold = 0.0;     //TODO: maybe as parameter
+
   double numerator_x, numerator_y, denominator;
   numerator_x = numerator_y = denominator = 0; 
   double w;
   for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
-    w = (*hit)->I >= 0. ? pow((*hit)->I, exponent) : 0.0;
+    w = (*hit)->I >= threshold ? pow((*hit)->I, exponent) : 0.0;    //0.0 --> not included in the sum
     denominator += w;
     numerator_x += w*(*hit)->x;
     numerator_y += w*(*hit)->y;
   }
   centralHitPoint.first = numerator_x/denominator;
   centralHitPoint.second = numerator_y/denominator;
+
+  //calculate the RMs
+  numerator_x = numerator_y = 0.0;
+  for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){ 
+    w = (*hit)->I >= threshold ? pow((*hit)->I, exponent) : 0.0; 
+    numerator_x += w*pow((*hit)->x - centralHitPoint.first, 2);
+    numerator_y += w*pow((*hit)->y - centralHitPoint.second, 2);
+  }
+  centralHitPointError.first = sqrt(numerator_x/denominator);
+  centralHitPointError.second = sqrt(numerator_y/denominator);
 }
+
+
+
+
+//****   Particle Tracks    ****//
+
+//public functions
+ParticleTrack::ParticleTrack(){
+  lastAppliedMethod = DEFAULTFITTING;
+  ROOTpol_x = ROOTpol_y = 0;
+
+};
+ParticleTrack::~ParticleTrack(){
+
+};
+
+void ParticleTrack::addFitPoint(SensorHitMap* sensor){
+  x.push_back(sensor->getCenterPosition().first);  
+  x_err.push_back(sensor->getCenterPositionError().first);  
+  y.push_back(sensor->getCenterPosition().second);  
+  y_err.push_back(sensor->getCenterPositionError().second);  
+  z.push_back(sensor->getZ());  
+  z_err.push_back(0.0);
+};
+
+
+void ParticleTrack::fitTrack(TrackFittingMethod method){
+  switch(method) {
+    case LINEFITTGRAPHERRORS:
+      lastAppliedMethod = LINEFITTGRAPHERRORS;
+      LineFitTGraphErrors();
+      break;
+    default:
+      lastAppliedMethod = DEFAULTFITTING;
+      break;
+  }
+}
+
+std::pair<double, double> ParticleTrack::CalculatePositionXY(double z) {
+  switch(lastAppliedMethod) {
+    case LINEFITTGRAPHERRORS:
+      return PositionFromLineFitTGraphErrors(z);
+    default:
+      return std::make_pair(0.,0.); 
+  }
+}
+
+//private functions
+void ParticleTrack::LineFitTGraphErrors(){  
+  
+  if (ROOTpol_x == 0) {
+    ROOTpol_x = new TF1("ROOTpol_x", "pol1", *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
+  }
+  if (ROOTpol_y == 0) {
+    ROOTpol_y = new TF1("ROOTpol_y", "pol1", *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
+  }
+
+  
+  TGraph* tmp_graph_x = new TGraphErrors(z.size(), &(z[0]), &(x[0]), &(z_err[0]), &(x_err[0]));
+  TGraph* tmp_graph_y = new TGraphErrors(z.size(), &(z[0]), &(y[0]), &(z_err[0]), &(y_err[0]));
+  
+  //TODO: Catch exceptions where that does not work
+  tmp_graph_x->Fit(ROOTpol_x, "Q");
+  tmp_graph_y->Fit(ROOTpol_y, "Q");
+  
+}; 
+
+std::pair<double, double> ParticleTrack::PositionFromLineFitTGraphErrors(double z) {
+  //TODO
+  return std::make_pair(1,2);
+}
+
 
 
 //debug function

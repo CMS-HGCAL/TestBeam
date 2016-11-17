@@ -3,18 +3,18 @@
 
 #include <iostream>
 #include <utility>
+#include <algorithm>
 #include <cmath>
-//#include "FWCore/Framework/interface/Frameworkfwd.h"
-//#include "FWCore/Framework/interface/Event.h"
-//#include "FWCore/ServiceRegistry/interface/Service.h"
+
+#include "TF1.h"
+#include "TGraphErrors.h"
+
+
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
-//#include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
-//#include "HGCal/Geometry/interface/HGCalTBTopology.h"
-//#include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
-//#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
-//#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
+
+
 
 
 //
@@ -22,19 +22,15 @@
 //
 
 enum WeightingMethod {
+  DEFAULTWEIGHTING,
   SQUAREDWEIGHTING,
-  LINEARWEIGHTING, 
-  DEFAULT
+  LINEARWEIGHTING 
 };
 
-class Particle_Track{
-  public:
-    Particle_Track(edm::Handle<HGCalTBRecHitCollection> Rechits);//, HGCalElectronicsMap& emap);
-    ~Particle_Track();
-  private:
-    edm::Handle<HGCalTBRecHitCollection> Rechits_;
+enum TrackFittingMethod {
+  DEFAULTFITTING,
+  LINEFITTGRAPHERRORS
 };
-
 
 struct HitTriple {
   double x; double y; 
@@ -45,6 +41,7 @@ struct HitTriple {
 class SensorHitMap {
   private:
     std::pair<double, double> centralHitPoint;
+    std::pair<double, double> centralHitPointError;
     double layerZ;
     int sensorSize;
     std::vector<HitTriple*> Hits;
@@ -63,13 +60,39 @@ class SensorHitMap {
     //reduces the information from the Rechit towards what is necessary for the impact point calculation
     void addHit(HGCalTBRecHit Rechit);
     void subtractPedestals();
-    std::pair<double, double> calculateCenterPosition(WeightingMethod method);
+    void calculateCenterPosition(WeightingMethod method);
+    double getZ();
     std::pair<double, double> getCenterPosition();
+    std::pair<double, double> getCenterPositionError(); //calculated via RMS
 
     //debug
     void printHits();
 };
 
+
+class ParticleTrack{
+  public:
+    ParticleTrack();
+    ~ParticleTrack();
+    void addFitPoint(SensorHitMap* sensor);
+    void fitTrack(TrackFittingMethod method);
+    std::pair<double, double> CalculatePositionXY(double z);
+  private:
+    //general information, the fit points
+    std::vector<double> x;  
+    std::vector<double> x_err;  
+    std::vector<double> y;  
+    std::vector<double> y_err;  
+    std::vector<double> z;  
+    std::vector<double> z_err;  
+    TrackFittingMethod lastAppliedMethod;
+
+    //different fit functions
+    void LineFitTGraphErrors();  
+    std::pair<double, double> PositionFromLineFitTGraphErrors(double z);
+    TF1* ROOTpol_x;
+    TF1* ROOTpol_y;
+};
 
 
 #endif
