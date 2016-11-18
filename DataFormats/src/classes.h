@@ -1,5 +1,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
+#include "HGCal/DataFormats/interface/HGCalTBCluster.h"
+#include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
 #include "HGCal/DataFormats/interface/HGCalTBTrackCollection.h"
 
@@ -16,7 +18,10 @@ struct dictionary {
 	std::vector<HGCalTBRecHit> _HGCTBRHitVect;
 //	edm::SortedCollection<HGCalTBRecHit> _theHGCTBRsc;
 //	edm::Wrapper< HGCalTBRecHitCollection > _HGCTBeeRHitProd;
-
+	
+	reco::HGCalTBCluster _aCluster;
+	std::vector<reco::HGCalTBCluster> _HGCTBClusterVect;
+	
 	SKIROC2DigiCollection _SR2DC;
 	edm::Wrapper<SKIROC2DigiCollection> _theSR2DC;
 

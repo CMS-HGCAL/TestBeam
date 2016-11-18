@@ -2,6 +2,7 @@
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
 #include "math.h"
 #include <stdlib.h>
+#include <iostream>
 #define PI 3.14159265
 
 bool HGCalTBTopology::iu_iv_valid(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorSize) const
@@ -45,3 +46,52 @@ double HGCalTBTopology::Cell_Area(int cell_type) const
 	else return -1.; //signifies an invalid cell type
 }
 
+int HGCalTBTopology::getCellType( int iu, int iv, int sensorSize, bool reversedLayer ) const
+{
+  int aiu=abs(iu);
+  int aiv=abs(iv);
+  int asum=abs(iu+iv);
+  if( sensorSize==128 ){
+    if( ((iu==2 && iv == -4) || (iu==-1 && iv == 2)) && reversedLayer==false )
+      return 4;//calib pad
+    else if( ((iu==-2 && iv == 4) || (iu==1 && iv == -2)) && reversedLayer==true)
+      return 4;//calib pad
+
+    else if( (aiu+aiv>=6) && (aiu==1||aiu>=5) && (aiv==1||aiv>=5) && (asum==1||asum>=5) )
+      return 2;//half hex
+    else if( (iu==-3&&iv==-4) || (iu==-7&&iv==4) || (iu==4&&iv==3) || (iu==7&&iv==-3) || 
+	     (iu==-4&&iv==-3) || (iu==-7&&iv==3) || (iu==3&&iv==4) || (iu==7&&iv==-4) ) //no hit should be found in these anyway
+      return 3;//mouse bite
+    else if( (iu==2&&iv==-6) || (iu==-4&&iv==7) || (iu==-3&&iv==7) || (iu==4&&iv==-6) ||
+	     (iu==3&&iv==-7) || (iu==-4&&iv==6) || (iu==-2&&iv==6) || (iu==4&&iv==-7) ) //no hit should be found in these anyway
+      return 5; //merged cell
+    else return 0;
+  }
+  else return -1;
+}
+
+std::set<HGCalTBDetId> HGCalTBTopology::getNeighboringCellsDetID(HGCalTBDetId detid, int sensorSize, int maxDistance, bool reversedLayer) const
+{
+	int layer=detid.layer();
+	std::set<HGCalTBDetId> detids;
+	for(int u=-maxDistance; u<=maxDistance; u++){
+		for(int v=-maxDistance; v<=maxDistance; v++){
+			if( (u==0 && v==0) || abs(u+v)>maxDistance ) continue;
+			int iU=detid.sensorIU();
+			int iV=detid.sensorIV();
+			int iu=detid.iu()+u;
+			int iv=detid.iv()+v;
+			bool validCoord = iu_iv_valid( layer, iU, iV, iu, iv, sensorSize);
+			if( !validCoord ) continue;
+			int cellType=getCellType( iu, iv, sensorSize, reversedLayer);
+			HGCalTBDetId did( layer, iU, iV, iu, iv, cellType);
+			detids.insert(did);
+			if( cellType==4 ){// 4 is outer calib pad; need also to include inner calib pad
+				cellType=1;
+				HGCalTBDetId didbis( layer, iU, iV, iu, iv, cellType);
+				detids.insert(didbis);
+			}
+		}
+	}
+	return detids;
+}
