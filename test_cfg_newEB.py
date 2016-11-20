@@ -6,7 +6,7 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 
 options.register('dataFolder',
-                 '~/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',
+                 '/afs/cern.ch/user/r/rchatter/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw text input')
@@ -181,7 +181,7 @@ elif(options.configuration == "2"):
 if (options.chainSequence == 1):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
 elif (options.chainSequence == 3):
-    process.p =cms.Path(process.hgcaltbdigis)
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter)
 elif (options.chainSequence == 4):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
 elif (options.chainSequence == 5):
