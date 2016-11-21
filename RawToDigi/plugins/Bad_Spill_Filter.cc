@@ -53,7 +53,8 @@ class Bad_Spill_Filter : public edm::stream::EDFilter<> {
       virtual void endStream() override;
       int layers_config_;
       char buffer[1024];
-      int m_run, tmp_run, m_spill;
+      int m_run, tmp_run, m_spill, tmp_spill;
+      int spill_counter = 0;	
       const static int Num_BAD_RUNS_CFG1 = 98;
       const static int Num_BAD_RUNS_CFG2 = 98;
 
@@ -153,12 +154,11 @@ Bad_Spill_Filter::filter(edm::Event& event, const edm::EventSetup& setup)
 		
         int runId = event.id().run();
         int spillId = event.luminosityBlock();
-
 	int BadRunFlag = 0;
 	int BadSpillFlag = 0;
 	int Bad_Run_Location = 0;
 
-	if((layers_config_ != 1) || (layers_config_ != 2) ) return true;
+	if((layers_config_ != 1) && (layers_config_ != 2) ) return true;
 
 	for(int iii = 0; iii < Num_BAD_RUNS_CFG2; iii++){
 		if((layers_config_ == 1) && (runId == BAD_Runs_CFG1[iii])){
@@ -177,12 +177,19 @@ Bad_Spill_Filter::filter(edm::Event& event, const edm::EventSetup& setup)
 		auto Bad_Run_Spill_List = Bad_Run_Spill_Array[Bad_Run_Location];
 		for(auto Bad_Spill_Iterator : Bad_Run_Spill_List){
 			if(spillId == Bad_Spill_Iterator){
+				if(tmp_spill != spillId) spill_counter = 0;
+				if(spill_counter == 0){
+					cout<<endl<<" Run, Spill Filtered out : "<<runId<<" , "<<spillId<<endl;
+					tmp_spill = spillId;
+				}
+				spill_counter++;
 				BadSpillFlag = 1;
 			}
 		}
 	}
 
         if(BadSpillFlag == 1) return false;
+
         return true;
 }
 
