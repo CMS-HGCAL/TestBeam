@@ -34,6 +34,7 @@
 #include "TFile.h"
 #include "TH2D.h"
 #include "TGraph2D.h"
+//#include "TFileDirectory.h"
 
 
 
@@ -69,8 +70,8 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		int successfulFitCounter, failedFitCounter;
 		double min_deviation, max_deviation; 	//minimum and maximum value of the deviations for the 2D histogram, those are defined globally
 
-		//stuff to be written to objects at the end, first is the energy, second the layer thickness and third the layer int
-		std::map<double, std::map<double, std::map<int, std::vector<double> > > >deviations;
+		//stuff to be written to objects at the end, first is the energy, second the layer thickness, third the run and last the layer int
+		std::map<double, std::map<double, std::map<int, std::map<int, std::vector<double> > > > >deviations;
 
 		//helper variables that are set within the event loop, i.e. are defined per event
 		int evId, run, layer;
@@ -191,7 +192,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		deviation  = pow(x_predicted - x_true, 2); 
 		deviation += pow(y_predicted - y_true, 2);
 		deviation  = sqrt(deviation);
-		//deviations[energy][layerThickness][i].push_back(deviation);
+		deviations[energy][layerThickness][run][i].push_back(deviation);
 
 		//update the deviations on the fly
 		min_deviation = min_deviation > deviation ? deviation: min_deviation;
@@ -243,16 +244,26 @@ void Position_Resolution_Analyzer::endJob() {
 	std::cout<<"Making deviation TH2D(s)... "<<std::endl;
 	
 	//std::map<double, std::map<double, std::map<int, std::vector<double> > > >deviations;
-	//loop over everything and make for each energy and absorber thickness one histogram:
-	/*
-	TH2D* deviationHistogram = this->fs->make<TH2D>("positionDeviations", "", nLayers, 0.5, nLayers+0.5, 1000, min_deviation, max_deviation);
-	deviationHistogram->GetXaxis()->SetTitle("n_{Layer}");
-	deviationHistogram->GetYaxis()->SetTitle("deviation_{x-y} [cm]");
-	for(int i=1; i<=nLayers; i++)
-		for(int j=0; j<(int)deviations[i].size(); j++)
-			deviationHistogram->Fill(i, deviations[i][j]);
-	std::cout<<"Done"<<std::endl;
-	*/
+	std::map<double, std::map<double, std::map<int, std::map<int, std::vector<double> > > > >::iterator it1;
+	TFileDirectory subDir1;
+	std::map<double, std::map<int, std::map<int, std::vector<double> > > >::iterator it2;
+	TFileDirectory subDir2;
+	std::map<int, std::map<int, std::vector<double> > >::iterator it3;
+
+	for (it1=deviations.begin(); it1!=deviations.end(); it1++) {
+		subDir1 = this->fs->mkdir(std::to_string((*it1).first).c_str());
+		for (it2=(*it1).second.begin(); it2!=(*it1).second.end(); it2++) {
+			subDir2 = subDir1.mkdir(std::to_string((*it2).first).c_str());
+			for (it3=(*it2).second.begin(); it3!=(*it2).second.end(); it3++) {
+				TH2D* deviationHistogram = subDir2.make<TH2D>(("run_"+std::to_string((*it3).first)).c_str(), "", nLayers, 0.5, nLayers+0.5, 1000, min_deviation, max_deviation);
+				deviationHistogram->GetXaxis()->SetTitle("n_{Layer}");
+				deviationHistogram->GetYaxis()->SetTitle("deviation_{x-y} [cm]");
+				for(int i=1; i<=nLayers; i++)
+					for(int j=0; j<(int)(*it3).second[i].size(); j++)
+						deviationHistogram->Fill(i, (*it3).second[i][j]);
+			}
+		}
+	}
 	std::cout<<"*************************************************"<<std::endl;
 }
 
