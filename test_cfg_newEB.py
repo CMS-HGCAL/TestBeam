@@ -4,15 +4,15 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 import os,sys
 
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
-
+#Change the data folder appropriately to where you wish to access the files from:
 options.register('dataFolder',
-                 '/afs/cern.ch/user/r/rchatter/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',
+                 '/afs/cern.ch/work/r/rchatter/public/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw text input')
 
 options.register('outputFolder',
-                 '/tmp/amartell/output/',
+                 '/tmp/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Result of processing')
@@ -178,19 +178,19 @@ elif(options.configuration == "2"):
 ################Miscellaneous##############################################################################
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.FourLayerRecHitPlotterMax)
 
+#Using chain sequence 3 only for testing purposes.
 if (options.chainSequence == 1):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
 elif (options.chainSequence == 3):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter)
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits)
 elif (options.chainSequence == 4):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
 elif (options.chainSequence == 5):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
 elif (options.chainSequence == 6):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.LayerSumAnalyzer)
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.LayerSumAnalyzer)
 elif (options.chainSequence == 7):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits)
-
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits)
 
 if (options.chainSequence == 7):
     process.end = cms.EndPath(process.output)
