@@ -4,7 +4,7 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 import os,sys
 
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
-#Change the data folder appropriately to where you wish to access the files from:
+
 options.register('dataFolder',
                  #'/afs/cern.ch/work/r/rchatter/Final_Event_Builder/CMSSW_8_0_1/src/HGCal/tmpOut/',
                  #'/afs/cern.ch/user/a/amartell/public/HGCal/TB_data/'
@@ -148,15 +148,19 @@ elif (options.chainSequence == 3 or options.chainSequence == 4 or options.chainS
 
 
 if(options.configuration == "-1"):
+    process.BadSpillFilter.layers_config = cms.int32(-1)
     process.LayerSumAnalyzer.layers_config = cms.int32(-1)
     process.hgcaltbrechits.layers_config = cms.int32(-1)
 elif(options.configuration == "0"):
+    process.BadSpillFilter.layers_config = cms.int32(0)
     process.LayerSumAnalyzer.layers_config = cms.int32(0)
     process.hgcaltbrechits.layers_config = cms.int32(0)
 elif(options.configuration == "1"):
+    process.BadSpillFilter.layers_config = cms.int32(1)
     process.LayerSumAnalyzer.layers_config = cms.int32(1)
     process.hgcaltbrechits.layers_config = cms.int32(1)
 elif(options.configuration == "2"):
+    process.BadSpillFilter.layers_config = cms.int32(2)
     process.LayerSumAnalyzer.layers_config = cms.int32(2)
     process.hgcaltbrechits.layers_config = cms.int32(2)
 
@@ -175,19 +179,19 @@ elif(options.configuration == "2"):
 ################Miscellaneous##############################################################################
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.FourLayerRecHitPlotterMax)
 
-#Using chain sequence 3 only for testing purposes.
 if (options.chainSequence == 1):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
 elif (options.chainSequence == 3):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits)
+    process.p =cms.Path(process.hgcaltbdigis)
 elif (options.chainSequence == 4):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
 elif (options.chainSequence == 5):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm*process.hgcaltbrechitsplotter_highgain_new)
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm*process.hgcaltbrechitsplotter_highgain_new)
 elif (options.chainSequence == 6):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.LayerSumAnalyzer)
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.LayerSumAnalyzer)
 elif (options.chainSequence == 7):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits)
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits)
+
 
 if (options.chainSequence == 7):
     process.end = cms.EndPath(process.output)
