@@ -10,6 +10,13 @@ SensorHitMap::SensorHitMap(){
   sensorSize = 128;
 }
 
+SensorHitMap::~SensorHitMap(){
+  for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
+    delete *hit;
+  }
+  Hits.clear();
+}
+
 void SensorHitMap::setSensorSize(int s) {
   sensorSize = s;
 }
@@ -33,12 +40,11 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
 
   //Rechit.setCartesianCoordinates(iux, ivy, Layer_Z_Positions[layer]);   //in cm,   is not really necessary
 
-  HitTriple* hit = new HitTriple;
-  hit->ID = ID;
-  hit->x = iux;
-  hit->y = ivy;
-  hit->I = energy;
-  Hits.push_back(hit);
+  Hits.push_back(new HitTriple);
+  Hits[Hits.size()-1]->ID = ID;
+  Hits[Hits.size()-1]->x = iux;
+  Hits[Hits.size()-1]->y = ivy;
+  Hits[Hits.size()-1]->I = energy;
 
   //analogous to RecHitPlotter_HighGain_New, only add to pedestals if energyHigh exceeds 30
   if (energyHigh <= 30.0) { //TODO: make a threshold
@@ -132,10 +138,14 @@ void SensorHitMap::poweredWeighting(int exponent) {
 ParticleTrack::ParticleTrack(){
   lastAppliedMethod = DEFAULTFITTING;
   ROOTpol_x = ROOTpol_y = 0;
+  tmp_graph_x = tmp_graph_y = 0;
 
 };
-ParticleTrack::~ParticleTrack(){
 
+ParticleTrack::~ParticleTrack(){
+  delete ROOTpol_x;
+  delete ROOTpol_y;
+  x.clear(); x_err.clear(); y.clear(); y_err.clear(); z.clear(); z_err.clear();
 };
 
 void ParticleTrack::addFitPoint(SensorHitMap* sensor){
@@ -176,18 +186,24 @@ std::pair<double, double> ParticleTrack::calculatePositionXY(double z) {
 
 //private functions
 void ParticleTrack::lineFitTGraphErrors(){  
+  
   if (ROOTpol_x == 0) {
+    delete ROOTpol_x;
     ROOTpol_x = new TF1("ROOTpol_x", "pol1", *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
   }
   if (ROOTpol_y == 0) {
+    delete ROOTpol_y;
     ROOTpol_y = new TF1("ROOTpol_y", "pol1", *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
   }
-  TGraph* tmp_graph_x = new TGraphErrors(z.size(), &(z[0]), &(x[0]), &(z_err[0]), &(x_err[0])); //z_err should be filled with zeros
-  TGraph* tmp_graph_y = new TGraphErrors(z.size(), &(z[0]), &(y[0]), &(z_err[0]), &(y_err[0]));
+  
+  tmp_graph_x = new TGraphErrors(z.size(), &(z[0]), &(x[0]), &(z_err[0]), &(x_err[0])); //z_err should be filled with zeros
+  tmp_graph_y = new TGraphErrors(z.size(), &(z[0]), &(y[0]), &(z_err[0]), &(y_err[0]));
   
   tmp_graph_x->Fit(ROOTpol_x, "Q");
   tmp_graph_y->Fit(ROOTpol_y, "Q");
 
+  delete tmp_graph_x;
+  delete tmp_graph_y;
 }; 
 
 std::pair<double, double> ParticleTrack::positionFromLineFitTGraphErrors(double z) {

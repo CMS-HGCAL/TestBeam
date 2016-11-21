@@ -1,10 +1,5 @@
-#include <iostream>
-#include <sstream>
-#include <string>
-#include "stdlib.h"
 #include "HGCal/RawToDigi/plugins/HGCalTBTextSource.h"
-#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
-#include "HGCal/Geometry/interface/HGCalTBSpillParameters.h"
+
 using namespace std;
 //#define DEBUG
 /**
@@ -12,6 +7,31 @@ RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=09	RUN=000880	SPILL
 T 0x0072D911 0xBEC20B15	T 0x0072D93F 0xBED19F54	T 0x0072D96E 0xBED19F56	T 0x0072D99D 0x3A11F91F	T 0x0072D9CC 0x40DACEB1	T 0x0072D9FA 0xC5EAE85C	T 0x00000000 0xBED19F52	T 0x00000000 0x57B86176
 0x118F11BD 0x1081108D	0x11A511B7 0x118A108C	0x119311F2 0x119F1195	0x109E109E 0x1083108D	0x118D11F2 0x11FD1198	0x11881195 0x118D1196	0x11911190 0x1193118A	0x1088109F 0x118C118A
 */
+
+void HGCalTBTextSource::fillConfiguredRuns(std::fstream& map_file) {
+	//perform the loop and fill configuredRuns
+
+	char fragment[100];
+	
+	int readCounter = 0;
+	int _run = 0; double _energy = 0, _layerThickness = 0; std::string _runType = ""; 
+
+	while (map_file.is_open() && !map_file.eof()) {
+		readCounter++;
+		map_file >> fragment;
+		if (readCounter <= 4) continue; 	//skip the header
+		else if (readCounter % 4 == 1) _run = atoi(fragment); 
+		else if (readCounter % 4 == 2) _energy = atof(fragment); 
+		else if (readCounter % 4 == 3) _runType = (std::string)fragment; 
+		else if (readCounter % 4 == 0) {
+			_layerThickness = atof(fragment); 
+			//store
+			configuredRuns[_run].energy = _energy;
+			configuredRuns[_run].runType = _runType;
+			configuredRuns[_run].layerThickness = _layerThickness;
+		}
+	}
+}
 
 bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType)
 {	
@@ -118,8 +138,24 @@ bool HGCalTBTextSource::readLines()
 	return !m_lines.empty();
 }
 
-void HGCalTBTextSource::produce(edm::Event & e)
+void HGCalTBTextSource::produce(edm::Event & event)
 {
+	//add energy and configuration here
+	std::auto_ptr<RunData> rd(new RunData);
+	if (configuredRuns.find(m_run) != configuredRuns.end()) {
+		rd->energy = configuredRuns[m_run].energy;
+		rd->layerThickness = configuredRuns[m_run].layerThickness;
+		rd->runType = configuredRuns[m_run].runType;
+		rd->run = m_run;
+	} else {
+		rd->energy = -1;
+		rd->layerThickness = -1;
+		rd->runType = "-1";
+		rd->run = -1;
+	}
+	event.put(std::move(rd), "RunData");	
+
+
 	std::auto_ptr<FEDRawDataCollection> bare_product(new  FEDRawDataCollection());
 	// here we parse the data
 	std::vector<uint16_t> skiwords;
@@ -137,7 +173,7 @@ void HGCalTBTextSource::produce(edm::Event & e)
 	size_t len = sizeof(uint16_t) * skiwords.size();
 	fed.resize(len);
 	memcpy(fed.data(), &(skiwords[0]), len);
-	e.put(bare_product);
+	event.put(bare_product);
 }
 
 
@@ -148,6 +184,7 @@ void HGCalTBTextSource::fillDescriptions(edm::ConfigurationDescriptions& descrip
 	desc.setComment("TEST");
 	desc.addUntracked<int>("run", 101);
 	desc.addUntracked<std::vector<std::string> >("fileNames");
+	desc.addUntracked<std::string>("runEnergyMapFile");
 	desc.addUntracked<unsigned int>("nSpills", 6);
 	descriptions.add("source", desc);
 }

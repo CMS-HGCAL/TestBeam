@@ -3,11 +3,15 @@
 #include "FWCore/Sources/interface/ProducerSourceFromFiles.h"
 #include "DataFormats/FEDRawData/interface/FEDRawDataCollection.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
+#include "HGCal/DataFormats/interface/HGCalTBRunData.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include <fstream>
 #include <iostream>
 #include <stdio.h>
-#include <fstream>
+#include <string>
+#include <sstream>
+#include "stdlib.h"
 /**
  * \class HGCalTBTextSource HGCal/RawToDigi/plugins/HGCalTBTextSource.h
  *
@@ -16,6 +20,11 @@
  * \todo replace c-like scanf with c++ versions
  * \todo change run and fed IDs (now are hardcoded)
  */
+
+
+//to the EDM::Event via auxiliary information
+
+
 class HGCalTBTextSource : public edm::ProducerSourceFromFiles
 {
 
@@ -29,6 +38,15 @@ public:
 
 		m_sourceId = pset.getUntrackedParameter<int>("fed", 1000); /// \todo check and read from file?
 		produces<FEDRawDataCollection>();
+		produces<RunData>("RunData");
+
+		//find and fill the configured runs
+		runEnergyMapFile = pset.getUntrackedParameter<std::string>("runEnergyMapFile"); 
+		std::fstream map_file;
+		map_file.open(runEnergyMapFile.c_str(), std::fstream::in);
+		fillConfiguredRuns(map_file);
+		map_file.close();
+
 	}
 
 	virtual ~HGCalTBTextSource()
@@ -42,10 +60,13 @@ public:
 private:
 	int currentFileIndex;	//index of the current file
 	int newFileIndex;
+	void fillConfiguredRuns(std::fstream& map_file);
 	bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&);
 	virtual void produce(edm::Event & e);
 	bool readHeader(void);
 	bool readLines(void);
+	runMap configuredRuns;
+	std::string runEnergyMapFile;
 
 	std::array< std::vector < unsigned int> , MAXLAYERS> m_lines;
 	FILE* m_file;

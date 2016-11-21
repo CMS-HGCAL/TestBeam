@@ -6,7 +6,9 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 
 options.register('dataFolder',
-                 '/afs/cern.ch/user/t/tquast/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',
+                 #'/afs/cern.ch/user/t/tquast/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',       #use this for eos
+                 '/user/data/Testbeam/September2016/',        #use this for running on pclcd
+                 #'/home/home1/institut_3a/quast/TestBeamSeptember2016/',        #use this for running on lx3a03
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw text input')
@@ -68,7 +70,7 @@ options.register('configuration',
 
 
 options.output = "test_output.root"
-options.maxEvents = 1
+options.maxEvents = -1
 
 options.parseArguments()
 
@@ -105,7 +107,9 @@ process.load('HGCal.StandardSequences.dqm_cff')
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(options.runNumber), ### maybe this should be read from the file
                             #fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
-                            fileNames=cms.untracked.vstring("file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber)), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+                            runEnergyMapFile = cms.untracked.string("CondObjects/data/runEnergies.txt"),
+                            fileNames=cms.untracked.vstring(
+                                ["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,run) for run in range(options.runNumber, options.runNumber+3)]), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
                             nSpills=cms.untracked.uint32(options.nSpills),
 )
 
@@ -123,6 +127,7 @@ process.hgcaltbrechits.gainHigh = cms.string('')
 process.position_resolution_analyzer.weightingMethod = cms.string("squaredWeighting")
 process.position_resolution_analyzer.fittingMethod = cms.string("lineTGraphErrors")
 process.position_resolution_analyzer.make2DGraphs = True    #only for debugging
+
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
                               dumpPayload=cms.untracked.bool(True))

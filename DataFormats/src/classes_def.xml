@@ -13,7 +13,9 @@
 
   <class name="SKIROC2DigiCollection"/>
   <class name="edm::Wrapper<SKIROC2DigiCollection>"/>  
-  
+
+  <class name="RunData"/>
+  <class name="edm::Wrapper<RunData>"/>
 
   <class name="edm::reftobase::Holder<CaloRecHit, edm::Ref<edm::SortedCollection<HGCalTBRecHit, edm::StrictWeakOrdering<HGCalTBRecHit> >, HGCalTBRecHit, edm::refhelper::FindUsingAdvance<edm::SortedCollection<HGCalTBRecHit, edm::StrictWeakOrdering<HGCalTBRecHit> >, HGCalTBRecHit> > >" />
 </lcgdict>

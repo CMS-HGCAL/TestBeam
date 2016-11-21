@@ -2,6 +2,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
 #include "HGCal/DataFormats/interface/HGCalTBTrackCollection.h"
+#include "HGCal/DataFormats/interface/HGCalTBRunData.h"
 
 #include "DataFormats/Common/interface/RefProd.h"
 #include "DataFormats/Common/interface/Wrapper.h"
@@ -19,6 +20,9 @@ struct dictionary {
 
 	SKIROC2DigiCollection _SR2DC;
 	edm::Wrapper<SKIROC2DigiCollection> _theSR2DC;
+
+  RunData _aRunData;
+  edm::Wrapper<RunData> _aRunDataWrapper;
 
 	HGCalTBTrack _aTrack;
 	std::vector<HGCalTBTrack> _HGCTBTRackVect;

@@ -55,6 +55,7 @@ class SensorHitMap {
 
   public:
     SensorHitMap();
+    ~SensorHitMap();
     void setZ(double z);
     void setSensorSize(int s);
     //reduces the information from the Rechit towards what is necessary for the impact point calculation
@@ -92,6 +93,8 @@ class ParticleTrack{
     std::pair<double, double> positionFromLineFitTGraphErrors(double z);
     TF1* ROOTpol_x;
     TF1* ROOTpol_y;
+    TGraph* tmp_graph_x;
+    TGraph* tmp_graph_y;
 };
 
 
