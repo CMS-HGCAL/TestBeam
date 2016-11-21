@@ -1,6 +1,8 @@
 #include "HGCal/Reco/plugins/HGCalTBRecHitProducer.h"
 #include <iostream>
 
+using namespace std;
+
 HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg)
 	: outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
 	  _digisToken(consumes<HGCalTBDigiCollection>(cfg.getParameter<edm::InputTag>("digiCollection"))),
@@ -40,6 +42,13 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
 	edm::Handle<HGCalTBDigiCollection> digisHandle;
 	event.getByToken(_digisToken, digisHandle);
+
+#ifdef DEBUG
+        int runId = event.id().run();
+        int spillId = event.luminosityBlock();
+	cout<<endl<<" Run= "<<runId<<" Spill= "<<spillId<<endl;
+#endif
+
 
 #ifdef ESPRODUCER
 // the conditions should be defined by ESProduers and available in the iSetup
