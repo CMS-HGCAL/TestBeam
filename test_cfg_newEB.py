@@ -70,7 +70,7 @@ options.register('configuration',
 
 
 options.output = "test_output.root"
-options.maxEvents = -1
+options.maxEvents = 29
 
 options.parseArguments()
 
@@ -109,7 +109,7 @@ process.source = cms.Source("HGCalTBTextSource",
                             runEnergyMapFile = cms.untracked.string("CondObjects/data/runEnergies.txt"), #the runs from the runEnergyMapFile are automatically added to the fileNames   
                             inputPathFormat=cms.untracked.string("file:%s/%s_Output_<RUN>.txt"%(options.dataFolder,options.runType)),  
                             fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are conidered
-                                #["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,run) for run in range(options.runNumber, options.runNumber+3)]), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+                                #["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber) ]), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
                             nSpills=cms.untracked.uint32(options.nSpills),
 )
 
@@ -126,7 +126,8 @@ process.hgcaltbrechits.gainHigh = cms.string('')
 
 process.position_resolution_analyzer.weightingMethod = cms.string("squaredWeighting")
 process.position_resolution_analyzer.fittingMethod = cms.string("lineTGraphErrors")
-process.position_resolution_analyzer.make2DGraphs = False    #only for debugging
+process.position_resolution_analyzer.make2DGraphs = True    #only for debugging
+process.position_resolution_analyzer.pedestalThreshold = 30#-99999
 
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",

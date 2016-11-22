@@ -3,18 +3,11 @@ import FWCore.ParameterSet.Config as cms
 position_resolution_analyzer = cms.EDAnalyzer("Position_Resolution_Analyzer",
                                 weightingMethod = cms.string('squaredWeighting'),
                                 fittingMethod = cms.string('lineTGraphErrors'),
+                                pedestalThreshold = cms.double(30.),   #-99999 for no threshold-->subtracts the average
+                                Layer_Z_Positions = cms.vdouble([1.2, 2., 3.5, 4.3, 5.8, 6.3, 8.7, 9.5, 11.4, 12.2, 13.8, 14.6, 16.6, 17.4, 20., 20.8]),
+                                nLayers = cms.int32(8),
+                                SensorSize = cms.int32(128),
                                 make2DGraphs = cms.bool(False),
-                                RUNDATA = cms.InputTag("source","RunData","unpack" ),
+                                RUNDATA = cms.InputTag("source","RunData","unpack" ), 
                                 HGCALTBRECHITS = cms.InputTag("hgcaltbrechits","","unpack" )#,
-                                #digiCollection = cms.InputTag('hgcaltbdigis'),
-                                #pedestalLow = cms.string('CondObjects/data/Ped_LowGain_L8.txt'),
-                                #pedestalHigh = cms.string('CondObjects/data/Ped_HighGain_L8.txt'),
-                                #gainLow = cms.string(''),
-                                #gainHigh = cms.string(''),
-                                #LG2HG_CERN = cms.vdouble(10.2, 10.2, 10., 10., 9.8, 8.8, 9.7, 9.7, 9.7, 9.7, 9.8, 9.8, 9.8, 9.8, 9.2, 9.2),
-                                #LG2HG_FNAL = cms.vdouble(1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.),
-                                #adcSaturation = cms.int32(1800),
-                                #mapFile_CERN = cms.string('HGCal/CondObjects/data/map_CERN_8Layers_Sept2016.txt'),
-                                #mapFile_FNAL = cms.string(''),
-                                #layers_config = cms.int32(-1)
                               )

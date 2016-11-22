@@ -9,9 +9,7 @@
 */
 
 
-
 // system include files
-//#include <memory>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -34,18 +32,8 @@
 #include "TFile.h"
 #include "TH2D.h"
 #include "TGraph2D.h"
-//#include "TFileDirectory.h"
 
 
-
-/**********/
-//all of this should go into a config file
-
-double Layer_Z_Positions[17]  = {0.0, 1.2, 2., 3.5, 4.3, 5.8, 6.3, 8.7, 9.5, 11.4, 12.2, 13.8, 14.6, 16.6, 17.4, 20., 20.8};
-//by this convention the first entry is not considered as the layers numbering starts at 1
-int nLayers = 8;
-int SensorSize = 128;
-/**********/
                     
 class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	public:
@@ -66,6 +54,10 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		WeightingMethod weightingMethod;
 		TrackFittingMethod fittingMethod;		
 		bool make2DGraphs;
+		double pedestalThreshold;
+		std::vector<double> Layer_Z_Positions;
+		int nLayers;
+		int SensorSize;
 
 		int successfulFitCounter, failedFitCounter;
 		double min_deviation, max_deviation; 	//minimum and maximum value of the deviations for the 2D histogram, those are defined globally
@@ -104,6 +96,11 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 		fittingMethod = LINEFITTGRAPHERRORS;
 	else 
 		fittingMethod = DEFAULTFITTING;
+
+	pedestalThreshold = iConfig.getParameter<double>("pedestalThreshold");
+	nLayers = iConfig.getParameter<int>("nLayers");
+	SensorSize = iConfig.getParameter<int>("SensorSize");
+	Layer_Z_Positions = iConfig.getParameter<std::vector<double> >("Layer_Z_Positions");
 
 	//making 2DGraphs per event?
 	make2DGraphs = iConfig.getParameter<bool>("make2DGraphs");
@@ -146,6 +143,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		layer = (Rechit.id()).layer();
 		if ( Sensors.find(layer) == Sensors.end() ) {
 			Sensors[layer] = new SensorHitMap();
+			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
 			Sensors[layer]->setZ(Layer_Z_Positions[layer]);
 			Sensors[layer]->setSensorSize(SensorSize);
 		}

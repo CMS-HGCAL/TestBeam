@@ -6,6 +6,7 @@
 //public functions
 SensorHitMap::SensorHitMap(){
   centralHitPoint = std::make_pair(0., 0.);
+  threshold = 30.;
   layerZ = 0;
   sensorSize = 128;
 }
@@ -23,6 +24,10 @@ void SensorHitMap::setSensorSize(int s) {
 
 void SensorHitMap::setZ(double z) {
   this->layerZ = z;
+}
+
+void SensorHitMap::setPedestalThreshold(double t) {
+  this->threshold = t; 
 }
 
 double SensorHitMap::getZ() {
@@ -46,8 +51,8 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
   Hits[Hits.size()-1]->y = ivy;
   Hits[Hits.size()-1]->I = energy;
 
-  //analogous to RecHitPlotter_HighGain_New, only add to pedestals if energyHigh exceeds 30
-  if (energyHigh <= 30.0) { //TODO: make a threshold
+  //analogous to RecHitPlotter_HighGain_New, only add to pedestals if energyHigh exceeds a threshold (default is 30. if not set in the setPedestalThreshold)
+  if (energyHigh <= threshold || threshold == -99999) { 
     if (cellTypeCount.find(ID) == cellTypeCount.end()) {
       cellTypeCount[ID] = 0;
       pedestalCount[ID] = 0;
@@ -105,10 +110,19 @@ std::pair<double, double> SensorHitMap::getCenterPositionError() {
 //private functions
 void SensorHitMap::poweredWeighting(int exponent) {
   double threshold = 0.0;     //TODO: maybe as parameter
-
   double numerator_x, numerator_y, denominator;
-  numerator_x = numerator_y = denominator = 0; 
   double w;
+  
+  bool _debug = (layerZ==2. || layerZ==8.7);
+  if (_debug) {
+    std::cout<<std::endl<<std::endl<<layerZ<<std::endl;
+    for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
+      w = (*hit)->I >= threshold ? pow((*hit)->I, exponent) : 0.0;    //0.0 --> not included in the sum
+      std::cout<<"Weight: "<<w<<"  x: "<<(*hit)->x<<"  y: "<<(*hit)->y<<std::endl;
+    }
+  }
+
+  numerator_x = numerator_y = denominator = 0; 
   for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
     w = (*hit)->I >= threshold ? pow((*hit)->I, exponent) : 0.0;    //0.0 --> not included in the sum
     denominator += w;
@@ -127,7 +141,7 @@ void SensorHitMap::poweredWeighting(int exponent) {
   }
   centralHitPointError.first = sqrt(numerator_x/denominator);
   centralHitPointError.second = sqrt(numerator_y/denominator);
-}
+};
 
 
 
@@ -149,6 +163,9 @@ ParticleTrack::~ParticleTrack(){
 };
 
 void ParticleTrack::addFitPoint(SensorHitMap* sensor){
+  if (sensor->getZ()==2. || sensor->getZ()==8.7)
+    std::cout<<"z =  "<<sensor->getZ()<<"   x = "<<sensor->getCenterPosition().first<<"+/-"<<sensor->getCenterPositionError().first<<"   y = "<<sensor->getCenterPosition().second<<"+/-"<<sensor->getCenterPositionError().second<<std::endl;
+
   x.push_back(sensor->getCenterPosition().first);  
   x_err.push_back(sensor->getCenterPositionError().first);  
   y.push_back(sensor->getCenterPosition().second);  
