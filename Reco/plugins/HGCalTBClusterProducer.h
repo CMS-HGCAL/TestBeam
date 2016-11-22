@@ -16,6 +16,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
+#include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 
 #include <iostream>
 
@@ -26,10 +27,12 @@ public:
 	HGCalTBClusterProducer(const edm::ParameterSet&);
 	virtual void produce(edm::Event&, const edm::EventSetup&);
 private:
+	std::string _elecMapFile;
 	std::string _outputCollectionName;
 	std::string _outputCollectionName7;
 	std::string _outputCollectionName19;
 	edm::EDGetTokenT<HGCalTBRecHitCollection> _rechitToken;
+	HGCalElectronicsMap _elecMap;
 	
 	bool _runDynamicCluster;
 	bool _runCluster7;
@@ -39,7 +42,6 @@ private:
 	double _minEnergy;
 
 	std::vector<double> _layerZPositions;
-	std::vector<int> _reversedLayers;
 
 	void buildCluster(HGCalTBRecHitCollection rechits, std::vector<HGCalTBDetId> &temp, std::vector<HGCalTBDetId> &clusterDetIDs);
 	void createDynamicClusters(HGCalTBRecHitCollection rechits, std::vector<reco::HGCalTBCluster> &clusterCol);
