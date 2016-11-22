@@ -154,7 +154,6 @@ Bad_Spill_Filter::filter(edm::Event& event, const edm::EventSetup& setup)
 		
         int runId = event.id().run();
         int spillId = event.luminosityBlock();
-
 	int BadRunFlag = 0;
 	int BadSpillFlag = 0;
 	int Bad_Run_Location = 0;

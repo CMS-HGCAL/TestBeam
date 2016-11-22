@@ -135,6 +135,7 @@ private:
         double ADCtoMIPdw[MAXLAYERS];
 
 
+<<<<<<< HEAD
         TH1F *h_CM_layer[MAXLAYERS];
 	TH1F *h_eAll_L[MAXLAYERS], *h_e7_L[MAXLAYERS], *h_e19_L[MAXLAYERS], *h_eMax_L[MAXLAYERS];
         //systematic => MIP +/- 5%
@@ -475,7 +476,6 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
       commonmode_dw[n_layer] += Rechit.energy();
       cm_num_dw[n_layer]++;
     }
-
   }//Rechit loop ends here
   //	std::cout << " >>> found commonmode = " << commonmode << std::endl;
 
