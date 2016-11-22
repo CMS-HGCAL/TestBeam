@@ -51,29 +51,29 @@ const bool PIONS(0);// uses > PION_*CELLS_THRESHOLD and < *CELLS_THRESHOLD
 
 //double Layer_Z[16]  = {1.2, 2., 3.5, 4.3, 5.8, 6.3, 8.7, 9.5, 11.4, 12.2, 13.8, 14.6, 16.6, 17.4, 20., 20.8};
 
-//double ADCtoMIP_CERN[16] =  {17.32, 17.16, 16.45, 17.39, 17.75, 17.27, 16.55, 16.25, 17.52, 17.18, 17.10, 17.88, 15.87, 16.71, 16.92, 15.72};
-//double ADCtoMIP_CERN[16] =  {17.287,16.9493,17.9461,16.5649,17.4171,17.5042,16.1005,16.4102, 1., 1., 1., 1., 1., 1., 1., 1.};
+//TO BE FIXED for FNAL
+double ADCtoMIP_FNAL[16] = {16.02,16.85,15.36,14.73,10.66,15.64,16.52,14.24,10.07,14.42,16.14,17.33,16.61,16.84,15.79,16.43};
 double ADCtoMIP_CERN[16] =  {17.24, 16.92, 17.51, 16.4, 17.35, 17.49, 16.29, 16.32, 1., 1., 1., 1., 1., 1., 1., 1.};
-double ADCtoMIP_FNAL[16] =  {1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
 
 
-
+//// for EMM physics list 28 configuration get the calibration factors (1.e-06 GeV)
 // pion MPV = 55.16;
 // muon MPV = 51.91;
 // muon Mean = 63.28;
 
+//using  MPV muon
+double MIP2ParticleCalib = 0.94;  // CERN mpv muon to pion 125GeV EMM physics list
+double MIP2GeV_sim = 51.91e-06; //mpv muon EMM pysics list
 
-//500MeV muon/125GeV pion
-double MIP2ParticleCalib = 1.147;  // CERN mean muon to pion 125GeV EMM physics list
-//double MIP2ParticleCalib = 0.94;  // CERN mpv muon to pion 125GeV EMM physics list
+//using  Mean muon
+//double MIP2GeV_sim = 63.28e-06; //mean muon   EMM physics list
+//double MIP2ParticleCalib = 1.147;  // CERN mean muon to pion 125GeV EMM physics list
 
+//useless set to 1
+double weights2MIP = 1.;   // rescale weights from mean to MPV
 
-//double ADCtoMIP[16] = {16.02,16.85,15.36,14.73,10.66,15.64,16.52,14.24,10.07,14.42,16.14,17.33,16.61,16.84,15.79,16.43};// one MIP is equal to _ADCtoMIP_ ADC Counts
-//double LayerWeight[16] = {0.6374029601923652, 0.7392021202456731, 0.6374273268336504, 0.7392021202456731, 0.6374273268336504, 0.8861075434658853, 0.8487578715427883, 1.0330129666860974, 0.8487578715427883, 1.0330129666860974, 0.8487578715427883, 1.5226977107534714, 1.2714189609610644, 1.5226977107534714, 1.2714189609610644, 1.5226977107534714};// X0 weights
-
-//double LayerWeight[16] = {1.4091566745180932, 0.7020676448403224, 0.6054055986179145, 0.7020676448403224, 0.6054055986179145, 0.8415931435769973, 0.8061197656138868, 0.9811186423136724, 0.8061197656138868, 0.9811186423136724, 0.8061197656138868, 1.4462036381025891, 1.2075480996058319, 1.4462036381025891, 1.2075480996058319, 1.4462036381025891};
-
-double LayerWeight_16L_FNAL[16] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.}; 
+//TO BE FIXED for FNAL
+double LayerWeight_16L_FNAL[16] = {7.313, 7.313, 7.313, 7.313, 7.905, 8.678, 9.27, 9.27, 9.27, 9.27, 11.242, 12.789, 12.789, 12.789, 12.789, 8.148};
 double X0depth_16L_FNAL[16] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.}; 
 
 double LayerWeight_8L_conf1[16] = {33.074, 13.184, 14.17, 9.788, 9.766, 9.766, 16.339, 14.129, 0., 0., 0., 0., 0., 0., 0., 0.};
@@ -82,17 +82,8 @@ double LayerWeight_8L_conf2[16] = {35.866, 30.864, 28.803, 23.095, 20.657, 19.80
 double X0depth_8L_conf2[16] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021, 0., 0., 0., 0., 0., 0., 0., 0.};
 double weights2GeV = 1.e-03;
 
-double MIP2GeV_sim = 63.28e-06; //mean muon   EMM physics list
-//double MIP2GeV_sim = 51.91e-06; //mpv muon EMM pysics list
 
-double weights2MIP = 1.;   // rescale weights from mean to MPV
-
-//double LayerWeight[16] = {0.4847555727337982, 1.0214605968539232, 0.4847555727337982, 1.0214605968539232, 0.4847555727337982, 1.1420105918768606, 0.6423912113800805, 1.2625605868997982, 0.6423912113800805, 1.2625605868997982, 0.6423912113800805, 1.6643939036429232, 0.9576624886726451, 1.6643939036429232, 0.9576624886726451, 1.6643939036429232};// dE/dx weights
-
-//double LayerSumWeight = 1.;
-
-//const int CMTHRESHOLD = 30;// anything less than this value is added to the commonmode sum
-const int CMTHRESHOLD = 2;// anything less than this value is added to the commonmode sum
+const int CMTHRESHOLD = 2;      // anything less than this value is added to the commonmode sum
 
 // applied to all layers sum after commonmode subtraction and the ADC to MIP conversion
 const double ALLCELLS_THRESHOLD = 50.;
@@ -159,6 +150,9 @@ private:
 
       	TH1F *h_x_L[MAXLAYERS], *h_y_L[MAXLAYERS];
 	TH2F *h_x_y_L[MAXLAYERS];
+
+      	TH1F *h_logWx_L[MAXLAYERS], *h_logWy_L[MAXLAYERS];
+	TH2F *h_logWx_y_L[MAXLAYERS];
 
         TH1F* h_Radius[MAXLAYERS];      
         TH1F *h_E1oE7_L[MAXLAYERS], *h_E1oE19_L[MAXLAYERS], *h_E7oE19_L[MAXLAYERS];
@@ -253,6 +247,10 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
     h_x_L[layer] = fs->make<TH1F>(Form("X_L%d", layer+1), "", 2000, -10., 10. );
     h_y_L[layer] = fs->make<TH1F>(Form("Y_L%d", layer+1), "", 2000, -10., 10. );
     h_x_y_L[layer] = fs->make<TH2F>(Form("YvsX_L%d", layer+1), "", 2000, -10., 10., 2000, -10., 10. );
+
+    h_logWx_L[layer] = fs->make<TH1F>(Form("logWX_L%d", layer+1), "", 2000, -10., 10. );
+    h_logWy_L[layer] = fs->make<TH1F>(Form("logWY_L%d", layer+1), "", 2000, -10., 10. );
+    h_logWx_y_L[layer] = fs->make<TH2F>(Form("logWYvsX_L%d", layer+1), "", 2000, -10., 10., 2000, -10., 10. );
 
     h_E1oE7_L[layer] = fs->make<TH1F>(Form("h_E1oE7_L%d",layer+1), "", 5000, -5, 5);
     h_E1oE19_L[layer] = fs->make<TH1F>(Form("h_E1oE19_L%d",layer+1), "", 5000, -5, 5);
@@ -381,10 +379,7 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 	X0_L[iL] = 0.;
       }
     }
-  }
-  
-  
-  
+  } 
   
 }//constructor ends here
 
@@ -665,6 +660,11 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     h_x_L[iL]->Fill(xTmp / e19);
     h_y_L[iL]->Fill(yTmp / e19);
     h_x_y_L[iL]->Fill(xTmp / e19,  yTmp / e19);
+
+    shosha.logWeightedPosition19(iL, xTmp, yTmp);
+    h_logWx_L[iL]->Fill(xTmp);
+    h_logWy_L[iL]->Fill(yTmp);
+    h_logWx_y_L[iL]->Fill(xTmp,  yTmp);
 
     E1SumL_R += e1;
     E7SumL_R += e7;
