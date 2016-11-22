@@ -9,10 +9,11 @@ T 0x0072D911 0xBEC20B15	T 0x0072D93F 0xBED19F54	T 0x0072D96E 0xBED19F56	T 0x0072
 */
 
 void HGCalTBTextSource::fillConfiguredRuns(std::fstream& map_file) {
-	//perform the loop and fill configuredRuns
+	std::string run_prefix;
+	std::string filePath;
 
+	//perform the loop and fill configuredRuns
 	char fragment[100];
-	
 	int readCounter = 0;
 	int _run = 0; double _energy = 0, _layerThickness = 0; std::string _runType = ""; 
 
@@ -29,19 +30,35 @@ void HGCalTBTextSource::fillConfiguredRuns(std::fstream& map_file) {
 			configuredRuns[_run].energy = _energy;
 			configuredRuns[_run].runType = _runType;
 			configuredRuns[_run].layerThickness = _layerThickness;
+
+			//add the zeros
+			if (_run < 10) run_prefix= "00000";			
+			else if (_run < 100) run_prefix= "0000";			
+			else if (_run < 1000) run_prefix= "000";			
+			else if (_run < 10000) run_prefix= "00";			
+			else if (_run < 100000) run_prefix= "0";			
+			else run_prefix = "0";
+			
+			
+			filePath = inputPathFormat;		
+			
+			filePath.replace(filePath.find("<RUN>"), 5, run_prefix+std::to_string(_run));
+			std::cout<<"Adding "<<filePath<<std::endl;
+			_fileNames.push_back(filePath);
+			
 		}
 	}
 }
 
 bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType)
 {	
-	if (!(fileNames().size())) return false; // need a file...
-	if (newFileIndex==(int)fileNames().size()) return false;	//do not overshoot in the file name array
+	if (!(_fileNames.size())) return false; // need a file...
+	if (newFileIndex==(int)_fileNames.size()) return false;	//do not overshoot in the file name array
 
 	//magic must come here!
 	if (currentFileIndex != newFileIndex) {
 		currentFileIndex = newFileIndex;
-		std::string name = fileNames()[currentFileIndex].c_str(); /// \todo FIX in order to take several files
+		std::string name = _fileNames[currentFileIndex].c_str(); /// \todo FIX in order to take several files
 		if (name.find("file:") == 0) name = name.substr(5);
 		m_file = fopen(name.c_str(), "r");
 		if (m_file == 0) {
@@ -140,6 +157,7 @@ bool HGCalTBTextSource::readLines()
 
 void HGCalTBTextSource::produce(edm::Event & event)
 {
+
 	//add energy and configuration here
 	std::auto_ptr<RunData> rd(new RunData);
 	if (configuredRuns.find(m_run) != configuredRuns.end()) {
@@ -184,6 +202,7 @@ void HGCalTBTextSource::fillDescriptions(edm::ConfigurationDescriptions& descrip
 	desc.setComment("TEST");
 	desc.addUntracked<int>("run", 101);
 	desc.addUntracked<std::vector<std::string> >("fileNames");
+	desc.addUntracked<std::string>("inputPathFormat");
 	desc.addUntracked<std::string>("runEnergyMapFile");
 	desc.addUntracked<unsigned int>("nSpills", 6);
 	descriptions.add("source", desc);

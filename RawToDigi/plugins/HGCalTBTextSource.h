@@ -32,6 +32,7 @@ public:
 	explicit HGCalTBTextSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :  edm::ProducerSourceFromFiles(pset, desc, true),
 		currentFileIndex(-1),
 		newFileIndex(0),
+		inputPathFormat(""),
 		m_file(0),
 		NSpills(pset.getUntrackedParameter<unsigned int>("nSpills", 6))
 	{
@@ -40,8 +41,13 @@ public:
 		produces<FEDRawDataCollection>();
 		produces<RunData>("RunData");
 
+		if (fileNames()[0] != "file:DUMMY") {
+			_fileNames = fileNames();
+		}
 		//find and fill the configured runs
 		runEnergyMapFile = pset.getUntrackedParameter<std::string>("runEnergyMapFile"); 
+		inputPathFormat = pset.getUntrackedParameter<std::string>("inputPathFormat");
+		
 		std::fstream map_file;
 		map_file.open(runEnergyMapFile.c_str(), std::fstream::in);
 		fillConfiguredRuns(map_file);
@@ -67,6 +73,8 @@ private:
 	bool readLines(void);
 	runMap configuredRuns;
 	std::string runEnergyMapFile;
+	std::string inputPathFormat;
+	std::vector<std::string> _fileNames;
 
 	std::array< std::vector < unsigned int> , MAXLAYERS> m_lines;
 	FILE* m_file;
