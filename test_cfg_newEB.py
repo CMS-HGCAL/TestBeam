@@ -137,7 +137,7 @@ process.hgcaltbrechits.gainHigh = cms.string('')
 
 process.position_resolution_analyzer.weightingMethod = cms.string("logWeighting_4.5_1.0")
 process.position_resolution_analyzer.fittingMethod = cms.string("lineTGraphErrors")
-process.position_resolution_analyzer.make2DGraphs = False    #only for debugging
+process.position_resolution_analyzer.EventsFor2DGraphs = [1, 29]    #first occuring events with that id are being documented with 2DGraphs 
 process.position_resolution_analyzer.pedestalThreshold = 30#-99999
 
 

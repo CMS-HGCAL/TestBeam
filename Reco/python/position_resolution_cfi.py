@@ -7,7 +7,7 @@ position_resolution_analyzer = cms.EDAnalyzer("Position_Resolution_Analyzer",
                                 Layer_Z_Positions = cms.vdouble([1.2, 2., 3.5, 4.3, 5.8, 6.3, 8.7, 9.5, 11.4, 12.2, 13.8, 14.6, 16.6, 17.4, 20., 20.8]),
                                 nLayers = cms.int32(8),
                                 SensorSize = cms.int32(128),
-                                make2DGraphs = cms.bool(False),
+                                EventsFor2DGraphs = cms.vint32([1]),
                                 RUNDATA = cms.InputTag("source","RunData","unpack" ), 
                                 HGCALTBRECHITS = cms.InputTag("hgcaltbrechits","","unpack" )#,
                               )

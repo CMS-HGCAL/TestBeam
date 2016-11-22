@@ -13,6 +13,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 #include <map>
 #include <math.h>
 // user include files
@@ -53,7 +54,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		
 		WeightingMethod weightingMethod;
 		TrackFittingMethod fittingMethod;		
-		bool make2DGraphs;
+		std::vector<int> EventsFor2DGraphs;
 		double pedestalThreshold;
 		std::vector<double> Layer_Z_Positions;
 		int nLayers;
@@ -109,9 +110,8 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	Layer_Z_Positions = iConfig.getParameter<std::vector<double> >("Layer_Z_Positions");
 
 	//making 2DGraphs per event?
-	make2DGraphs = iConfig.getParameter<bool>("make2DGraphs");
+	EventsFor2DGraphs = iConfig.getParameter<std::vector<int> >("EventsFor2DGraphs");
 
-	
 	//initiate the minimum and maximum values for the deviation
 	min_deviation = pow(10., 12);
 	max_deviation = -1.;
@@ -137,6 +137,15 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		std::cout<<"Run is not in configuration file - is ignored."<<std::endl;
 		return;
 	}
+
+	//check if 2DGraphs are to be made
+	bool make2DGraphs = false;
+	std::vector<int>::iterator findPosition = std::find(EventsFor2DGraphs.begin(), EventsFor2DGraphs.end(), evId);
+	if (findPosition != EventsFor2DGraphs.end()) {
+		make2DGraphs = true;
+		EventsFor2DGraphs.erase(findPosition);
+	}
+
 	//initialize new fit counters in case this is a new run:
 	if (successfulFitCounter.find(run) == successfulFitCounter.end()) 
 		successfulFitCounter[run] = failedFitCounter[run] = 0;
@@ -200,12 +209,14 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		min_deviation = min_deviation > deviation ? deviation: min_deviation;
 		max_deviation = max_deviation < deviation ? deviation: max_deviation;
 	
-		//store for the two 2D graphs that are written per event
-		x_predicted_v.push_back(x_predicted);
-		y_predicted_v.push_back(y_predicted);
-		x_true_v.push_back(x_true);
-		y_true_v.push_back(y_true);
-		layerZ_v.push_back(layerZ);
+		if (make2DGraphs) {
+			//store for the two 2D graphs that are written per event
+			x_predicted_v.push_back(x_predicted);
+			y_predicted_v.push_back(y_predicted);
+			x_true_v.push_back(x_true);
+			y_true_v.push_back(y_true);
+			layerZ_v.push_back(layerZ);
+		}
 	}
 
 	if (make2DGraphs) {
@@ -253,7 +264,7 @@ void Position_Resolution_Analyzer::endJob() {
 	//create subdirectory system
 	for (it1=deviations.begin(); it1!=deviations.end(); it1++) {
 		subDir1 = this->fs->mkdir(std::to_string((*it1).first).c_str());
-		std::cout<<"E: "<(*it1).first<<"..."<<std::endl;
+		std::cout<<"E: "<<(*it1).first<<"..."<<std::endl;
 		for (it2=(*it1).second.begin(); it2!=(*it1).second.end(); it2++) {
 			std::cout<<"   T: "<<(*it2).first<<"..."<<std::endl;
 			subDir2 = subDir1.mkdir(std::to_string((*it2).first).c_str());
