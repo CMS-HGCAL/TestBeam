@@ -91,6 +91,15 @@ void SensorHitMap::calculateCenterPosition(WeightingMethod method) {
     case LINEARWEIGHTING:
       SensorHitMap::poweredWeighting(1);
       break;
+    case LOGWEIGHTING_45_10:
+      SensorHitMap::logWeighting(4.5, 1.0);
+      break;
+    case LOGWEIGHTING_45_20:
+      SensorHitMap::logWeighting(4.5, 2.0);
+      break;
+    case LOGWEIGHTING_35_10:
+      SensorHitMap::logWeighting(3.5, 1.0);
+      break;
     //case NEWMETHOD:
       //SensorHitMap::newWeightingFunction()
       //break;
@@ -109,22 +118,12 @@ std::pair<double, double> SensorHitMap::getCenterPositionError() {
 
 //private functions
 void SensorHitMap::poweredWeighting(int exponent) {
-  double threshold = 0.0;     //TODO: maybe as parameter
   double numerator_x, numerator_y, denominator;
   double w;
   
-  bool _debug = (layerZ==2. || layerZ==8.7);
-  if (_debug) {
-    std::cout<<std::endl<<std::endl<<layerZ<<std::endl;
-    for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
-      w = (*hit)->I >= threshold ? pow((*hit)->I, exponent) : 0.0;    //0.0 --> not included in the sum
-      std::cout<<"Weight: "<<w<<"  x: "<<(*hit)->x<<"  y: "<<(*hit)->y<<std::endl;
-    }
-  }
-
   numerator_x = numerator_y = denominator = 0; 
   for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
-    w = (*hit)->I >= threshold ? pow((*hit)->I, exponent) : 0.0;    //0.0 --> not included in the sum
+    w = (*hit)->I >= 0.0 ? pow((*hit)->I, exponent) : 0.0;    //0.0 --> not included in the sum
     denominator += w;
     numerator_x += w*(*hit)->x;
     numerator_y += w*(*hit)->y;
@@ -135,7 +134,44 @@ void SensorHitMap::poweredWeighting(int exponent) {
   //calculate the RMs
   numerator_x = numerator_y = 0.0;
   for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){ 
-    w = (*hit)->I >= threshold ? pow((*hit)->I, exponent) : 0.0; 
+    w = (*hit)->I >= 0.0 ? pow((*hit)->I, exponent) : 0.0; 
+    numerator_x += w*pow((*hit)->x - centralHitPoint.first, 2);
+    numerator_y += w*pow((*hit)->y - centralHitPoint.second, 2);
+  }
+  centralHitPointError.first = sqrt(numerator_x/denominator);
+  centralHitPointError.second = sqrt(numerator_y/denominator);
+};
+
+void SensorHitMap::logWeighting(double log_a, double log_b) {
+  double I_max = 0;   //determine the 'intensity' maximum first
+  double I_i = 0;
+  for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
+    I_i = (*hit)->I >= 0.0 ? (*hit)->I : 0.0;    
+    I_max += I_i;
+  }
+
+  double numerator_x, numerator_y, denominator;
+  double w;
+  numerator_x = numerator_y = denominator = 0; 
+  
+  for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
+    I_i = (*hit)->I >= 0.0 ? (*hit)->I : 0.0;    
+    if (I_i == 0.) continue;  
+    w = std::max(log_a + log_b*log(I_i/I_max), 0.0);
+    denominator += w;
+    numerator_x += w*(*hit)->x;
+    numerator_y += w*(*hit)->y;    
+  }
+
+  centralHitPoint.first = numerator_x/denominator;
+  centralHitPoint.second = numerator_y/denominator;
+
+  //calculate the RMs
+  numerator_x = numerator_y = 0.0;
+  for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){ 
+    I_i = (*hit)->I >= 0.0 ? (*hit)->I : 0.0;    
+    if (I_i == 0.) continue;  
+    w = std::max(log_a + log_b*log(I_i/I_max), 0.0);
     numerator_x += w*pow((*hit)->x - centralHitPoint.first, 2);
     numerator_y += w*pow((*hit)->y - centralHitPoint.second, 2);
   }
@@ -163,9 +199,6 @@ ParticleTrack::~ParticleTrack(){
 };
 
 void ParticleTrack::addFitPoint(SensorHitMap* sensor){
-  if (sensor->getZ()==2. || sensor->getZ()==8.7)
-    std::cout<<"z =  "<<sensor->getZ()<<"   x = "<<sensor->getCenterPosition().first<<"+/-"<<sensor->getCenterPositionError().first<<"   y = "<<sensor->getCenterPosition().second<<"+/-"<<sensor->getCenterPositionError().second<<std::endl;
-
   x.push_back(sensor->getCenterPosition().first);  
   x_err.push_back(sensor->getCenterPositionError().first);  
   y.push_back(sensor->getCenterPosition().second);  

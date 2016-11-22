@@ -24,7 +24,10 @@
 enum WeightingMethod {
   DEFAULTWEIGHTING,
   SQUAREDWEIGHTING,
-  LINEARWEIGHTING 
+  LINEARWEIGHTING,
+  LOGWEIGHTING_45_10,
+  LOGWEIGHTING_45_20,
+  LOGWEIGHTING_35_10
 };
 
 enum TrackFittingMethod {
@@ -53,6 +56,8 @@ class SensorHitMap {
     std::map<int, double> pedestalCount;
 
     void poweredWeighting(int exponent);
+    
+    void logWeighting(double log_a, double log_b);
 
   public:
     SensorHitMap();
