@@ -68,9 +68,15 @@ options.register('configuration',
                  '-1 ADCtoMIP CERN; 0 ADCtoMIP FNAL; 1 if 8Layers with 5X0 sampling the center of the shower only; 2 if 8Layers with 25X0 sampling up to the tail of the shower')
 
 
+options.register('reportEvery',
+                100,
+                VarParsing.VarParsing.multiplicity.singleton,
+                VarParsing.VarParsing.varType.int,
+                'Frequency of event count print outs on the console')
+
 
 options.output = "test_output.root"
-options.maxEvents = 29
+options.maxEvents = -1
 
 options.parseArguments()
 
@@ -99,6 +105,11 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 ####################################
+# Reduces the frequency of event count couts
+process.load("FWCore.MessageLogger.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
+
+####################################
 process.load('HGCal.StandardSequences.RawToDigi_cff')
 process.load('HGCal.StandardSequences.LocalReco_cff')
 process.load('HGCal.StandardSequences.dqm_cff')
@@ -124,9 +135,9 @@ process.hgcaltbrechits.pedestalHigh = cms.string(options.pedestalsHighGain)
 process.hgcaltbrechits.gainLow = cms.string('')
 process.hgcaltbrechits.gainHigh = cms.string('')
 
-process.position_resolution_analyzer.weightingMethod = cms.string("squaredWeighting")
+process.position_resolution_analyzer.weightingMethod = cms.string("logWeighting_4.5_1.0")
 process.position_resolution_analyzer.fittingMethod = cms.string("lineTGraphErrors")
-process.position_resolution_analyzer.make2DGraphs = True    #only for debugging
+process.position_resolution_analyzer.make2DGraphs = False    #only for debugging
 process.position_resolution_analyzer.pedestalThreshold = 30#-99999
 
 
