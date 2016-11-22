@@ -76,38 +76,40 @@ void doPlots(int nLayer, int energyEle, int config){
   
   if(nLayer == 8 && config == 1){
     std::string nameFolder = "";
-    if(energyEle == 20) nameFolder = "161101_094655";
-    if(energyEle == 35) nameFolder = "161031_180636";
-    if(energyEle == 70) nameFolder = "161031_180644";
-    if(energyEle == 100) nameFolder = "161101_094708";
-    if(energyEle == 200) nameFolder = "161031_180705";
-    if(energyEle == 250) nameFolder = "161031_180712";
+    if(energyEle == 20) nameFolder = "161116_234146";
+    if(energyEle == 32) nameFolder = "161117_101400";
+    if(energyEle == 70) nameFolder = "161117_082845";
+    if(energyEle == 100) nameFolder = "161116_232458";
+    #if(energyEle == 150) nameFolder = "161116_232510";
+    if(energyEle == 200) nameFolder = "161116_234226";
+    if(energyEle == 250) nameFolder = "161116_234238";
     
  for(int iFo=0; iFo<2; ++iFo){
  for(int iF=0; iF<1000; ++iF){
- t->Add(Form(("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/8moduleIv3_PhysicsList_FTFP_BERT_EMM/mc/CRAB_PrivateMC/crab_Ele%dGeV/"+nameFolder+"/000%d/TBGenSim_%d.root").c_str(), energyEle, iFo, iF));
+ t->Add(Form(("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/8moduleIv4_PhysicsList_FTFP_BERT_EMM_beamposition_spread_Momspread_realistic_nosecKapton/mc/CRAB_PrivateMC/crab_Ele%dGeV/"+nameFolder+"/000%d/TBGenSim_%d.root").c_str(), energyEle, iFo, iF));
  }
  }
   }
   else if(nLayer == 8 && config == 2){
     std::string nameFolder = "";
-    if(energyEle == 20) nameFolder = "161108_231750";
-    if(energyEle == 32) nameFolder = "161108_231756";
-    if(energyEle == 70) nameFolder = "161109_074724";
-    if(energyEle == 100) nameFolder = "161108_231811";
-    if(energyEle == 200) nameFolder = "161109_130453";
-    if(energyEle == 250) nameFolder = "161108_231833";
+    if(energyEle == 20) nameFolder = "161119_013149";
+    if(energyEle == 32) nameFolder = "161119_013155";
+    if(energyEle == 70) nameFolder = "161119_013201";
+    if(energyEle == 100) nameFolder = "161119_013207";
+    //if(energyEle == 150) nameFolder = "";
+    if(energyEle == 200) nameFolder = "161119_013217";
+    if(energyEle == 250) nameFolder = "161119_013223";
 
  for(int iFo=0; iFo<2; ++iFo){
  for(int iF=0; iF<1000; ++iF){
- t->Add(Form(("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/8moduleIIv4_PhysicsList_FTFP_BERT_EMM/mc/CRAB_PrivateMC/crab_Ele%dGeV/"+nameFolder+"/000%d/TBGenSim_%d.root").c_str(), energyEle, iFo, iF));
+ t->Add(Form(("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/8moduleIIv5_PhysicsList_FTFP_BERT_EMM_beamposition_spread_Momspread_realistic_nosecKapton/mc/CRAB_PrivateMC//crab_Ele%dGeV/"+nameFolder+"/000%d/TBGenSim_%d.root").c_str(), energyEle, iFo, iF));
  }
  }    
   }
   else{
     std::string nameFolder = "";
     if(energyEle == 20) nameFolder = "161031_180325";
-    if(energyEle == 35) nameFolder = "161031_180332";
+    //if(energyEle == 35) nameFolder = "161031_180332";
     if(energyEle == 70) nameFolder = "161031_180339";
     if(energyEle == 100) nameFolder = "161031_180346";
     if(energyEle == 150) nameFolder = "161031_180353";
@@ -125,19 +127,29 @@ t->Add(Form(("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/28modu
   double totEntries = t->GetEntries();
   std::cout << " tree read => entries = " << totEntries << std::endl;
 
-  TH1F* enLayer[28];
-  TH1F* enLayerCorr[28];
-  TH1F* enLayerMip[28];
+  TH1F* enLayer_e19[28];
+  TH1F* enLayerCorr_e19[28];
+  TH1F* enLayerMip_e19[28];
+  TH1F* enLayer_eAll[28];
+  TH1F* enLayerCorr_eAll[28];
+  TH1F* enLayerMip_eAll[28];
   for(int i=0; i<28; ++i){
     if(nLayer != 28 && i >= 8) continue;
-    enLayer[i] = new TH1F(Form("enLayer%d", i+1), "", 5000, 0., 0.5);
-    enLayerCorr[i] = new TH1F(Form("enLayerCorr%d", i+1), "", 5000, 0., 10.);
-    enLayerMip[i] = new TH1F(Form("enLayerMip%d", i+1), "", 10000, 0., 10000.);
+    enLayer_e19[i] = new TH1F(Form("enLayer%d_e19", i+1), "", 5000, 0., 0.5);
+    enLayerCorr_e19[i] = new TH1F(Form("enLayerCorr%d_e19", i+1), "", 5000, 0., 10.);
+    enLayerMip_e19[i] = new TH1F(Form("enLayerMip%d_e19", i+1), "", 10000, 0., 10000.);
+    enLayer_eAll[i] = new TH1F(Form("enLayer%d_eAll", i+1), "", 5000, 0., 0.5);
+    enLayerCorr_eAll[i] = new TH1F(Form("enLayerCorr%d_eAll", i+1), "", 5000, 0., 10.);
+    enLayerMip_eAll[i] = new TH1F(Form("enLayerMip%d_eAll", i+1), "", 10000, 0., 10000.);
   }
 
-  TH1F* recoEnergy = new TH1F("recoEnergy", "", 5000, 0., 500.);
-  TH1F* recoEnergyRel = new TH1F("recoEnergyRel", "", 1000, 0., 2.);
-  TGraphErrors* enLayer_MIP = new TGraphErrors();
+  TH1F* recoEnergy_eAll = new TH1F("recoEnergy_eAll", "", 5000, 0., 500.);
+  TH1F* recoEnergyRel_eAll = new TH1F("recoEnergyRel_eAll", "", 1000, 0., 2.);
+  TGraphErrors* enLayer_MIP_eAll = new TGraphErrors();
+
+  TH1F* recoEnergy_e19 = new TH1F("recoEnergy_e19", "", 5000, 0., 500.);
+  TH1F* recoEnergyRel_e19 = new TH1F("recoEnergyRel_e19", "", 1000, 0., 2.);
+  TGraphErrors* enLayer_MIP_e19 = new TGraphErrors();
 
   double xBeam, yBeam;
   std::vector<float>* simHitLayEn2E = 0;
@@ -157,7 +169,8 @@ t->Add(Form(("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/28modu
     t->GetEntry(iE);
     //    std::cout << " simHitLayEn2E->size() = " << simHitLayEn2E->size() << std::endl;
     if(abs(xBeam) >= 2 || abs(yBeam) >= 2) continue;
-    float totEnergy = 0.;
+    float totEnergy_e19 = 0.;
+    float totEnergy_eAll = 0.;
     /*
     for(int iS=0; iS<simHitLayEn2E->size(); ++iS){   
     enLayer[iS]->Fill(simHitLayEn2E->at(iS));
@@ -184,26 +197,33 @@ t->Add(Form(("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/28modu
     for(int iS=0; iS<simHitLayEn2E->size(); ++iS){   
       unsigned int locMaxId = ht1.localMax( (CellId), (CellE), iS+1);
       double clusterE19 = ht1.cluster((CellId), (CellE), locMaxId, 2, MIP2GeV_sim, 2);
-      //double allcell_nomip = ht1.cluster( (CellId), (CellE), locMaxId, 7, EperMIP, 0);
-      float localE = clusterE19 / G4Escale * ( 1./MIP2GeV_sim * weights2GeV * weights2MIP* dEdX_weights[iS] + 1.);                                                     
-      //double allcell = ht1.cluster( (CellId), (CellE), locMaxId, 7, MIP2GeV_sim, 2);
-      //float localE = allcell / G4Escale * ( 1./MIP2GeV_sim * weights2GeV * weights2MIP* dEdX_weights[iS] + 1.);                                                     
+      float localE_e19 = clusterE19 / G4Escale * ( 1./MIP2GeV_sim * weights2GeV * weights2MIP* dEdX_weights[iS] + 1.);                                                     
       
-      enLayerCorr[iS]->Fill(localE);                                                                                                                                             
-      //enLayerMip[iS]->Fill(allcell / G4Escale * 1./MIP2GeV_sim);                                                                                                    
-      enLayerMip[iS]->Fill(clusterE19 / G4Escale * 1./MIP2GeV_sim);                                                                                                    
-      totEnergy += localE; 
+      double allcell = ht1.cluster( (CellId), (CellE), locMaxId, 7, MIP2GeV_sim, 2);
+      float localE_eAll = allcell / G4Escale * ( 1./MIP2GeV_sim * weights2GeV * weights2MIP* dEdX_weights[iS] + 1.);                                                     
+      
+      enLayerCorr_e19[iS]->Fill(localE_e19);                                                                                                                                             
+      enLayerMip_e19[iS]->Fill(clusterE19 / G4Escale * 1./MIP2GeV_sim);                                                                                                    
+      totEnergy_e19 += localE_e19; 
+
+      enLayerCorr_eAll[iS]->Fill(localE_eAll);                                                                                                                                             
+      enLayerMip_eAll[iS]->Fill(allcell / G4Escale * 1./MIP2GeV_sim);                                                                                                    
+      totEnergy_eAll += localE_eAll; 
     }
-    recoEnergy->Fill(totEnergy);                   
-    recoEnergyRel->Fill(totEnergy/(1.*energyEle)); 
+    recoEnergy_e19->Fill(totEnergy_e19);                   
+    recoEnergyRel_e19->Fill(totEnergy_e19/(1.*energyEle)); 
+    recoEnergy_eAll->Fill(totEnergy_eAll);                   
+    recoEnergyRel_eAll->Fill(totEnergy_eAll/(1.*energyEle)); 
   }
 
 
   float X0value = 0;
   for(int i=0; i<nLayer; ++i){
     X0value += X0val[i];
-    enLayer_MIP->SetPoint(i+1, X0value, enLayerMip[i]->GetMean());
-    enLayer_MIP->SetPointError(i+1, 0, enLayerMip[i]->GetRMS()/enLayerMip[i]->GetEntries());
+    enLayer_MIP_eAll->SetPoint(i+1, X0value, enLayerMip_eAll[i]->GetMean());
+    enLayer_MIP_eAll->SetPointError(i+1, 0, enLayerMip_eAll[i]->GetRMS()/enLayerMip_eAll[i]->GetEntries());
+    enLayer_MIP_e19->SetPoint(i+1, X0value, enLayerMip_e19[i]->GetMean());
+    enLayer_MIP_e19->SetPointError(i+1, 0, enLayerMip_e19[i]->GetRMS()/enLayerMip_e19[i]->GetEntries());
   }
 
   TFile* outF;
@@ -213,14 +233,20 @@ t->Add(Form(("root://eoscms.cern.ch//store/group/upgrade/HGCAL/simulation/28modu
   outF->cd();
   for(int i=0; i<28; ++i){
     if(nLayer != 28 && i >= 8) continue;
-    enLayer[i]->Write();
-    enLayerCorr[i]->Write();
-    enLayerMip[i]->Write();
+    enLayer_eAll[i]->Write();
+    enLayerCorr_eAll[i]->Write();
+    enLayerMip_eAll[i]->Write();
+
+    enLayer_e19[i]->Write();
+    enLayerCorr_e19[i]->Write();
+    enLayerMip_e19[i]->Write();
   }
-  enLayer_MIP->Write("enLayer_MIP");
-  recoEnergy->Write();
-  recoEnergyRel->Write();
+  enLayer_MIP_eAll->Write("enLayer_MIP_eAll");
+  recoEnergy_eAll->Write();
+  recoEnergyRel_eAll->Write();
+
+  enLayer_MIP_e19->Write("enLayer_MIP_e19");
+  recoEnergy_e19->Write();
+  recoEnergyRel_e19->Write();
   outF->Close();
-
-
 }
