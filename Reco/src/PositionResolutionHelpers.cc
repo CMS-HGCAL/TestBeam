@@ -220,7 +220,7 @@ void ParticleTrack::fitTrack(TrackFittingMethod method){
     }
     lastAppliedMethod = method;      
   } catch(cms::Exception& iException) {
-    std::cout<<"Fitting method has failed with error code "<< iException <<". Attempting the default fitting."<<std::endl<<std::endl;
+    //std::cout<<"Fitting method has failed with error code "<< iException <<". Attempting the default fitting."<<std::endl<<std::endl;
     fitTrack(DEFAULTFITTING);
   }
 }
