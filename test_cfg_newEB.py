@@ -19,6 +19,11 @@ options.register('outputFolder',
                  VarParsing.VarParsing.varType.string,
                  'Result of processing')
 
+options.register('outputPostfix',
+                 'default',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Postfix to the output file')
 # options.register('commonPrefix',
 #                  '',
 #                  VarParsing.VarParsing.multiplicity.singleton,
@@ -67,12 +72,33 @@ options.register('configuration',
                  VarParsing.VarParsing.varType.string,
                  '-1 ADCtoMIP CERN; 0 ADCtoMIP FNAL; 1 if 8Layers with 5X0 sampling the center of the shower only; 2 if 8Layers with 25X0 sampling up to the tail of the shower')
 
-
 options.register('reportEvery',
                 100,
                 VarParsing.VarParsing.multiplicity.singleton,
                 VarParsing.VarParsing.varType.int,
                 'Frequency of event count print outs on the console')
+
+
+'''Specific options for the position resolution'''
+
+options.register('weightingMethod',
+                 'squaredWeighting',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Possible arguments are: squaredWeighting, linearWeighting, logWeighting_4.5_1.0, logWeighting_4.5_2.0, logWeighting_3.5_1.0 '
+                )
+options.register('fittingMethod',
+                 'lineTGraphErrors',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Possible arguments are: lineTGraphErrors'
+                 )
+options.register('pedestalThreshold',
+                 30.,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.float,
+                 'Threshold for the pedestal subtraction calculation in the position resolution plugin. -99999 corresponds to no thresold.'
+                )
 
 
 options.output = "test_output.root"
@@ -135,10 +161,10 @@ process.hgcaltbrechits.pedestalHigh = cms.string(options.pedestalsHighGain)
 process.hgcaltbrechits.gainLow = cms.string('')
 process.hgcaltbrechits.gainHigh = cms.string('')
 
-process.position_resolution_analyzer.weightingMethod = cms.string("logWeighting_4.5_1.0")
-process.position_resolution_analyzer.fittingMethod = cms.string("lineTGraphErrors")
+process.position_resolution_analyzer.weightingMethod = cms.string(options.weightingMethod)
+process.position_resolution_analyzer.fittingMethod = cms.string(options.fittingMethod)
 process.position_resolution_analyzer.EventsFor2DGraphs = [1, 29]    #first occuring events with that id are being documented with 2DGraphs 
-process.position_resolution_analyzer.pedestalThreshold = 30#-99999
+process.position_resolution_analyzer.pedestalThreshold = cms.double(options.pedestalThreshold)
 
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
@@ -163,7 +189,7 @@ elif (options.chainSequence == 5):
 elif (options.chainSequence == 6):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco_Cluster.root"%(options.outputFolder,options.runType,options.runNumber)))
 elif (options.chainSequence == 7):
-    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Position_Resolution.root"%(options.outputFolder,options.runType,options.runNumber)))
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_Position_Resolution_%s.root"%(options.outputFolder,options.runType,options.outputPostfix)))
 
 
 
@@ -208,4 +234,4 @@ elif (options.chainSequence == 6):
 elif (options.chainSequence == 7):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.position_resolution_analyzer)
 
-process.end = cms.EndPath(process.output)
+#process.end = cms.EndPath(process.output)
