@@ -1,12 +1,13 @@
 #include "HGCal/Reco/plugins/HGCalTBClusterProducer.h"
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
-
+#include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include <map>
 #include <algorithm>
 #include <sstream>
 
 HGCalTBClusterProducer::HGCalTBClusterProducer(const edm::ParameterSet& cfg) : 
+  _elecMapFile(cfg.getUntrackedParameter<std::string>("ElectronicMapFile",std::string("HGCal/CondObjects/data/map_CERN_8Layers_Sept2016.txt"))),
   _outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
   _rechitToken(consumes<HGCalTBRecHitCollection>(cfg.getParameter<edm::InputTag>("rechitCollection"))),
   _runDynamicCluster(cfg.getUntrackedParameter<bool>("runDynamicCluster",true)),
@@ -27,13 +28,7 @@ HGCalTBClusterProducer::HGCalTBClusterProducer(const edm::ParameterSet& cfg) :
   sum+=2.14; vec.push_back( sum );
   //cern config 1 (5X0->15X0) is default
   _layerZPositions = cfg.getUntrackedParameter< std::vector<double> >("LayerZPositions",vec);
-
-  std::vector<int> vb; 
-  for(unsigned int i=0; i<_layerZPositions.size(); i++)
-    if( i%2 == 0 ) vb.push_back(i);
-  _reversedLayers = cfg.getUntrackedParameter< std::vector<int> >("reversedLayers",vb);
-  //by default even layers are reversed (for 8 layers cern config: layers 5 and 7 are reversed)
-
+  
   produces <reco::HGCalTBClusterCollection>(_outputCollectionName);
   if( _runCluster7 ){
     std::ostringstream os( std::ostringstream::ate );
@@ -47,6 +42,13 @@ HGCalTBClusterProducer::HGCalTBClusterProducer(const edm::ParameterSet& cfg) :
     _outputCollectionName19=os.str();
     produces <reco::HGCalTBClusterCollection>(_outputCollectionName19);
   }
+  
+  HGCalCondObjectTextIO io(0);
+  edm::FileInPath fip(_elecMapFile);
+  if (!io.load(fip.fullPath(), _elecMap)) {
+    throw cms::Exception("Unable to load electronics map");
+  }
+  
 }
 
 void HGCalTBClusterProducer::produce(edm::Event& event, const edm::EventSetup& iSetup)
@@ -88,9 +90,6 @@ void HGCalTBClusterProducer::produce(edm::Event& event, const edm::EventSetup& i
       clusters19->push_back(cluster);
     }
   }
-  // std::cout << "number of clusters = " << clusters->size() << std::endl;
-  // std::cout << "number of clusters7 = " << clusters7->size() << std::endl;
-  // std::cout << "number of clusters19 = " << clusters19->size() << std::endl;
   if( _runDynamicCluster )
     event.put(clusters, _outputCollectionName);
   if( _runCluster7 )
@@ -132,7 +131,6 @@ void HGCalTBClusterProducer::createDynamicClusters(HGCalTBRecHitCollection rechi
     cluster.setEnergyLow(energyLow);
     cluster.setEnergyHigh(energyHigh);
     cluster.setEnergy(energy);
-    //    std::cout << "layer = " << cluster.layer() << "\t cluster energy = " << energy << "\t nhit = " << clusterDetIDs.size() << std::endl;
     for( std::vector<HGCalTBDetId>::iterator jt=clusterDetIDs.begin(); jt!=clusterDetIDs.end(); ++jt)
       cluster.addHitAndFraction( (*jt), (*rechits.find(*jt)).energy()/energy );
   
@@ -147,8 +145,7 @@ void HGCalTBClusterProducer::buildCluster(  HGCalTBRecHitCollection rechits,
 {
   HGCalTBTopology top;
   HGCalTBDetId detID=clusterDetIDs.back();
-  bool  reversedlayer = std::find( _reversedLayers.begin(), _reversedLayers.end(), detID.layer() )==_reversedLayers.end() ? false : true ;
-  std::set<HGCalTBDetId> neighbors=top.getNeighboringCellsDetID( detID, _sensorSize , _maxTransverse, reversedlayer );
+  std::set<HGCalTBDetId> neighbors=top.getNeighboringCellsDetID( detID, _sensorSize , _maxTransverse, _elecMap );
   for( std::set<HGCalTBDetId>::const_iterator it=neighbors.begin(); it!=neighbors.end(); ++it){
     if( std::find(temp.begin(), temp.end(), (*it))!=temp.end() || rechits.find(*it)==rechits.end() )
       continue;
@@ -180,7 +177,7 @@ void HGCalTBClusterProducer::createSeededClusters(HGCalTBRecHitCollection rechit
   float y = CellCentreXY.second*seed.energy();
   float z = _layerZPositions.at( seed.id().layer()-1 );
   
-  std::set<HGCalTBDetId> neighbors=top.getNeighboringCellsDetID( seed.id(), _sensorSize , _maxTransverse );
+  std::set<HGCalTBDetId> neighbors=top.getNeighboringCellsDetID( seed.id(), _sensorSize , _maxTransverse, _elecMap );
   for( std::set<HGCalTBDetId>::iterator jt=neighbors.begin(); jt!=neighbors.end(); ++jt){
     if( rechits.find(*jt) != rechits.end() ){
       HGCalTBRecHit hit=(*rechits.find(*jt));
