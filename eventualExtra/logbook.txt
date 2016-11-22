@@ -1,0 +1,42 @@
+#	Run	events	Run_type	TRG_type	table[mm]	TRG_delay[ns] beamType	beamEnergy[GeV]	Comment
+### http://cmsonline.cern.ch/cms-elog/911293
+1536	512	Beam	Hardware	32	204.9	electron	32	
+1792	512	Pedestal	Hardware	32	204.9	electron	32	
+2048	512	Beam	Hardware	32	204.9	electron	32	#	Trigger	threshold	set	higher
+2049	512	Pedestal	Software	32	204.9	electron	32	#	Trigger	count	got	frozen	after	a	few	events
+2050	512	Pedestal	Software	32	204.9	electron	32	#	Cable	shielded
+2051	512	Beam	Hardware	32	165.2	electron	32	#	length	of	Photek	cable	reduced	from	33	ft	->	20	ft
+### http://cmsonline.cern.ch/cms-elog/911421
+2304	512	Pedestal	Software	32	165.2	electron	32	#	HV	Off
+2305	512	Pedesal	Software	32	165.2	electron	32	#	HV	On
+2309	115	Beam	Hardware	32	165.2	electron	32	
+2320	247	Beam	Hardware	32	165.2	electron	32	#	Improved	HV	cable
+2321	512	Beam	Hardware	32	165.2	electron	32	
+2322	512	Beam	Hardware	32	165.2	electron	32	
+2324	1024	Beam	Hardware	32	165.2	electron	32	
+2325	256	Beam	Hardware	32	165.2	electron	32	#	tt	35000	worked	fine	compared	to	tt	50000	earlier()
+#### http://cmsonline.cern.ch/cms-elog/911596
+4096	1024	Pedestal	Software	32		165.2	electron	32	# HV On 
+4098	512	Beam	Hardware	32		165.2	electron	32	# HV On: Filter added. Zed Firware changed. Trg_Out	->	Si	telescope						
+4100	512	Beam	Hardware	48		165.2	electron	32																	
+4112	512	Beam	Hardware	64		165.2	electron	32
+4114	512	Beam	Hardware	80		165.2	electron	32
+4118	512	Beam	Hardware	96		165.2	electron	32
+4120	512	Beam	Hardware	16		165.2	electron	32
+4128	1024	Pedestal	Software	16		165.2	electron	32
+4130	512	Beam	Hardware	0		165.2	electron	32	
+4132	512	Beam	Hardware	32		165.2	electron	32	
+####	http://cmsonline.cern.ch/cms-elog/911574
+8192	512	Beam	Hardware	16	165.2	positron	32	#	Delay	16	ns	according	to	yesterday's	test	run		
+8194	512	Beam	Hardware	16	165.2	positron	32	#	positron	32	GeV	run
+8196	512	Beam	Hardware	16	165.2	positron	32	#	positron	32	GeV	run
+8198	512	Beam	Hardware	16	165.2	positron	32	#	positron	32	GeV	run,	ended	with	128	events	due	to	control	access
+##	added	HV	filter	and	metal	shield	http://cmsonline.cern.ch/cms-elog/911637
+8200	512	Pedestal	Software	16	165.2	positron	32									
+8208	1024	Pedestal	Software	16	165.2	positron	32
+8210	256	Beam	Hardware	16	165.2	electron	32
+8231	512	Beam	Hardware	16	165.2	electron	32
+8232	512	Beam	Hardware	16	165.2	electron	32
+8233	768	Beam	Hardware	16	165.2	electron	32
+8240	768	Beam	Hardware	16	165.2	electron	32
+####	
