@@ -31,7 +31,9 @@ enum WeightingMethod {
 
 enum TrackFittingMethod {
   DEFAULTFITTING,
-  LINEFITTGRAPHERRORS
+  LINEFITTGRAPHERRORS,
+  POL2TGRAPHERRORS,
+  POL3TGRAPHERRORS
 };
 
 struct HitTriple {
@@ -95,8 +97,8 @@ class ParticleTrack{
     TrackFittingMethod lastAppliedMethod;
 
     //different fit functions
-    void lineFitTGraphErrors();  
-    std::pair<double, double> positionFromLineFitTGraphErrors(double z);
+    void polFitTGraphErrors(int degree);  
+    std::pair<double, double> positionFromPolFitTGraphErrors(double z);
     TF1* ROOTpol_x;
     TF1* ROOTpol_y;
     TGraph* tmp_graph_x;

@@ -105,6 +105,10 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	methodString = iConfig.getParameter<std::string>("fittingMethod");
 	if (methodString == "lineTGraphErrors")
 		fittingMethod = LINEFITTGRAPHERRORS;
+	else if (methodString == "pol2TGraphErrors")
+		fittingMethod = POL2TGRAPHERRORS;
+	else if (methodString == "pol3TGraphErrors")
+		fittingMethod = POL3TGRAPHERRORS;
 	else 
 		fittingMethod = DEFAULTFITTING;
 

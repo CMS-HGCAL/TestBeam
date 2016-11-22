@@ -3,6 +3,8 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 
 import os,sys
 
+repoFolder = "/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/"
+
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 
 options.register('dataFolder',
@@ -55,13 +57,13 @@ options.register('nSpills',
                  'Number of spills in run')
 
 options.register('pedestalsHighGain',
-                 'CondObjects/data/Ped_HighGain_L8.txt',
+                 repoFolder+'CondObjects/data/Ped_HighGain_L8.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Path to high gain pedestals file')
 
 options.register('pedestalsLowGain',
-                 'CondObjects/data/Ped_LowGain_L8.txt',
+                 repoFolder+'CondObjects/data/Ped_LowGain_L8.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Path to low gain pedestals file')
@@ -91,7 +93,7 @@ options.register('fittingMethod',
                  'lineTGraphErrors',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'Possible arguments are: lineTGraphErrors'
+                 'Possible arguments are: lineTGraphErrors, pol2TGraphErrors, pol3TGraphErrors'
                  )
 options.register('pedestalThreshold',
                  30.,
@@ -105,6 +107,7 @@ options.output = "test_output.root"
 options.maxEvents = -1
 
 options.parseArguments()
+
 
 # print options # <--- A better option is to call test_cfg is called with "print" argument e.g. cmsRun test_cfg.py print dataFolder=example1 outputFolder=example2 ...
 
@@ -140,10 +143,9 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 process.load('HGCal.StandardSequences.LocalReco_cff')
 process.load('HGCal.StandardSequences.dqm_cff')
 
-
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(options.runNumber), ### maybe this should be read from the file
-                            runEnergyMapFile = cms.untracked.string("CondObjects/data/runEnergies.txt"), #the runs from the runEnergyMapFile are automatically added to the fileNames   
+                            runEnergyMapFile = cms.untracked.string(repoFolder+"CondObjects/data/runEnergies.txt"), #the runs from the runEnergyMapFile are automatically added to the fileNames   
                             inputPathFormat=cms.untracked.string("file:%s/%s_Output_<RUN>.txt"%(options.dataFolder,options.runType)),  
                             fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are conidered
                                 #["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber) ]), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED

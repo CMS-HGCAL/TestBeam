@@ -212,7 +212,13 @@ void ParticleTrack::fitTrack(TrackFittingMethod method){
   try {
     switch(method) {
       case LINEFITTGRAPHERRORS:
-        lineFitTGraphErrors();
+        polFitTGraphErrors(1);
+        break;
+      case POL2TGRAPHERRORS:
+        polFitTGraphErrors(2);
+        break;
+      case POL3TGRAPHERRORS:
+        polFitTGraphErrors(3);
         break;
       default:
         lastAppliedMethod = DEFAULTFITTING;
@@ -228,29 +234,25 @@ void ParticleTrack::fitTrack(TrackFittingMethod method){
 std::pair<double, double> ParticleTrack::calculatePositionXY(double z) {
   switch(lastAppliedMethod) {
     case LINEFITTGRAPHERRORS:
-      return positionFromLineFitTGraphErrors(z);
+    case POL2TGRAPHERRORS:
+    case POL3TGRAPHERRORS:
+      return positionFromPolFitTGraphErrors(z);
     default:
       return std::make_pair(0.,0.); 
   }
 }
 
 //private functions
-void ParticleTrack::lineFitTGraphErrors(){  
+void ParticleTrack::polFitTGraphErrors(int degree){  
   //todo: clear existing Polynomial pointers if existing
   if (ROOTpol_x != 0)
     delete ROOTpol_x;
   if (ROOTpol_y != 0)
     delete ROOTpol_y;
 
-  ROOTpol_x = new TF1("ROOTpol_x", "pol1", *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
-  ROOTpol_y = new TF1("ROOTpol_y", "pol1", *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
+  ROOTpol_x = new TF1("ROOTpol_x", ("pol"+std::to_string(degree)).c_str(), *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
+  ROOTpol_y = new TF1("ROOTpol_y", ("pol"+std::to_string(degree)).c_str(), *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
   
-  
-  ROOTpol_x->SetParameter(0, 1);
-  ROOTpol_x->SetParameter(1, 1);
-  ROOTpol_y->SetParameter(0, 1);
-  ROOTpol_y->SetParameter(1, 1);
-
   tmp_graph_x = new TGraphErrors(z.size(), &(z[0]), &(x[0]), &(z_err[0]), &(x_err[0])); //z_err should be filled with zeros
   tmp_graph_y = new TGraphErrors(z.size(), &(z[0]), &(y[0]), &(z_err[0]), &(y_err[0]));
   
@@ -262,11 +264,9 @@ void ParticleTrack::lineFitTGraphErrors(){
   
 }; 
 
-std::pair<double, double> ParticleTrack::positionFromLineFitTGraphErrors(double z) {
+std::pair<double, double> ParticleTrack::positionFromPolFitTGraphErrors(double z) {
   return std::make_pair(ROOTpol_x->Eval(z), ROOTpol_y->Eval(z));
 }
-
-
 
 //debug function
 void SensorHitMap::printHits() {
