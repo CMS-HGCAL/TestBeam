@@ -9,7 +9,6 @@
 #include "TF1.h"
 #include "TGraphErrors.h"
 
-
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"

@@ -236,24 +236,30 @@ std::pair<double, double> ParticleTrack::calculatePositionXY(double z) {
 
 //private functions
 void ParticleTrack::lineFitTGraphErrors(){  
-  
-  if (ROOTpol_x == 0) {
+  //todo: clear existing Polynomial pointers if existing
+  if (ROOTpol_x != 0)
     delete ROOTpol_x;
-    ROOTpol_x = new TF1("ROOTpol_x", "pol1", *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
-  }
-  if (ROOTpol_y == 0) {
+  if (ROOTpol_y != 0)
     delete ROOTpol_y;
-    ROOTpol_y = new TF1("ROOTpol_y", "pol1", *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
-  }
+
+  ROOTpol_x = new TF1("ROOTpol_x", "pol1", *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
+  ROOTpol_y = new TF1("ROOTpol_y", "pol1", *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
   
+  
+  ROOTpol_x->SetParameter(0, 1);
+  ROOTpol_x->SetParameter(1, 1);
+  ROOTpol_y->SetParameter(0, 1);
+  ROOTpol_y->SetParameter(1, 1);
+
   tmp_graph_x = new TGraphErrors(z.size(), &(z[0]), &(x[0]), &(z_err[0]), &(x_err[0])); //z_err should be filled with zeros
   tmp_graph_y = new TGraphErrors(z.size(), &(z[0]), &(y[0]), &(z_err[0]), &(y_err[0]));
   
-  tmp_graph_x->Fit(ROOTpol_x, "Q");
-  tmp_graph_y->Fit(ROOTpol_y, "Q");
+  tmp_graph_x->Fit(ROOTpol_x, "QF");
+  tmp_graph_y->Fit(ROOTpol_y, "QF");
 
   delete tmp_graph_x;
   delete tmp_graph_y;
+  
 }; 
 
 std::pair<double, double> ParticleTrack::positionFromLineFitTGraphErrors(double z) {

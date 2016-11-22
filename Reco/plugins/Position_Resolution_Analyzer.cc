@@ -139,12 +139,13 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	}
 
 	//check if 2DGraphs are to be made
+	/*
 	bool make2DGraphs = false;
 	std::vector<int>::iterator findPosition = std::find(EventsFor2DGraphs.begin(), EventsFor2DGraphs.end(), evId);
 	if (findPosition != EventsFor2DGraphs.end()) {
 		make2DGraphs = true;
 		EventsFor2DGraphs.erase(findPosition);
-	}
+	}*/
 
 	//initialize new fit counters in case this is a new run:
 	if (successfulFitCounter.find(run) == successfulFitCounter.end()) 
@@ -187,6 +188,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		Tracks[i]->fitTrack(fittingMethod);
 	}
 	
+	
 	//step 4: calculate the deviations between each fit missing one layer and exactly that layer's true central position
 	for (int i=1; i<=nLayers; i++) {
 		layerZ = Sensors[i]->getZ();
@@ -209,6 +211,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		min_deviation = min_deviation > deviation ? deviation: min_deviation;
 		max_deviation = max_deviation < deviation ? deviation: max_deviation;
 	
+		/*
 		if (make2DGraphs) {
 			//store for the two 2D graphs that are written per event
 			x_predicted_v.push_back(x_predicted);
@@ -217,15 +220,16 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			y_true_v.push_back(y_true);
 			layerZ_v.push_back(layerZ);
 		}
+		*/
 	}
-
+	/*
 	if (make2DGraphs) {
 		std::string graphIdentifier = "run_" + std::to_string(run) + "event_" + std::to_string(evId);
 		fs->make<TGraph2D>(("predicted_points_" + graphIdentifier).c_str(), "", layerZ_v.size(), &(x_predicted_v[0]), &(y_predicted_v[0]), &(layerZ_v[0]));
 		fs->make<TGraph2D>(("true_points_" + graphIdentifier).c_str(), "", layerZ_v.size(), &(x_true_v[0]), &(y_true_v[0]), &(layerZ_v[0]));
 		x_predicted_v.clear(); y_predicted_v.clear(); x_true_v.clear(); y_true_v.clear(); layerZ_v.clear();
 	}
-	
+	*/
 
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		delete (*it).second;
