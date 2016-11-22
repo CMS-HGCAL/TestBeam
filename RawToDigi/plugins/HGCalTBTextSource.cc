@@ -21,7 +21,12 @@ void HGCalTBTextSource::fillConfiguredRuns(std::fstream& map_file) {
 		readCounter++;
 		map_file >> fragment;
 		if (readCounter <= 4) continue; 	//skip the header
-		else if (readCounter % 4 == 1) _run = atoi(fragment); 
+		else if (readCounter % 4 == 1) {
+			if (((std::string)fragment).find("//") == std::string::npos)	//skip comments of form //
+				_run = atoi(fragment); 
+			else
+				readCounter = 1;
+		}
 		else if (readCounter % 4 == 2) _energy = atof(fragment); 
 		else if (readCounter % 4 == 3) _runType = (std::string)fragment; 
 		else if (readCounter % 4 == 0) {
