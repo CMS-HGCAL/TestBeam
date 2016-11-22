@@ -59,8 +59,8 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		int nLayers;
 		int SensorSize;
 
-		int successfulFitCounter, failedFitCounter;
-		double min_deviation, max_deviation; 	//minimum and maximum value of the deviations for the 2D histogram, those are defined globally
+		std::map<int, int> successfulFitCounter, failedFitCounter;
+		double min_deviation, max_deviation; 	//minimum and maximum value of the deviations for the 2D histogram, those are defined globally for subsequent adding of runs
 
 		//stuff to be written to objects at the end, first is the energy, second the layer thickness, third the run and last the layer int
 		std::map<double, std::map<double, std::map<int, std::map<int, std::vector<double> > > > >deviations;
@@ -111,9 +111,7 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	//making 2DGraphs per event?
 	make2DGraphs = iConfig.getParameter<bool>("make2DGraphs");
 
-	//initiate some counters that are printed at the end
-	successfulFitCounter = failedFitCounter = 0;
-
+	
 	//initiate the minimum and maximum values for the deviation
 	min_deviation = pow(10., 12);
 	max_deviation = -1.;
@@ -139,6 +137,9 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		std::cout<<"Run is not in configuration file - is ignored."<<std::endl;
 		return;
 	}
+	//initialize new fit counters in case this is a new run:
+	if (successfulFitCounter.find(run) == successfulFitCounter.end()) 
+		successfulFitCounter[run] = failedFitCounter[run] = 0;
 
 	//opening Rechits
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
@@ -166,7 +167,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		
 	}
 
-	
 	//step 3: fill particle tracks
 	std::map<int, ParticleTrack*> Tracks; 	//the integer index indicates which layer is omitted in the track calculation
 	for (int i=1; i<=nLayers; i++) {
@@ -185,17 +185,15 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		y_predicted = Tracks[i]->calculatePositionXY(layerZ).second;
 		if (x_predicted==0 && y_predicted==0)	{
 			//default fitting has been applied, i.e. the regular fit has failed or the selected method is not implemented
-			failedFitCounter++;
+			failedFitCounter[run]++;
 			continue; 	//ignore those cases but count them
 		}
-		successfulFitCounter++; 
+		successfulFitCounter[run]++; 
 		
 		x_true = Sensors[i]->getCenterPosition().first;
 		y_true = Sensors[i]->getCenterPosition().second;
 
-		deviation  = pow(x_predicted - x_true, 2); 
-		deviation += pow(y_predicted - y_true, 2);
-		deviation  = sqrt(deviation);
+		deviation  = sqrt( pow(x_predicted - x_true, 2) + pow(y_predicted - y_true, 2) ); 
 		deviations[energy][layerThickness][run][i].push_back(deviation);
 
 		//update the deviations on the fly
@@ -214,25 +212,18 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		std::string graphIdentifier = "run_" + std::to_string(run) + "event_" + std::to_string(evId);
 		fs->make<TGraph2D>(("predicted_points_" + graphIdentifier).c_str(), "", layerZ_v.size(), &(x_predicted_v[0]), &(y_predicted_v[0]), &(layerZ_v[0]));
 		fs->make<TGraph2D>(("true_points_" + graphIdentifier).c_str(), "", layerZ_v.size(), &(x_true_v[0]), &(y_true_v[0]), &(layerZ_v[0]));
+		x_predicted_v.clear(); y_predicted_v.clear(); x_true_v.clear(); y_true_v.clear(); layerZ_v.clear();
 	}
-
-	//Todo: 1. cleanup to avoid memory leak for many events, try to install cmssw on local machine for that!!!
-	//2. look at Andre's weighting/fitting
-
-	//clear:
-	//loop over entries and delete manually by hand before clearing the maps
 	
-	
+
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		delete (*it).second;
 	};	Sensors.clear();
-	
 	
 	for(std::map<int, ParticleTrack*>::iterator it=Tracks.begin(); it!=Tracks.end(); it++) {
 		delete (*it).second;
 	}; Tracks.clear();
 	
-	x_predicted_v.clear(); y_predicted_v.clear(); x_true_v.clear(); y_true_v.clear(); layerZ_v.clear();
 
 }// analyze ends here
 
@@ -242,11 +233,16 @@ void Position_Resolution_Analyzer::beginJob() {
 void Position_Resolution_Analyzer::endJob() {
 	std::cout<<"*************************************************"<<std::endl;
 	std::cout<<"END OF FITTING:"<<std::endl<<std::endl;
-	std::cout<<"Successful fits: "<<successfulFitCounter<<std::endl;
-	std::cout<<"Failed fits: "<<failedFitCounter<<std::endl;
 	
-	std::cout<<"Making deviation TH2D(s)... "<<std::endl;
+	std::map<int, int>::iterator it;
+	for (it = successfulFitCounter.begin(); it != successfulFitCounter.end(); it++) {
+		std::cout<<"RUN: "<<(*it).first<<std::endl;
+		std::cout<<"  Successful fits: "<<(*it).second<<std::endl;
+		std::cout<<"  Failed fits: "<<failedFitCounter[(*it).first]<<std::endl;
+	}
 	
+	std::cout<<"*************************************************"<<std::endl;
+	std::cout<<std::endl<<"Making deviation TH2D(s)... "<<std::endl;
 	//std::map<double, std::map<double, std::map<int, std::vector<double> > > >deviations;
 	std::map<double, std::map<double, std::map<int, std::map<int, std::vector<double> > > > >::iterator it1;
 	TFileDirectory subDir1;
@@ -254,11 +250,15 @@ void Position_Resolution_Analyzer::endJob() {
 	TFileDirectory subDir2;
 	std::map<int, std::map<int, std::vector<double> > >::iterator it3;
 
+	//create subdirectory system
 	for (it1=deviations.begin(); it1!=deviations.end(); it1++) {
 		subDir1 = this->fs->mkdir(std::to_string((*it1).first).c_str());
+		std::cout<<"E: "<(*it1).first<<"..."<<std::endl;
 		for (it2=(*it1).second.begin(); it2!=(*it1).second.end(); it2++) {
+			std::cout<<"   T: "<<(*it2).first<<"..."<<std::endl;
 			subDir2 = subDir1.mkdir(std::to_string((*it2).first).c_str());
 			for (it3=(*it2).second.begin(); it3!=(*it2).second.end(); it3++) {
+				std::cout<<"      R: "<<(*it3).first<<"..."<<std::endl;
 				TH2D* deviationHistogram = subDir2.make<TH2D>(("run_"+std::to_string((*it3).first)).c_str(), "", nLayers, 0.5, nLayers+0.5, 1000, min_deviation, max_deviation);
 				deviationHistogram->GetXaxis()->SetTitle("n_{Layer}");
 				deviationHistogram->GetYaxis()->SetTitle("deviation_{x-y} [cm]");
