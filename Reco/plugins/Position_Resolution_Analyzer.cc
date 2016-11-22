@@ -1,5 +1,9 @@
-/* Write  
- * a description here!
+/* 
+ * Determination of the position resolution of the setup.
+ * Hits per layer are calculated using dedicated weighting algorithms.
+ * Hypothetical particle tracks are obtained from all but one layer.
+ * The predicted position in that layer is then compared to the reconstructed one.
+ * Thus, for each event and each layer there is one deviation to be calculated and filled into a 2D histogram.
  */
 
 /**
@@ -139,13 +143,13 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	}
 
 	//check if 2DGraphs are to be made
-	/*
+	
 	bool make2DGraphs = false;
 	std::vector<int>::iterator findPosition = std::find(EventsFor2DGraphs.begin(), EventsFor2DGraphs.end(), evId);
 	if (findPosition != EventsFor2DGraphs.end()) {
 		make2DGraphs = true;
 		EventsFor2DGraphs.erase(findPosition);
-	}*/
+	}
 
 	//initialize new fit counters in case this is a new run:
 	if (successfulFitCounter.find(run) == successfulFitCounter.end()) 
@@ -211,7 +215,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		min_deviation = min_deviation > deviation ? deviation: min_deviation;
 		max_deviation = max_deviation < deviation ? deviation: max_deviation;
 	
-		/*
 		if (make2DGraphs) {
 			//store for the two 2D graphs that are written per event
 			x_predicted_v.push_back(x_predicted);
@@ -220,16 +223,14 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			y_true_v.push_back(y_true);
 			layerZ_v.push_back(layerZ);
 		}
-		*/
+	
 	}
-	/*
 	if (make2DGraphs) {
 		std::string graphIdentifier = "run_" + std::to_string(run) + "event_" + std::to_string(evId);
 		fs->make<TGraph2D>(("predicted_points_" + graphIdentifier).c_str(), "", layerZ_v.size(), &(x_predicted_v[0]), &(y_predicted_v[0]), &(layerZ_v[0]));
 		fs->make<TGraph2D>(("true_points_" + graphIdentifier).c_str(), "", layerZ_v.size(), &(x_true_v[0]), &(y_true_v[0]), &(layerZ_v[0]));
 		x_predicted_v.clear(); y_predicted_v.clear(); x_true_v.clear(); y_true_v.clear(); layerZ_v.clear();
 	}
-	*/
 
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		delete (*it).second;
@@ -258,7 +259,6 @@ void Position_Resolution_Analyzer::endJob() {
 	
 	std::cout<<"*************************************************"<<std::endl;
 	std::cout<<std::endl<<"Making deviation TH2D(s)... "<<std::endl;
-	//std::map<double, std::map<double, std::map<int, std::vector<double> > > >deviations;
 	std::map<double, std::map<double, std::map<int, std::map<int, std::vector<double> > > > >::iterator it1;
 	TFileDirectory subDir1;
 	std::map<double, std::map<int, std::map<int, std::vector<double> > > >::iterator it2;
