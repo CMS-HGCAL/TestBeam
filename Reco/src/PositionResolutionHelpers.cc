@@ -128,6 +128,10 @@ void SensorHitMap::poweredWeighting(int exponent) {
     numerator_x += w*(*hit)->x;
     numerator_y += w*(*hit)->y;
   }
+
+  //prevent divisions through zero
+  if (denominator == 0.0) denominator = 1.0;
+
   centralHitPoint.first = numerator_x/denominator;
   centralHitPoint.second = numerator_y/denominator;
 
@@ -163,6 +167,9 @@ void SensorHitMap::logWeighting(double log_a, double log_b) {
     numerator_y += w*(*hit)->y;    
   }
 
+  //prevent divisions through zero
+  if (denominator == 0.0) denominator = 1.0;
+  
   centralHitPoint.first = numerator_x/denominator;
   centralHitPoint.second = numerator_y/denominator;
 
