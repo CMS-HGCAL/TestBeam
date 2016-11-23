@@ -92,12 +92,12 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 		weightingMethod = SQUAREDWEIGHTING;	
 	else if (methodString == "linearWeighting")
 		weightingMethod = LINEARWEIGHTING;
-	else if (methodString == "logWeighting_4.5_1.0")
-		weightingMethod = LOGWEIGHTING_45_10;
-	else if (methodString == "logWeighting_4.5_2.0")
-		weightingMethod = LOGWEIGHTING_45_20;
-	else if (methodString == "logWeighting_3.5_1.0")
-		weightingMethod = LOGWEIGHTING_35_10;
+	else if (methodString == "logWeighting_5.0_1.0")
+		weightingMethod = LOGWEIGHTING_50_10;
+	else if (methodString == "logWeighting_5.0_0.5")
+		weightingMethod = LOGWEIGHTING_50_05;
+	else if (methodString == "logWeighting_7.0_1.0")
+		weightingMethod = LOGWEIGHTING_70_10;
 	else 
 		weightingMethod = DEFAULTWEIGHTING;
 

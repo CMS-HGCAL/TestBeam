@@ -87,7 +87,7 @@ options.register('weightingMethod',
                  'squaredWeighting',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'Possible arguments are: squaredWeighting, linearWeighting, logWeighting_4.5_1.0, logWeighting_4.5_2.0, logWeighting_3.5_1.0 '
+                 'Possible arguments are: squaredWeighting, linearWeighting, logWeighting_5.0_1.0, logWeighting_5.0_0.5, logWeighting_7.0_1.0 '
                 )
 options.register('fittingMethod',
                  'lineTGraphErrors',

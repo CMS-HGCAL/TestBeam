@@ -91,14 +91,14 @@ void SensorHitMap::calculateCenterPosition(WeightingMethod method) {
     case LINEARWEIGHTING:
       SensorHitMap::poweredWeighting(1);
       break;
-    case LOGWEIGHTING_45_10:
-      SensorHitMap::logWeighting(4.5, 1.0);
+    case LOGWEIGHTING_50_10:
+      SensorHitMap::logWeighting(5.0, 1.0);
       break;
-    case LOGWEIGHTING_45_20:
-      SensorHitMap::logWeighting(4.5, 2.0);
+    case LOGWEIGHTING_50_05:
+      SensorHitMap::logWeighting(5.0, 0.5);
       break;
-    case LOGWEIGHTING_35_10:
-      SensorHitMap::logWeighting(3.5, 1.0);
+    case LOGWEIGHTING_70_10:
+      SensorHitMap::logWeighting(7.0, 1.0);
       break;
     //case NEWMETHOD:
       //SensorHitMap::newWeightingFunction()
@@ -169,7 +169,7 @@ void SensorHitMap::logWeighting(double log_a, double log_b) {
 
   //prevent divisions through zero
   if (denominator == 0.0) denominator = 1.0;
-  
+
   centralHitPoint.first = numerator_x/denominator;
   centralHitPoint.second = numerator_y/denominator;
 
