@@ -278,7 +278,7 @@ void Position_Resolution_Analyzer::endJob() {
 			subDir2 = subDir1.mkdir(std::to_string((*it2).first).c_str());
 			for (it3=(*it2).second.begin(); it3!=(*it2).second.end(); it3++) {
 				std::cout<<"      R: "<<(*it3).first<<"..."<<std::endl;
-				TH2D* deviationHistogram = subDir2.make<TH2D>(("run_"+std::to_string((*it3).first)).c_str(), "", nLayers, 0.5, nLayers+0.5, 1000, min_deviation, max_deviation);
+				TH2D* deviationHistogram = subDir2.make<TH2D>(("run_"+std::to_string((*it3).first)).c_str(), "", nLayers, 0.5, nLayers+0.5, 10000, min_deviation, max_deviation);
 				deviationHistogram->GetXaxis()->SetTitle("n_{Layer}");
 				deviationHistogram->GetYaxis()->SetTitle("deviation_{x-y} [cm]");
 				for(int i=1; i<=nLayers; i++)
