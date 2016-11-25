@@ -6,13 +6,13 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 #Change the data folder appropriately to where you wish to access the files from:
 options.register('dataFolder',
-                 '/afs/cern.ch/work/r/rchatter/public/',
+                 '/afs/cern.ch/user/r/rchatter/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',#modify path appropriately to where eos is mounted
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw text input')
 
 options.register('outputFolder',
-                 '/tmp/',
+                 '/tmp/',#Choose the output directly where you wish the output root files to be written
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Result of processing')
@@ -125,7 +125,7 @@ process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
 process.dumpDigi = cms.EDAnalyzer("HGCalDigiDump")
 
 
-if (options.chainSequence == 7):
+if (options.chainSequence == 3):
     options.output = "%s/RECO_type%s_run%06d.root"%(options.outputFolder,options.runType,options.runNumber)
     process.output = cms.OutputModule("PoolOutputModule",
                                       fileName = cms.untracked.string(options.output)
@@ -136,13 +136,15 @@ if (options.chainSequence == 7):
 if (options.chainSequence == 1):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Digi.root"%(options.outputFolder,options.runType,options.runNumber)))
 elif (options.chainSequence == 3):
-    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Unpacker_Digi_Check.root"%(options.outputFolder,options.runType,options.runNumber)))
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Unpacker_Check.root"%(options.outputFolder,options.runType,options.runNumber)))
 elif (options.chainSequence == 4):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco_EventDisplay.root"%(options.outputFolder,options.runType,options.runNumber)))
 elif (options.chainSequence == 5):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco.root"%(options.outputFolder,options.runType,options.runNumber)))
 elif (options.chainSequence == 6):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco_Cluster.root"%(options.outputFolder,options.runType,options.runNumber)))
+elif (options.chainSequence == 7):
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Display_Cluster.root"%(options.outputFolder,options.runType,options.runNumber)))
 
 
 
@@ -189,8 +191,11 @@ elif (options.chainSequence == 5):
     process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
 elif (options.chainSequence == 6):
     process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.LayerSumAnalyzer)
-elif (options.chainSequence == 7):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits)
+elif (options.chainSequence == 7):#formal clustering sequence
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.hgcaltbeventdisplay)
+# example for running display :
+# cmsRun test_cfg_newEB.py runNumber=1291 runType=HGCRun nSpills=1 dataFolder='./' pedestalsHighGain="./CondObjects/data/pedHighGain1200.txt" pedestalsLowGain="./CondObjects/data/pedLowGain1200.txt" chainSequence=7 maxEvents=10
 
-if (options.chainSequence == 7):
+
+if (options.chainSequence == 3):
     process.end = cms.EndPath(process.output)
