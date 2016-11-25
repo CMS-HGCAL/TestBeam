@@ -43,6 +43,10 @@ struct HitTriple {
   int ID;   //the ID corresponds to the cell ID, it is necessary for the pedestal subtraction
 };
 
+struct DeviationTriple {
+  double deviation, predicted_x, predicted_y;
+};
+
 class SensorHitMap {
   private:
     std::pair<double, double> centralHitPoint;
