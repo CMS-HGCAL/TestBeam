@@ -16,9 +16,12 @@
 #include "FWCore/Utilities/interface/Exception.h"
 
 
-//
-// class declaration
-//
+enum ConsiderationMethod {
+  CONSIDERALL,
+  CONSIDERSEVEN,
+  CONSIDERNINETEEN,
+  CONSIDERCLUSTERS
+};
 
 enum WeightingMethod {
   DEFAULTWEIGHTING,
@@ -36,7 +39,7 @@ enum TrackFittingMethod {
   POL3TGRAPHERRORS
 };
 
-struct HitTriple {
+struct HitData {
   double x; double y; 
   double I; //intensity that is input to the weight calculation
   double E; //actual energy of the hit
@@ -47,6 +50,9 @@ struct DeviationTriple {
   double deviation, predicted_x, predicted_y;
 };
 
+//
+// class declarations
+//
 class SensorHitMap {
   private:
     std::pair<double, double> centralHitPoint;
@@ -55,15 +61,18 @@ class SensorHitMap {
     int sensorSize;
     double CM_threshold;
     double ADC_per_MIP;
-    std::vector<HitTriple*> Hits;
+    std::vector<HitData*> Hits; //those are all the hits in the layer
+    std::vector<HitData*> HitsForPositioning;
+    HitData* mostSignificantHit;
+
     //helpers to obtain the x-y coordinate
     HGCalTBCellVertices TheCell;
     std::pair<double, double> CellCenterXY;
     int CM_cells_count;
     double CM_sum;
 
+    void fillHitsForPositioningByRadius(double R);
     void poweredWeighting(int exponent);
-    
     void logWeighting(double log_a, double log_b);
 
   public:
@@ -76,7 +85,7 @@ class SensorHitMap {
     //reduces the information from the Rechit towards what is necessary for the impact point calculation
     void addHit(HGCalTBRecHit Rechit);
     void subtractCM();
-    void calculateCenterPosition(WeightingMethod method);
+    void calculateCenterPosition(ConsiderationMethod considerationMethod, WeightingMethod weightingMethod);
     double getZ();
     std::pair<double, double> getCenterPosition();
     std::pair<double, double> getCenterPositionError(); //calculated via RMS

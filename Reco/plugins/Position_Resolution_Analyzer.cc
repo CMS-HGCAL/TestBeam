@@ -56,8 +56,10 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_;
 		edm::EDGetTokenT<RunData> RunDataToken;	
 		
+		ConsiderationMethod considerationMethod;
 		WeightingMethod weightingMethod;
 		TrackFittingMethod fittingMethod;		
+
 		std::vector<int> EventsFor2DGraphs;
 		double pedestalThreshold;
 		std::vector<double> Layer_Z_Positions;
@@ -86,6 +88,17 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	usesResource("TFileService");
 	HGCalTBRecHitCollection_ = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
+
+	//read the cell consideration option to calculate the central hit point
+	std::string considerationMethod = iConfig.getParameter<std::string>("considerationMethod");
+	if (considerationMethod == "all")
+  	considerationMethod = CONSIDERALL;
+  else if (considerationMethod == "closest7")
+  	considerationMethod = CONSIDERSEVEN;
+  else if (considerationMethod == "closest19")
+  	considerationMethod = CONSIDERNINETEEN;
+  else if(considerationMethod == "clusters")
+  	considerationMethod = CONSIDERCLUSTERS;
 
 	//read the weighting method to obtain the central hit point
 	std::string methodString = iConfig.getParameter<std::string>("weightingMethod");
@@ -184,7 +197,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		it->second->subtractCM();
 
 		//now calculate the center positions for each layer
-		it->second->calculateCenterPosition(weightingMethod);
+		it->second->calculateCenterPosition(considerationMethod, weightingMethod);
 		
 	}
 

@@ -1,6 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 position_resolution_analyzer = cms.EDAnalyzer("Position_Resolution_Analyzer",
+                                considerationMethod = cms.string('all'),
                                 weightingMethod = cms.string('squaredWeighting'),
                                 fittingMethod = cms.string('lineTGraphErrors'),
                                 pedestalThreshold = cms.double(2.),   

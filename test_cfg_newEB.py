@@ -82,7 +82,12 @@ options.register('reportEvery',
 
 
 '''Specific options for the position resolution'''
-
+options.register('considerationMethod',
+                 'all',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Possible arguments are: all, closest7, closest19, clusters'
+                )
 options.register('weightingMethod',
                  'squaredWeighting',
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -157,9 +162,10 @@ process.hgcaltbrechits.pedestalHigh = cms.string(options.pedestalsHighGain)
 process.hgcaltbrechits.gainLow = cms.string('')
 process.hgcaltbrechits.gainHigh = cms.string('')
 
+process.position_resolution_analyzer.considerationMethod = cms.string(options.considerationMethod)
 process.position_resolution_analyzer.weightingMethod = cms.string(options.weightingMethod)
-process.position_resolution_analyzer.EventsFor2DGraphs = [1, 29]    #first occuring events with that id are being documented with 2DGraphs 
 process.position_resolution_analyzer.pedestalThreshold = cms.double(options.pedestalThreshold)
+process.position_resolution_analyzer.EventsFor2DGraphs = [1, 29]    #first occuring events with that id are being documented with 2DGraphs 
 
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",

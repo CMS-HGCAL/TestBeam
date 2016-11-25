@@ -5,6 +5,8 @@
 
 //public functions
 SensorHitMap::SensorHitMap(){
+  mostSignificantHit = NULL;  //will point to the most significant hit
+  
   centralHitPoint = std::make_pair(0., 0.);
   CM_threshold = 30.;
   layerZ = 0;
@@ -16,7 +18,7 @@ SensorHitMap::SensorHitMap(){
 }
 
 SensorHitMap::~SensorHitMap(){
-  for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
+  for(std::vector<HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
     delete *hit;
   }
   Hits.clear();
@@ -54,14 +56,16 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
 
   double energy = Rechit.energy() / ADC_per_MIP;  //the LayerSumAnalyzer also calcu 
 
-  //Rechit.setCartesianCoordinates(iux, ivy, Layer_Z_Positions[layer]);   //in cm,   is not really necessary
-
-  Hits.push_back(new HitTriple);
+  Hits.push_back(new HitData);
   Hits[Hits.size()-1]->ID = ID;
   Hits[Hits.size()-1]->x = iux;
   Hits[Hits.size()-1]->y = ivy;
   Hits[Hits.size()-1]->I = energy;
   Hits[Hits.size()-1]->E = energy;
+  
+  if (mostSignificantHit==NULL || energy < mostSignificantHit->E) {
+    mostSignificantHit = Hits[Hits.size()-1];
+  }
 
   //analogous to RecHitPlotter_HighGain_New, only add to pedestals if energyHigh exceeds a threshold (default is 30. if not set in the setPedestalThreshold)
   if (energy <= CM_threshold && (ID==0 || ID==4)) { //also analogous to the implementation in the LayerSumAnalyzer
@@ -73,7 +77,7 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
 void SensorHitMap::subtractCM() {
   double cm_subtraction = CM_sum/CM_cells_count;
 
-  for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
+  for(std::vector<HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
     //analogous treatment of pedestals as in the RecHitPlotter_HighGain_New plugin
     switch((*hit)->ID) {
       case 0:
@@ -92,9 +96,25 @@ void SensorHitMap::subtractCM() {
   }
 }
 
+void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMethod, WeightingMethod weightingMethod) {
+  switch(considerationMethod){
+    case CONSIDERALL:
+      SensorHitMap::fillHitsForPositioningByRadius(-1.);
+      break;
+    case CONSIDERSEVEN:
+      SensorHitMap::fillHitsForPositioningByRadius(2.); //TODO: Parameter
+      break;
+    case CONSIDERNINETEEN:
+      SensorHitMap::fillHitsForPositioningByRadius(3); //TODO: Parameter
+      break;
+    case CONSIDERCLUSTERS:
+      //TODO: implement!
+    default:
+      SensorHitMap::fillHitsForPositioningByRadius(-1.);
+      break;
+  }
 
-void SensorHitMap::calculateCenterPosition(WeightingMethod method) {
-  switch(method){
+  switch(weightingMethod){
     case SQUAREDWEIGHTING:
       SensorHitMap::poweredWeighting(2);
       break;
@@ -127,12 +147,23 @@ std::pair<double, double> SensorHitMap::getCenterPositionError() {
 
 
 //private functions
+void SensorHitMap::fillHitsForPositioningByRadius(double R) {
+  HitsForPositioning.clear();
+  for(std::vector<HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
+    if (R == -1.) {
+      HitsForPositioning.push_back(*hit);
+      continue;
+    }
+
+  }
+}
+
 void SensorHitMap::poweredWeighting(int exponent) {
   double numerator_x, numerator_y, denominator;
   double w;
   
   numerator_x = numerator_y = denominator = 0; 
-  for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
+  for(std::vector<HitData*>::iterator hit=HitsForPositioning.begin(); hit!=HitsForPositioning.end(); hit++){
     w = (*hit)->I >= 0.0 ? pow((*hit)->I, exponent) : 0.0;    //0.0 --> not included in the sum
     denominator += w;
     numerator_x += w*(*hit)->x;
@@ -147,7 +178,7 @@ void SensorHitMap::poweredWeighting(int exponent) {
 
   //calculate the RMs
   numerator_x = numerator_y = 0.0;
-  for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){ 
+  for(std::vector<HitData*>::iterator hit=HitsForPositioning.begin(); hit!=HitsForPositioning.end(); hit++){ 
     w = (*hit)->I >= 0.0 ? pow((*hit)->I, exponent) : 0.0; 
     numerator_x += w*pow((*hit)->x - centralHitPoint.first, 2);
     numerator_y += w*pow((*hit)->y - centralHitPoint.second, 2);
@@ -159,7 +190,7 @@ void SensorHitMap::poweredWeighting(int exponent) {
 void SensorHitMap::logWeighting(double log_a, double log_b) {
   double I_max = 0;   //determine the 'intensity' maximum first
   double I_i = 0;
-  for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
+  for(std::vector<HitData*>::iterator hit=HitsForPositioning.begin(); hit!=HitsForPositioning.end(); hit++){
     I_i = (*hit)->I >= 0.0 ? (*hit)->I : 0.0;    
     I_max += I_i;
   }
@@ -168,7 +199,7 @@ void SensorHitMap::logWeighting(double log_a, double log_b) {
   double w;
   numerator_x = numerator_y = denominator = 0; 
   
-  for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
+  for(std::vector<HitData*>::iterator hit=HitsForPositioning.begin(); hit!=HitsForPositioning.end(); hit++){
     I_i = (*hit)->I >= 0.0 ? (*hit)->I : 0.0;    
     if (I_i == 0.) continue;  
     w = std::max(log_a + log_b*log(I_i/I_max), 0.0);
@@ -185,7 +216,7 @@ void SensorHitMap::logWeighting(double log_a, double log_b) {
 
   //calculate the RMs
   numerator_x = numerator_y = 0.0;
-  for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){ 
+  for(std::vector<HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){ 
     I_i = (*hit)->I >= 0.0 ? (*hit)->I : 0.0;    
     if (I_i == 0.) continue;  
     w = std::max(log_a + log_b*log(I_i/I_max), 0.0);
@@ -288,7 +319,7 @@ std::pair<double, double> ParticleTrack::positionFromPolFitTGraphErrors(double z
 //debug function
 void SensorHitMap::printHits() {
   
-  for(std::vector<HitTriple*>::iterator it=Hits.begin(); it!=Hits.end(); it++){
+  for(std::vector<HitData*>::iterator it=Hits.begin(); it!=Hits.end(); it++){
     std::cout<<(*it)->x<<"  "<<(*it)->y<<"  "<<(*it)->I<<std::endl;
   }
   
