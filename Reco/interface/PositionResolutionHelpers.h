@@ -49,6 +49,7 @@ class SensorHitMap {
     double layerZ;
     int sensorSize;
     double threshold;
+    double ADC_per_MIP;
     std::vector<HitTriple*> Hits;
     //helpers to obtain the x-y coordinate
     HGCalTBCellVertices TheCell;
@@ -64,6 +65,7 @@ class SensorHitMap {
     SensorHitMap();
     ~SensorHitMap();
     void setZ(double z);
+    void setADCPerMIP(double ADC_per_MIP);
     void setSensorSize(int s);
     void setPedestalThreshold(double t);
     //reduces the information from the Rechit towards what is necessary for the impact point calculation

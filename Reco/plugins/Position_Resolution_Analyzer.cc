@@ -61,6 +61,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		std::vector<int> EventsFor2DGraphs;
 		double pedestalThreshold;
 		std::vector<double> Layer_Z_Positions;
+		std::vector<double> ADC_per_MIP;
 		int nLayers;
 		int SensorSize;
 
@@ -116,6 +117,7 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	nLayers = iConfig.getParameter<int>("nLayers");
 	SensorSize = iConfig.getParameter<int>("SensorSize");
 	Layer_Z_Positions = iConfig.getParameter<std::vector<double> >("Layer_Z_Positions");
+	ADC_per_MIP = iConfig.getParameter<std::vector<double> >("ADC_per_MIP");
 
 	//making 2DGraphs per event?
 	EventsFor2DGraphs = iConfig.getParameter<std::vector<int> >("EventsFor2DGraphs");
@@ -170,6 +172,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			Sensors[layer] = new SensorHitMap();
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
 			Sensors[layer]->setZ(Layer_Z_Positions[layer]);
+			Sensors[layer]->setADCPerMIP(ADC_per_MIP[layer-1]);
 			Sensors[layer]->setSensorSize(SensorSize);
 		}
 		Sensors[layer]->addHit(Rechit);

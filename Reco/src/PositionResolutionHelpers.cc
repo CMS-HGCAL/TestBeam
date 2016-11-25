@@ -8,6 +8,7 @@ SensorHitMap::SensorHitMap(){
   centralHitPoint = std::make_pair(0., 0.);
   threshold = 30.;
   layerZ = 0;
+  ADC_per_MIP = 1.;
   sensorSize = 128;
 }
 
@@ -24,6 +25,10 @@ void SensorHitMap::setSensorSize(int s) {
 
 void SensorHitMap::setZ(double z) {
   this->layerZ = z;
+}
+
+void SensorHitMap::setADCPerMIP(double ADC_per_MIP) {
+  this->ADC_per_MIP = ADC_per_MIP;
 }
 
 void SensorHitMap::setPedestalThreshold(double t) {
