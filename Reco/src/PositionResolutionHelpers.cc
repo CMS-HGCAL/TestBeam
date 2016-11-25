@@ -6,10 +6,13 @@
 //public functions
 SensorHitMap::SensorHitMap(){
   centralHitPoint = std::make_pair(0., 0.);
-  threshold = 30.;
+  CM_threshold = 30.;
   layerZ = 0;
   ADC_per_MIP = 1.;
   sensorSize = 128;
+
+  CM_cells_count = 0;
+  CM_sum = 0;
 }
 
 SensorHitMap::~SensorHitMap(){
@@ -32,7 +35,7 @@ void SensorHitMap::setADCPerMIP(double ADC_per_MIP) {
 }
 
 void SensorHitMap::setPedestalThreshold(double t) {
-  this->threshold = t; 
+  this->CM_threshold = t; 
 }
 
 double SensorHitMap::getZ() {
@@ -45,8 +48,11 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
   double iux = CellCenterXY.first;
   double ivy = CellCenterXY.second;
   int ID = (Rechit.id()).cellType();
-  double energy = Rechit.energy(); //input to centrum calculation ?
-  double energyHigh = Rechit.energyHigh(); //used for pedestal subtraction analogous to the event display
+
+  if (ID!=0 && ID!=1 && ID!=4)  //filter cells that do not have either 0, 1, 4 as ID
+    return;
+
+  double energy = Rechit.energy() / ADC_per_MIP;  //the LayerSumAnalyzer also calcu 
 
   //Rechit.setCartesianCoordinates(iux, ivy, Layer_Z_Positions[layer]);   //in cm,   is not really necessary
 
@@ -55,32 +61,31 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
   Hits[Hits.size()-1]->x = iux;
   Hits[Hits.size()-1]->y = ivy;
   Hits[Hits.size()-1]->I = energy;
+  Hits[Hits.size()-1]->E = energy;
 
   //analogous to RecHitPlotter_HighGain_New, only add to pedestals if energyHigh exceeds a threshold (default is 30. if not set in the setPedestalThreshold)
-  if (energyHigh <= threshold || threshold == -99999) { 
-    if (cellTypeCount.find(ID) == cellTypeCount.end()) {
-      cellTypeCount[ID] = 0;
-      pedestalCount[ID] = 0;
-    }
-    cellTypeCount[ID] += 1;
-    pedestalCount[ID] += energyHigh;
+  if (energy <= CM_threshold && (ID==0 || ID==4)) { //also analogous to the implementation in the LayerSumAnalyzer
+    CM_cells_count++;
+    CM_sum += energy;
   }
 }
 
-void SensorHitMap::subtractPedestals() {
+void SensorHitMap::subtractCM() {
+  double cm_subtraction = CM_sum/CM_cells_count;
+
   for(std::vector<HitTriple*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
     //analogous treatment of pedestals as in the RecHitPlotter_HighGain_New plugin
     switch((*hit)->ID) {
       case 0:
       case 4:
-        (*hit)->I -= (pedestalCount[0]+pedestalCount[4])/(cellTypeCount[0]+cellTypeCount[4]);
-      case 2:
-        (*hit)->I -= pedestalCount[2]/cellTypeCount[2];
-      case 3:
-        (*hit)->I -= pedestalCount[3]/cellTypeCount[3];
-      case 5:
-        (*hit)->I -= pedestalCount[5]/cellTypeCount[5];
-      case 1:
+        // we want: - all cells that were input to the cm (common mode) calculation get weight 0
+        //          - all the others are corrected by the cm
+        if ((*hit)->E > CM_threshold) {    
+          (*hit)->I -= cm_subtraction;
+        } else {
+          (*hit)->I = 0;
+        }
+        break;
       default:
         continue;
     }

@@ -89,17 +89,11 @@ options.register('weightingMethod',
                  VarParsing.VarParsing.varType.string,
                  'Possible arguments are: squaredWeighting, linearWeighting, logWeighting_5.0_1.0, logWeighting_5.0_0.5, logWeighting_7.0_1.0 '
                 )
-options.register('fittingMethod',
-                 'lineTGraphErrors',
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 'Possible arguments are: lineTGraphErrors, pol2TGraphErrors, pol3TGraphErrors'
-                 )
 options.register('pedestalThreshold',
-                 30.,
+                 2.,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.float,
-                 'Threshold for the pedestal subtraction calculation in the position resolution plugin. -99999 corresponds to no thresold.'
+                 'Threshold for the pedestal subtraction calculation in the position resolution plugin. Unit is MIP.'
                 )
 
 
@@ -164,7 +158,6 @@ process.hgcaltbrechits.gainLow = cms.string('')
 process.hgcaltbrechits.gainHigh = cms.string('')
 
 process.position_resolution_analyzer.weightingMethod = cms.string(options.weightingMethod)
-process.position_resolution_analyzer.fittingMethod = cms.string(options.fittingMethod)
 process.position_resolution_analyzer.EventsFor2DGraphs = [1, 29]    #first occuring events with that id are being documented with 2DGraphs 
 process.position_resolution_analyzer.pedestalThreshold = cms.double(options.pedestalThreshold)
 

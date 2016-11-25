@@ -181,7 +181,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	//step 2: calculate impact point with technique indicated as the argument
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		//subtract pedestals first
-		it->second->subtractPedestals();
+		it->second->subtractCM();
 
 		//now calculate the center positions for each layer
 		it->second->calculateCenterPosition(weightingMethod);

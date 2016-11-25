@@ -38,7 +38,8 @@ enum TrackFittingMethod {
 
 struct HitTriple {
   double x; double y; 
-  double I;
+  double I; //intensity that is input to the weight calculation
+  double E; //actual energy of the hit
   int ID;   //the ID corresponds to the cell ID, it is necessary for the pedestal subtraction
 };
 
@@ -48,14 +49,14 @@ class SensorHitMap {
     std::pair<double, double> centralHitPointError;
     double layerZ;
     int sensorSize;
-    double threshold;
+    double CM_threshold;
     double ADC_per_MIP;
     std::vector<HitTriple*> Hits;
     //helpers to obtain the x-y coordinate
     HGCalTBCellVertices TheCell;
     std::pair<double, double> CellCenterXY;
-    std::map<int, int> cellTypeCount;
-    std::map<int, double> pedestalCount;
+    int CM_cells_count;
+    double CM_sum;
 
     void poweredWeighting(int exponent);
     
@@ -70,7 +71,7 @@ class SensorHitMap {
     void setPedestalThreshold(double t);
     //reduces the information from the Rechit towards what is necessary for the impact point calculation
     void addHit(HGCalTBRecHit Rechit);
-    void subtractPedestals();
+    void subtractCM();
     void calculateCenterPosition(WeightingMethod method);
     double getZ();
     std::pair<double, double> getCenterPosition();
