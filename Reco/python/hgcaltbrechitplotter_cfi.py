@@ -43,3 +43,12 @@ LayerSumAnalyzer = cms.EDAnalyzer("Layer_Sum_Analyzer",
                                   mapFile_CERN = cms.string('HGCal/CondObjects/data/map_CERN_8Layers_Sept2016.txt'),
                                   mapFile_FNAL = cms.string('')
                               )
+
+hgcaltbeventdisplay = cms.EDAnalyzer("EventDisplay",
+                                     HGCALTBCLUSTERS = cms.InputTag("hgcaltbclusters","","unpack" ),
+                                     HGCALTBCLUSTERS7 = cms.InputTag("hgcaltbclusters","7","unpack" ),
+                                     HGCALTBCLUSTERS19 = cms.InputTag("hgcaltbclusters","19","unpack" ),
+                                     Nlayers = cms.untracked.int32( 8 ),
+                                     SensorSize = cms.untracked.int32( 128 )
+                                     )
+

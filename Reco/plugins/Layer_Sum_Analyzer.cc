@@ -3,9 +3,9 @@
  * use ADC to MIP conversion of 1 MIP = 10 ADC Counts */
 
 /**
-	@Author: Ryan Quinn <ryan>
+	@Author: Arabella Martelli, Rajdeep M Chatterjee and Ryan Quinn
 		7 July 2016
-		quinn@physics.umn.edu
+		Arabella.Martelli@cern.ch, rmchatterjeejr@gmail.com, quinn@physics.umn.edu
 */
 
 
@@ -135,7 +135,6 @@ private:
         double ADCtoMIPdw[MAXLAYERS];
 
 
-<<<<<<< HEAD
         TH1F *h_CM_layer[MAXLAYERS];
 	TH1F *h_eAll_L[MAXLAYERS], *h_e7_L[MAXLAYERS], *h_e19_L[MAXLAYERS], *h_eMax_L[MAXLAYERS];
         //systematic => MIP +/- 5%
