@@ -102,7 +102,7 @@ options.register('pedestalThreshold',
                 )
 
 
-options.maxEvents = -1
+options.maxEvents = 3000
 
 options.parseArguments()
 
@@ -153,6 +153,10 @@ process.source = cms.Source("HGCalTBTextSource",
 
 
 ######
+process.BadSpillFilter.configFile1 = "%s/CondObjects/data/Bad_Run_Spill_CFG1.txt" % repoFolder
+process.BadSpillFilter.configFile2 = "%s/CondObjects/data/Bad_Run_Spill_CFG2.txt" % repoFolder
+                           
+
 process.hgcaltbdigisplotter.pedestalsHighGain = cms.untracked.string(options.pedestalsHighGain)
 process.hgcaltbdigisplotter.pedestalsLowGain  = cms.untracked.string(options.pedestalsLowGain)
 
@@ -243,7 +247,7 @@ elif (options.chainSequence == 6):
 elif (options.chainSequence == 7):
     process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.hgcaltbeventdisplay)
 elif (options.chainSequence == 8):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.position_resolution_analyzer)
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.position_resolution_analyzer)
 
 
 # example for running display :
