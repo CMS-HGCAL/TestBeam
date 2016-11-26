@@ -2,6 +2,7 @@
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
 #include "math.h"
 #include <stdlib.h>
+#include <iostream>
 #define PI 3.14159265
 
 bool HGCalTBTopology::iu_iv_valid(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorSize) const
@@ -45,3 +46,31 @@ double HGCalTBTopology::Cell_Area(int cell_type) const
 	else return -1.; //signifies an invalid cell type
 }
 
+std::set<HGCalTBDetId> HGCalTBTopology::getNeighboringCellsDetID(HGCalTBDetId detid, int sensorSize, int maxDistance, const HGCalElectronicsMap& emap) const
+{
+	int layer=detid.layer();
+	std::set<HGCalTBDetId> detids;
+	for(int u=-maxDistance; u<=maxDistance; u++){
+		for(int v=-maxDistance; v<=maxDistance; v++){
+			if( (u==0 && v==0) || abs(u+v)>maxDistance ) continue;
+			int iU=detid.sensorIU();
+			int iV=detid.sensorIV();
+			int iu=detid.iu()+u;
+			int iv=detid.iv()+v;
+			if( iu_iv_valid( layer, iU, iV, iu, iv, sensorSize)!=true )
+				continue;
+			for(unsigned int cellType=0; cellType<6; cellType++){
+				HGCalTBDetId did( layer, iU, iV, iu, iv, cellType );
+				if( emap.existsDetId(did)==true ){
+					detids.insert(did);
+					if( cellType==1 ){
+						HGCalTBDetId didbis( layer, iU, iV, iu, iv, 4);
+						detids.insert(didbis);
+					}
+					break;
+				}
+			}
+		}
+	}
+	return detids;
+}

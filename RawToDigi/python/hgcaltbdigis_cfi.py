@@ -9,3 +9,6 @@ hgcaltbdigis = cms.EDProducer("HGCalTBRawToDigi",
                             
 )
 
+BadSpillFilter = cms.EDFilter("Bad_Spill_Filter",
+                              layers_config = cms.int32(-1)
+                              )

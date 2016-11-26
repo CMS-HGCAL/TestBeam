@@ -6,7 +6,7 @@ import os,sys
 repoFolder = "/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/"
 
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
-
+#Change the data folder appropriately to where you wish to access the files from:
 options.register('dataFolder',
                  #'/afs/cern.ch/user/t/tquast/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',       #use this for eos
                  '/user/data/Testbeam/September2016',        #use this for running on pclcd
@@ -102,7 +102,6 @@ options.register('pedestalThreshold',
                 )
 
 
-options.output = "test_output.root"
 options.maxEvents = -1
 
 options.parseArguments()
@@ -149,7 +148,7 @@ process.source = cms.Source("HGCalTBTextSource",
                             fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are conidered
                                 #["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber) ]), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
                             nSpills=cms.untracked.uint32(options.nSpills),
-)
+                            )
 
 
 
@@ -174,15 +173,18 @@ process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
 process.dumpDigi = cms.EDAnalyzer("HGCalDigiDump")
 
 
-process.output = cms.OutputModule("PoolOutputModule",
-			fileName = cms.untracked.string(options.output)
-                                 )
+if (options.chainSequence == 3):
+    options.output = "%s/RECO_type%s_run%06d.root"%(options.outputFolder,options.runType,options.runNumber)
+    process.output = cms.OutputModule("PoolOutputModule",
+                                      fileName = cms.untracked.string(options.output)
+                                      )
+
 
 # process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Display.root") )
 if (options.chainSequence == 1):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Digi.root"%(options.outputFolder,options.runType,options.runNumber)))
 elif (options.chainSequence == 3):
-    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Unpacker_Digi_Check.root"%(options.outputFolder,options.runType,options.runNumber)))
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Unpacker_Check.root"%(options.outputFolder,options.runType,options.runNumber)))
 elif (options.chainSequence == 4):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco_EventDisplay.root"%(options.outputFolder,options.runType,options.runNumber)))
 elif (options.chainSequence == 5):
@@ -190,20 +192,25 @@ elif (options.chainSequence == 5):
 elif (options.chainSequence == 6):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco_Cluster.root"%(options.outputFolder,options.runType,options.runNumber)))
 elif (options.chainSequence == 7):
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Display_Cluster.root"%(options.outputFolder,options.runType,options.runNumber)))
+elif (options.chainSequence == 8):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_Position_Resolution_%s.root"%(options.outputFolder,options.runType,options.outputPostfix)))
 
 
-
 if(options.configuration == "-1"):
+    process.BadSpillFilter.layers_config = cms.int32(-1)
     process.LayerSumAnalyzer.layers_config = cms.int32(-1)
     process.hgcaltbrechits.layers_config = cms.int32(-1)
 elif(options.configuration == "0"):
+    process.BadSpillFilter.layers_config = cms.int32(0)
     process.LayerSumAnalyzer.layers_config = cms.int32(0)
     process.hgcaltbrechits.layers_config = cms.int32(0)
 elif(options.configuration == "1"):
+    process.BadSpillFilter.layers_config = cms.int32(1)
     process.LayerSumAnalyzer.layers_config = cms.int32(1)
     process.hgcaltbrechits.layers_config = cms.int32(1)
 elif(options.configuration == "2"):
+    process.BadSpillFilter.layers_config = cms.int32(2)
     process.LayerSumAnalyzer.layers_config = cms.int32(2)
     process.hgcaltbrechits.layers_config = cms.int32(2)
 
@@ -222,17 +229,27 @@ elif(options.configuration == "2"):
 ################Miscellaneous##############################################################################
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.FourLayerRecHitPlotterMax)
 
+#Using chain sequence 3 only for testing purposes.
 if (options.chainSequence == 1):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
 elif (options.chainSequence == 3):
-    process.p =cms.Path(process.hgcaltbdigis)
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits)
 elif (options.chainSequence == 4):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
 elif (options.chainSequence == 5):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
 elif (options.chainSequence == 6):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.LayerSumAnalyzer)
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.LayerSumAnalyzer)
 elif (options.chainSequence == 7):
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.hgcaltbeventdisplay)
+elif (options.chainSequence == 8):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.position_resolution_analyzer)
 
-#process.end = cms.EndPath(process.output)
+
+# example for running display :
+# cmsRun test_cfg_newEB.py runNumber=1291 runType=HGCRun nSpills=1 dataFolder='./' pedestalsHighGain="./CondObjects/data/pedHighGain1200.txt" pedestalsLowGain="./CondObjects/data/pedLowGain1200.txt" chainSequence=7 maxEvents=10
+
+
+if (options.chainSequence == 3):
+    process.end = cms.EndPath(process.output)
+
