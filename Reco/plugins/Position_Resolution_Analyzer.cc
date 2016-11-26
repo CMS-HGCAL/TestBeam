@@ -90,18 +90,18 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
 
 	//read the cell consideration option to calculate the central hit point
-	std::string considerationMethod = iConfig.getParameter<std::string>("considerationMethod");
-	if (considerationMethod == "all")
+	std::string methodString = iConfig.getParameter<std::string>("considerationMethod");
+	if (methodString == "all")
   	considerationMethod = CONSIDERALL;
-  else if (considerationMethod == "closest7")
+  else if (methodString == "closest7")
   	considerationMethod = CONSIDERSEVEN;
-  else if (considerationMethod == "closest19")
+  else if (methodString == "closest19")
   	considerationMethod = CONSIDERNINETEEN;
-  else if(considerationMethod == "clusters")
+  else if(methodString == "clusters")
   	considerationMethod = CONSIDERCLUSTERS;
 
 	//read the weighting method to obtain the central hit point
-	std::string methodString = iConfig.getParameter<std::string>("weightingMethod");
+	methodString = iConfig.getParameter<std::string>("weightingMethod");
 	if (methodString == "squaredWeighting")
 		weightingMethod = SQUAREDWEIGHTING;	
 	else if (methodString == "linearWeighting")

@@ -12,6 +12,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
+#include "HGCal/Geometry/interface/HGCalTBCellParameters.h" //e.g. to get the cell's dimensions
 
 #include "FWCore/Utilities/interface/Exception.h"
 
@@ -71,7 +72,7 @@ class SensorHitMap {
     int CM_cells_count;
     double CM_sum;
 
-    void fillHitsForPositioningByRadius(double R);
+    void considerNClosest(int N_considered);
     void poweredWeighting(int exponent);
     void logWeighting(double log_a, double log_b);
 

@@ -99,18 +99,20 @@ void SensorHitMap::subtractCM() {
 void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMethod, WeightingMethod weightingMethod) {
   switch(considerationMethod){
     case CONSIDERALL:
-      SensorHitMap::fillHitsForPositioningByRadius(-1.);
+      SensorHitMap::considerNClosest(-1);
       break;
     case CONSIDERSEVEN:
-      SensorHitMap::fillHitsForPositioningByRadius(2.); //TODO: Parameter
+      //analogous to the LayerSumAnalyzer (25.11.16)
+      SensorHitMap::considerNClosest(7); 
       break;
     case CONSIDERNINETEEN:
-      SensorHitMap::fillHitsForPositioningByRadius(3); //TODO: Parameter
+      //analogous to the LayerSumAnalyzer (25.11.16)
+      SensorHitMap::considerNClosest(19); 
       break;
     case CONSIDERCLUSTERS:
       //TODO: implement!
     default:
-      SensorHitMap::fillHitsForPositioningByRadius(-1.);
+      SensorHitMap::considerNClosest(-1.);
       break;
   }
 
@@ -147,15 +149,40 @@ std::pair<double, double> SensorHitMap::getCenterPositionError() {
 
 
 //private functions
-void SensorHitMap::fillHitsForPositioningByRadius(double R) {
+void SensorHitMap::considerNClosest(int N_considered) {     //TODO!!!
+  //better: ranking by radial distance and then take the closest ones
   HitsForPositioning.clear();
-  for(std::vector<HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
-    if (R == -1.) {
-      HitsForPositioning.push_back(*hit);
-      continue;
-    }
-
+  if (N_considered < 0) {
+    HitsForPositioning = Hits;
+    return;
   }
+
+  //calculate radial distance for all pairs to the most significant hit
+  std::vector<std::pair<double, HitData*>> to_sort;
+  for(std::vector<HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
+    double current_radius = sqrt(pow((*hit)->x - mostSignificantHit->x,2) + pow((*hit)->y - mostSignificantHit->y,2));
+    if (current_radius == 0.) continue;
+    to_sort.push_back(std::make_pair(current_radius, (*hit)));
+  }
+
+  //sort the hits by their radial distance
+  std::sort(to_sort.begin(), to_sort.end(), 
+    [](const std::pair<double, HitData*>& a, const std::pair<double, HitData*> b){
+      return a.first < b.first;
+    }
+  );
+
+  int considerCounter = 0;
+  for (std::vector<std::pair<double, HitData*>>::iterator sorted_hit = to_sort.begin(); 
+    sorted_hit != to_sort.end(); sorted_hit++) {
+    if (considerCounter == N_considered){
+      break;
+    }
+    considerCounter++;
+    HitsForPositioning.push_back((*sorted_hit).second);
+  }
+  //additional cleanup to be safe
+  to_sort.clear();
 }
 
 void SensorHitMap::poweredWeighting(int exponent) {
