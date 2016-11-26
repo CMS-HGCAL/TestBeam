@@ -63,19 +63,19 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
   Hits[Hits.size()-1]->I = energy;
   Hits[Hits.size()-1]->E = energy;
   
-  if (mostSignificantHit==NULL || energy < mostSignificantHit->E) {
+  if (mostSignificantHit==NULL || energy > mostSignificantHit->E) {
     mostSignificantHit = Hits[Hits.size()-1];
   }
 
   //analogous to RecHitPlotter_HighGain_New, only add to pedestals if energyHigh exceeds a threshold (default is 30. if not set in the setPedestalThreshold)
-  if (energy <= CM_threshold && (ID==0 || ID==4)) { //also analogous to the implementation in the LayerSumAnalyzer
+  if (energy <= CM_threshold) { //also analogous to the implementation in the LayerSumAnalyzer
     CM_cells_count++;
     CM_sum += energy;
   }
 }
 
 void SensorHitMap::subtractCM() {
-  double cm_subtraction = CM_sum/CM_cells_count;
+  double cm_subtraction = CM_cells_count > 0. ? CM_sum/CM_cells_count : 0.;
 
   for(std::vector<HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
     //analogous treatment of pedestals as in the RecHitPlotter_HighGain_New plugin
@@ -161,7 +161,6 @@ void SensorHitMap::considerNClosest(int N_considered) {     //TODO!!!
   std::vector<std::pair<double, HitData*>> to_sort;
   for(std::vector<HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
     double current_radius = sqrt(pow((*hit)->x - mostSignificantHit->x,2) + pow((*hit)->y - mostSignificantHit->y,2));
-    if (current_radius == 0.) continue;
     to_sort.push_back(std::make_pair(current_radius, (*hit)));
   }
 
@@ -221,6 +220,7 @@ void SensorHitMap::logWeighting(double log_a, double log_b) {
     I_i = (*hit)->I >= 0.0 ? (*hit)->I : 0.0;    
     I_max += I_i;
   }
+  
 
   double numerator_x, numerator_y, denominator;
   double w;

@@ -84,6 +84,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 
 Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterSet& iConfig) {
 	gStyle->SetOptStat();
+	
 	// initialization
 	usesResource("TFileService");
 	HGCalTBRecHitCollection_ = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
@@ -231,8 +232,8 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		DeviationTriple this_deviation;
 		this_deviation.deviation  = sqrt( pow(x_predicted - x_true, 2) + pow(y_predicted - y_true, 2) );
 		//DEBUG
-		if (this_deviation.deviation > 12. && abs(x_predicted) < 6. && abs(y_predicted) < 6.) 
-			std::cout<<"layer: "<<layer<<"   x:  "<<x_predicted<<" - "<<x_true<<"     "<<y_predicted<<" - "<<y_true<<std::endl;
+		if (this_deviation.deviation > 1000.) 
+			std::cout<<"   layer: "<<layer<<"   x:  "<<x_predicted<<" - "<<x_true<<"     "<<y_predicted<<" - "<<y_true<<std::endl;
 		//END OF DEBUG
 		this_deviation.predicted_x = x_predicted;
 		this_deviation.predicted_y = y_predicted;
