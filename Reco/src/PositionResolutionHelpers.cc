@@ -85,9 +85,9 @@ void SensorHitMap::subtractCM() {
         // we want: - all cells that were input to the cm (common mode) calculation get weight 0
         //          - all the others are corrected by the cm
         if ((*hit)->E > CM_threshold) {    
-          (*hit)->I -= cm_subtraction;
+          (*hit)->I = (*hit)->I - cm_subtraction;
         } else {
-          (*hit)->I = 0;
+          (*hit)->I = std::max((*hit)->I - cm_subtraction, 0.);
         }
         break;
       default:
