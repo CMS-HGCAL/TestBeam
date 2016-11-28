@@ -3,11 +3,11 @@
 #include <string>
 
 struct RunData {
-  explicit RunData(int r, double e, double lt, std::string rt): run(r), energy(e), layerThickness(lt), runType(rt) {};
-  RunData(): run(0), energy(0), layerThickness(0), runType(""){};
+  explicit RunData(int config, int r, double e, std::string rt): configuration(config), run(r), energy(e), runType(rt) {};
+  RunData(): configuration(0), run(0), energy(0), runType(""){};
+  int configuration;
   int run;
   double energy;
-  double layerThickness;
   std::string runType;
 };
 

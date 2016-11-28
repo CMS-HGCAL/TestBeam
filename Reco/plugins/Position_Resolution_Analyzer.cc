@@ -85,8 +85,8 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 
 		//stuff to be written to the tree
 		TTree* outTree;
-		int evId, run, layer;
-		double energy, layerThickness;
+		int configuration, evId, run, layer;
+		double energy;
 		double x_predicted, y_predicted, x_true, y_true, deltaX, deltaY, layerZ, deviation;
 };
 
@@ -159,11 +159,11 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 
 	//initialize tree and set Branch addresses
 	outTree = fs->make<TTree>("deviations", "deviations");
+	outTree->Branch("configuration", &configuration, "configuration/I");
 	outTree->Branch("eventId", &evId, "eventId/I");
 	outTree->Branch("run", &run, "run/I");
 	outTree->Branch("layer", &layer, "layer/I");
 	outTree->Branch("energy", &energy, "energy/D");
-	outTree->Branch("layerThickness", &layerThickness, "layerThickness/D");
 	outTree->Branch("x_predicted", &x_predicted, "x_predicted/D");
 	outTree->Branch("y_predicted", &y_predicted, "y_predicted/D");
 	outTree->Branch("x_true", &x_true, "x_true/D");
@@ -172,9 +172,6 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("deltaY", &deltaY, "deltaY/D");
 	outTree->Branch("layerZ", &layerZ, "layerZ/D");
 	outTree->Branch("deviation", &deviation, "deviation/D");
-	//	double energy, layerThickness;
-	//	double x_predicted, y_predicted, x_true, y_true, deltaX, deltaY, layerZ, deviation;
-
 
 }//constructor ends here
 
@@ -188,10 +185,10 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 
  	//get the relevant event information
 	event.getByToken(RunDataToken, rd);
+	configuration = rd->configuration;
 	evId = event.id().event();
 	run = rd->run;
 	energy = rd->energy;
-	layerThickness = rd->layerThickness;
 	if (run == -1) {
 		std::cout<<"Run is not in configuration file - is ignored."<<std::endl;
 		return;

@@ -15,7 +15,7 @@ void HGCalTBTextSource::fillConfiguredRuns(std::fstream& map_file) {
 	//perform the loop and fill configuredRuns
 	char fragment[100];
 	int readCounter = 0;
-	int _run = 0; double _energy = 0, _layerThickness = 0; std::string _runType = ""; 
+	int _run = 0, _configuration = 0; double _energy = 0; std::string _runType = ""; 
 
 	while (map_file.is_open() && !map_file.eof()) {
 		readCounter++;
@@ -30,11 +30,11 @@ void HGCalTBTextSource::fillConfiguredRuns(std::fstream& map_file) {
 		else if (readCounter % 4 == 2) _energy = atof(fragment); 
 		else if (readCounter % 4 == 3) _runType = (std::string)fragment; 
 		else if (readCounter % 4 == 0) {
-			_layerThickness = atof(fragment); 
+			_configuration = atoi(fragment); 
 			//store
 			configuredRuns[_run].energy = _energy;
 			configuredRuns[_run].runType = _runType;
-			configuredRuns[_run].layerThickness = _layerThickness;
+			configuredRuns[_run].configuration = _configuration;
 
 			//add the zeros
 			if (_run < 10) run_prefix= "00000";			
@@ -167,12 +167,12 @@ void HGCalTBTextSource::produce(edm::Event & event)
 	std::auto_ptr<RunData> rd(new RunData);
 	if (configuredRuns.find(m_run) != configuredRuns.end()) {
 		rd->energy = configuredRuns[m_run].energy;
-		rd->layerThickness = configuredRuns[m_run].layerThickness;
+		rd->configuration = configuredRuns[m_run].configuration;
 		rd->runType = configuredRuns[m_run].runType;
 		rd->run = m_run;
 	} else {
 		rd->energy = -1;
-		rd->layerThickness = -1;
+		rd->configuration = -1;
 		rd->runType = "-1";
 		rd->run = -1;
 	}
