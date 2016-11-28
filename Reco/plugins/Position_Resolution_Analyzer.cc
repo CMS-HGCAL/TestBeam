@@ -30,6 +30,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"	//for the runData type definition
 #include "HGCal/Reco/interface/PositionResolutionHelpers.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
+#include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
@@ -53,7 +54,11 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 
 		// ----------member data ---------------------------
 		edm::Service<TFileService> fs;
-		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_;
+		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;
+	 	edm::EDGetToken HGCalTBClusterCollection_Token;
+  	edm::EDGetToken HGCalTBClusterCollection7_Token;
+  	edm::EDGetToken HGCalTBClusterCollection19_Token;
+
 		edm::EDGetTokenT<RunData> RunDataToken;	
 		
 		ConsiderationMethod considerationMethod;
@@ -87,8 +92,11 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	
 	// initialization
 	usesResource("TFileService");
-	HGCalTBRecHitCollection_ = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
+	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
+  HGCalTBClusterCollection_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS"));
+  HGCalTBClusterCollection7_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS7"));
+  HGCalTBClusterCollection19_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS19"));
 
 	//read the cell consideration option to calculate the central hit point
 	std::string methodString = iConfig.getParameter<std::string>("considerationMethod");
@@ -98,8 +106,12 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
   	considerationMethod = CONSIDERSEVEN;
   else if (methodString == "closest19")
   	considerationMethod = CONSIDERNINETEEN;
-  else if(methodString == "clusters")
-  	considerationMethod = CONSIDERCLUSTERS;
+  else if(methodString == "clustersAll")
+  	considerationMethod = CONSIDERCLUSTERSALL;
+  else if(methodString == "clusters7")
+  	considerationMethod = CONSIDERCLUSTERSSEVEN;
+  else if(methodString == "clusters19")
+  	considerationMethod = CONSIDERCLUSTERSNINETEEN;
 
 	//read the weighting method to obtain the central hit point
 	methodString = iConfig.getParameter<std::string>("weightingMethod");
@@ -177,9 +189,19 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 
 	//opening Rechits
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
-	event.getByToken(HGCalTBRecHitCollection_, Rechits);
-	
+	event.getByToken(HGCalTBRecHitCollection_Token, Rechits);
+
+	//opening Clusters (made from all, closest 7, closest 9)
+	edm::Handle<reco::HGCalTBClusterCollection> clusters;
+  edm::Handle<reco::HGCalTBClusterCollection> clusters7;
+  edm::Handle<reco::HGCalTBClusterCollection> clusters19;
+	event.getByToken(HGCalTBClusterCollection_Token, clusters);
+	event.getByToken(HGCalTBClusterCollection7_Token, clusters7);
+	event.getByToken(HGCalTBClusterCollection19_Token, clusters19);
+
+
 	//step 1: Reduce the information to energy deposits/hits in x,y per sensor/layer 
+	//fill the rechits:
 	for(auto Rechit : *Rechits) {	
 		layer = (Rechit.id()).layer();
 		if ( Sensors.find(layer) == Sensors.end() ) {
@@ -190,6 +212,26 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			Sensors[layer]->setSensorSize(SensorSize);
 		}
 		Sensors[layer]->addHit(Rechit);
+	}
+
+	//fill the hits from the cluster collections 
+	for( auto cluster : *clusters ){
+		layer = cluster.layer();
+		for( std::vector< std::pair<DetId,float> >::const_iterator it=cluster.hitsAndFractions().begin(); it!=cluster.hitsAndFractions().end(); ++it ){
+			Sensors[layer]->addClusterHit((*it).first, -1);
+		}
+	}
+	for( auto cluster : *clusters7 ){
+		layer = cluster.layer();
+		for( std::vector< std::pair<DetId,float> >::const_iterator it=cluster.hitsAndFractions().begin(); it!=cluster.hitsAndFractions().end(); ++it ){
+			Sensors[layer]->addClusterHit((*it).first, 7);
+		}
+	}
+	for( auto cluster : *clusters19 ){
+		layer = cluster.layer();
+		for( std::vector< std::pair<DetId,float> >::const_iterator it=cluster.hitsAndFractions().begin(); it!=cluster.hitsAndFractions().end(); ++it ){
+			Sensors[layer]->addClusterHit((*it).first, 19);
+		}
 	}
 
 	//step 2: calculate impact point with technique indicated as the argument
@@ -212,7 +254,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		}
 		Tracks[i]->fitTrack(fittingMethod);
 	}
-	
 	
 	//step 4: calculate the deviations between each fit missing one layer and exactly that layer's true central position
 	for (int layer=1; layer<=nLayers; layer++) {

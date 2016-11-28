@@ -11,6 +11,8 @@
 
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
+#include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
+#include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h" //e.g. to get the cell's dimensions
 
@@ -21,7 +23,9 @@ enum ConsiderationMethod {
   CONSIDERALL,
   CONSIDERSEVEN,
   CONSIDERNINETEEN,
-  CONSIDERCLUSTERS
+  CONSIDERCLUSTERSALL,
+  CONSIDERCLUSTERSSEVEN,
+  CONSIDERCLUSTERSNINETEEN
 };
 
 enum WeightingMethod {
@@ -62,7 +66,8 @@ class SensorHitMap {
     int sensorSize;
     double CM_threshold;
     double ADC_per_MIP;
-    std::vector<HitData*> Hits; //those are all the hits in the layer
+    std::map<int, HitData*> Hits; //those are all the hits in the layer
+    std::map<int, std::vector<int>> clusterIndexes;
     std::vector<HitData*> HitsForPositioning;
     HitData* mostSignificantHit;
 
@@ -72,7 +77,9 @@ class SensorHitMap {
     int CM_cells_count;
     double CM_sum;
 
+    bool filterByCellType(HitData* hit);
     void considerNClosest(int N_considered);
+    void considerClusters(int N_considered);
     void poweredWeighting(int exponent);
     void logWeighting(double log_a, double log_b);
 
@@ -85,6 +92,7 @@ class SensorHitMap {
     void setPedestalThreshold(double t);
     //reduces the information from the Rechit towards what is necessary for the impact point calculation
     void addHit(HGCalTBRecHit Rechit);
+    void addClusterHit(HGCalTBDetId hit, int N_considered);
     void subtractCM();
     void calculateCenterPosition(ConsiderationMethod considerationMethod, WeightingMethod weightingMethod);
     double getZ();
