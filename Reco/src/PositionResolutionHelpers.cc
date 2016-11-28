@@ -195,15 +195,20 @@ void SensorHitMap::considerNClosest(int N_considered) {     //TODO!!!
     }
   );
 
+  double maxDist = 0;
+  if (N_considered == 7) maxDist = (0.5 + sqrt(3)) * HGCAL_TB_CELL::FULL_CELL_SIDE;
+  else if (N_considered == 7) maxDist = (0.5 + sqrt(3) * 2.) * HGCAL_TB_CELL::FULL_CELL_SIDE;
+
   int considerCounter = 0;
   for (std::vector<std::pair<double, HitData*>>::iterator sorted_hit = to_sort.begin(); 
     sorted_hit != to_sort.end(); sorted_hit++) {
-    if (considerCounter == N_considered){
+    if ((*sorted_hit).first > maxDist && considerCounter >= N_considered){ //fill at least Nconsider but also mind radial distance
       break;
     }
     considerCounter++;
     HitsForPositioning.push_back((*sorted_hit).second);
   }
+
   //additional cleanup to be safe
   to_sort.clear();
 }
