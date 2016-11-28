@@ -38,6 +38,7 @@
 #include "TFile.h"
 #include "TH2D.h"
 #include "TGraph2D.h"
+#include "TTree.h"
   
 double config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.92};
 double config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4};
@@ -75,18 +76,18 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		int SensorSize;
 
 		std::map<int, int> successfulFitCounter, failedFitCounter;
-		double min_deviation, max_deviation; 	//minimum and maximum value of the deviations for the 2D histogram, those are defined globally for subsequent adding of runs
 
-		//stuff to be written to objects at the end, first is the energy, second the layer thickness, third the run and last the layer int
-		std::map<double, std::map<double, std::map<int, std::map<int, std::vector<DeviationTriple> > > > >deviations;
 
 		//helper variables that are set within the event loop, i.e. are defined per event
-		int evId, run, layer;
-		double energy, layerThickness;
 		std::map<int, SensorHitMap*> Sensors;
 		std::map<int, ParticleTrack*> Tracks;
 		std::vector<double> x_predicted_v,y_predicted_v, x_true_v, y_true_v, layerZ_v;
-		double x_predicted, y_predicted, x_true, y_true, layerZ, deviation;
+
+		//stuff to be written to the tree
+		TTree* outTree;
+		int evId, run, layer;
+		double energy, layerThickness;
+		double x_predicted, y_predicted, x_true, y_true, deltaX, deltaY, layerZ, deviation;
 };
 
 Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterSet& iConfig) {
@@ -156,9 +157,23 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	//making 2DGraphs per event?
 	EventsFor2DGraphs = iConfig.getParameter<std::vector<int> >("EventsFor2DGraphs");
 
-	//initiate the minimum and maximum values for the deviation
-	min_deviation = pow(10., 12);
-	max_deviation = -1.;
+	//initialize tree and set Branch addresses
+	outTree = fs->make<TTree>("deviations", "deviations");
+	outTree->Branch("eventId", &evId, "eventId/I");
+	outTree->Branch("run", &run, "run/I");
+	outTree->Branch("layer", &layer, "layer/I");
+	outTree->Branch("energy", &energy, "energy/D");
+	outTree->Branch("layerThickness", &layerThickness, "layerThickness/D");
+	outTree->Branch("x_predicted", &x_predicted, "x_predicted/D");
+	outTree->Branch("y_predicted", &y_predicted, "y_predicted/D");
+	outTree->Branch("x_true", &x_true, "x_true/D");
+	outTree->Branch("y_true", &y_true, "y_true/D");
+	outTree->Branch("deltaX", &deltaX, "deltaX/D");
+	outTree->Branch("deltaY", &deltaY, "deltaY/D");
+	outTree->Branch("layerZ", &layerZ, "layerZ/D");
+	outTree->Branch("deviation", &deviation, "deviation/D");
+	//	double energy, layerThickness;
+	//	double x_predicted, y_predicted, x_true, y_true, deltaX, deltaY, layerZ, deviation;
 
 
 }//constructor ends here
@@ -169,11 +184,11 @@ Position_Resolution_Analyzer::~Position_Resolution_Analyzer() {
 
 // ------------ method called for each event  ------------
 void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setup) {
+	edm::Handle<RunData> rd;
 
  	//get the relevant event information
-	evId = event.id().event();
-	edm::Handle<RunData> rd;
 	event.getByToken(RunDataToken, rd);
+	evId = event.id().event();
 	run = rd->run;
 	energy = rd->energy;
 	layerThickness = rd->layerThickness;
@@ -183,7 +198,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	}
 
 	//check if 2DGraphs are to be made
-	
 	bool make2DGraphs = false;
 	std::vector<int>::iterator findPosition = std::find(EventsFor2DGraphs.begin(), EventsFor2DGraphs.end(), evId);
 	if (findPosition != EventsFor2DGraphs.end()) {
@@ -216,7 +230,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			Sensors[layer] = new SensorHitMap();
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
 			Sensors[layer]->setZ(Layer_Z_Positions[layer]);
-			std::cout<<"layer: "<<layer<<"  z: "<<Layer_Z_Positions[layer]<<std::endl;
 			Sensors[layer]->setADCPerMIP(ADC_per_MIP[layer-1]);
 			Sensors[layer]->setSensorSize(SensorSize);
 		}
@@ -269,6 +282,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		layerZ = Sensors[layer]->getZ();
 		x_predicted = Tracks[layer]->calculatePositionXY(layerZ).first;
 		y_predicted = Tracks[layer]->calculatePositionXY(layerZ).second;
+		
 		if (x_predicted==0 && y_predicted==0)	{
 			//default fitting has been applied, i.e. the regular fit has failed or the selected method is not implemented
 			failedFitCounter[run]++;
@@ -279,20 +293,19 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		x_true = Sensors[layer]->getCenterPosition().first;
 		y_true = Sensors[layer]->getCenterPosition().second;
 
-		DeviationTriple this_deviation;
-		this_deviation.deviation  = sqrt( pow(x_predicted - x_true, 2) + pow(y_predicted - y_true, 2) );
+		deltaX = x_predicted - x_true;
+		deltaY = y_predicted - y_true;
+		deviation  = sqrt( pow(deltaX, 2) + pow(deltaY, 2) );
+		
 		//DEBUG
-		if (this_deviation.deviation > 1000.) 
+		if (deviation > 1000.) 
 			std::cout<<"   layer: "<<layer<<"   x:  "<<x_predicted<<" - "<<x_true<<"     "<<y_predicted<<" - "<<y_true<<std::endl;
 		//END OF DEBUG
-		this_deviation.predicted_x = x_predicted;
-		this_deviation.predicted_y = y_predicted;
-		deviations[energy][layerThickness][run][layer].push_back(this_deviation);
-
+		
+		//fill the tree
+		outTree->Fill();
+		
 		//update the deviations maxima on the fly
-		min_deviation = min_deviation > this_deviation.deviation ? this_deviation.deviation: min_deviation;
-		max_deviation = max_deviation < this_deviation.deviation ? this_deviation.deviation: max_deviation;
-	
 		if (make2DGraphs) {
 			//store for the two 2D graphs that are written per event
 			x_predicted_v.push_back(x_predicted);
@@ -326,54 +339,6 @@ void Position_Resolution_Analyzer::beginJob() {
 
 void Position_Resolution_Analyzer::endJob() {
 	//optained information are not processed into according ROOT objects for final storage
-
-	std::cout<<"*************************************************"<<std::endl;
-	std::cout<<"END OF FITTING:"<<std::endl<<std::endl;
-	
-	std::map<int, int>::iterator it;
-	for (it = successfulFitCounter.begin(); it != successfulFitCounter.end(); it++) {
-		std::cout<<"RUN: "<<(*it).first<<std::endl;
-		std::cout<<"  Successful fits: "<<(*it).second<<std::endl;
-		std::cout<<"  Failed fits: "<<failedFitCounter[(*it).first]<<std::endl;
-	}
-	
-	std::cout<<"*************************************************"<<std::endl;
-	std::cout<<std::endl<<"Making deviation TH2D(s) per layer... "<<std::endl;
-	std::map<double, std::map<double, std::map<int, std::map<int, std::vector<DeviationTriple> > > > >::iterator it1;
-	TFileDirectory subDir1;
-	std::map<double, std::map<int, std::map<int, std::vector<DeviationTriple> > > >::iterator it2;
-	TFileDirectory subDir2;
-	std::map<int, std::map<int, std::vector<DeviationTriple> > >::iterator it3;
-
-	//create subdirectory system
-	for (it1=deviations.begin(); it1!=deviations.end(); it1++) {
-		subDir1 = this->fs->mkdir(std::to_string((*it1).first).c_str());
-		std::cout<<"E: "<<(*it1).first<<"..."<<std::endl;
-		for (it2=(*it1).second.begin(); it2!=(*it1).second.end(); it2++) {
-			std::cout<<"   T: "<<(*it2).first<<"..."<<std::endl;
-			subDir2 = subDir1.mkdir(std::to_string((*it2).first).c_str());
-			for (it3=(*it2).second.begin(); it3!=(*it2).second.end(); it3++) {
-				std::cout<<"      R: "<<(*it3).first<<"..."<<std::endl;
-				TH2D* deviationHistogram = subDir2.make<TH2D>(("run_"+std::to_string((*it3).first)).c_str(), "", nLayers, 0.5, nLayers+0.5, 10000, min_deviation, max_deviation);
-				deviationHistogram->GetXaxis()->SetTitle("n_{Layer}");
-				deviationHistogram->GetYaxis()->SetTitle("deviation_{x-y} [cm]");
-				for(int i=1; i<=nLayers; i++) {
-					TH2D* deviationOverPosition_x = subDir2.make<TH2D>(("x_layer_"+std::to_string(i)+"__run_"+std::to_string((*it3).first)).c_str(), "", 16, -4.0, 4.0, 600, 0.0, 12.);
-					TH2D* deviationOverPosition_y = subDir2.make<TH2D>(("y_layer_"+std::to_string(i)+"__run_"+std::to_string((*it3).first)).c_str(), "", 16, -4.0, 4.0, 600, 0.0, 12.);
-					deviationOverPosition_x->GetXaxis()->SetTitle("x_{pred.} [cm]");
-					deviationOverPosition_x->GetYaxis()->SetTitle("dev_{x-y} [cm]");
-					deviationOverPosition_y->GetXaxis()->SetTitle("y_{pred.} [cm]");
-					deviationOverPosition_y->GetYaxis()->SetTitle("dev_{x-y} [cm]");
-					for(int j=0; j<(int)(*it3).second[i].size(); j++){
-						deviationHistogram->Fill(i, (*it3).second[i][j].deviation);
-						deviationOverPosition_x->Fill((*it3).second[i][j].predicted_x, (*it3).second[i][j].deviation);
-						deviationOverPosition_y->Fill((*it3).second[i][j].predicted_y, (*it3).second[i][j].deviation);
-					}
-				}
-			}
-		}
-	}
-	std::cout<<"*************************************************"<<std::endl;
 }
 
 void Position_Resolution_Analyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
