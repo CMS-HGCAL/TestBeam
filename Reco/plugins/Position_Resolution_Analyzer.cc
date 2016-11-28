@@ -38,9 +38,10 @@
 #include "TFile.h"
 #include "TH2D.h"
 #include "TGraph2D.h"
-
-
-                    
+  
+double config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.92};
+double config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4};
+                     
 class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	public:
 		explicit Position_Resolution_Analyzer(const edm::ParameterSet&);
@@ -69,6 +70,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		double pedestalThreshold;
 		std::vector<double> Layer_Z_Positions;
 		std::vector<double> ADC_per_MIP;
+		int LayersConfig;
 		int nLayers;
 		int SensorSize;
 
@@ -139,10 +141,16 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	else 
 		fittingMethod = DEFAULTFITTING;
 
+	//read the layer configuration
+	LayersConfig = iConfig.getParameter<int>("layers_config");
+	if (LayersConfig == 1) Layer_Z_Positions = std::vector<double>(config1Positions, config1Positions + sizeof(config1Positions)/sizeof(double));
+	if (LayersConfig == 2) Layer_Z_Positions = std::vector<double>(config2Positions, config2Positions + sizeof(config2Positions)/sizeof(double));
+	else Layer_Z_Positions = std::vector<double>(config1Positions, config1Positions + sizeof(config1Positions)/sizeof(double));
+
+
 	pedestalThreshold = iConfig.getParameter<double>("pedestalThreshold");
-	nLayers = iConfig.getParameter<int>("nLayers");
 	SensorSize = iConfig.getParameter<int>("SensorSize");
-	Layer_Z_Positions = iConfig.getParameter<std::vector<double> >("Layer_Z_Positions");
+	nLayers = iConfig.getParameter<int>("nLayers");
 	ADC_per_MIP = iConfig.getParameter<std::vector<double> >("ADC_per_MIP");
 
 	//making 2DGraphs per event?
@@ -208,6 +216,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			Sensors[layer] = new SensorHitMap();
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
 			Sensors[layer]->setZ(Layer_Z_Positions[layer]);
+			std::cout<<"layer: "<<layer<<"  z: "<<Layer_Z_Positions[layer]<<std::endl;
 			Sensors[layer]->setADCPerMIP(ADC_per_MIP[layer-1]);
 			Sensors[layer]->setSensorSize(SensorSize);
 		}
@@ -292,8 +301,8 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			y_true_v.push_back(y_true);
 			layerZ_v.push_back(layerZ);
 		}
-	
 	}
+
 	if (make2DGraphs) {
 		std::string graphIdentifier = "run_" + std::to_string(run) + "event_" + std::to_string(evId);
 		fs->make<TGraph2D>(("predicted_points_" + graphIdentifier).c_str(), "", layerZ_v.size(), &(x_predicted_v[0]), &(y_predicted_v[0]), &(layerZ_v[0]));

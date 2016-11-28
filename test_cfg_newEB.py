@@ -102,7 +102,7 @@ options.register('pedestalThreshold',
                 )
 
 
-options.maxEvents = 3000
+options.maxEvents = -1
 
 options.parseArguments()
 
@@ -168,7 +168,7 @@ process.hgcaltbrechits.gainHigh = cms.string('')
 process.position_resolution_analyzer.considerationMethod = cms.string(options.considerationMethod)
 process.position_resolution_analyzer.weightingMethod = cms.string(options.weightingMethod)
 process.position_resolution_analyzer.pedestalThreshold = cms.double(options.pedestalThreshold)
-process.position_resolution_analyzer.EventsFor2DGraphs = [1, 29]    #first occuring events with that id are being documented with 2DGraphs 
+process.position_resolution_analyzer.EventsFor2DGraphs = []    #first occuring events with that id are being documented with 2DGraphs 
 
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
@@ -213,10 +213,12 @@ elif(options.configuration == "1"):
     process.BadSpillFilter.layers_config = cms.int32(1)
     process.LayerSumAnalyzer.layers_config = cms.int32(1)
     process.hgcaltbrechits.layers_config = cms.int32(1)
+    process.position_resolution_analyzer.layers_config = cms.int32(1)
 elif(options.configuration == "2"):
     process.BadSpillFilter.layers_config = cms.int32(2)
     process.LayerSumAnalyzer.layers_config = cms.int32(2)
     process.hgcaltbrechits.layers_config = cms.int32(2)
+    process.position_resolution_analyzer.layers_config = cms.int32(2)
 
 ########Activate this to produce event displays#########################################
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
