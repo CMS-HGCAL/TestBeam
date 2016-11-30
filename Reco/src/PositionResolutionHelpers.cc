@@ -161,6 +161,9 @@ std::pair<double, double> SensorHitMap::getCenterPositionError() {
   return centralHitPointError;
 }
 
+double SensorHitMap::getTotalWeight() {
+  return this->totalWeight;
+};
 
 //private functions //only consider certain cellTypes for the N closest approach (analogous to the LayerSumAnalyzer)
 bool SensorHitMap::filterByCellType(int ID) {  
@@ -292,10 +295,6 @@ void SensorHitMap::logWeighting(double log_a, double log_b) {
   centralHitPointError.second = sqrt(numerator_y/totalWeight);
 };
 
-double SensorHitMap::getTotalWeight() {
-  return this->totalWeight;
-};
-
 
 //****   Particle Tracks    ****//
 
@@ -395,6 +394,14 @@ std::pair<double, double> ParticleTrack::calculatePositionErrorXY(double z) {
   }
 }
 
+double ParticleTrack::getSumOfWeights() {  //returns the original weights (i.e. sum(layers for fit) sum(hits in layer) of WeightingMethod(intensity))
+  double sum_Weights = 0.0;
+  for (int i=0; i<N_points; i++) {
+    sum_Weights += weights[i];
+  }
+  return sum_Weights;
+}
+
 //private functions
 void ParticleTrack::polFitTGraphErrors(int degree){  
   //todo: clear existing Polynomial pointers if existing
@@ -435,13 +442,6 @@ std::pair<double, double> ParticleTrack::positionErrorFromPolFitTGraphErrors(int
   return std::make_pair(err_x, err_y);
 }
 
-double ParticleTrack::getSumOfWeights() {  //returns the original weights (i.e. sum(layers for fit) sum(hits in layer) of WeightingMethod(intensity))
-  double sum_Weights = 0.0;
-  for (int i=0; i<N_points; i++) {
-    sum_Weights += weights[i];
-  }
-  return sum_Weights;
-}
 
 double weightToFitPointWeight(double w, double sum_w, FitPointWeightingMethod m) {
   switch(m) {
