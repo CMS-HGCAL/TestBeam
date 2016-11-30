@@ -40,8 +40,13 @@
 #include "TGraph2D.h"
 #include "TTree.h"
   
-double config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.92};
-double config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4};
+//configuration1:
+double config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.92}; 	 //z-coordinate in cm
+double X0depth_8L_conf1[] = {6.268, 1.131, 1.131, 1.362, 0.574, 1.301, 0.574, 2.42}; //in radiation lengths, copied from layerSumAnalyzer
+
+//configuration2:
+double config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4}; 				//z-coordinate in cm
+double X0depth_8L_conf2[] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021}; //in radiation lengths, copied from layerSumAnalyzer
                      
 class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	public:
@@ -70,6 +75,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		std::vector<int> EventsFor2DGraphs;
 		double pedestalThreshold;
 		std::vector<double> Layer_Z_Positions;
+		std::vector<double> Layer_Z_X0s;
 		std::vector<double> ADC_per_MIP;
 		int LayersConfig;
 		int nLayers;
@@ -81,13 +87,13 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		//helper variables that are set within the event loop, i.e. are defined per event
 		std::map<int, SensorHitMap*> Sensors;
 		std::map<int, ParticleTrack*> Tracks;
-		std::vector<double> x_predicted_v,y_predicted_v, x_true_v, y_true_v, layerZ_v;
+		std::vector<double> x_predicted_v,y_predicted_v, x_true_v, y_true_v, layerZ_cm_v;
 
 		//stuff to be written to the tree
 		TTree* outTree;
 		int configuration, evId, run, layer;
 		double energy;
-		double x_predicted, y_predicted, x_true, y_true, deltaX, deltaY, layerZ, deviation;
+		double x_predicted, y_predicted, x_true, y_true, deltaX, deltaY, layerZ_cm, layerZ_X0, deviation;
 };
 
 Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterSet& iConfig) {
@@ -144,10 +150,16 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 
 	//read the layer configuration
 	LayersConfig = iConfig.getParameter<int>("layers_config");
-	if (LayersConfig == 1) Layer_Z_Positions = std::vector<double>(config1Positions, config1Positions + sizeof(config1Positions)/sizeof(double));
-	if (LayersConfig == 2) Layer_Z_Positions = std::vector<double>(config2Positions, config2Positions + sizeof(config2Positions)/sizeof(double));
-	else Layer_Z_Positions = std::vector<double>(config1Positions, config1Positions + sizeof(config1Positions)/sizeof(double));
-
+	if (LayersConfig == 1) {
+		Layer_Z_Positions = std::vector<double>(config1Positions, config1Positions + sizeof(config1Positions)/sizeof(double));
+		Layer_Z_X0s 			= std::vector<double>(X0depth_8L_conf1, X0depth_8L_conf1 + sizeof(X0depth_8L_conf1)/sizeof(double));
+	} if (LayersConfig == 2) {
+		Layer_Z_Positions = std::vector<double>(config2Positions, config2Positions + sizeof(config2Positions)/sizeof(double));
+		Layer_Z_X0s 			= std::vector<double>(X0depth_8L_conf2, X0depth_8L_conf2 + sizeof(X0depth_8L_conf2)/sizeof(double));
+	} else {
+		Layer_Z_Positions = std::vector<double>(config1Positions, config1Positions + sizeof(config1Positions)/sizeof(double));
+		Layer_Z_X0s 			= std::vector<double>(X0depth_8L_conf1, X0depth_8L_conf1 + sizeof(X0depth_8L_conf1)/sizeof(double));
+	}
 
 	pedestalThreshold = iConfig.getParameter<double>("pedestalThreshold");
 	SensorSize = iConfig.getParameter<int>("SensorSize");
@@ -170,7 +182,8 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("y_true", &y_true, "y_true/D");
 	outTree->Branch("deltaX", &deltaX, "deltaX/D");
 	outTree->Branch("deltaY", &deltaY, "deltaY/D");
-	outTree->Branch("layerZ", &layerZ, "layerZ/D");
+	outTree->Branch("layerZ_cm", &layerZ_cm, "layerZ_cm/D");
+	outTree->Branch("layerZ_X0", &layerZ_X0, "layerZ_X0/D");
 	outTree->Branch("deviation", &deviation, "deviation/D");
 
 }//constructor ends here
@@ -226,7 +239,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		if ( Sensors.find(layer) == Sensors.end() ) {
 			Sensors[layer] = new SensorHitMap();
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
-			Sensors[layer]->setZ(Layer_Z_Positions[layer]);
+			Sensors[layer]->setZ(Layer_Z_Positions[layer], Layer_Z_X0s[layer]);	//first argument: real positon in cm, second argument: position in radiation lengths
 			Sensors[layer]->setADCPerMIP(ADC_per_MIP[layer-1]);
 			Sensors[layer]->setSensorSize(SensorSize);
 		}
@@ -275,10 +288,11 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	}
 	
 	//step 4: calculate the deviations between each fit missing one layer and exactly that layer's true central position
-	for (int layer=1; layer<=nLayers; layer++) {
-		layerZ = Sensors[layer]->getZ();
-		x_predicted = Tracks[layer]->calculatePositionXY(layerZ).first;
-		y_predicted = Tracks[layer]->calculatePositionXY(layerZ).second;
+	for (layer=1; layer<=nLayers; layer++) {
+		layerZ_cm = Sensors[layer]->getZ_cm();
+		layerZ_X0 = Sensors[layer]->getZ_X0();
+		x_predicted = Tracks[layer]->calculatePositionXY(layerZ_cm).first;
+		y_predicted = Tracks[layer]->calculatePositionXY(layerZ_cm).second;
 		
 		if (x_predicted==0 && y_predicted==0)	{
 			//default fitting has been applied, i.e. the regular fit has failed or the selected method is not implemented
@@ -309,15 +323,15 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			y_predicted_v.push_back(y_predicted);
 			x_true_v.push_back(x_true);
 			y_true_v.push_back(y_true);
-			layerZ_v.push_back(layerZ);
+			layerZ_cm_v.push_back(layerZ_cm);
 		}
 	}
 
 	if (make2DGraphs) {
 		std::string graphIdentifier = "run_" + std::to_string(run) + "event_" + std::to_string(evId);
-		fs->make<TGraph2D>(("predicted_points_" + graphIdentifier).c_str(), "", layerZ_v.size(), &(x_predicted_v[0]), &(y_predicted_v[0]), &(layerZ_v[0]));
-		fs->make<TGraph2D>(("true_points_" + graphIdentifier).c_str(), "", layerZ_v.size(), &(x_true_v[0]), &(y_true_v[0]), &(layerZ_v[0]));
-		x_predicted_v.clear(); y_predicted_v.clear(); x_true_v.clear(); y_true_v.clear(); layerZ_v.clear();
+		fs->make<TGraph2D>(("predicted_points_" + graphIdentifier).c_str(), "", layerZ_cm_v.size(), &(x_predicted_v[0]), &(y_predicted_v[0]), &(layerZ_cm_v[0]));
+		fs->make<TGraph2D>(("true_points_" + graphIdentifier).c_str(), "", layerZ_cm_v.size(), &(x_true_v[0]), &(y_true_v[0]), &(layerZ_cm_v[0]));
+		x_predicted_v.clear(); y_predicted_v.clear(); x_true_v.clear(); y_true_v.clear(); layerZ_cm_v.clear();
 	}
 
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {

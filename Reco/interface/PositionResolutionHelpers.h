@@ -58,7 +58,8 @@ class SensorHitMap {
   private:
     std::pair<double, double> centralHitPoint;
     std::pair<double, double> centralHitPointError;
-    double layerZ;
+    double layerZ_cm;
+    double layerZ_X0;
     int sensorSize;
     double CM_threshold;
     double ADC_per_MIP;
@@ -82,7 +83,7 @@ class SensorHitMap {
   public:
     SensorHitMap();
     ~SensorHitMap();
-    void setZ(double z);
+    void setZ(double z_cm);
     void setADCPerMIP(double ADC_per_MIP);
     void setSensorSize(int s);
     void setPedestalThreshold(double t);
@@ -91,7 +92,8 @@ class SensorHitMap {
     void addClusterHit(HGCalTBDetId hit, int N_considered);
     void subtractCM();
     void calculateCenterPosition(ConsiderationMethod considerationMethod, WeightingMethod weightingMethod);
-    double getZ();
+    double getZ_cm();
+    double getZ_X0();
     std::pair<double, double> getCenterPosition();
     std::pair<double, double> getCenterPositionError(); //calculated via RMS
 

@@ -9,7 +9,8 @@ SensorHitMap::SensorHitMap(){
   
   centralHitPoint = std::make_pair(0., 0.);
   CM_threshold = 30.;
-  layerZ = 0;
+  layerZ_cm = 0;
+  layerZ_X0 = 0;
   ADC_per_MIP = 1.;
   sensorSize = 128;
 
@@ -28,8 +29,9 @@ void SensorHitMap::setSensorSize(int s) {
   sensorSize = s;
 }
 
-void SensorHitMap::setZ(double z) {
-  this->layerZ = z;
+void SensorHitMap::setZ(double z_cm, double z_X0) {
+  this->layerZ_cm = z_cm;
+  this->layerZ_X0 = z_X0;
 }
 
 void SensorHitMap::setADCPerMIP(double ADC_per_MIP) {
@@ -40,10 +42,13 @@ void SensorHitMap::setPedestalThreshold(double t) {
   this->CM_threshold = t; 
 }
 
-double SensorHitMap::getZ() {
-  return this->layerZ;
+double SensorHitMap::getZ_cm() {
+  return this->layerZ_cm;
 }
 
+double SensorHitMap::getZ_X0() {
+  return this->layerZ_X0;
+}
 //reduces the information from the Rechit towards what is necessary for the impact point calculation
 //here all hits independent from the cellType are included
 void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
