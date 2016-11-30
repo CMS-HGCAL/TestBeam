@@ -85,7 +85,7 @@ class SensorHitMap {
 
     double totalWeight; //equivalent to the denominator in the according weighting method
 
-    bool filterByCellType(HitData* hit);
+    bool filterByCellType(int ID);
     void considerNClosest(int N_considered);
     void considerClusters(int N_considered);
     void poweredWeighting(int exponent);

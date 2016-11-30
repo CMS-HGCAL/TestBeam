@@ -61,6 +61,8 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
   double ivy = CellCenterXY.second;
   int ID = (Rechit.id()).cellType();
 
+  if (filterByCellType(ID)) return; //returns true so far    TODO
+
   double energy = Rechit.energy() / ADC_per_MIP;  //the LayerSumAnalyzer also calcu 
 
   Hits[uniqueID] = new HitData;
@@ -90,20 +92,13 @@ void SensorHitMap::subtractCM() {
   double cm_subtraction = CM_cells_count > 0. ? CM_sum/CM_cells_count : 0.;
 
   for(std::map<int, HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
-    //analogous treatment of pedestals as in the RecHitPlotter_HighGain_New plugin
-    switch((*hit).second->ID) {
-      case 0:
-      case 4:
-        // we want: - all cells that were input to the cm (common mode) calculation get weight 0
-        //          - all the others are corrected by the cm
-        if ((*hit).second->E > CM_threshold) {    
-          (*hit).second->I = (*hit).second->I - cm_subtraction;
-        } else {
-          (*hit).second->I = std::max((*hit).second->I - cm_subtraction, 0.);
-        }
-        break;
-      default:
-        continue;
+    if (filterByCellType((*hit).second->ID)) continue;
+    // we want: - all cells that were input to the cm (common mode) calculation get weight 0
+    //          - all the others are corrected by the cm
+    if ((*hit).second->E > CM_threshold) {    
+      (*hit).second->I = (*hit).second->I - cm_subtraction;
+    } else {
+      (*hit).second->I = std::max((*hit).second->I - cm_subtraction, 0.);
     }
   }
 }
@@ -168,20 +163,20 @@ std::pair<double, double> SensorHitMap::getCenterPositionError() {
 
 
 //private functions //only consider certain cellTypes for the N closest approach (analogous to the LayerSumAnalyzer)
-bool SensorHitMap::filterByCellType(HitData* hit) {  
-  if (hit->ID!=0 && hit->ID!=1 && hit->ID!=4)  //filter cells that do not have either 0, 1, 4 as ID
-    return true;  
-  
+bool SensorHitMap::filterByCellType(int ID) {  
+  /*
+  if (ID!=0 && ID!=1 && ID!=4)  //filter cells that do not have either 0, 1, 4 as ID
+    return true;      //TODO!!!
+  */
   return false;
 }
-
 
 void SensorHitMap::considerNClosest(int N_considered) {     //TODO!!!
   //better: ranking by radial distance and then take the closest ones
   HitsForPositioning.clear();
   if (N_considered < 0) {
     for(std::map<int, HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
-      if (filterByCellType((*hit).second)) continue;
+      if (filterByCellType((*hit).second->ID)) continue;
       HitsForPositioning.push_back((*hit).second);
     }
     return;
@@ -190,7 +185,7 @@ void SensorHitMap::considerNClosest(int N_considered) {     //TODO!!!
   //calculate radial distance for all pairs to the most significant hit
   std::vector<std::pair<double, HitData*>> to_sort;
   for(std::map<int, HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
-    if (filterByCellType((*hit).second)) continue;
+    if (filterByCellType((*hit).second->ID)) continue;
     double current_radius = sqrt(pow((*hit).second->x - mostSignificantHit->x,2) + pow((*hit).second->y - mostSignificantHit->y,2));
     to_sort.push_back(std::make_pair(current_radius, (*hit).second));
   }
@@ -337,16 +332,18 @@ void ParticleTrack::weightFitPoints(FitPointWeightingMethod method) {
   }
 
   //we want to assure that the sum of weights is conserved to not majorly influence the goodness of the fit
-  double nom_x=0.; double nom_y=0.; double denom_x=0.; double denom_y=0.;
+  double nom_x=0.; double nom_y=0.; double denom_x=0.; double denom_y=0.; double new_weight = 1.0;
   for (int i=0; i<N_points; i++) {
+    new_weight = weightToFitPointWeight(weights[i], sum_Weights, method);
     nom_x += x_err[i];
     nom_y += y_err[i];
-    denom_x  += x_err[i]*weightToFitPointWeight(weights[i], sum_Weights, method); //original weights are untouched
-    denom_y  += y_err[i]*weightToFitPointWeight(weights[i], sum_Weights, method);
+    denom_x  += x_err[i]*new_weight; //original weights are untouched
+    denom_y  += y_err[i]*new_weight;
   }
   for (int i=0; i<N_points; i++) {
-    x_err[i] = (nom_x/denom_x)*x_err[i]*weightToFitPointWeight(weights[i], sum_Weights, method);
-    y_err[i] = (nom_y/denom_y)*y_err[i]*weightToFitPointWeight(weights[i], sum_Weights, method);
+    new_weight = weightToFitPointWeight(weights[i], sum_Weights, method);
+    x_err[i] = (nom_x/denom_x)*x_err[i]*new_weight;
+    y_err[i] = (nom_y/denom_y)*y_err[i]*new_weight;
   }
 }
 
