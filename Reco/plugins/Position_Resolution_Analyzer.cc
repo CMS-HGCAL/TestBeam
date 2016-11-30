@@ -93,7 +93,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		TTree* outTree;
 		int configuration, evId, run, layer;
 		double energy;
-		double x_predicted, y_predicted, x_true, y_true, deltaX, deltaY, layerZ_cm, layerZ_X0, deviation;
+		double x_predicted, y_predicted, x_true, x_true_err, y_true, y_true_err, deltaX, deltaY, layerZ_cm, layerZ_X0, deviation;
 };
 
 Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterSet& iConfig) {
@@ -179,7 +179,9 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("x_predicted", &x_predicted, "x_predicted/D");
 	outTree->Branch("y_predicted", &y_predicted, "y_predicted/D");
 	outTree->Branch("x_true", &x_true, "x_true/D");
+	outTree->Branch("x_true_err", &x_true_err, "x_true_err/D");
 	outTree->Branch("y_true", &y_true, "y_true/D");
+	outTree->Branch("y_true_err", &y_true_err, "y_true_err/D");
 	outTree->Branch("deltaX", &deltaX, "deltaX/D");
 	outTree->Branch("deltaY", &deltaY, "deltaY/D");
 	outTree->Branch("layerZ_cm", &layerZ_cm, "layerZ_cm/D");
@@ -302,7 +304,9 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		successfulFitCounter[run]++; 
 		
 		x_true = Sensors[layer]->getCenterPosition().first;
+		x_true_err = Sensors[layer]->getCenterPositionError().first;
 		y_true = Sensors[layer]->getCenterPosition().second;
+		y_true_err = Sensors[layer]->getCenterPositionError().second;
 
 		deltaX = x_predicted - x_true;
 		deltaY = y_predicted - y_true;
