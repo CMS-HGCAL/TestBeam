@@ -8,6 +8,7 @@
 
 #include "TF1.h"
 #include "TGraphErrors.h"
+#include "TFitResult.h"
 
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
@@ -42,6 +43,14 @@ enum TrackFittingMethod {
   LINEFITTGRAPHERRORS,
   POL2TGRAPHERRORS,
   POL3TGRAPHERRORS
+};
+
+enum FitPointWeightingMethod {
+  NONE, 
+  LINEAR,
+  SQUARED,
+  LOGARITHMIC,
+  EXPONENTIAL
 };
 
 struct HitData {
@@ -110,7 +119,7 @@ class ParticleTrack{
     ParticleTrack();
     ~ParticleTrack();
     void addFitPoint(SensorHitMap* sensor);
-    void weightFitPoints();
+    void weightFitPoints(FitPointWeightingMethod method);
     void fitTrack(TrackFittingMethod method);
     std::pair<double, double> calculatePositionXY(double z);
     std::pair<double, double> calculatePositionErrorXY(double z);
@@ -132,9 +141,9 @@ class ParticleTrack{
     std::pair<double, double> positionErrorFromPolFitTGraphErrors(int degree, double z);
     TF1* ROOTpol_x;
     TF1* ROOTpol_y;
-    TGraph* tmp_graph_x;
-    TGraph* tmp_graph_y;
+    TFitResultPtr fit_result_x;
+    TFitResultPtr fit_result_y;
 };
 
-
+double weightToFitPointWeight(double w, double sum_w, FitPointWeightingMethod m);
 #endif

@@ -71,7 +71,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		ConsiderationMethod considerationMethod;
 		WeightingMethod weightingMethod;
 		TrackFittingMethod fittingMethod;		
-		bool performFitPointWeighting;
+		FitPointWeightingMethod fitPointWeightingMethod;
 
 		std::vector<int> EventsFor2DGraphs;
 		double pedestalThreshold;
@@ -149,6 +149,21 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	else 
 		fittingMethod = DEFAULTFITTING;
 
+	//read the fit point weighting technique:
+	methodString = iConfig.getParameter<std::string>("fitPointWeightingMethod");
+	if (methodString == "none")
+		fitPointWeightingMethod = NONE;
+	else if (methodString == "linear")
+		fitPointWeightingMethod = LINEAR;
+	else if (methodString == "squared")
+		fitPointWeightingMethod = SQUARED;
+	else if (methodString == "logarithmic")
+		fitPointWeightingMethod = LOGARITHMIC;
+	else if (methodString == "exponential")
+		fitPointWeightingMethod = EXPONENTIAL;
+	else 
+		fitPointWeightingMethod = NONE;
+
 	//read the layer configuration
 	LayersConfig = iConfig.getParameter<int>("layers_config");
 	if (LayersConfig == 1) {
@@ -161,8 +176,6 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 		Layer_Z_Positions = std::vector<double>(config1Positions, config1Positions + sizeof(config1Positions)/sizeof(double));
 		Layer_Z_X0s 			= std::vector<double>(config1X0Depths, config1X0Depths + sizeof(config1X0Depths)/sizeof(double));
 	}
-
-	performFitPointWeighting = iConfig.getParameter<bool>("fitPointWeighting");
 
 	pedestalThreshold = iConfig.getParameter<double>("pedestalThreshold");
 	SensorSize = iConfig.getParameter<int>("SensorSize");
@@ -291,9 +304,8 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			if (i==j) continue;
 			Tracks[i]->addFitPoint(Sensors[j]);
 		}
-		if (performFitPointWeighting) {
-			Tracks[i]->weightFitPoints();
-		}
+		
+		Tracks[i]->weightFitPoints(fitPointWeightingMethod);
 		Tracks[i]->fitTrack(fittingMethod);
 	}
 	

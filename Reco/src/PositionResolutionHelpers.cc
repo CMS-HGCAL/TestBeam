@@ -308,7 +308,6 @@ double SensorHitMap::getTotalWeight() {
 ParticleTrack::ParticleTrack(){
   lastAppliedMethod = DEFAULTFITTING;
   ROOTpol_x = ROOTpol_y = 0;
-  tmp_graph_x = tmp_graph_y = 0;
 
   N_points = 0;
 };
@@ -330,18 +329,24 @@ void ParticleTrack::addFitPoint(SensorHitMap* sensor){
   weights.push_back(sensor->getTotalWeight());
 };
 
-void ParticleTrack::weightFitPoints() {
+void ParticleTrack::weightFitPoints(FitPointWeightingMethod method) {
+  //calculate the sum of all weights first 
+  double sum_Weights = 0.0;
+  for (int i=0; i<N_points; i++) {
+    sum_Weights += weights[i];
+  }
+
   //we want to assure that the sum of weights is conserved to not majorly influence the goodness of the fit
   double nom_x=0.; double nom_y=0.; double denom_x=0.; double denom_y=0.;
   for (int i=0; i<N_points; i++) {
     nom_x += x_err[i];
     nom_y += y_err[i];
-    denom_x  += x_err[i]/(1.+weights[i]);
-    denom_y  += y_err[i]/(1.+weights[i]);
+    denom_x  += x_err[i]*weightToFitPointWeight(weights[i], sum_Weights, method);
+    denom_y  += y_err[i]*weightToFitPointWeight(weights[i], sum_Weights, method);
   }
   for (int i=0; i<N_points; i++) {
-    x_err[i] = (nom_x/denom_x)*x_err[i]/(1.+weights[i]);
-    y_err[i] = (nom_y/denom_y)*y_err[i]/(1.+weights[i]);
+    x_err[i] = (nom_x/denom_x)*x_err[i]*weightToFitPointWeight(weights[i], sum_Weights, method);
+    y_err[i] = (nom_y/denom_y)*y_err[i]*weightToFitPointWeight(weights[i], sum_Weights, method);
   }
 }
 
@@ -404,11 +409,11 @@ void ParticleTrack::polFitTGraphErrors(int degree){
   ROOTpol_x = new TF1("ROOTpol_x", ("pol"+std::to_string(degree)).c_str(), *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
   ROOTpol_y = new TF1("ROOTpol_y", ("pol"+std::to_string(degree)).c_str(), *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
   
-  tmp_graph_x = new TGraphErrors(z.size(), &(z[0]), &(x[0]), &(z_err[0]), &(x_err[0])); //z_err should be filled with zeros
-  tmp_graph_y = new TGraphErrors(z.size(), &(z[0]), &(y[0]), &(z_err[0]), &(y_err[0]));
+  TGraphErrors* tmp_graph_x = new TGraphErrors(z.size(), &(z[0]), &(x[0]), &(z_err[0]), &(x_err[0])); //z_err should be filled with zeros
+  TGraphErrors* tmp_graph_y = new TGraphErrors(z.size(), &(z[0]), &(y[0]), &(z_err[0]), &(y_err[0]));
   
-  tmp_graph_x->Fit(ROOTpol_x, "QF");
-  tmp_graph_y->Fit(ROOTpol_y, "QF");
+  fit_result_x = tmp_graph_x->Fit(ROOTpol_x, "QFS");    //for some ROOT versions, the option 'S' is essential to retrieve the fit results object
+  fit_result_y = tmp_graph_y->Fit(ROOTpol_y, "QFS");
 
   delete tmp_graph_x;
   delete tmp_graph_y;
@@ -420,7 +425,32 @@ std::pair<double, double> ParticleTrack::positionFromPolFitTGraphErrors(int degr
 }
 
 std::pair<double, double> ParticleTrack::positionErrorFromPolFitTGraphErrors(int degree, double z) {
-  //TODO
-  return std::make_pair(1.0, 1.0);
+  double err_x = 0.; double err_y = 0.;
+  for (int i=0; i<=degree; i++){
+    err_x += pow( ROOTpol_x->GetParError(i) * pow(z, i) ,2);
+    err_y += pow( ROOTpol_y->GetParError(i) * pow(z, i) ,2);
+    
+    for (int j=i+1; j<=degree; j++) {
+      err_x += 2*fit_result_x->Correlation(i, j) * ROOTpol_x->GetParError(i) * ROOTpol_x->GetParError(j) * fabs(pow(z, i+j));
+      err_y += 2*fit_result_y->Correlation(i, j) * ROOTpol_y->GetParError(i) * ROOTpol_y->GetParError(j) * fabs(pow(z, i+j));
+    }
+  }
+  return std::make_pair(err_x, err_y);
 }
 
+double weightToFitPointWeight(double w, double sum_w, FitPointWeightingMethod m) {
+  switch(m) {
+    case NONE:
+      return 1.0;
+    case LINEAR:
+      return 1.0/(1.0+w/sum_w);
+    case SQUARED:
+      return pow(1.0/(1.0+w/sum_w) ,2);
+    case LOGARITHMIC:
+      return 1.0/(1.0+log(1.0+w/sum_w));
+    case EXPONENTIAL:
+      return exp(-w/sum_w);
+    default:
+      return 1.0;
+  }  
+}
