@@ -123,6 +123,7 @@ class ParticleTrack{
     void fitTrack(TrackFittingMethod method);
     std::pair<double, double> calculatePositionXY(double z);
     std::pair<double, double> calculatePositionErrorXY(double z);
+    double getSumOfWeights();
   private:
     int N_points; //cross check, should be identical to x.size() etc.
     //general information, the fit points

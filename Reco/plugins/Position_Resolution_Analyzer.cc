@@ -94,6 +94,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		TTree* outTree;
 		int configuration, evId, run, layer;
 		double energy;
+		double layerWeight, sumFitWeights;
 		double x_predicted, x_predicted_err, y_predicted, y_predicted_err, x_true, x_true_err, y_true, y_true_err, deltaX, deltaY, layerZ_cm, layerZ_X0, deviation;
 };
 
@@ -192,6 +193,8 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("run", &run, "run/I");
 	outTree->Branch("layer", &layer, "layer/I");
 	outTree->Branch("energy", &energy, "energy/D");
+	outTree->Branch("layerWeight", &layerWeight, "layerWeight/D");
+	outTree->Branch("sumFitWeights", &sumFitWeights, "sumFitWeights/D");
 	outTree->Branch("x_predicted", &x_predicted, "x_predicted/D");
 	outTree->Branch("x_predicted_err", &x_predicted_err, "x_predicted_err/D");
 	outTree->Branch("y_predicted", &y_predicted, "y_predicted/D");
@@ -304,7 +307,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			if (i==j) continue;
 			Tracks[i]->addFitPoint(Sensors[j]);
 		}
-		
 		Tracks[i]->weightFitPoints(fitPointWeightingMethod);
 		Tracks[i]->fitTrack(fittingMethod);
 	}
@@ -338,7 +340,10 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		deltaX = x_predicted - x_true;
 		deltaY = y_predicted - y_true;
 		deviation  = sqrt( pow(deltaX, 2) + pow(deltaY, 2) );
-		
+
+		sumFitWeights = Tracks[layer]->getSumOfWeights();
+		layerWeight = Sensors[layer]->getTotalWeight();
+
 		//DEBUG
 		if (deviation > 1000.) 
 			std::cout<<"   layer: "<<layer<<"   x:  "<<x_predicted<<" - "<<x_true<<"     "<<y_predicted<<" - "<<y_true<<std::endl;

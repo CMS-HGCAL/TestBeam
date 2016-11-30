@@ -341,7 +341,7 @@ void ParticleTrack::weightFitPoints(FitPointWeightingMethod method) {
   for (int i=0; i<N_points; i++) {
     nom_x += x_err[i];
     nom_y += y_err[i];
-    denom_x  += x_err[i]*weightToFitPointWeight(weights[i], sum_Weights, method);
+    denom_x  += x_err[i]*weightToFitPointWeight(weights[i], sum_Weights, method); //original weights are untouched
     denom_y  += y_err[i]*weightToFitPointWeight(weights[i], sum_Weights, method);
   }
   for (int i=0; i<N_points; i++) {
@@ -436,6 +436,14 @@ std::pair<double, double> ParticleTrack::positionErrorFromPolFitTGraphErrors(int
     }
   }
   return std::make_pair(err_x, err_y);
+}
+
+double ParticleTrack::getSumOfWeights() {  //returns the original weights (i.e. sum(layers for fit) sum(hits in layer) of WeightingMethod(intensity))
+  double sum_Weights = 0.0;
+  for (int i=0; i<N_points; i++) {
+    sum_Weights += weights[i];
+  }
+  return sum_Weights;
 }
 
 double weightToFitPointWeight(double w, double sum_w, FitPointWeightingMethod m) {
