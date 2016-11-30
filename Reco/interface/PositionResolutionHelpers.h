@@ -108,6 +108,7 @@ class SensorHitMap {
     double getZ_X0();
     std::pair<double, double> getCenterPosition();
     std::pair<double, double> getCenterPositionError(); //calculated via RMS
+    std::pair<double, double> getCenterOfClosestCell(std::pair<double, double> X_ref);
 
     //debug
     void printHits();

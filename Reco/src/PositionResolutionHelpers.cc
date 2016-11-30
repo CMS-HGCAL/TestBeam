@@ -8,7 +8,7 @@ SensorHitMap::SensorHitMap(){
   mostSignificantHit = NULL;  //will point to the most significant hit
   
   centralHitPoint = std::make_pair(0., 0.);
-  CM_threshold = 30.;
+  CM_threshold = 2.;
   layerZ_cm = 0;
   layerZ_X0 = 0;
   ADC_per_MIP = 1.;
@@ -76,7 +76,7 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
     mostSignificantHit = Hits[uniqueID];
   }
 
-  //analogous to RecHitPlotter_HighGain_New, only add to pedestals if energyHigh exceeds a threshold (default is 30. if not set in the setPedestalThreshold)
+  //analogous to RecHitPlotter_HighGain_New, only add to pedestals if energyHigh exceeds a threshold (default is 2. if not set in the setPedestalThreshold)
   if (energy <= CM_threshold) { //also analogous to the implementation in the LayerSumAnalyzer
     CM_cells_count++;
     CM_sum += energy;
@@ -161,9 +161,26 @@ std::pair<double, double> SensorHitMap::getCenterPositionError() {
   return centralHitPointError;
 }
 
+std::pair<double, double> SensorHitMap::getCenterOfClosestCell(std::pair<double, double> X_ref) {
+  std::vector<std::pair<double, HitData*>> to_sort;
+  for(std::map<int, HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
+    if (filterByCellType((*hit).second->ID)) continue;
+    double current_radius = sqrt(pow((*hit).second->x - X_ref.first,2) + pow((*hit).second->y - X_ref.second,2));
+    to_sort.push_back(std::make_pair(current_radius, (*hit).second));
+  }
+  //sort the hits by their radial distance
+  std::sort(to_sort.begin(), to_sort.end(), 
+    [](const std::pair<double, HitData*>& a, const std::pair<double, HitData*> b){
+      return a.first < b.first;
+    }
+  );  
+  return std::make_pair(to_sort[0].second->x, to_sort[0].second->y);
+}
+
 double SensorHitMap::getTotalWeight() {
   return this->totalWeight;
 };
+
 
 //private functions //only consider certain cellTypes for the N closest approach (analogous to the LayerSumAnalyzer)
 bool SensorHitMap::filterByCellType(int ID) {  

@@ -95,7 +95,8 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		int configuration, evId, run, layer;
 		double energy;
 		double layerWeight, sumFitWeights;
-		double x_predicted, x_predicted_err, y_predicted, y_predicted_err, x_true, x_true_err, y_true, y_true_err, deltaX, deltaY, layerZ_cm, layerZ_X0, deviation;
+		double x_predicted, x_predicted_err, y_predicted, y_predicted_err, x_true, x_true_err, y_true, y_true_err, deltaX, deltaY;
+		double x_predicted_to_closest_cell, y_predicted_to_closest_cell, x_true_to_closest_cell, y_true_to_closest_cell, layerZ_cm, layerZ_X0, deviation;
 };
 
 Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterSet& iConfig) {
@@ -196,12 +197,16 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("layerWeight", &layerWeight, "layerWeight/D");
 	outTree->Branch("sumFitWeights", &sumFitWeights, "sumFitWeights/D");
 	outTree->Branch("x_predicted", &x_predicted, "x_predicted/D");
+	outTree->Branch("x_predicted_to_closest_cell", &x_predicted_to_closest_cell, "x_predicted_to_closest_cell/D");
 	outTree->Branch("x_predicted_err", &x_predicted_err, "x_predicted_err/D");
 	outTree->Branch("y_predicted", &y_predicted, "y_predicted/D");
+	outTree->Branch("y_predicted_to_closest_cell", &y_predicted_to_closest_cell, "y_predicted_to_closest_cell/D");
 	outTree->Branch("y_predicted_err", &y_predicted_err, "y_predicted_err/D");
 	outTree->Branch("x_true", &x_true, "x_true/D");
+	outTree->Branch("x_true_to_closest_cell", &x_true_to_closest_cell, "x_true_to_closest_cell/D");
 	outTree->Branch("x_true_err", &x_true_err, "x_true_err/D");
 	outTree->Branch("y_true", &y_true, "y_true/D");
+	outTree->Branch("y_true_to_closest_cell", &y_true_to_closest_cell, "y_true_to_closest_cell/D");
 	outTree->Branch("y_true_err", &y_true_err, "y_true_err/D");
 	outTree->Branch("deltaX", &deltaX, "deltaX/D");
 	outTree->Branch("deltaY", &deltaY, "deltaY/D");
@@ -319,6 +324,11 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		std::pair<double, double> position_predicted = Tracks[layer]->calculatePositionXY(layerZ_cm);
 		x_predicted = position_predicted.first;
 		y_predicted = position_predicted.second;
+
+		std::pair<double, double> position_predicted_to_closest_cell = Sensors[layer]->getCenterOfClosestCell(position_predicted);
+		x_predicted_to_closest_cell = position_predicted_to_closest_cell.first;
+		y_predicted_to_closest_cell = position_predicted_to_closest_cell.second;
+
 		std::pair<double, double> position_error_predicted = Tracks[layer]->calculatePositionErrorXY(layerZ_cm);
 		x_predicted_err = position_error_predicted.first;
 		y_predicted_err = position_error_predicted.second;
@@ -333,6 +343,11 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		std::pair<double, double> position_true = Sensors[layer]->getCenterPosition();
 		x_true = position_true.first;
 		y_true = position_true.second;
+
+		std::pair<double, double> position_true_to_closest_cell = Sensors[layer]->getCenterOfClosestCell(position_true);
+		x_true_to_closest_cell = position_true_to_closest_cell.first;
+		y_true_to_closest_cell = position_true_to_closest_cell.second;
+
 		std::pair<double, double> position_error_true = Sensors[layer]->getCenterPositionError();
 		x_true_err = position_error_true.first;
 		y_true_err = position_error_true.second;
