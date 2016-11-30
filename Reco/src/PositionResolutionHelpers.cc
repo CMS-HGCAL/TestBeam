@@ -16,6 +16,8 @@ SensorHitMap::SensorHitMap(){
 
   CM_cells_count = 0;
   CM_sum = 0;
+
+  totalWeight = 1.; 
 }
 
 SensorHitMap::~SensorHitMap(){
@@ -226,22 +228,22 @@ void SensorHitMap::considerClusters(int N_considered) {
 }
 
 void SensorHitMap::poweredWeighting(int exponent) {
-  double numerator_x, numerator_y, denominator;
+  double numerator_x, numerator_y;
   double w;
   
-  numerator_x = numerator_y = denominator = 0; 
+  numerator_x = numerator_y = totalWeight = 0; 
   for(std::vector<HitData*>::iterator hit=HitsForPositioning.begin(); hit!=HitsForPositioning.end(); hit++){
     w = (*hit)->I >= 0.0 ? pow((*hit)->I, exponent) : 0.0;    //0.0 --> not included in the sum
-    denominator += w;
+    totalWeight += w;
     numerator_x += w*(*hit)->x;
     numerator_y += w*(*hit)->y;
   }
 
   //prevent divisions through zero
-  if (denominator == 0.0) denominator = 1.0;
+  if (totalWeight == 0.0) totalWeight = 1.0;
 
-  centralHitPoint.first = numerator_x/denominator;
-  centralHitPoint.second = numerator_y/denominator;
+  centralHitPoint.first = numerator_x/totalWeight;
+  centralHitPoint.second = numerator_y/totalWeight;
 
   //calculate the RMs
   numerator_x = numerator_y = 0.0;
@@ -250,8 +252,8 @@ void SensorHitMap::poweredWeighting(int exponent) {
     numerator_x += w*pow((*hit)->x - centralHitPoint.first, 2);
     numerator_y += w*pow((*hit)->y - centralHitPoint.second, 2);
   }
-  centralHitPointError.first = sqrt(numerator_x/denominator);
-  centralHitPointError.second = sqrt(numerator_y/denominator);
+  centralHitPointError.first = sqrt(numerator_x/totalWeight);
+  centralHitPointError.second = sqrt(numerator_y/totalWeight);
 };
 
 void SensorHitMap::logWeighting(double log_a, double log_b) {
@@ -263,24 +265,24 @@ void SensorHitMap::logWeighting(double log_a, double log_b) {
   }
   
 
-  double numerator_x, numerator_y, denominator;
+  double numerator_x, numerator_y;
   double w;
-  numerator_x = numerator_y = denominator = 0; 
+  numerator_x = numerator_y = totalWeight = 0; 
   
   for(std::vector<HitData*>::iterator hit=HitsForPositioning.begin(); hit!=HitsForPositioning.end(); hit++){
     I_i = (*hit)->I >= 0.0 ? (*hit)->I : 0.0;    
     if (I_i == 0.) continue;  
     w = std::max(log_a + log_b*log(I_i/I_max), 0.0);
-    denominator += w;
+    totalWeight += w;
     numerator_x += w*(*hit)->x;
     numerator_y += w*(*hit)->y;    
   }
 
   //prevent divisions through zero
-  if (denominator == 0.0) denominator = 1.0;
+  if (totalWeight == 0.0) totalWeight = 1.0;
 
-  centralHitPoint.first = numerator_x/denominator;
-  centralHitPoint.second = numerator_y/denominator;
+  centralHitPoint.first = numerator_x/totalWeight;
+  centralHitPoint.second = numerator_y/totalWeight;
 
   //calculate the RMs
   numerator_x = numerator_y = 0.0;
@@ -291,11 +293,13 @@ void SensorHitMap::logWeighting(double log_a, double log_b) {
     numerator_x += w*pow((*hit)->x - centralHitPoint.first, 2);
     numerator_y += w*pow((*hit)->y - centralHitPoint.second, 2);
   }
-  centralHitPointError.first = sqrt(numerator_x/denominator);
-  centralHitPointError.second = sqrt(numerator_y/denominator);
+  centralHitPointError.first = sqrt(numerator_x/totalWeight);
+  centralHitPointError.second = sqrt(numerator_y/totalWeight);
 };
 
-
+double SensorHitMap::getTotalWeight() {
+  return this->totalWeight;
+};
 
 
 //****   Particle Tracks    ****//
@@ -306,6 +310,7 @@ ParticleTrack::ParticleTrack(){
   ROOTpol_x = ROOTpol_y = 0;
   tmp_graph_x = tmp_graph_y = 0;
 
+  N_points = 0;
 };
 
 ParticleTrack::~ParticleTrack(){
@@ -315,14 +320,30 @@ ParticleTrack::~ParticleTrack(){
 };
 
 void ParticleTrack::addFitPoint(SensorHitMap* sensor){
+  N_points++;
   x.push_back(sensor->getCenterPosition().first);  
   x_err.push_back(sensor->getCenterPositionError().first);  
   y.push_back(sensor->getCenterPosition().second);  
   y_err.push_back(sensor->getCenterPositionError().second);  
   z.push_back(sensor->getZ());  
   z_err.push_back(0.0);
+  weights.push_back(sensor->getTotalWeight());
 };
 
+void ParticleTrack::weightFitPoints() {
+  //we want to assure that the sum of weights is conserved to not majorly influence the goodness of the fit
+  double nom_x, nom_y, denom_x, denom_y = 0.;
+  for (int i=0; i<N_points; i++) {
+    nom_x += x_err[i];
+    nom_y += y_err[i];
+    denom_x  += x_err[i]*weights[i];
+    denom_y  += y_err[i]*weights[i];
+  }
+  for (int i=0; i<N_points; i++) {
+    x_err[i] = (nom_x/denom_x)*x_err[i]*weights[i];
+    y_err[i] = (nom_y/denom_y)*y_err[i]*weights[i];
+  }
+}
 
 void ParticleTrack::fitTrack(TrackFittingMethod method){
   try {

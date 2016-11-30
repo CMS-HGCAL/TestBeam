@@ -74,6 +74,8 @@ class SensorHitMap {
     int CM_cells_count;
     double CM_sum;
 
+    double totalWeight; //equivalent to the denominator in the according weighting method
+
     bool filterByCellType(HitData* hit);
     void considerNClosest(int N_considered);
     void considerClusters(int N_considered);
@@ -92,6 +94,7 @@ class SensorHitMap {
     void addClusterHit(HGCalTBDetId hit, int N_considered);
     void subtractCM();
     void calculateCenterPosition(ConsiderationMethod considerationMethod, WeightingMethod weightingMethod);
+    double getTotalWeight();
     double getZ_cm();
     double getZ_X0();
     std::pair<double, double> getCenterPosition();
@@ -107,10 +110,12 @@ class ParticleTrack{
     ParticleTrack();
     ~ParticleTrack();
     void addFitPoint(SensorHitMap* sensor);
+    void weightFitPoints();
     void fitTrack(TrackFittingMethod method);
     std::pair<double, double> calculatePositionXY(double z);
     std::pair<double, double> calculatePositionErrorXY(double z);
   private:
+    int N_points; //cross check, should be identical to x.size() etc.
     //general information, the fit points
     std::vector<double> x;  
     std::vector<double> x_err;  
@@ -118,6 +123,7 @@ class ParticleTrack{
     std::vector<double> y_err;  
     std::vector<double> z;  
     std::vector<double> z_err;  
+    std::vector<double> weights;
     TrackFittingMethod lastAppliedMethod;
 
     //different fit functions

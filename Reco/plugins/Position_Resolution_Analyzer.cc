@@ -71,6 +71,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		ConsiderationMethod considerationMethod;
 		WeightingMethod weightingMethod;
 		TrackFittingMethod fittingMethod;		
+		bool performFitPointWeighting;
 
 		std::vector<int> EventsFor2DGraphs;
 		double pedestalThreshold;
@@ -160,6 +161,8 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 		Layer_Z_Positions = std::vector<double>(config1Positions, config1Positions + sizeof(config1Positions)/sizeof(double));
 		Layer_Z_X0s 			= std::vector<double>(X0depth_8L_conf1, X0depth_8L_conf1 + sizeof(X0depth_8L_conf1)/sizeof(double));
 	}
+
+	performFitPointWeighting = iConfig.getParameter<bool>("fitPointWeighting");
 
 	pedestalThreshold = iConfig.getParameter<double>("pedestalThreshold");
 	SensorSize = iConfig.getParameter<int>("SensorSize");
@@ -287,6 +290,9 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		for (int j=1; j<=nLayers; j++) {
 			if (i==j) continue;
 			Tracks[i]->addFitPoint(Sensors[j]);
+		}
+		if (performFitPointWeighting) {
+			Tracks[i]->weightFitPoints();
 		}
 		Tracks[i]->fitTrack(fittingMethod);
 	}

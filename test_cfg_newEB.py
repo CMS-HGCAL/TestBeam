@@ -100,7 +100,12 @@ options.register('pedestalThreshold',
                  VarParsing.VarParsing.varType.float,
                  'Threshold for the pedestal subtraction calculation in the position resolution plugin. Unit is MIP.'
                 )
-
+options.register('fitPointWeighting',
+                 False,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.float,
+                 'Fit points (one per layer) in the track fit are linearly weighted according to the deposited energy (in MIPs)'
+                )
 
 options.maxEvents = -1
 
@@ -168,6 +173,7 @@ process.hgcaltbrechits.gainHigh = cms.string('')
 process.position_resolution_analyzer.considerationMethod = cms.string(options.considerationMethod)
 process.position_resolution_analyzer.weightingMethod = cms.string(options.weightingMethod)
 process.position_resolution_analyzer.pedestalThreshold = cms.double(options.pedestalThreshold)
+process.position_resolution_analyzer.fitPointWeighting = cms.bool(options.fitPointWeighting)
 process.position_resolution_analyzer.EventsFor2DGraphs = []    #first occuring events with that id are being documented with 2DGraphs 
 
 
