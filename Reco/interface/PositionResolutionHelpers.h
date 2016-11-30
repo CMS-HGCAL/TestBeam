@@ -109,6 +109,7 @@ class ParticleTrack{
     void addFitPoint(SensorHitMap* sensor);
     void fitTrack(TrackFittingMethod method);
     std::pair<double, double> calculatePositionXY(double z);
+    std::pair<double, double> calculatePositionErrorXY(double z);
   private:
     //general information, the fit points
     std::vector<double> x;  
@@ -121,7 +122,8 @@ class ParticleTrack{
 
     //different fit functions
     void polFitTGraphErrors(int degree);  
-    std::pair<double, double> positionFromPolFitTGraphErrors(double z);
+    std::pair<double, double> positionFromPolFitTGraphErrors(int degree, double z);
+    std::pair<double, double> positionErrorFromPolFitTGraphErrors(int degree, double z);
     TF1* ROOTpol_x;
     TF1* ROOTpol_y;
     TGraph* tmp_graph_x;

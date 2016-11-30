@@ -93,7 +93,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		TTree* outTree;
 		int configuration, evId, run, layer;
 		double energy;
-		double x_predicted, y_predicted, x_true, x_true_err, y_true, y_true_err, deltaX, deltaY, layerZ_cm, layerZ_X0, deviation;
+		double x_predicted, x_predicted_err, y_predicted, y_predicted_err, x_true, x_true_err, y_true, y_true_err, deltaX, deltaY, layerZ_cm, layerZ_X0, deviation;
 };
 
 Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterSet& iConfig) {
@@ -177,7 +177,9 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("layer", &layer, "layer/I");
 	outTree->Branch("energy", &energy, "energy/D");
 	outTree->Branch("x_predicted", &x_predicted, "x_predicted/D");
+	outTree->Branch("x_predicted_err", &x_predicted_err, "x_predicted_err/D");
 	outTree->Branch("y_predicted", &y_predicted, "y_predicted/D");
+	outTree->Branch("y_predicted_err", &y_predicted_err, "y_predicted_err/D");
 	outTree->Branch("x_true", &x_true, "x_true/D");
 	outTree->Branch("x_true_err", &x_true_err, "x_true_err/D");
 	outTree->Branch("y_true", &y_true, "y_true/D");
@@ -293,20 +295,27 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	for (layer=1; layer<=nLayers; layer++) {
 		layerZ_cm = Sensors[layer]->getZ_cm();
 		layerZ_X0 = Sensors[layer]->getZ_X0();
-		x_predicted = Tracks[layer]->calculatePositionXY(layerZ_cm).first;
-		y_predicted = Tracks[layer]->calculatePositionXY(layerZ_cm).second;
-		
-		if (x_predicted==0 && y_predicted==0)	{
+
+		std::pair<double, double> position_predicted = calculatePositionXY(layerZ_cm);
+		x_predicted = Tracks[layer]->position_predicted.first;
+		y_predicted = Tracks[layer]->position_predicted.second;
+		std::pair<double, double> position_error_predicted = calculatePositionErrorXY(layerZ_cm);
+		x_predicted_err = position_error_predicted.first;
+		y_predicted_err = position_error_predicted.second;
+
+		if (!(x_predicted!=0 || y_predicted!=0 || x_predicted_err!=0 || y_predicted_err!=0))	{
 			//default fitting has been applied, i.e. the regular fit has failed or the selected method is not implemented
 			failedFitCounter[run]++;
 			continue; 	//ignore those cases but count them
 		}
 		successfulFitCounter[run]++; 
 		
-		x_true = Sensors[layer]->getCenterPosition().first;
-		x_true_err = Sensors[layer]->getCenterPositionError().first;
-		y_true = Sensors[layer]->getCenterPosition().second;
-		y_true_err = Sensors[layer]->getCenterPositionError().second;
+		std::pair<double, double> position_true = Sensors[layer]->getCenterPosition();
+		x_true = position_true.first;
+		y_true = position_true.second;
+		std::pair<double, double> position_error_true = Sensors[layer]->getCenterPositionError();
+		x_true_err = position_error_true.first;
+		y_true_err = position_error_true.second;
 
 		deltaX = x_predicted - x_true;
 		deltaY = y_predicted - y_true;

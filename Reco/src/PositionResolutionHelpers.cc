@@ -350,9 +350,23 @@ void ParticleTrack::fitTrack(TrackFittingMethod method){
 std::pair<double, double> ParticleTrack::calculatePositionXY(double z) {
   switch(lastAppliedMethod) {
     case LINEFITTGRAPHERRORS:
+      return positionFromPolFitTGraphErrors(1, z);
     case POL2TGRAPHERRORS:
+      return positionFromPolFitTGraphErrors(2, z);
     case POL3TGRAPHERRORS:
-      return positionFromPolFitTGraphErrors(z);
+      return positionFromPolFitTGraphErrors(3, z);
+    default:
+      return std::make_pair(0.,0.); 
+  }
+}
+std::pair<double, double> ParticleTrack::calculatePositionErrorXY(double z) {
+  switch(lastAppliedMethod) {
+    case LINEFITTGRAPHERRORS:
+      return positionErrorFromPolFitTGraphErrors(1, z);
+    case POL2TGRAPHERRORS:
+      return positionErrorFromPolFitTGraphErrors(2, z);
+    case POL3TGRAPHERRORS:
+      return positionErrorFromPolFitTGraphErrors(3, z);
     default:
       return std::make_pair(0.,0.); 
   }
@@ -380,7 +394,12 @@ void ParticleTrack::polFitTGraphErrors(int degree){
   
 }; 
 
-std::pair<double, double> ParticleTrack::positionFromPolFitTGraphErrors(double z) {
+std::pair<double, double> ParticleTrack::positionFromPolFitTGraphErrors(int degree, double z) {
   return std::make_pair(ROOTpol_x->Eval(z), ROOTpol_y->Eval(z));
+}
+
+std::pair<double, double> ParticleTrack::positionErrorFromPolFitTGraphErrors(int degree, double z) {
+  //TODO
+  return std::make_pair(1.0, 1.0);
 }
 
