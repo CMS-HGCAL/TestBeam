@@ -325,23 +325,23 @@ void ParticleTrack::addFitPoint(SensorHitMap* sensor){
   x_err.push_back(sensor->getCenterPositionError().first);  
   y.push_back(sensor->getCenterPosition().second);  
   y_err.push_back(sensor->getCenterPositionError().second);  
-  z.push_back(sensor->getZ());  
+  z.push_back(sensor->getZ_cm());  
   z_err.push_back(0.0);
   weights.push_back(sensor->getTotalWeight());
 };
 
 void ParticleTrack::weightFitPoints() {
   //we want to assure that the sum of weights is conserved to not majorly influence the goodness of the fit
-  double nom_x, nom_y, denom_x, denom_y = 0.;
+  double nom_x=0.; double nom_y=0.; double denom_x=0.; double denom_y=0.;
   for (int i=0; i<N_points; i++) {
     nom_x += x_err[i];
     nom_y += y_err[i];
-    denom_x  += x_err[i]*weights[i];
-    denom_y  += y_err[i]*weights[i];
+    denom_x  += x_err[i]/(1.+weights[i]);
+    denom_y  += y_err[i]/(1.+weights[i]);
   }
   for (int i=0; i<N_points; i++) {
-    x_err[i] = (nom_x/denom_x)*x_err[i]*weights[i];
-    y_err[i] = (nom_y/denom_y)*y_err[i]*weights[i];
+    x_err[i] = (nom_x/denom_x)*x_err[i]/(1.+weights[i]);
+    y_err[i] = (nom_y/denom_y)*y_err[i]/(1.+weights[i]);
   }
 }
 

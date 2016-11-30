@@ -85,7 +85,7 @@ class SensorHitMap {
   public:
     SensorHitMap();
     ~SensorHitMap();
-    void setZ(double z_cm);
+    void setZ(double z_cm, double z_X0);
     void setADCPerMIP(double ADC_per_MIP);
     void setSensorSize(int s);
     void setPedestalThreshold(double t);

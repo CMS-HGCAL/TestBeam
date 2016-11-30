@@ -42,11 +42,11 @@
   
 //configuration1:
 double config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.92}; 	 //z-coordinate in cm
-double X0depth_8L_conf1[] = {6.268, 1.131, 1.131, 1.362, 0.574, 1.301, 0.574, 2.42}; //in radiation lengths, copied from layerSumAnalyzer
+double config1X0Depths[] = {6.268, 1.131, 1.131, 1.362, 0.574, 1.301, 0.574, 2.42}; //in radiation lengths, copied from layerSumAnalyzer
 
 //configuration2:
 double config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4}; 				//z-coordinate in cm
-double X0depth_8L_conf2[] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021}; //in radiation lengths, copied from layerSumAnalyzer
+double config2X0Depths[] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021}; //in radiation lengths, copied from layerSumAnalyzer
                      
 class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	public:
@@ -153,13 +153,13 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	LayersConfig = iConfig.getParameter<int>("layers_config");
 	if (LayersConfig == 1) {
 		Layer_Z_Positions = std::vector<double>(config1Positions, config1Positions + sizeof(config1Positions)/sizeof(double));
-		Layer_Z_X0s 			= std::vector<double>(X0depth_8L_conf1, X0depth_8L_conf1 + sizeof(X0depth_8L_conf1)/sizeof(double));
+		Layer_Z_X0s 			= std::vector<double>(config1X0Depths, config1X0Depths + sizeof(config1X0Depths)/sizeof(double));
 	} if (LayersConfig == 2) {
 		Layer_Z_Positions = std::vector<double>(config2Positions, config2Positions + sizeof(config2Positions)/sizeof(double));
-		Layer_Z_X0s 			= std::vector<double>(X0depth_8L_conf2, X0depth_8L_conf2 + sizeof(X0depth_8L_conf2)/sizeof(double));
+		Layer_Z_X0s 			= std::vector<double>(config2X0Depths, config2X0Depths + sizeof(config2X0Depths)/sizeof(double));
 	} else {
 		Layer_Z_Positions = std::vector<double>(config1Positions, config1Positions + sizeof(config1Positions)/sizeof(double));
-		Layer_Z_X0s 			= std::vector<double>(X0depth_8L_conf1, X0depth_8L_conf1 + sizeof(X0depth_8L_conf1)/sizeof(double));
+		Layer_Z_X0s 			= std::vector<double>(config1X0Depths, config1X0Depths + sizeof(config1X0Depths)/sizeof(double));
 	}
 
 	performFitPointWeighting = iConfig.getParameter<bool>("fitPointWeighting");
@@ -302,10 +302,10 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		layerZ_cm = Sensors[layer]->getZ_cm();
 		layerZ_X0 = Sensors[layer]->getZ_X0();
 
-		std::pair<double, double> position_predicted = calculatePositionXY(layerZ_cm);
-		x_predicted = Tracks[layer]->position_predicted.first;
-		y_predicted = Tracks[layer]->position_predicted.second;
-		std::pair<double, double> position_error_predicted = calculatePositionErrorXY(layerZ_cm);
+		std::pair<double, double> position_predicted = Tracks[layer]->calculatePositionXY(layerZ_cm);
+		x_predicted = position_predicted.first;
+		y_predicted = position_predicted.second;
+		std::pair<double, double> position_error_predicted = Tracks[layer]->calculatePositionErrorXY(layerZ_cm);
 		x_predicted_err = position_error_predicted.first;
 		y_predicted_err = position_error_predicted.second;
 
