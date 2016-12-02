@@ -8,6 +8,7 @@ SensorHitMap::SensorHitMap(){
   mostSignificantHit = NULL;  //will point to the most significant hit
   
   centralHitPoint = std::make_pair(0., 0.);
+  centralHitPointError = std::make_pair(sqrt(12.), sqrt(12.));
   CM_threshold = 2.;
   layerZ_cm = 0;
   layerZ_X0 = 0;
@@ -255,7 +256,9 @@ void SensorHitMap::poweredWeighting(int exponent) {
   }
 
   //prevent divisions through zero
-  if (totalWeight == 0.0) totalWeight = 1.0;
+  if (totalWeight == 0.0) {   //equivalent to the statement that no sensor has fired 
+    return; //defaults are preserved
+  }
 
   centralHitPoint.first = numerator_x/totalWeight;
   centralHitPoint.second = numerator_y/totalWeight;
@@ -294,7 +297,9 @@ void SensorHitMap::logWeighting(double log_a, double log_b) {
   }
 
   //prevent divisions through zero
-  if (totalWeight == 0.0) totalWeight = 1.0;
+  if (totalWeight == 0.0) {   //equivalent to the statement that no sensor has fired 
+    return; //defaults are preserved
+  }
 
   centralHitPoint.first = numerator_x/totalWeight;
   centralHitPoint.second = numerator_y/totalWeight;
