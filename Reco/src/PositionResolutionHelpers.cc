@@ -19,6 +19,7 @@ SensorHitMap::SensorHitMap(){
   CM_sum = 0;
 
   totalWeight = 1.; 
+  totalIntensity = 0.;
 }
 
 SensorHitMap::~SensorHitMap(){
@@ -72,6 +73,7 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
   Hits[uniqueID]->y = ivy;
   Hits[uniqueID]->I = energy;
   Hits[uniqueID]->E = energy;
+  totalIntensity += energy;
   
   if (mostSignificantHit==NULL || energy > mostSignificantHit->E) {
     mostSignificantHit = Hits[uniqueID];
@@ -90,6 +92,7 @@ void SensorHitMap::addClusterHit(HGCalTBDetId hit, int N_considered) {
 }
 
 void SensorHitMap::subtractCM() {
+  totalIntensity = 0.;
   double cm_subtraction = CM_cells_count > 0. ? CM_sum/CM_cells_count : 0.;
 
   for(std::map<int, HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
@@ -101,6 +104,7 @@ void SensorHitMap::subtractCM() {
     } else {
       (*hit).second->I = std::max((*hit).second->I - cm_subtraction, 0.);
     }
+    totalIntensity += (*hit).second->I;
   }
 }
 
@@ -178,6 +182,10 @@ std::pair<double, double> SensorHitMap::getCenterOfClosestCell(std::pair<double,
   return std::make_pair(to_sort[0].second->x, to_sort[0].second->y);
 }
 
+double SensorHitMap::getTotalIntensity() {
+  return this->totalIntensity;
+}
+
 double SensorHitMap::getTotalWeight() {
   return this->totalWeight;
 };
@@ -186,7 +194,7 @@ double SensorHitMap::getTotalWeight() {
 //private functions //only consider certain cellTypes for the N closest approach (analogous to the LayerSumAnalyzer)
 bool SensorHitMap::filterByCellType(int ID) {  
   /*
-  if (ID!=0 && ID!=1 && ID!=4)  //filter cells that do not have either 0, 1, 4 as ID
+  if (ID!=0 )  //we only want to consider the main cells in the middle for first estimation
     return true;      //TODO!!!
   */
   return false;
@@ -342,7 +350,7 @@ void ParticleTrack::addFitPoint(SensorHitMap* sensor){
   y_err.push_back(sensor->getCenterPositionError().second);  
   z.push_back(sensor->getZ_cm());  
   z_err.push_back(0.0);
-  weights.push_back(sensor->getTotalWeight());
+  weights.push_back(sensor->getTotalIntensity());
 };
 
 void ParticleTrack::weightFitPoints(FitPointWeightingMethod method) {

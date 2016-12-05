@@ -84,6 +84,7 @@ class SensorHitMap {
     double CM_sum;
 
     double totalWeight; //equivalent to the denominator in the according weighting method
+    double totalIntensity;
 
     bool filterByCellType(int ID);
     void considerNClosest(int N_considered);
@@ -103,6 +104,7 @@ class SensorHitMap {
     void addClusterHit(HGCalTBDetId hit, int N_considered);
     void subtractCM();
     void calculateCenterPosition(ConsiderationMethod considerationMethod, WeightingMethod weightingMethod);
+    double getTotalIntensity();
     double getTotalWeight();
     double getZ_cm();
     double getZ_X0();
