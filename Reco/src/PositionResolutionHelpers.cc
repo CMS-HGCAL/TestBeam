@@ -142,14 +142,35 @@ void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMeth
     case LINEARWEIGHTING:
       SensorHitMap::poweredWeighting(1);
       break;
+    case LOGWEIGHTING_30_10:
+      SensorHitMap::logWeighting(3.0, 1.0);
+      break;
+    case LOGWEIGHTING_30_15:
+      SensorHitMap::logWeighting(3.0, 1.5);
+      break;
+    case LOGWEIGHTING_40_10:
+      SensorHitMap::logWeighting(4.0, 1.0);
+      break;
+    case LOGWEIGHTING_40_15:
+      SensorHitMap::logWeighting(4.0, 1.5);
+      break;
     case LOGWEIGHTING_50_10:
       SensorHitMap::logWeighting(5.0, 1.0);
       break;
-    case LOGWEIGHTING_50_05:
-      SensorHitMap::logWeighting(5.0, 0.5);
+    case LOGWEIGHTING_50_15:
+      SensorHitMap::logWeighting(5.0, 1.5);
+      break;
+    case LOGWEIGHTING_60_10:
+      SensorHitMap::logWeighting(6.0, 1.0);
+      break;
+    case LOGWEIGHTING_60_15:
+      SensorHitMap::logWeighting(6.0, 1.5);
       break;
     case LOGWEIGHTING_70_10:
       SensorHitMap::logWeighting(7.0, 1.0);
+      break;
+    case LOGWEIGHTING_70_15:
+      SensorHitMap::logWeighting(7.0, 1.5);
       break;
     //case NEWMETHOD:
       //SensorHitMap::newWeightingFunction()
@@ -295,7 +316,9 @@ void SensorHitMap::logWeighting(double log_a, double log_b) {
   double w;
   numerator_x = numerator_y = totalWeight = 0; 
   
+  int counter = 0;
   for(std::vector<HitData*>::iterator hit=HitsForPositioning.begin(); hit!=HitsForPositioning.end(); hit++){
+    counter++;
     I_i = (*hit)->I >= 0.0 ? (*hit)->I : 0.0;    
     if (I_i == 0.) continue;  
     w = std::max(log_a + log_b*log(I_i/I_max), 0.0);
