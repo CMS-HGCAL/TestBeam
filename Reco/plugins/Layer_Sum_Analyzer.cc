@@ -53,7 +53,9 @@ const bool PIONS(0);// uses > PION_*CELLS_THRESHOLD and < *CELLS_THRESHOLD
 
 //TO BE FIXED for FNAL
 double ADCtoMIP_FNAL[16] = {16.02,16.85,15.36,14.73,10.66,15.64,16.52,14.24,10.07,14.42,16.14,17.33,16.61,16.84,15.79,16.43};
-double ADCtoMIP_CERN[16] =  {17.24, 16.92, 17.51, 16.4, 17.35, 17.49, 16.29, 16.32, 1., 1., 1., 1., 1., 1., 1., 1.};
+//double ADCtoMIP_CERN[16] =  {17.24, 16.92, 17.51, 16.4, 17.35, 17.49, 16.29, 16.32, 1., 1., 1., 1., 1., 1., 1., 1.};
+double ADCtoMIP_CERN[16] =  {17.31, 17.12, 16.37, 17.45, 17.31, 16.98, 16.45, 16.19, 17.55, 17.19, 16.99, 17.92, 15.95, 16.64, 16.79, 15.66};
+
 
 
 //// for EMM physics list 28 configuration get the calibration factors (1.e-06 GeV)
@@ -130,9 +132,9 @@ private:
 
         double Weights_L[MAXLAYERS];
         double X0_L[MAXLAYERS];
-        double ADCtoMIP[MAXLAYERS];
-        double ADCtoMIPup[MAXLAYERS];
-        double ADCtoMIPdw[MAXLAYERS];
+        double ADCtoMIP[MAXSKIROCS];
+        double ADCtoMIPup[MAXSKIROCS];
+        double ADCtoMIPdw[MAXSKIROCS];
 
 
         TH1F *h_CM_layer[MAXLAYERS];
@@ -189,7 +191,6 @@ private:
 Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
 {
   std::cout << " welcome costruttore MAXSKIROCS = " << MAXSKIROCS << std::endl;
-
   // initialization
   usesResource("TFileService");
   edm::Service<TFileService> fs;
@@ -266,7 +267,8 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
     h_E7oE19_L_dw[layer] = fs->make<TH1F>(Form("h_E7oE19_L%d",layer+1), "", 5000, -5, 5);
     //
   }
- 
+  
+
   h_eAll_all = fs->make<TH1F>("h_eAll_all", "", 40010, -10, 40000);
   h_e7_all = fs->make<TH1F>("h_e7_all", "", 40010, -10, 40000);
   h_e19_all = fs->make<TH1F>("h_e19_all", "", 40010, -10, 40000);
@@ -352,34 +354,37 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
     return;
   }
 
-  for(int iL=0; iL<MAXLAYERS; ++iL){
+
     if(layers_config_ == 0){
-      Weights_L[iL] = LayerWeight_16L_FNAL[iL];
-      X0_L[iL] = X0depth_16L_FNAL[iL];
-      ADCtoMIP[iL] = ADCtoMIP_FNAL[iL];
-      ADCtoMIPup[iL] = ADCtoMIP_FNAL[iL] * 1.05;
-      ADCtoMIPdw[iL] = ADCtoMIP_FNAL[iL] * 0.95;
+      for(int iL=0; iL<MAXLAYERS; ++iL){
+	Weights_L[iL] = LayerWeight_16L_FNAL[iL];
+	X0_L[iL] = X0depth_16L_FNAL[iL];
+	ADCtoMIP[iL] = ADCtoMIP_FNAL[iL];
+	ADCtoMIPup[iL] = ADCtoMIP_FNAL[iL] * 1.05;
+	ADCtoMIPdw[iL] = ADCtoMIP_FNAL[iL] * 0.95;
+      }
       mapfile_ = iConfig.getParameter<std::string>("mapFile_FNAL");
     }
     else{
-      ADCtoMIP[iL] = ADCtoMIP_CERN[iL];
-      ADCtoMIPup[iL] = ADCtoMIP_CERN[iL] * 1.05;
-      ADCtoMIPdw[iL] = ADCtoMIP_CERN[iL] * 0.95;
       mapfile_ = iConfig.getParameter<std::string>("mapFile_CERN");
-      if(layers_config_ == 1){
-	Weights_L[iL] = LayerWeight_8L_conf1[iL];
-	X0_L[iL] = X0depth_8L_conf1[iL];
-      }
-      if(layers_config_ == 2){
-	Weights_L[iL] = LayerWeight_8L_conf2[iL];
-	X0_L[iL] = X0depth_8L_conf2[iL]; 
-      }
-      if(layers_config_ == -1){
-	Weights_L[iL] = 1.;
-	X0_L[iL] = 0.;
+      for(int iL=0; iL<MAXSKIROCS; ++iL){
+	ADCtoMIP[iL] = ADCtoMIP_CERN[iL];
+	ADCtoMIPup[iL] = ADCtoMIP_CERN[iL] * 1.05;
+	ADCtoMIPdw[iL] = ADCtoMIP_CERN[iL] * 0.95;
+	if(layers_config_ == 1 && iL < MAXLAYERS){
+	  Weights_L[iL] = LayerWeight_8L_conf1[iL];
+	  X0_L[iL] = X0depth_8L_conf1[iL];
+	}
+	if(layers_config_ == 2 && iL < MAXLAYERS){
+	  Weights_L[iL] = LayerWeight_8L_conf2[iL];
+	  X0_L[iL] = X0depth_8L_conf2[iL];
+	}
+	if(layers_config_ == -1 && iL < MAXLAYERS){
+	  Weights_L[iL] = 1.;
+	  X0_L[iL] = 0.;
+	}
       }
     }
-  } 
   
 }//constructor ends here
 
@@ -443,8 +448,7 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     
     int n_layer = (Rechit.id()).layer() - 1;
     int n_cell_type = (Rechit.id()).cellType();
-    //    int n_skiroc = eid.iskiroc() - 1;
-
+    int n_skiroc = (eid.iskiroc() - 1);
 
     //getting X and Y coordinates
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), sensorsize);
@@ -461,22 +465,24 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
       max_y[n_layer] = CellCentreXY.second;
     }
 
-    if((Rechit.energy()) / ADCtoMIP[n_layer] <= CMTHRESHOLD) {
+    if((Rechit.energy()) / ADCtoMIP[n_skiroc] <= CMTHRESHOLD) {
       commonmode[n_layer] += Rechit.energy();
       cm_num[n_layer]++;
     }
 
-    if((Rechit.energy()) / ADCtoMIPup[n_layer] <= CMTHRESHOLD) {
+    if((Rechit.energy()) / ADCtoMIPup[n_skiroc] <= CMTHRESHOLD) {
       commonmode_up[n_layer] += Rechit.energy();
       cm_num_up[n_layer]++;
     }
 
-    if((Rechit.energy()) / ADCtoMIPdw[n_layer] <= CMTHRESHOLD) {
+    if((Rechit.energy()) / ADCtoMIPdw[n_skiroc] <= CMTHRESHOLD) {
       commonmode_dw[n_layer] += Rechit.energy();
       cm_num_dw[n_layer]++;
     }
+
   }//Rechit loop ends here
   //	std::cout << " >>> found commonmode = " << commonmode << std::endl;
+
 
   for(int iL=0; iL<MAXLAYERS; ++iL){
     commonmode[iL] = commonmode[iL]/cm_num[iL];
@@ -487,11 +493,11 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
   }
 
   //  std::cout << " >>> normal " << std::endl;
-  ShowerShape shosha(Rechits, ADCtoMIP, commonmode, CMTHRESHOLD, max, max_x, max_y);
+  ShowerShape shosha(mapfile_, Rechits, ADCtoMIP, commonmode, CMTHRESHOLD, max, max_x, max_y);
   //  std::cout << " >>> up " << std::endl;
-  ShowerShape shosha_up(Rechits, ADCtoMIPup, commonmode, CMTHRESHOLD, max, max_x, max_y);
+  ShowerShape shosha_up(mapfile_, Rechits, ADCtoMIPup, commonmode, CMTHRESHOLD, max, max_x, max_y);
   //  std::cout << " >>> down " << std::endl;
-  ShowerShape shosha_dw(Rechits, ADCtoMIPdw, commonmode, CMTHRESHOLD, max, max_x, max_y);
+  ShowerShape shosha_dw(mapfile_, Rechits, ADCtoMIPdw, commonmode, CMTHRESHOLD, max, max_x, max_y);
  
   float E1SumL_R = 0.;
   float E7SumL_R = 0.;
@@ -767,10 +773,19 @@ Layer_Sum_Analyzer::beginJob()
 		throw cms::Exception("Unable to load electronics map");
 	}
 
-	for(int iii = 0; iii < MAXLAYERS; iii++){
-		ADCtoMIP[iii] = ADCtoMIP[iii] * MIP2ParticleCalib; // Converting response to 120 GeV protons to MIPs
-		ADCtoMIPup[iii] = ADCtoMIPup[iii] * MIP2ParticleCalib; // Converting response to 120 GeV protons to MIPs
-		ADCtoMIPdw[iii] = ADCtoMIPdw[iii] * MIP2ParticleCalib; // Converting response to 120 GeV protons to MIPs
+	if(layers_config_ != 0){
+	  for(int iii = 0; iii < MAXSKIROCS; iii++){
+	    ADCtoMIP[iii] = ADCtoMIP[iii] * MIP2ParticleCalib; // Converting response to 120 GeV protons to MIPs
+	    ADCtoMIPup[iii] = ADCtoMIPup[iii] * MIP2ParticleCalib; // Converting response to 120 GeV protons to MIPs
+	    ADCtoMIPdw[iii] = ADCtoMIPdw[iii] * MIP2ParticleCalib; // Converting response to 120 GeV protons to MIPs
+	  }
+	}
+	else{
+	  for(int iii = 0; iii < MAXLAYERS; iii++){
+	    ADCtoMIP[iii] = ADCtoMIP[iii] * MIP2ParticleCalib; // Converting response to 120 GeV protons to MIPs
+	    ADCtoMIPup[iii] = ADCtoMIPup[iii] * MIP2ParticleCalib; // Converting response to 120 GeV protons to MIPs
+	    ADCtoMIPdw[iii] = ADCtoMIPdw[iii] * MIP2ParticleCalib; // Converting response to 120 GeV protons to MIPs
+	  }
 	}
 	/*
 	        for(int iii= 0; iii<16;iii++){

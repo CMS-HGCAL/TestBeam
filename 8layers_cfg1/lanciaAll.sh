@@ -1,7 +1,8 @@
-source lancia100GeV.sh 
-source lancia200GeV.sh 
-source lancia20GeV.sh 
-source lancia250GeV.sh 
-source lancia32GeV.sh 
-source lancia70GeV.sh 
+source lancia100GeVAll.sh 
+source lancia150GeVAll.sh 
+source lancia200GeVAll.sh 
+source lancia20GeVAll.sh 
+source lancia250GeVAll.sh 
+source lancia32GeVAll.sh 
+source lancia70GeVAll.sh 
 
