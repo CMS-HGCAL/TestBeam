@@ -19,5 +19,7 @@
   <class name="reco::HGCalTBCluster"/>
   <class name="reco::HGCalTBClusterCollection"/>
   <class name="edm::Wrapper<edm::EDCollection<reco::HGCalTBCluster> >"/>
-
+  <class name="reco::HGCalTBCaloTrack"/>
+  <class name="reco::HGCalTBCaloTrackCollection"/>
+  <class name="edm::Wrapper<edm::EDCollection<reco::HGCalTBCaloTrack> >"/>
 </lcgdict>

@@ -2,6 +2,8 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBCluster.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
+#include "HGCal/DataFormats/interface/HGCalTBCaloTrack.h"
+#include "HGCal/DataFormats/interface/HGCalTBCaloTrackCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
 #include "HGCal/DataFormats/interface/HGCalTBTrackCollection.h"
 
@@ -21,6 +23,9 @@ struct dictionary {
 	
 	reco::HGCalTBCluster _aCluster;
 	std::vector<reco::HGCalTBCluster> _HGCTBClusterVect;
+
+	reco::HGCalTBCaloTrack _aCaloTrack;
+	std::vector<reco::HGCalTBCaloTrack> _HGCTBCaloTrackVect;
 	
 	SKIROC2DigiCollection _SR2DC;
 	edm::Wrapper<SKIROC2DigiCollection> _theSR2DC;

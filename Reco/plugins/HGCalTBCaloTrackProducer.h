@@ -31,6 +31,10 @@ private:
 	bool _doTrackCleaning;
 	double _maxDistanceToRecoTrack;
 	int _minTouchedLayers;
+	double _minEnergy;
+	double _maxEnergy;
+
+	std::vector<double> _layerZPositions;
 };
 
 #endif

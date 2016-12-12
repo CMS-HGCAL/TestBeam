@@ -158,7 +158,14 @@ namespace reco{
   class TrackCleaner
   {
   public: 
-   void clean( HGCalTBClusterCollection col, HGCalTBClusterCollection &cleancol, reco::HGCalTBCaloTrack &track, double maxDistance )
+    /* void clean( HGCalTBRecHitCollection col, HGCalTBRecHitCollection &cleancol, reco::HGCalTBCaloTrack &track, double maxDistance ) */
+    /* { */
+    /*   Distance<HGCalTBRecHit,reco::HGCalTBCaloTrack> dist; */
+    /*   for( auto p : col ) */
+    /* 	if( dist.distance( p,track )<maxDistance ) */
+    /* 	  cleancol.push_back(p); */
+    /* } */
+    void clean( HGCalTBClusterCollection col, HGCalTBClusterCollection &cleancol, reco::HGCalTBCaloTrack &track, double maxDistance )
     {
       Distance<HGCalTBCluster,reco::HGCalTBCaloTrack> dist;
       for( auto p : col )

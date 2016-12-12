@@ -40,6 +40,7 @@ private:
 	int _sensorSize;
 	int _maxTransverse;
 	double _minEnergy;
+	bool _rmSpecialCells;
 
 	std::vector<double> _layerZPositions;
 
