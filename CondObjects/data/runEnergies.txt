@@ -60,7 +60,6 @@
 1072	100.	electron	1
 1073	100.	electron	1
 1088	32.		electron	1
-1089	32.		electron	1
 1091	32.		electron	1
 1092	32.		electron	1
 1093	32.		electron	1
