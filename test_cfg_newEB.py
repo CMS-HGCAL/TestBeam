@@ -98,6 +98,7 @@ process.maxEvents = cms.untracked.PSet(
 ####################################
 process.load('HGCal.StandardSequences.RawToDigi_cff')
 process.load('HGCal.StandardSequences.LocalReco_cff')
+process.load('HGCal.StandardSequences.TrackingReco_cff')
 process.load('HGCal.StandardSequences.dqm_cff')
 
 
@@ -185,7 +186,12 @@ elif (options.chainSequence == 6):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.LayerSumAnalyzer)
 elif (options.chainSequence == 7):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbclusters*process.hgcaltbeventdisplay)
+elif (options.chainSequence == 8):
+    process.hgcaltbcalotracks.doTrackCleaning=True
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbclusters*process.hgcaltbcalotracks*process.hgcaltbtrackanalyzer)
 # example for running display :
 # cmsRun test_cfg_newEB.py runNumber=1291 runType=HGCRun nSpills=1 dataFolder='./' pedestalsHighGain="./CondObjects/data/pedHighGain1200.txt" pedestalsLowGain="./CondObjects/data/pedLowGain1200.txt" chainSequence=7 maxEvents=10
+# example for running tracking :
+# cmsRun test_cfg_newEB.py runNumber=1312 runType=HGCRun nSpills=15 dataFolder='./' pedestalsHighGain="./CondObjects/data/pedHighGain1200.txt" pedestalsLowGain="./CondObjects/data/pedLowGain1200.txt" chainSequence=8
 
 process.end = cms.EndPath(process.output)
