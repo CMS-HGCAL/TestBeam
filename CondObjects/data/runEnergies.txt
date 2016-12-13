@@ -39,7 +39,6 @@
 951		250.	electron	1
 952		250.	electron	1
 953		250.	electron	1
-1026	200.	electron	1
 1027	200.	electron	1
 1028	200.	electron	1
 1029	200.	electron	1
