@@ -19,7 +19,7 @@ SensorHitMap::SensorHitMap(){
   CM_sum = 0;
 
   totalWeight = 1.; 
-  totalIntensity = 0.;
+  totalEnergy = 0.;
 }
 
 SensorHitMap::~SensorHitMap(){
@@ -63,9 +63,9 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
   double ivy = CellCenterXY.second;
   int ID = (Rechit.id()).cellType();
 
-  if (filterByCellType(ID)) return; //returns true so far    TODO
+  if (filterByCellType(ID)) return; //returns false so far
 
-  double energy = Rechit.energy() / ADC_per_MIP;  //the LayerSumAnalyzer also calcu 
+  double energy = Rechit.energy() / ADC_per_MIP;  //the LayerSumAnalyzer also energy deposits in MIP units
 
   Hits[uniqueID] = new HitData;
   Hits[uniqueID]->ID = ID;
@@ -73,7 +73,7 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
   Hits[uniqueID]->y = ivy;
   Hits[uniqueID]->I = energy;
   Hits[uniqueID]->E = energy;
-  totalIntensity += energy;
+  totalEnergy += energy;
   
   if (mostSignificantHit==NULL || energy > mostSignificantHit->E) {
     mostSignificantHit = Hits[uniqueID];
@@ -86,13 +86,19 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
   }
 }
 
-void SensorHitMap::addClusterHit(HGCalTBDetId hit, int N_considered) {
+void SensorHitMap::registerClusterHit(HGCalTBDetId hit, int N_considered) {  //requires that all hits have been added to the layer
   int uniqueID = hit.rawId();
+
+  if (totalClusterEnergy.find(N_considered) == totalClusterEnergy.end()) {
+    totalClusterEnergy[N_considered] = 0;
+  }
+  totalClusterEnergy[N_considered] += Hits[uniqueID]->E;
+
   clusterIndexes[N_considered].push_back(uniqueID);
 }
 
 void SensorHitMap::subtractCM() {
-  totalIntensity = 0.;
+  totalEnergy = 0.;
   double cm_subtraction = CM_cells_count > 0. ? CM_sum/CM_cells_count : 0.;
 
   for(std::map<int, HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
@@ -104,7 +110,7 @@ void SensorHitMap::subtractCM() {
     } else {
       (*hit).second->I = std::max((*hit).second->I - cm_subtraction, 0.);
     }
-    totalIntensity += (*hit).second->I;
+    totalEnergy += (*hit).second->I;
   }
 }
 
@@ -203,8 +209,12 @@ std::pair<double, double> SensorHitMap::getCenterOfClosestCell(std::pair<double,
   return std::make_pair(to_sort[0].second->x, to_sort[0].second->y);
 }
 
-double SensorHitMap::getTotalIntensity() {
-  return this->totalIntensity;
+double SensorHitMap::getTotalEnergy() {
+  return this->totalEnergy;
+}
+
+double SensorHitMap::getTotalClusterEnergy(int N_considered) {
+  return this->totalClusterEnergy[N_considered];
 }
 
 double SensorHitMap::getTotalWeight() {
@@ -212,16 +222,19 @@ double SensorHitMap::getTotalWeight() {
 };
 
 
-//private functions //only consider certain cellTypes for the N closest approach (analogous to the LayerSumAnalyzer)
+//private functions 
+
+//only consider certain cellTypes for the N closest approach (analogous to the LayerSumAnalyzer)
+//TODO
 bool SensorHitMap::filterByCellType(int ID) {  
   /*
   if (ID!=0 )  //we only want to consider the main cells in the middle for first estimation
-    return true;      //TODO!!!
+    return true;      //TODO
   */
   return false;
 }
 
-void SensorHitMap::considerNClosest(int N_considered) {     //TODO!!!
+void SensorHitMap::considerNClosest(int N_considered) {     
   //better: ranking by radial distance and then take the closest ones
   HitsForPositioning.clear();
   if (N_considered < 0) {
@@ -373,27 +386,27 @@ void ParticleTrack::addFitPoint(SensorHitMap* sensor){
   y_err.push_back(sensor->getCenterPositionError().second);  
   z.push_back(sensor->getZ_cm());  
   z_err.push_back(0.0);
-  weights.push_back(sensor->getTotalIntensity());
+  Energies.push_back(sensor->getTotalEnergy());
 };
 
 void ParticleTrack::weightFitPoints(FitPointWeightingMethod method) {
-  //calculate the sum of all weights first 
-  double sum_Weights = 0.0;
+  //calculate the sum of all Energies first 
+  double sum_Energies = 0.0;
   for (int i=0; i<N_points; i++) {
-    sum_Weights += weights[i];
+    sum_Energies += Energies[i];
   }
 
-  //we want to assure that the sum of weights is conserved to not majorly influence the goodness of the fit
+  //we want to assure that the sum of Energies is conserved to not majorly influence the goodness of the fit
   double nom_x=0.; double nom_y=0.; double denom_x=0.; double denom_y=0.; double new_weight = 1.0;
   for (int i=0; i<N_points; i++) {
-    new_weight = weightToFitPointWeight(weights[i], sum_Weights, method);
+    new_weight = weightToFitPointWeight(Energies[i], sum_Energies, method);
     nom_x += x_err[i];
     nom_y += y_err[i];
-    denom_x  += x_err[i]*new_weight; //original weights are untouched
+    denom_x  += x_err[i]*new_weight; //original Energies are untouched
     denom_y  += y_err[i]*new_weight;
   }
   for (int i=0; i<N_points; i++) {
-    new_weight = weightToFitPointWeight(weights[i], sum_Weights, method);
+    new_weight = weightToFitPointWeight(Energies[i], sum_Energies, method);
     x_err[i] = (nom_x/denom_x)*x_err[i]*new_weight;
     y_err[i] = (nom_y/denom_y)*y_err[i]*new_weight;
   }
@@ -447,12 +460,12 @@ std::pair<double, double> ParticleTrack::calculatePositionErrorXY(double z) {
   }
 }
 
-double ParticleTrack::getSumOfWeights() {  //returns the original weights (i.e. sum(layers for fit) sum(hits in layer) of WeightingMethod(intensity))
-  double sum_Weights = 0.0;
+double ParticleTrack::getSumOfEnergies() {  //returns the original Energies (i.e. sum(layers for fit) sum(hits in layer) of WeightingMethod(intensity))
+  double sum_Energies = 0.0;
   for (int i=0; i<N_points; i++) {
-    sum_Weights += weights[i];
+    sum_Energies += Energies[i];
   }
-  return sum_Weights;
+  return sum_Energies;
 }
 
 //private functions
@@ -496,18 +509,18 @@ std::pair<double, double> ParticleTrack::positionErrorFromPolFitTGraphErrors(int
 }
 
 
-double weightToFitPointWeight(double w, double sum_w, FitPointWeightingMethod m) {
+double weightToFitPointWeight(double e, double sum_e, FitPointWeightingMethod m) {
   switch(m) {
     case NONE:
       return 1.0;
     case LINEAR:
-      return 1.0/(1.0+w/sum_w);
+      return 1.0/(1.0+e/sum_e);
     case SQUARED:
-      return pow(1.0/(1.0+w/sum_w) ,2);
+      return pow(1.0/(1.0+e/sum_e) ,2);
     case LOGARITHMIC:
-      return 1.0/(1.0+log(1.0+w/sum_w));
+      return 1.0/(1.0+log(1.0+e/sum_e));
     case EXPONENTIAL:
-      return exp(-w/sum_w);
+      return exp(-e/sum_e);
     default:
       return 1.0;
   }  

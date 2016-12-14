@@ -82,6 +82,12 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		int nLayers;
 		int SensorSize;
 
+		double totalEnergyThreshold;
+
+		int ClusterVetoCounter;
+		int HitsVetoCounter;
+		int CommonVetoCounter;
+
 		std::map<int, int> successfulFitCounter, failedFitCounter;
 
 
@@ -198,6 +204,8 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	nLayers = iConfig.getParameter<int>("nLayers");
 	ADC_per_MIP = iConfig.getParameter<std::vector<double> >("ADC_per_MIP");
 
+	totalEnergyThreshold = iConfig.getParameter<double>("totalEnergyThreshold");
+
 	//making 2DGraphs per event?
 	EventsFor2DGraphs = iConfig.getParameter<std::vector<int> >("EventsFor2DGraphs");
 
@@ -228,6 +236,10 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("layerZ_X0", &layerZ_X0, "layerZ_X0/D");
 	outTree->Branch("deviation", &deviation, "deviation/D");
 
+
+	ClusterVetoCounter = 0;
+	HitsVetoCounter = 0;
+	CommonVetoCounter = 0;
 }//constructor ends here
 
 Position_Resolution_Analyzer::~Position_Resolution_Analyzer() {
@@ -273,7 +285,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	event.getByToken(HGCalTBClusterCollection7_Token, clusters7);
 	event.getByToken(HGCalTBClusterCollection19_Token, clusters19);
 
-
 	//step 1: Reduce the information to energy deposits/hits in x,y per sensor/layer 
 	//fill the rechits:
 	for(auto Rechit : *Rechits) {	
@@ -292,21 +303,38 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	for( auto cluster : *clusters ){
 		layer = cluster.layer();
 		for( std::vector< std::pair<DetId,float> >::const_iterator it=cluster.hitsAndFractions().begin(); it!=cluster.hitsAndFractions().end(); ++it ){
-			Sensors[layer]->addClusterHit((*it).first, -1);
+			Sensors[layer]->registerClusterHit((*it).first, -1);
 		}
 	}
 	for( auto cluster : *clusters7 ){
 		layer = cluster.layer();
 		for( std::vector< std::pair<DetId,float> >::const_iterator it=cluster.hitsAndFractions().begin(); it!=cluster.hitsAndFractions().end(); ++it ){
-			Sensors[layer]->addClusterHit((*it).first, 7);
+			Sensors[layer]->registerClusterHit((*it).first, 7);
 		}
 	}
 	for( auto cluster : *clusters19 ){
 		layer = cluster.layer();
 		for( std::vector< std::pair<DetId,float> >::const_iterator it=cluster.hitsAndFractions().begin(); it!=cluster.hitsAndFractions().end(); ++it ){
-			Sensors[layer]->addClusterHit((*it).first, 19);
+			Sensors[layer]->registerClusterHit((*it).first, 19);
 		}
 	}
+
+	//Event selection: sum of energies of all cells(=hits) from RecHits Collection and Clusters only must 
+	//be larger than an externally configured parameter 'totalEnergyThreshold' (in MIP)
+	double sumEnergy = 0., sumClusterEnergy = 0.;
+	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {	
+		sumEnergy += it->second->getTotalEnergy();
+		sumClusterEnergy += it->second->getTotalClusterEnergy(-1);
+	}
+	
+	if(sumEnergy < totalEnergyThreshold) HitsVetoCounter+=1;	//make this energy dependent!
+	if(sumClusterEnergy < totalEnergyThreshold) ClusterVetoCounter+=1;
+	if(sumEnergy < totalEnergyThreshold && sumClusterEnergy < totalEnergyThreshold) {
+		CommonVetoCounter+=1;
+		return;
+	} 
+
+
 
 	//step 2: calculate impact point with technique indicated as the argument
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
@@ -317,6 +345,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		it->second->calculateCenterPosition(considerationMethod, weightingMethod);
 		
 	}
+
 
 	//step 3: fill particle tracks
 	std::map<int, ParticleTrack*> Tracks; 	//the integer index indicates which layer is omitted in the track calculation
@@ -330,6 +359,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		Tracks[i]->fitTrack(fittingMethod);
 	}
 	
+
 	//step 4: calculate the deviations between each fit missing one layer and exactly that layer's true central position
 	for (layer=1; layer<=nLayers; layer++) {
 		layerZ_cm = Sensors[layer]->getZ_cm();
@@ -370,7 +400,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		deltaY = y_predicted - y_true;
 		deviation  = sqrt( pow(deltaX, 2) + pow(deltaY, 2) );
 
-		sumFitWeights = Tracks[layer]->getSumOfWeights();
+		sumFitWeights = Tracks[layer]->getSumOfEnergies();
 		layerWeight = Sensors[layer]->getTotalWeight();
 
 		//DEBUG
@@ -414,7 +444,10 @@ void Position_Resolution_Analyzer::beginJob() {
 }
 
 void Position_Resolution_Analyzer::endJob() {
-	//optained information are not processed into according ROOT objects for final storage
+	std::cout<<"ClusterVetos: "<<ClusterVetoCounter<<std::endl;
+	std::cout<<"HitsVetos: "<<HitsVetoCounter<<std::endl;
+	std::cout<<"CommonVetos: "<<CommonVetoCounter<<std::endl;
+	
 }
 
 void Position_Resolution_Analyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {

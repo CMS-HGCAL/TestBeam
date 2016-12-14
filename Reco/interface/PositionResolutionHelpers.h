@@ -92,7 +92,8 @@ class SensorHitMap {
     double CM_sum;
 
     double totalWeight; //equivalent to the denominator in the according weighting method
-    double totalIntensity;
+    double totalEnergy;
+    std::map<int, double> totalClusterEnergy;
 
     bool filterByCellType(int ID);
     void considerNClosest(int N_considered);
@@ -109,10 +110,11 @@ class SensorHitMap {
     void setPedestalThreshold(double t);
     //reduces the information from the Rechit towards what is necessary for the impact point calculation
     void addHit(HGCalTBRecHit Rechit);
-    void addClusterHit(HGCalTBDetId hit, int N_considered);
+    void registerClusterHit(HGCalTBDetId hit, int N_considered);
     void subtractCM();
     void calculateCenterPosition(ConsiderationMethod considerationMethod, WeightingMethod weightingMethod);
-    double getTotalIntensity();
+    double getTotalEnergy();
+    double getTotalClusterEnergy(int N_considered);
     double getTotalWeight();
     double getZ_cm();
     double getZ_X0();
@@ -134,7 +136,7 @@ class ParticleTrack{
     void fitTrack(TrackFittingMethod method);
     std::pair<double, double> calculatePositionXY(double z);
     std::pair<double, double> calculatePositionErrorXY(double z);
-    double getSumOfWeights();
+    double getSumOfEnergies();
   private:
     int N_points; //cross check, should be identical to x.size() etc.
     //general information, the fit points
@@ -144,7 +146,7 @@ class ParticleTrack{
     std::vector<double> y_err;  
     std::vector<double> z;  
     std::vector<double> z_err;  
-    std::vector<double> weights;
+    std::vector<double> Energies;
     TrackFittingMethod lastAppliedMethod;
 
     //different fit functions

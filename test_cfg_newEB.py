@@ -9,14 +9,14 @@ options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, file
 #Change the data folder appropriately to where you wish to access the files from:
 options.register('dataFolder',
                  #'/afs/cern.ch/user/t/tquast/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',       #use this for eos
-                 '/user/data/Testbeam/September2016',        #use this for running on pclcd
+                 '/home/data/Testbeam/September2016',        #use this for running on pclcd
                  #'/home/home1/institut_3a/quast/TestBeamSeptember2016/',        #use this for running on lx3a03
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw text input')
 
 options.register('outputFolder',
-                 '~/outputs/',
+                 '/home/outputs/Testbeam/September2016/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Result of processing')
@@ -174,6 +174,7 @@ process.position_resolution_analyzer.considerationMethod = cms.string(options.co
 process.position_resolution_analyzer.weightingMethod = cms.string(options.weightingMethod)
 process.position_resolution_analyzer.pedestalThreshold = cms.double(options.pedestalThreshold)
 process.position_resolution_analyzer.fitPointWeightingMethod = cms.string(options.fitPointWeightingMethod)
+process.position_resolution_analyzer.totalEnergyThreshold = 1000.
 process.position_resolution_analyzer.EventsFor2DGraphs = []    #first occuring events with that id are being documented with 2DGraphs 
 
 
