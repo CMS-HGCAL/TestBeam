@@ -174,7 +174,7 @@ process.position_resolution_analyzer.considerationMethod = cms.string(options.co
 process.position_resolution_analyzer.weightingMethod = cms.string(options.weightingMethod)
 process.position_resolution_analyzer.pedestalThreshold = cms.double(options.pedestalThreshold)
 process.position_resolution_analyzer.fitPointWeightingMethod = cms.string(options.fitPointWeightingMethod)
-process.position_resolution_analyzer.totalEnergyThreshold = 1000.
+process.position_resolution_analyzer.totalEnergyThreshold = -1000.
 process.position_resolution_analyzer.EventsFor2DGraphs = []    #first occuring events with that id are being documented with 2DGraphs 
 
 

@@ -100,7 +100,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		TTree* outTree;
 		int configuration, evId, run, layer;
 		double energy;
-		double layerWeight, sumFitWeights;
+		double layerWeight, sumFitWeights, sumEnergy, sumClusterEnergy;
 		double x_predicted, x_predicted_err, y_predicted, y_predicted_err, x_true, x_true_err, y_true, y_true_err, deltaX, deltaY;
 		double x_predicted_to_closest_cell, y_predicted_to_closest_cell, x_true_to_closest_cell, y_true_to_closest_cell, layerZ_cm, layerZ_X0, deviation;
 };
@@ -217,6 +217,8 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("layer", &layer, "layer/I");
 	outTree->Branch("energy", &energy, "energy/D");
 	outTree->Branch("layerWeight", &layerWeight, "layerWeight/D");
+	outTree->Branch("sumEnergy", &sumEnergy, "sumEnergy/D");
+	outTree->Branch("sumClusterEnergy", &sumClusterEnergy, "sumClusterEnergy/D");
 	outTree->Branch("sumFitWeights", &sumFitWeights, "sumFitWeights/D");
 	outTree->Branch("x_predicted", &x_predicted, "x_predicted/D");
 	outTree->Branch("x_predicted_to_closest_cell", &x_predicted_to_closest_cell, "x_predicted_to_closest_cell/D");
@@ -321,7 +323,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 
 	//Event selection: sum of energies of all cells(=hits) from RecHits Collection and Clusters only must 
 	//be larger than an externally configured parameter 'totalEnergyThreshold' (in MIP)
-	double sumEnergy = 0., sumClusterEnergy = 0.;
+	sumEnergy = 0., sumClusterEnergy = 0.;
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {	
 		sumEnergy += it->second->getTotalEnergy();
 		sumClusterEnergy += it->second->getTotalClusterEnergy(-1);
