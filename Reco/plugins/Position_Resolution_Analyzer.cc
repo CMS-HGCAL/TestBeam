@@ -98,7 +98,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 
 		//stuff to be written to the tree
 		TTree* outTree;
-		int configuration, evId, run, layer;
+		int configuration, evId, eventCounter, run, layer; 	//eventCounter: counts the events in this analysis run to match information within ove event to each other
 		double energy;
 		double layerWeight, sumFitWeights, sumEnergy, sumClusterEnergy;
 		double x_predicted, x_predicted_err, y_predicted, y_predicted_err, x_true, x_true_err, y_true, y_true_err, deltaX, deltaY;
@@ -199,6 +199,8 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 		Layer_Z_X0s 			= std::vector<double>(config1X0Depths, config1X0Depths + sizeof(config1X0Depths)/sizeof(double));
 	}
 
+	eventCounter = 0;
+
 	pedestalThreshold = iConfig.getParameter<double>("pedestalThreshold");
 	SensorSize = iConfig.getParameter<int>("SensorSize");
 	nLayers = iConfig.getParameter<int>("nLayers");
@@ -212,7 +214,8 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	//initialize tree and set Branch addresses
 	outTree = fs->make<TTree>("deviations", "deviations");
 	outTree->Branch("configuration", &configuration, "configuration/I");
-	outTree->Branch("eventId", &evId, "eventId/I");
+	outTree->Branch("eventId", &evId, "eventId/I");	//event ID as it comes from the reader
+	outTree->Branch("eventCounter", &eventCounter, "eventCounter/I");	//event counter, current iteration of this analysis w.r.t. the individual events
 	outTree->Branch("run", &run, "run/I");
 	outTree->Branch("layer", &layer, "layer/I");
 	outTree->Branch("energy", &energy, "energy/D");
@@ -256,6 +259,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	event.getByToken(RunDataToken, rd);
 	configuration = rd->configuration;
 	evId = event.id().event();
+	eventCounter++;
 	run = rd->run;
 	energy = rd->energy;
 	if (run == -1) {
