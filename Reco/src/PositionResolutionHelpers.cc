@@ -89,6 +89,8 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
 void SensorHitMap::registerClusterHit(HGCalTBDetId hit, int N_considered) {  //requires that all hits have been added to the layer
   int uniqueID = hit.rawId();
 
+  if(Hits.find(uniqueID) == Hits.end()) return; //if cluster hit does not represent a valid cell type, do not add it
+
   if (totalClusterEnergy.find(N_considered) == totalClusterEnergy.end()) {
     totalClusterEnergy[N_considered] = 0;
   }
@@ -237,7 +239,7 @@ bool SensorHitMap::filterByCellType(int ID) {
   ID = 4 : outer calibration pad cell,
   ID = 5 : merged cell
   */
-
+  
   if (ID!=0 )  //we only want to consider the main cells in the middle for first estimation
     return true;      
   
