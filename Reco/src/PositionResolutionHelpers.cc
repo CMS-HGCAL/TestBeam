@@ -6,7 +6,7 @@
 //public functions
 SensorHitMap::SensorHitMap(){
   mostSignificantHit = NULL;  //will point to the most significant hit
-  
+
   centralHitPoint = std::make_pair(0., 0.);
   centralHitPointError = std::make_pair(sqrt(12.), sqrt(12.));
   CM_threshold = 2.;
@@ -16,7 +16,7 @@ SensorHitMap::SensorHitMap(){
   sensorSize = 128;
 
   CM_cells_count = 0;
-  CM_sum = 0;
+  CM_sum = 0.;
 
   totalWeight = 1.; 
   totalEnergy = 0.;
@@ -97,7 +97,7 @@ void SensorHitMap::registerClusterHit(HGCalTBDetId hit, int N_considered) {  //r
   clusterIndexes[N_considered].push_back(uniqueID);
 }
 
-void SensorHitMap::subtractCM() {
+std::pair<int, double> SensorHitMap::subtractCM() {
   totalEnergy = 0.;
   double cm_subtraction = CM_cells_count > 0. ? CM_sum/CM_cells_count : 0.;
 
@@ -106,12 +106,14 @@ void SensorHitMap::subtractCM() {
     // we want: - all cells that were input to the cm (common mode) calculation get weight 0
     //          - all the others are corrected by the cm
     if ((*hit).second->E > CM_threshold) {    
-      (*hit).second->I = (*hit).second->I - cm_subtraction;
-    } else {
       (*hit).second->I = std::max((*hit).second->I - cm_subtraction, 0.);
+    } else {
+      (*hit).second->I = 0.;//std::max((*hit).second->I - cm_subtraction, 0.);  //everything below the given threshold is set to zero
     }
     totalEnergy += (*hit).second->I;
   }
+
+  return std::make_pair(CM_cells_count, CM_sum);
 }
 
 void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMethod, WeightingMethod weightingMethod) {

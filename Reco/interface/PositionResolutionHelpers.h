@@ -111,7 +111,7 @@ class SensorHitMap {
     //reduces the information from the Rechit towards what is necessary for the impact point calculation
     void addHit(HGCalTBRecHit Rechit);
     void registerClusterHit(HGCalTBDetId hit, int N_considered);
-    void subtractCM();
+    std::pair<int, double> subtractCM();  //returns the sum of Common mode noise and the number of cells that enter the calculation
     void calculateCenterPosition(ConsiderationMethod considerationMethod, WeightingMethod weightingMethod);
     double getTotalEnergy();
     double getTotalClusterEnergy(int N_considered);

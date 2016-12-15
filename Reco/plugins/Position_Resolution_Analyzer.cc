@@ -100,9 +100,11 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		TTree* outTree;
 		int configuration, evId, eventCounter, run, layer; 	//eventCounter: counts the events in this analysis run to match information within ove event to each other
 		double energy;
-		double layerWeight, sumFitWeights, sumEnergy, sumClusterEnergy;
+		double layerWeight, layerEnergy, layerClusterEnergy, sumFitWeights, sumEnergy, sumClusterEnergy, CM_cells_count, CM_sum;
 		double x_predicted, x_predicted_err, y_predicted, y_predicted_err, x_true, x_true_err, y_true, y_true_err, deltaX, deltaY;
 		double x_predicted_to_closest_cell, y_predicted_to_closest_cell, x_true_to_closest_cell, y_true_to_closest_cell, layerZ_cm, layerZ_X0, deviation;
+
+		std::pair<int, double> CM_tmp;	//will write the subtract_CM() return values for each layer
 };
 
 Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterSet& iConfig) {
@@ -218,7 +220,11 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("eventCounter", &eventCounter, "eventCounter/I");	//event counter, current iteration of this analysis w.r.t. the individual events
 	outTree->Branch("run", &run, "run/I");
 	outTree->Branch("layer", &layer, "layer/I");
-	outTree->Branch("energy", &energy, "energy/D");
+	outTree->Branch("energy", &energy, "energy/D");	//electron energy in GeV
+	outTree->Branch("CM_sum", &CM_sum, "CM_sum/D");
+	outTree->Branch("CM_cells_count", &CM_cells_count, "CM_cells_count/D");
+	outTree->Branch("layerEnergy", &layerEnergy, "layerEnergy/D");
+	outTree->Branch("layerClusterEnergy", &layerClusterEnergy, "layerClusterEnergy/D");
 	outTree->Branch("layerWeight", &layerWeight, "layerWeight/D");
 	outTree->Branch("sumEnergy", &sumEnergy, "sumEnergy/D");
 	outTree->Branch("sumClusterEnergy", &sumClusterEnergy, "sumClusterEnergy/D");
@@ -341,15 +347,15 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	} 
 
 
-
 	//step 2: calculate impact point with technique indicated as the argument
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		//subtract common first
-		it->second->subtractCM();
+		CM_tmp = it->second->subtractCM();
+		CM_cells_count = CM_tmp.first;
+		CM_sum = CM_tmp.second;
 
 		//now calculate the center positions for each layer
 		it->second->calculateCenterPosition(considerationMethod, weightingMethod);
-		
 	}
 
 
@@ -407,6 +413,8 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		deviation  = sqrt( pow(deltaX, 2) + pow(deltaY, 2) );
 
 		sumFitWeights = Tracks[layer]->getSumOfEnergies();
+		layerEnergy = Sensors[layer]->getTotalEnergy();
+		layerClusterEnergy = Sensors[layer]->getTotalClusterEnergy(-1);
 		layerWeight = Sensors[layer]->getTotalWeight();
 
 		//DEBUG
