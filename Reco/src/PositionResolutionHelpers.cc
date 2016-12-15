@@ -230,9 +230,17 @@ double SensorHitMap::getTotalWeight() {
 //TODO
 bool SensorHitMap::filterByCellType(int ID) {  
   /*
-  if (ID!=0 )  //we only want to consider the main cells in the middle for first estimation
-    return true;      //TODO
+  ID = 0 : full cell,
+  ID = 1 : calibration pad,
+  ID = 2 : half cell,
+  ID = 3 : mouse bite cell,
+  ID = 4 : outer calibration pad cell,
+  ID = 5 : merged cell
   */
+
+  if (ID!=0 )  //we only want to consider the main cells in the middle for first estimation
+    return true;      
+  
   return false;
 }
 
