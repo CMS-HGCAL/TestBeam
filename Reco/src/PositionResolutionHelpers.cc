@@ -526,7 +526,7 @@ double weightToFitPointWeight(double e, double sum_e, FitPointWeightingMethod m)
     case LINEAR:
       return 1.0/(0.01+e/sum_e);
     case SQUARED:
-      return 1.0/(0.01+pow(e/sum_e),2);
+      return 1.0/(0.01+pow(e/sum_e,2));
     case LOGARITHMIC:
       return 1.0/(0.01+log(1.0+e/sum_e));
     case EXPONENTIAL:
