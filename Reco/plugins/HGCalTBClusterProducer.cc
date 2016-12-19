@@ -15,7 +15,8 @@ HGCalTBClusterProducer::HGCalTBClusterProducer(const edm::ParameterSet& cfg) :
   _runCluster19(cfg.getUntrackedParameter<bool>("runCluster19",true)),
   _sensorSize(cfg.getUntrackedParameter<int>("sensorSize",128)),
   _minEnergy(cfg.getUntrackedParameter<double>("minEnergy",0.0)),
-  _rmSpecialCells(cfg.getUntrackedParameter<bool>("RemoveSpecialCells",false))
+  _rmSpecialCells(cfg.getUntrackedParameter<bool>("RemoveSpecialCells",false)),
+  _positionWeights(cfg.getUntrackedParameter<std::string>("PositionWeightsOption",std::string("linear")))
 {
   float sum=0.;
   std::vector<double> vec;
@@ -29,6 +30,12 @@ HGCalTBClusterProducer::HGCalTBClusterProducer(const edm::ParameterSet& cfg) :
   sum+=2.14; vec.push_back( sum );
   //cern config 1 (5X0->15X0) is default
   _layerZPositions = cfg.getUntrackedParameter< std::vector<double> >("LayerZPositions",vec);
+
+  vec.clear(); vec.push_back( 5 ); vec.push_back( 1 );
+  _logParams = cfg.getUntrackedParameter< std::vector<double> >("LogWeightParams",vec);
+  if( _logParams.size()<2 )
+    throw cms::Exception("Wrong vector size for _logParams in HGCalTBCluster");
+
   std::cout << cfg.dump() << std::endl;
   produces <reco::HGCalTBClusterCollection>(_outputCollectionName);
   if( _runCluster7 ){
@@ -106,8 +113,6 @@ void HGCalTBClusterProducer::produce(edm::Event& event, const edm::EventSetup& i
 void HGCalTBClusterProducer::createDynamicClusters(HGCalTBRecHitCollection rechits, std::vector<reco::HGCalTBCluster> &clusterCol)
 {
   _maxTransverse=1;
-  HGCalTBCellVertices cellVertice;
-  std::pair<double, double> CellCentreXY;
   std::vector<HGCalTBDetId> temp;
   for( std::vector<HGCalTBRecHit>::iterator it=rechits.begin(); it!=rechits.end(); ++it){
     if( std::find( temp.begin(),temp.end(),(*it).id() )!=temp.end() ) continue;
@@ -120,25 +125,22 @@ void HGCalTBClusterProducer::createDynamicClusters(HGCalTBRecHitCollection rechi
     float energyHigh=0.;
     float energyLow=0.;
     float energy=0.;
-    float x,y,z; 
-    x = y = z = 0.0;
+    HGCalTBRecHit seed=(*rechits.find(*clusterDetIDs.begin()));
     for( std::vector<HGCalTBDetId>::iterator jt=clusterDetIDs.begin(); jt!=clusterDetIDs.end(); ++jt){
       HGCalTBRecHit hit=(*rechits.find(*jt));
       energyHigh+=hit.energyHigh();
       energyLow+=hit.energyLow();
       energy+=hit.energy();
-      CellCentreXY=cellVertice.GetCellCentreCoordinatesForPlots( (*jt).layer(), (*jt).sensorIU(), (*jt).sensorIV(), (*jt).iu(), (*jt).iv(), _sensorSize);
-      x += CellCentreXY.first*hit.energy();
-      y += CellCentreXY.second*hit.energy();
-      z += _layerZPositions.at( (*jt).layer()-1 )*hit.energy();
+      if( hit.energy()<seed.energy() ) seed=hit;
     } 
-    cluster.setPosition( math::XYZPoint(x,y,z)/energy );
+    cluster.setSeed(seed.id());
     cluster.setEnergyLow(energyLow);
     cluster.setEnergyHigh(energyHigh);
     cluster.setEnergy(energy);
     for( std::vector<HGCalTBDetId>::iterator jt=clusterDetIDs.begin(); jt!=clusterDetIDs.end(); ++jt)
       cluster.addHitAndFraction( (*jt), (*rechits.find(*jt)).energy()/energy );
-  
+    
+    cluster.setPosition( clusterPosition(cluster) );
     clusterCol.push_back(cluster);
   }
 }
@@ -175,12 +177,6 @@ void HGCalTBClusterProducer::createSeededClusters(HGCalTBRecHitCollection rechit
   float energyHigh=seed.energyHigh();
   float energyLow=seed.energyLow();
   float energy=seed.energy();
-  HGCalTBCellVertices cellVertice;
-  std::pair<double, double> CellCentreXY;
-  CellCentreXY=cellVertice.GetCellCentreCoordinatesForPlots( seed.id().layer(), seed.id().sensorIU(), seed.id().sensorIV(), seed.id().iu(), seed.id().iv(), _sensorSize);
-  float x = CellCentreXY.first*seed.energy();
-  float y = CellCentreXY.second*seed.energy();
-  float z = _layerZPositions.at( seed.id().layer()-1 );
   
   std::set<HGCalTBDetId> neighbors=top.getNeighboringCellsDetID( seed.id(), _sensorSize , _maxTransverse, _elecMap );
   for( std::set<HGCalTBDetId>::iterator jt=neighbors.begin(); jt!=neighbors.end(); ++jt){
@@ -189,12 +185,8 @@ void HGCalTBClusterProducer::createSeededClusters(HGCalTBRecHitCollection rechit
       energyHigh+=hit.energyHigh();
       energyLow+=hit.energyLow();
       energy+=hit.energy();
-      CellCentreXY=cellVertice.GetCellCentreCoordinatesForPlots( (*jt).layer(), (*jt).sensorIU(), (*jt).sensorIV(), (*jt).iu(), (*jt).iv(), _sensorSize);
-      x += CellCentreXY.first*hit.energy();
-      y += CellCentreXY.second*hit.energy();
     }
   }
-  cluster.setPosition( math::XYZPoint(x/energy,y/energy,z) );
   cluster.setEnergyLow(energyLow);
   cluster.setEnergyHigh(energyHigh);
   cluster.setEnergy(energy);
@@ -204,6 +196,32 @@ void HGCalTBClusterProducer::createSeededClusters(HGCalTBRecHitCollection rechit
     if( rechits.find(*jt) != rechits.end() )
       cluster.addHitAndFraction( (*jt), (*rechits.find(*jt)).energy()/energy );
   
+  cluster.setPosition( clusterPosition(cluster) );
+}
+
+math::XYZPoint HGCalTBClusterProducer::clusterPosition(reco::HGCalTBCluster cluster)
+{
+  HGCalTBCellVertices cellVertice;
+  std::pair<double, double> xy;
+  double sumweight=0.;
+  double x=0.;
+  double y=0.;
+  for( std::vector< std::pair<DetId,float> >::const_iterator it=cluster.hitsAndFractions().begin(); it!=cluster.hitsAndFractions().end(); ++it){
+    HGCalTBDetId detId=(*it).first;
+    float weight;
+    if( _positionWeights==std::string("logarithmic") )
+      weight=_logParams[0]+_logParams[1]*std::log( (*it).second );
+    else 
+      weight=(*it).second;
+    if( weight<0 ) continue;
+    xy=cellVertice.GetCellCentreCoordinatesForPlots( detId.layer(), detId.sensorIU(), detId.sensorIV(), detId.iu(), detId.iv(), _sensorSize);
+    x+=xy.first*weight;
+    y+=xy.second*weight;
+    sumweight+=weight;
+  }
+  x/=sumweight;
+  y/=sumweight;
+  return math::XYZPoint( x,y,_layerZPositions.at( cluster.layer()-1 ) );
 }
 
 DEFINE_FWK_MODULE(HGCalTBClusterProducer);

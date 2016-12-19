@@ -64,5 +64,27 @@ class Distance<S, reco::HGCalTBCaloTrack>
   }
 }; 
 
+class DistanceBetweenTrackAndPoint
+{ 
+ public :  
+  DistanceBetweenTrackAndPoint(){;} 
+  ~DistanceBetweenTrackAndPoint(){;} 
+      
+  float distance(reco::HGCalTBCaloTrack track, math::XYZPoint xyz)
+  {
+    math::XYZPoint B=track.vertex();
+
+    math::XYZVector u=track.momentum();
+    math::XYZVector v=B-xyz;
+	
+    return std::sqrt( (v.Cross(u)).mag2()/u.mag2() );
+  }
+
+  float distanceInLayer(reco::HGCalTBCaloTrack track, math::XYZPoint xyz)
+  {
+    math::XYZPoint impact=track.expectedTrackProjection(xyz.z());
+    return std::sqrt( (impact-xyz).mag2() );
+  }
+}; 
 #endif
 

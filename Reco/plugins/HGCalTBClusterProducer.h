@@ -13,6 +13,8 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 
+#include "DataFormats/Math/interface/Point3D.h"
+
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
@@ -41,12 +43,15 @@ private:
 	int _maxTransverse;
 	double _minEnergy;
 	bool _rmSpecialCells;
+	std::string _positionWeights;
+	std::vector<double> _logParams;
 
 	std::vector<double> _layerZPositions;
 
 	void buildCluster(HGCalTBRecHitCollection rechits, std::vector<HGCalTBDetId> &temp, std::vector<HGCalTBDetId> &clusterDetIDs);
 	void createDynamicClusters(HGCalTBRecHitCollection rechits, std::vector<reco::HGCalTBCluster> &clusterCol);
 	void createSeededClusters(HGCalTBRecHitCollection rechits, reco::HGCalTBCluster &cluster, int maxDist);
+	math::XYZPoint clusterPosition(reco::HGCalTBCluster cluster);
 };
 
 #endif

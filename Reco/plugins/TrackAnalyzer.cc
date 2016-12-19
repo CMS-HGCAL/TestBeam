@@ -15,6 +15,8 @@
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
+#include "DataFormats/Math/interface/Point3D.h"
+
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBCaloTrackCollection.h"
@@ -23,6 +25,8 @@
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 
+#include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
+#include "HGCal/Reco/interface/HGCalTBCaloTrackingUtil.h"
 
 using namespace std;
 
@@ -44,8 +48,10 @@ private:
   int _nlayers;
   int _nskirocsperlayer;
   int _nchannelsperskiroc;
+  int _sensorSize;
   double _maxChi2;
   double _noiseEnergyThreshold;
+  std::vector<double> _layerZPositions;
 
   TTree* tree;
   int _evtID;
@@ -83,15 +89,28 @@ TrackAnalyzer::TrackAnalyzer(const edm::ParameterSet& iConfig) :
   _nlayers( iConfig.getUntrackedParameter<int>("NLayers",8) ),
   _nskirocsperlayer( iConfig.getUntrackedParameter<int>("NSkirocsPerLayer",2) ),
   _nchannelsperskiroc( iConfig.getUntrackedParameter<int>("NChannelsPerSkiroc",64) ),
+  _sensorSize( iConfig.getUntrackedParameter<int>("SensorSize",128) ),
   _maxChi2( iConfig.getUntrackedParameter<double>("maxChi2",9.48) ),
   _noiseEnergyThreshold( iConfig.getUntrackedParameter<double>("noiseEnergyThreshold",9.0) )
 {
-  usesResource("TFileService");
-  edm::Service<TFileService> fs;
   HGCalTBRecHitCollection_ = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
   HGCalTBCaloTrackCollection_ = consumes<reco::HGCalTBCaloTrackCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCALOTRACKS"));
+  float sum=0.;
+  std::vector<double> vec;
+  sum+=0.0 ; vec.push_back( sum );
+  sum+=5.35; vec.push_back( sum );
+  sum+=5.17; vec.push_back( sum );
+  sum+=3.92; vec.push_back( sum );
+  sum+=4.08; vec.push_back( sum );
+  sum+=1.15; vec.push_back( sum );
+  sum+=4.11; vec.push_back( sum );
+  sum+=2.14; vec.push_back( sum );
+  //cern config 1 (5X0->15X0) is default
+  _layerZPositions = iConfig.getUntrackedParameter< std::vector<double> >("LayerZPositions",vec);
   std::cout << iConfig.dump() << std::endl;
 
+  usesResource("TFileService");
+  edm::Service<TFileService> fs;
   tree = fs->make<TTree>("tree", "HGCAL TB variables tree");
   tree->Branch( "evtID",&_evtID ); 
   tree->Branch( "chi2",&_chi2 ); 
@@ -169,7 +188,10 @@ TrackAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& setup)
       _vx0 = track.vertex().x();
       _vy0 = track.vertex().y();
       _px = track.momentum().x();
-      _py = track.momentum().y();    
+      _py = track.momentum().y();
+
+      HGCalTBCellVertices cellVertice;
+      DistanceBetweenTrackAndPoint dist;
       for( std::vector<HGCalTBDetId>::iterator it=track.getDetIds().begin(); it!=track.getDetIds().end(); ++it ){
 	uint32_t EID = essource_.emap_.detId2eid( *it );
 	HGCalTBElectronicsId eid(EID);
@@ -177,7 +199,10 @@ TrackAnalyzer::analyze(const edm::Event& event, const edm::EventSetup& setup)
 	HGCalTBRecHit hit=(*(*Rechits).find(*it));
 	h_mip_map[key]->Fill( hit.energy() );
 	_nhitlayer.at( (*it).layer()-1 )+=1;
-	_energylayer.at( (*it).layer()-1 )+=hit.energy();
+	_energylayer.at( (*it).layer()-1 )+=hit.energy();	
+	std::pair<double,double> xy=cellVertice.GetCellCentreCoordinatesForPlots( (*it).layer(), (*it).sensorIU(), (*it).sensorIV(), (*it).iu(), (*it).iv(), _sensorSize);
+	math::XYZPoint xyz(xy.first,xy.second,_layerZPositions.at( (*it).layer()-1 ));
+	h_delta_layer[ (*it).layer()-1 ]->Fill( dist.distance(track,xyz) );
       }
     }
   }
