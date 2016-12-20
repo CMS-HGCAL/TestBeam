@@ -97,6 +97,8 @@ process.maxEvents = cms.untracked.PSet(
 ####################################
 process.load('HGCal.StandardSequences.RawToDigi_cff')
 process.load('HGCal.StandardSequences.LocalReco_cff')
+process.load('HGCal.StandardSequences.ShowerReco_cff')
+process.load('HGCal.StandardSequences.TrackingReco_cff')
 process.load('HGCal.StandardSequences.dqm_cff')
 
 #print "root://eoscms.cern.ch//eos/cms/%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber)
@@ -204,7 +206,7 @@ elif (options.chainSequence == 9):
     process.hgcaltbcalotracks.maxEnergy=1e6
     process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.hgcaltbcalotracks*process.hgcaltbshower)
 # example for running display :
-# cmsRun test_cfg_newEB.py runNumber=1291 runType=HGCRun nSpills=1 dataFolder='./' pedestalsHighGain="./CondObjects/data/pedHighGain1200.txt" pedestalsLowGain="./CondObjects/data/pedLowGain1200.txt" chainSequence=7 maxEvents=10
+# cmsRun test_cfg_newEB.py runNumber=1291 runType=HGCRun nSpills=1 dataFolder='./' pedestalsHighGain="./CondObjects/data/pedHighGain1200.txt" pedestalsLowGain="./CondObjects/data/pedLowGain1200.txt" chainSequence=7 configuration=2
 
 
 if (options.chainSequence == 3):
