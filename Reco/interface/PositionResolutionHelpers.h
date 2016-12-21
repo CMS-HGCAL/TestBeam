@@ -74,9 +74,11 @@ struct HitData {
 class SensorHitMap {
   private:
     std::pair<double, double> centralHitPoint;
+    double centralHitZ;
     std::pair<double, double> centralHitPointError;
-    double layerZ_cm;
+    double layerLabZ;
     double layerZ_X0;
+    double d_alpha, d_beta, d_gamma, d_x0, d_y0, d_z0; //alignment parameters
     int sensorSize;
     double CM_threshold;
     double ADC_per_MIP;
@@ -104,7 +106,8 @@ class SensorHitMap {
   public:
     SensorHitMap();
     ~SensorHitMap();
-    void setZ(double z_cm, double z_X0);
+    void setLabZ(double z_cm, double z_X0);
+    void setAlignmentParameters(double d_alpha, double d_beta, double d_gamma, double d_x0, double d_y0, double d_z0);
     void setADCPerMIP(double ADC_per_MIP);
     void setSensorSize(int s);
     void setPedestalThreshold(double t);
@@ -116,10 +119,12 @@ class SensorHitMap {
     double getTotalEnergy();
     double getTotalClusterEnergy(int N_considered);
     double getTotalWeight();
-    double getZ_cm();
+    double getLabZ();
     double getZ_X0();
-    std::pair<double, double> getCenterPosition();
-    std::pair<double, double> getCenterPositionError(); //calculated via RMS
+    double getIntrinsicHitZPosition();
+    std::pair<double, double> getHitPosition(); //returns central hit in layer's own frame
+    std::pair<double, double> getLabHitPosition();  //returns central hit in lab frame
+    std::pair<double, double> getHitPositionError(); //calculated via RMS
     std::pair<double, double> getCenterOfClosestCell(std::pair<double, double> X_ref);
 
     //debug

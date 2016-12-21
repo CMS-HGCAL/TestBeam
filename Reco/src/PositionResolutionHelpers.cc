@@ -8,12 +8,15 @@ SensorHitMap::SensorHitMap(){
   mostSignificantHit = NULL;  //will point to the most significant hit
 
   centralHitPoint = std::make_pair(0., 0.);
+  centralHitZ = 0;
   centralHitPointError = std::make_pair(sqrt(12.), sqrt(12.));
   CM_threshold = 2.;
-  layerZ_cm = 0;
+  layerLabZ = 0;
   layerZ_X0 = 0;
   ADC_per_MIP = 1.;
   sensorSize = 128;
+
+  d_alpha = 0., d_beta = 0., d_gamma = 0., d_x0 = 0., d_y0 = 0., d_z0 = 0.;
 
   CM_cells_count = 0;
   CM_sum = 0.;
@@ -33,9 +36,18 @@ void SensorHitMap::setSensorSize(int s) {
   sensorSize = s;
 }
 
-void SensorHitMap::setZ(double z_cm, double z_X0) {
-  this->layerZ_cm = z_cm;
+void SensorHitMap::setLabZ(double z_cm, double z_X0) {
+  this->layerLabZ = z_cm;
   this->layerZ_X0 = z_X0;
+}
+
+void SensorHitMap::setAlignmentParameters(double d_alpha, double d_beta, double d_gamma, double d_x0, double d_y0, double d_z0) {
+  this->d_alpha = d_alpha;
+  this->d_beta = d_beta;
+  this->d_gamma = d_gamma;
+  this->d_x0 = d_x0;
+  this->d_y0 = d_y0;
+  this->d_z0 = d_z0;
 }
 
 void SensorHitMap::setADCPerMIP(double ADC_per_MIP) {
@@ -46,8 +58,12 @@ void SensorHitMap::setPedestalThreshold(double t) {
   this->CM_threshold = t; 
 }
 
-double SensorHitMap::getZ_cm() {
-  return this->layerZ_cm;
+double SensorHitMap::getLabZ() {
+  return this->layerLabZ + this->d_z0;
+}
+
+double SensorHitMap::getIntrinsicHitZPosition() {
+  return this->centralHitZ;
 }
 
 double SensorHitMap::getZ_X0() {
@@ -188,12 +204,22 @@ void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMeth
     default:
       SensorHitMap::poweredWeighting(2);
   }
+
+  centralHitZ = -d_gamma*centralHitPoint.first - d_beta*centralHitPoint.second;
 }
 
-std::pair<double, double> SensorHitMap::getCenterPosition() {
+std::pair<double, double> SensorHitMap::getHitPosition() {
   return centralHitPoint;
 }
-std::pair<double, double> SensorHitMap::getCenterPositionError() {
+
+std::pair<double, double> SensorHitMap::getLabHitPosition() {
+  double x_lab =   centralHitPoint.first + d_alpha * centralHitPoint.second + d_x0; 
+  double y_lab = - d_alpha * centralHitPoint.first + centralHitPoint.second + d_y0;
+
+  return std::make_pair(x_lab, y_lab);
+}
+
+std::pair<double, double> SensorHitMap::getHitPositionError() {
   return centralHitPointError;
 }
 
@@ -392,11 +418,11 @@ ParticleTrack::~ParticleTrack(){
 
 void ParticleTrack::addFitPoint(SensorHitMap* sensor){
   N_points++;
-  x.push_back(sensor->getCenterPosition().first);  
-  x_err.push_back(sensor->getCenterPositionError().first);  
-  y.push_back(sensor->getCenterPosition().second);  
-  y_err.push_back(sensor->getCenterPositionError().second);  
-  z.push_back(sensor->getZ_cm());  
+  x.push_back(sensor->getHitPosition().first);  
+  x_err.push_back(sensor->getHitPositionError().first);  
+  y.push_back(sensor->getHitPosition().second);  
+  y_err.push_back(sensor->getHitPositionError().second);  
+  z.push_back(sensor->getLabZ());  
   z_err.push_back(0.0);
   Energies.push_back(sensor->getTotalEnergy());
 };
