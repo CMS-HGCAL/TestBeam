@@ -178,6 +178,12 @@ process.position_resolution_analyzer.totalEnergyThreshold = -1000.
 process.position_resolution_analyzer.EventsFor2DGraphs = []    #first occuring events with that id are being documented with 2DGraphs 
 
 
+process.millepede_ntupelizer.considerationMethod = cms.string(options.considerationMethod)
+process.millepede_ntupelizer.weightingMethod = cms.string(options.weightingMethod)
+process.millepede_ntupelizer.pedestalThreshold = cms.double(options.pedestalThreshold)
+process.millepede_ntupelizer.fitPointWeightingMethod = cms.string(options.fitPointWeightingMethod)
+process.millepede_ntupelizer.totalEnergyThreshold = -1000.
+
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
                               dumpPayload=cms.untracked.bool(True))
 
@@ -206,6 +212,8 @@ elif (options.chainSequence == 7):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Display_Cluster.root"%(options.outputFolder,options.runType,options.runNumber)))
 elif (options.chainSequence == 8):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_Position_Resolution_%s.root"%(options.outputFolder,options.runType,options.outputPostfix)))
+elif (options.chainSequence == 9):
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_MillepedeNTuple_%s.root"%(options.outputFolder,options.runType,options.outputPostfix)))
 
 
 if(options.configuration == "-1"):
@@ -257,7 +265,8 @@ elif (options.chainSequence == 7):
     process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.hgcaltbeventdisplay)
 elif (options.chainSequence == 8):
     process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.position_resolution_analyzer)
-
+elif (options.chainSequence == 9):
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.millepede_ntupelizer)
 
 # example for running display :
 # cmsRun test_cfg_newEB.py runNumber=1291 runType=HGCRun nSpills=1 dataFolder='./' pedestalsHighGain="./CondObjects/data/pedHighGain1200.txt" pedestalsLowGain="./CondObjects/data/pedLowGain1200.txt" chainSequence=7 maxEvents=10
