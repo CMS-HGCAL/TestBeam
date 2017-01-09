@@ -82,6 +82,12 @@ options.register('reportEvery',
 
 
 '''Specific options for the position resolution'''
+options.register('alignmentParameterFile',
+                "",
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Alignment parameter file as obtained from the pede framework.'
+                )
 options.register('considerationMethod',
                  'all',
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -106,6 +112,7 @@ options.register('fitPointWeightingMethod',
                  VarParsing.VarParsing.varType.string,
                  'Fit points (one per layer) in the track fit are linearly weighted according to the deposited energy (in MIPs)'
                 )
+
 
 options.maxEvents = -1
 
@@ -146,9 +153,13 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 process.load('HGCal.StandardSequences.LocalReco_cff')
 process.load('HGCal.StandardSequences.dqm_cff')
 
+pathToRunEnergyFile = repoFolder+"CondObjects/data/runEnergiesFull.txt"
+if (options.chainSequence == 9):
+    pathToRunEnergyFile = repoFolder+"CondObjects/data/runEnergiesAlignment.txt"
+
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(options.runNumber), ### maybe this should be read from the file
-                            runEnergyMapFile = cms.untracked.string(repoFolder+"CondObjects/data/runEnergies.txt"), #the runs from the runEnergyMapFile are automatically added to the fileNames   
+                            runEnergyMapFile = cms.untracked.string(pathToRunEnergyFile), #the runs from the runEnergyMapFile are automatically added to the fileNames   
                             inputPathFormat=cms.untracked.string("file:%s/%s_Output_<RUN>.txt"%(options.dataFolder,options.runType)),  
                             fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are conidered
                                 #["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber) ]), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
@@ -170,6 +181,7 @@ process.hgcaltbrechits.pedestalHigh = cms.string(options.pedestalsHighGain)
 process.hgcaltbrechits.gainLow = cms.string('')
 process.hgcaltbrechits.gainHigh = cms.string('')
 
+process.position_resolution_analyzer.alignmentParameterFile = cms.string(options.alignmentParameterFile)
 process.position_resolution_analyzer.considerationMethod = cms.string(options.considerationMethod)
 process.position_resolution_analyzer.weightingMethod = cms.string(options.weightingMethod)
 process.position_resolution_analyzer.pedestalThreshold = cms.double(options.pedestalThreshold)
@@ -196,7 +208,7 @@ if (options.chainSequence == 3):
     process.output = cms.OutputModule("PoolOutputModule",
                                       fileName = cms.untracked.string(options.output)
                                       )
-
+    
 
 # process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Display.root") )
 if (options.chainSequence == 1):

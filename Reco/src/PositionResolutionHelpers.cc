@@ -1,6 +1,38 @@
 #include "HGCal/Reco/interface/PositionResolutionHelpers.h"
 
 
+//****   Parsing of alignment values    ****//
+void parseAlignmentFile(std::map<int, double> &alignmentParameters, std::string path) {
+  std::cout<<"PARSING"<<std::endl<<std::endl<<std::endl;
+  std::fstream file;
+  
+  char fragment[100];
+  int readCounter = -2, currentParameter = 0;
+  file.open(path.c_str(), std::fstream::in);
+
+  while (file.is_open() && !file.eof()) {
+    if (readCounter!=-2) readCounter++;
+    file >> fragment;
+    if (std::string(fragment)=="111") readCounter = 0;  //first parameter is read out
+
+    if (readCounter==0) currentParameter = atoi(fragment);
+    if (readCounter==1) currentParameter = alignmentParameters[currentParameter] = atof(fragment);
+    if (readCounter==4) readCounter = -1;
+  }
+
+  if (readCounter==-2) {
+    for (int i=1; i<= 8; i++) {
+      alignmentParameters[i*100+11] = 0;
+      alignmentParameters[i*100+12] = 0;
+      alignmentParameters[i*100+13] = 0;
+      alignmentParameters[i*100+21] = 0;
+      alignmentParameters[i*100+22] = 0;
+      alignmentParameters[i*100+23] = 0;
+    }
+  }
+
+}
+
 //****   Sensor Hit Maps    ****//
 
 //public functions
@@ -62,7 +94,7 @@ double SensorHitMap::getLabZ() {
   return this->layerLabZ + this->d_z0;
 }
 
-double SensorHitMap::getIntrinsicHitZPosition() {
+double SensorHitMap::getIntrinsicHitZPosition() { //this value is always zero if rotational angles are all zero
   return this->centralHitZ;
 }
 
@@ -205,6 +237,7 @@ void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMeth
       SensorHitMap::poweredWeighting(2);
   }
 
+  //set the displacement in z w.r.t. the rotational angles only
   centralHitZ = -d_gamma*centralHitPoint.first - d_beta*centralHitPoint.second;
 }
 

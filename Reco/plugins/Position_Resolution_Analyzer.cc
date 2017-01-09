@@ -68,6 +68,8 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 
 		edm::EDGetTokenT<RunData> RunDataToken;	
 		
+		std::map<int, double> alignmentParameters;
+
 		ConsiderationMethod considerationMethod;
 		WeightingMethod weightingMethod;
 		TrackFittingMethod fittingMethod;		
@@ -247,6 +249,7 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("layerZ_X0", &layerZ_X0, "layerZ_X0/D");
 	outTree->Branch("deviation", &deviation, "deviation/D");
 
+	parseAlignmentFile(alignmentParameters, iConfig.getParameter<std::string>("alignmentParameterFile")); 
 
 	ClusterVetoCounter = 0;
 	HitsVetoCounter = 0;
@@ -305,7 +308,10 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			Sensors[layer] = new SensorHitMap();
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
 			Sensors[layer]->setLabZ(Layer_Z_Positions[layer], Layer_Z_X0s[layer]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
-			Sensors[layer]->setAlignmentParameters(0., 0., 0., 0., 0., 0.);	//Todo: read from file or similar
+			Sensors[layer]->setAlignmentParameters(alignmentParameters[100*layer + 11], alignmentParameters[100*layer + 12], alignmentParameters[100*layer + 13],
+																						 alignmentParameters[100*layer + 21], alignmentParameters[100*layer + 22], alignmentParameters[100*layer + 23]);	
+			std::cout<<"Setting alignment parameters for layer "<<layer<<": "<<alignmentParameters[100*layer + 11]<<", "<<alignmentParameters[100*layer + 12]<<", "<<alignmentParameters[100*layer + 13]<<", "<<
+																						 alignmentParameters[100*layer + 21]<<", "<<alignmentParameters[100*layer + 22]<<", "<<alignmentParameters[100*layer + 23]<<std::endl;
 			Sensors[layer]->setADCPerMIP(ADC_per_MIP[layer-1]);
 			Sensors[layer]->setSensorSize(SensorSize);
 		}

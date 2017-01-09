@@ -5,6 +5,7 @@
 #include <utility>
 #include <algorithm>
 #include <cmath>
+#include <fstream>
 
 #include "TF1.h"
 #include "TGraphErrors.h"
@@ -67,6 +68,8 @@ struct HitData {
   double E; //actual energy of the hit
   int ID;   //the ID corresponds to the cell ID, it is necessary for the pedestal subtraction
 };
+
+void parseAlignmentFile(std::map<int, double> &alignmentParameters, std::string path);
 
 //
 // class declarations
