@@ -36,7 +36,8 @@ double _config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.9
 
 //configuration2:
 double _config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4}; 				//z-coordinate in cm
-                     
+         
+
 class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	public:
 		explicit MillepedeBinaryWriter(const edm::ParameterSet&);
@@ -84,10 +85,6 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		//initial global parameters, corresponding to obtained value from preceding iteration
 		//placeholders, should be defined per layer in the according class!
 		double d_alpha, d_beta, d_gamma, d_x0, d_y0, d_z0; 
-
-		double** residuals;
-		double** errors;
-		double*** derivatives;
 
 		Mille* mille;
 
@@ -193,16 +190,6 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 	totalEnergyThreshold = iConfig.getParameter<double>("totalEnergyThreshold");
 
 	eventCounter = 0;
-	residuals = new double*[nLayers];
-	errors = new double*[nLayers];
-	derivatives = new double**[nLayers];
-	for (int i=0; i<nLayers; i++) {
-		residuals[i] = new double[3];
-		errors[i] = new double[3];
-		derivatives[i] = new double*[3];
-		for (int j=0; j<3; j++)
-			derivatives[i][j] = new double[10];
-	}
 
 	ClusterVetoCounter = 0;
 	HitsVetoCounter = 0;
@@ -248,13 +235,12 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 
 	//step 1: Reduce the information to energy deposits/hits in x,y per sensor/layer 
 	//fill the rechits:
-	for(auto Rechit : *Rechits) {	
+	for (auto Rechit : *Rechits) {	
 		int layer = (Rechit.id()).layer();
 		if ( Sensors.find(layer) == Sensors.end() ) {
 			Sensors[layer] = new SensorHitMap();
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
 			Sensors[layer]->setLabZ(Layer_Z_Positions[layer], 0.);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
-			Sensors[layer]->setAlignmentParameters(0., 0., 0., 0., 0., 0.);			//Todo: read from file or similar
 			Sensors[layer]->setADCPerMIP(ADC_per_MIP[layer-1]);
 			Sensors[layer]->setSensorSize(SensorSize);
 		}
@@ -296,7 +282,6 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		return;
 	} 
 
-
 	//step 2: calculate impact point with technique indicated as the argument
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		//subtract common first
@@ -304,7 +289,6 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		//now calculate the center positions for each layer
 		it->second->calculateCenterPosition(considerationMethod, weightingMethod);
 	}
-
 
 	//step 3: fill particle tracks
 	Track = new ParticleTrack();
@@ -336,53 +320,59 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		double x_true = position_true.first;
 		double y_true = position_true.second;
 															
-		derLc[0] = derivatives[layer-1][0][0] = intrinsic_z + layer_labZ;
-		derLc[1] = derivatives[layer-1][0][1] = 1.;
-		derLc[2] = derivatives[layer-1][0][2] = (intrinsic_z + layer_labZ)*d_alpha;
-		derLc[3] = derivatives[layer-1][0][3] = d_alpha;
-		derGl[0] = derivatives[layer-1][0][4] = y_predicted;
-		derGl[1] = derivatives[layer-1][0][5] = 0.;
-		derGl[2] = derivatives[layer-1][0][6] = intrinsic_z;
-		derGl[3] = derivatives[layer-1][0][7] = 1.;
-		derGl[4] = derivatives[layer-1][0][8] = 0.;
-		derGl[5] = derivatives[layer-1][0][9] = 0.;
+		derLc[0] = layer_labZ;
+		derLc[1] = 1.;
+		derLc[2] = 0.;
+		derLc[3] = 0.;
+		
+		derGl[0] = y_predicted;
+		derGl[1] = 0.;
+		derGl[2] = 0.;
+		derGl[3] = 1.;
+		derGl[4] = 0.;
+		derGl[5] = 0.;
 		label[0] = layer*100 + 11;
 		label[1] = layer*100 + 12;
 		label[2] = layer*100 + 13;
 		label[3] = layer*100 + 21;
 		label[4] = layer*100 + 22;
 		label[5] = layer*100 + 23;
-		rMeas = residuals[layer-1][0] = x_true - x_predicted;
-		sigma = errors[layer-1][0] = 1.2/sqrt(12.);
+		rMeas = x_true - x_predicted;
+		sigma = 1.2/sqrt(12.);
 		mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
 
-		derLc[0] = derivatives[layer-1][1][0] = -d_alpha*(intrinsic_z + layer_labZ);
-		derLc[1] = derivatives[layer-1][1][1] = -d_alpha;
-		derLc[2] = derivatives[layer-1][1][2] = intrinsic_z + layer_labZ;
-		derLc[3] = derivatives[layer-1][1][3] = 1.;
-		derGl[0] = derivatives[layer-1][1][4] = -x_predicted;
-		derGl[1] = derivatives[layer-1][1][5] = intrinsic_z;
-		derGl[2] = derivatives[layer-1][1][6] = 0.;
-		derGl[3] = derivatives[layer-1][1][7] = 0.;
-		derGl[4] = derivatives[layer-1][1][8] = 1.;
-		derGl[5] = derivatives[layer-1][1][9] = 0.;	
-		rMeas = residuals[layer-1][1] = y_true - y_predicted;
-		sigma = errors[layer-1][1] = 1.2/sqrt(12.);
+
+		derLc[0] = 0.;
+		derLc[1] = 0.;
+		derLc[2] = layer_labZ;
+		derLc[3] = 1.;
+
+		derGl[0] = -x_predicted;
+		derGl[1] = 0.;
+		derGl[2] = 0.;
+		derGl[3] = 0.;
+		derGl[4] = 1.;
+		derGl[5] = 0.;	
+		rMeas = y_true - y_predicted;
+		sigma = 1.2/sqrt(12.);
 		mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
 
-		derLc[0] = derivatives[layer-1][2][0] = -d_gamma*(intrinsic_z + layer_labZ);
-		derLc[1] = derivatives[layer-1][2][1] = -d_gamma;
-		derLc[2] = derivatives[layer-1][2][2] = -d_beta*(intrinsic_z + layer_labZ);
-		derLc[3] = derivatives[layer-1][2][3] = -d_beta;
-		derGl[0] = derivatives[layer-1][2][4] = 0.;
-		derGl[1] = derivatives[layer-1][2][5] = -y_predicted;
-		derGl[2] = derivatives[layer-1][2][6] = -x_predicted;
-		derGl[3] = derivatives[layer-1][2][7] = 0.;
-		derGl[4] = derivatives[layer-1][2][8] = 0.;
-		derGl[5] = derivatives[layer-1][2][9] = 1.;	
-		rMeas = residuals[layer-1][2] = 0.0;
-		sigma = errors[layer-1][2] = 0.1;
+
+		derLc[0] = 0.;
+		derLc[1] = 0.;
+		derLc[2] = 0.;
+		derLc[3] = 0.;
+
+		derGl[0] = 0.;
+		derGl[1] = -y_predicted;
+		derGl[2] = x_predicted;
+		derGl[3] = 0.;
+		derGl[4] = 0.;
+		derGl[5] = 1.;	
+		rMeas = 0.0;
+		sigma = 0.1;
 		mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
+	
 	}
 	mille->end();
 	

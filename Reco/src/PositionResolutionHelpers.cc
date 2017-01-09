@@ -30,7 +30,6 @@ void parseAlignmentFile(std::map<int, double> &alignmentParameters, std::string 
       alignmentParameters[i*100+23] = 0;
     }
   }
-
 }
 
 //****   Sensor Hit Maps    ****//
