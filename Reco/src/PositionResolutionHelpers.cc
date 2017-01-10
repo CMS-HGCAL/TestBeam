@@ -454,7 +454,7 @@ void ParticleTrack::addFitPoint(SensorHitMap* sensor){
   x_err.push_back(sensor->getHitPositionError().first);  
   y.push_back(sensor->getLabHitPosition().second);  
   y_err.push_back(sensor->getHitPositionError().second);  
-  z.push_back(sensor->getLabZ());  
+  z.push_back(sensor->getLabZ()+sensor->getIntrinsicHitZPosition());  
   z_err.push_back(0.0);
   Energies.push_back(sensor->getTotalEnergy());
 };
