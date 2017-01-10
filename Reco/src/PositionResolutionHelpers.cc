@@ -3,7 +3,7 @@
 
 //****   Parsing of alignment values    ****//
 void parseAlignmentFile(std::map<int, double> &alignmentParameters, std::string path) {
-  std::cout<<"PARSING"<<std::endl<<std::endl<<std::endl;
+  //std::cout<<"PARSING"<<std::endl<<std::endl<<std::endl;
   std::fstream file;
   
   char fragment[100];
@@ -450,9 +450,9 @@ ParticleTrack::~ParticleTrack(){
 
 void ParticleTrack::addFitPoint(SensorHitMap* sensor){
   N_points++;
-  x.push_back(sensor->getHitPosition().first);  
+  x.push_back(sensor->getLabHitPosition().first);  
   x_err.push_back(sensor->getHitPositionError().first);  
-  y.push_back(sensor->getHitPosition().second);  
+  y.push_back(sensor->getLabHitPosition().second);  
   y_err.push_back(sensor->getHitPositionError().second);  
   z.push_back(sensor->getLabZ());  
   z_err.push_back(0.0);
