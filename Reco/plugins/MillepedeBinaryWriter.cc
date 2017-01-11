@@ -82,6 +82,10 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		int run; 
 		
 		Mille* mille;
+  	int NLC, NGLperLayer, NGL;
+		float rMeas, sigma;
+		float *derLc, *derGl;
+		int *label;
 };
 
 MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
@@ -173,15 +177,27 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 		Layer_Z_Positions = std::vector<double>(_config1Positions, _config1Positions + sizeof(_config1Positions)/sizeof(double));
 	}
 
-	
-	mille = new Mille((iConfig.getParameter<std::string>("binaryFile")).c_str());
-
 	pedestalThreshold = iConfig.getParameter<double>("pedestalThreshold");
 	SensorSize = iConfig.getParameter<int>("SensorSize");
 	nLayers = iConfig.getParameter<int>("nLayers");
 	ADC_per_MIP = iConfig.getParameter<std::vector<double> >("ADC_per_MIP");
 
 	totalEnergyThreshold = iConfig.getParameter<double>("totalEnergyThreshold");
+	
+	mille = new Mille((iConfig.getParameter<std::string>("binaryFile")).c_str());
+  NLC = 4;
+  NGLperLayer = 2;
+  NGL = nLayers*NGLperLayer;
+	rMeas = 0.;
+	sigma = 0.;
+	derLc = new float[NLC];
+	derGl = new float[NGL];
+	label = new int[NGL];
+
+	for (int l=1; l<=nLayers; l++) {
+		label[(l-1)*NGLperLayer + 0] = l*100 + 11;
+		label[(l-1)*NGLperLayer + 1] = l*100 + 12;
+	}
 
 	ClusterVetoCounter = 0;
 	HitsVetoCounter = 0;
@@ -284,13 +300,6 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	Track->weightFitPoints(fitPointWeightingMethod);
 	Track->fitTrack(fittingMethod);
 	
-  int NLC = 4;
-  int NGL = 6;
-	float rMeas = 0.;
-	float sigma = 0.;
-	float *derLc = new float[NLC];
-	float *derGl = new float[NGL];
-	int *label = new int[NGL];
 
 	//step 4: calculate the deviations between each fit missing one layer and exactly that layer's true central position
 	for (int layer=1; layer<=nLayers; layer++) {
@@ -301,70 +310,54 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		double x_predicted = position_predicted.first;
 		double y_predicted = position_predicted.second;
 
-		std::pair<double, double> position_true = Sensors[layer]->getLabHitPosition();	//should be distinguished into intrinsic position (in frame of sensor) and the lab frame
-																																									  //later will require to perform according transformation with angles and displacements 
+		//std::pair<double, double> position_predicted_err = Track->calculatePositionErrorXY(layer_labZ+intrinsic_z);
+		//double x_predicted_err = position_predicted_err.first;
+		//double y_predicted_err = position_predicted_err.second;
+
+		std::pair<double, double> position_true = Sensors[layer]->getHitPosition();	
 		double x_true = position_true.first;
 		double y_true = position_true.second;
-															
+		
+		//std::pair<double, double> position_true_err = Sensors[layer]->getHitPositionError();	
+		Sensors[layer]->getHitPositionError();	
+		//double x_true_err = position_true_err.first;
+		//double y_true_err = position_true_err.second;
+
+	//step5: calculate the necessary derivatives for Mille and fill them into the binary file			
+		//reset all global parameters:
+		for (int k=0; k<NGL; k++){
+			derGl[k] = 0.;
+		}
+
+		//the x-coordinate								
 		derLc[0] = layer_labZ;
 		derLc[1] = 1.;
 		derLc[2] = 0.;
 		derLc[3] = 0.;
 		
-		derGl[0] = y_predicted;
-		derGl[1] = 0.;
-		derGl[2] = 0.;
-		derGl[3] = 1.;
-		derGl[4] = 0.;
-		derGl[5] = 0.;
-		label[0] = layer*100 + 11;
-		label[1] = layer*100 + 12;
-		label[2] = layer*100 + 13;
-		label[3] = layer*100 + 21;
-		label[4] = layer*100 + 22;
-		label[5] = layer*100 + 23;
+		derGl[(layer-1)*NGLperLayer+0] = 1.;		
+		derGl[(layer-1)*NGLperLayer+1] = 0.;		
+
 		rMeas = x_true - x_predicted;
-		sigma = 1.2/sqrt(12.);
+		sigma = 0.334;
 		mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
 
 
+		//the y-coordinate
 		derLc[0] = 0.;
 		derLc[1] = 0.;
 		derLc[2] = layer_labZ;
 		derLc[3] = 1.;
 
-		derGl[0] = -x_predicted;
-		derGl[1] = 0.;
-		derGl[2] = 0.;
-		derGl[3] = 0.;
-		derGl[4] = 1.;
-		derGl[5] = 0.;	
+		derGl[(layer-1)*NGLperLayer+0] = 0.;		
+		derGl[(layer-1)*NGLperLayer+1] = 1.;	
+
 		rMeas = y_true - y_predicted;
-		sigma = 1.2/sqrt(12.);
+		sigma = 0.334;
 		mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
-
-
-		derLc[0] = 0.;
-		derLc[1] = 0.;
-		derLc[2] = 0.;
-		derLc[3] = 0.;
-
-		derGl[0] = 0.;
-		derGl[1] = -y_predicted;
-		derGl[2] = x_predicted;
-		derGl[3] = 0.;
-		derGl[4] = 0.;
-		derGl[5] = 1.;	
-		rMeas = 0.0;
-		sigma = 0.1;
-		mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
-	
 	}
 	mille->end();
 	
-
-	delete derLc; delete derGl; delete label;
-
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		delete (*it).second;
 	};	Sensors.clear();
@@ -378,6 +371,7 @@ void MillepedeBinaryWriter::beginJob() {
 void MillepedeBinaryWriter::endJob() {
 	mille->kill();
 	delete mille;
+	delete derLc; delete derGl; delete label;
 	std::cout<<"ClusterVetos: "<<ClusterVetoCounter<<std::endl;
 	std::cout<<"HitsVetos: "<<HitsVetoCounter<<std::endl;
 	std::cout<<"CommonVetos: "<<CommonVetoCounter<<std::endl;
