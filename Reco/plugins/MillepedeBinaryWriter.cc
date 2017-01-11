@@ -79,15 +79,9 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		std::map<int, SensorHitMap*> Sensors;
 		ParticleTrack* Track;
 
-		int configuration, evId, eventCounter, run; 	//eventCounter: counts the events in this analysis run to match information within ove event to each other
-		double energy;
+		int run; 
 		
-		//initial global parameters, corresponding to obtained value from preceding iteration
-		//placeholders, should be defined per layer in the according class!
-		double d_alpha, d_beta, d_gamma, d_x0, d_y0, d_z0; 
-
 		Mille* mille;
-
 };
 
 MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
@@ -189,15 +183,9 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 
 	totalEnergyThreshold = iConfig.getParameter<double>("totalEnergyThreshold");
 
-	eventCounter = 0;
-
 	ClusterVetoCounter = 0;
 	HitsVetoCounter = 0;
 	CommonVetoCounter = 0;
-
-
-	d_alpha = 0., d_beta = 0., d_gamma = 0., d_x0 = 0., d_y0 = 0., d_z0 = 0.; 
-
 
 }//constructor ends here
 
@@ -211,11 +199,9 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 
  	//get the relevant event information
 	event.getByToken(RunDataToken, rd);
-	configuration = rd->configuration;
-	evId = event.id().event();
-	eventCounter++;
+
 	run = rd->run;
-	energy = rd->energy;
+	
 	if (run == -1) {
 		std::cout<<"Run is not in configuration file - is ignored."<<std::endl;
 		return;
