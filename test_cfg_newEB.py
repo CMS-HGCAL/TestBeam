@@ -38,6 +38,12 @@ options.register('runNumber',
                  VarParsing.VarParsing.varType.int,
                  'Input file to process')
 
+options.register('pathToRunEnergyFile',
+                 '/',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 '(Absolute) path to the file that indicates the runs to run the analysis on.')
+
 options.register('runType',
                  'Unknown',
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -153,16 +159,13 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 process.load('HGCal.StandardSequences.LocalReco_cff')
 process.load('HGCal.StandardSequences.dqm_cff')
 
-pathToRunEnergyFile = repoFolder+"CondObjects/data/runEnergiesFull.txt"
-if (options.chainSequence == 9):
-    pathToRunEnergyFile = repoFolder+"CondObjects/data/runEnergiesAlignment.txt"
 
 process.source = cms.Source("HGCalTBTextSource",
-                            run=cms.untracked.int32(options.runNumber), ### maybe this should be read from the file
-                            runEnergyMapFile = cms.untracked.string(pathToRunEnergyFile), #the runs from the runEnergyMapFile are automatically added to the fileNames   
+                            run=cms.untracked.int32(options.runNumber), #
+                            runEnergyMapFile = cms.untracked.string(options.pathToRunEnergyFile), #the runs from the runEnergyMapFile are automatically added to the fileNames   
                             inputPathFormat=cms.untracked.string("file:%s/%s_Output_<RUN>.txt"%(options.dataFolder,options.runType)),  
                             fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are conidered
-                                #["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber) ]), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+                                #["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber) ])
                             nSpills=cms.untracked.uint32(options.nSpills),
                             )
 
