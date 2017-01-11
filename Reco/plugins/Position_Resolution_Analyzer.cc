@@ -36,8 +36,6 @@
 
 #include "TStyle.h"
 #include "TFile.h"
-#include "TH2D.h"
-#include "TGraph2D.h"
 #include "TTree.h"
   
 //configuration1:
@@ -68,14 +66,13 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 
 		edm::EDGetTokenT<RunData> RunDataToken;	
 		
-		std::map<int, double> alignmentParameters;
+		std::map<int, double> alignmentParameters; //all entries are set to zero if no valid file is given 
 
 		ConsiderationMethod considerationMethod;
 		WeightingMethod weightingMethod;
 		TrackFittingMethod fittingMethod;		
 		FitPointWeightingMethod fitPointWeightingMethod;
 
-		std::vector<int> EventsFor2DGraphs;
 		double pedestalThreshold;
 		std::vector<double> Layer_Z_Positions;
 		std::vector<double> Layer_Z_X0s;
@@ -96,7 +93,6 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		//helper variables that are set within the event loop, i.e. are defined per event
 		std::map<int, SensorHitMap*> Sensors;
 		std::map<int, ParticleTrack*> Tracks;
-		std::vector<double> x_predicted_v,y_predicted_v, x_true_v, y_true_v, layerZ_cm_v;
 
 		//stuff to be written to the tree
 		TTree* outTree;
@@ -212,9 +208,6 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 
 	totalEnergyThreshold = iConfig.getParameter<double>("totalEnergyThreshold");
 
-	//making 2DGraphs per event?
-	EventsFor2DGraphs = iConfig.getParameter<std::vector<int> >("EventsFor2DGraphs");
-
 	//initialize tree and set Branch addresses
 	outTree = fs->make<TTree>("deviations", "deviations");
 	outTree->Branch("configuration", &configuration, "configuration/I");
@@ -276,14 +269,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		return;
 	}
 
-	//check if 2DGraphs are to be made
-	bool make2DGraphs = false;
-	std::vector<int>::iterator findPosition = std::find(EventsFor2DGraphs.begin(), EventsFor2DGraphs.end(), evId);
-	if (findPosition != EventsFor2DGraphs.end()) {
-		make2DGraphs = true;
-		EventsFor2DGraphs.erase(findPosition);
-	}
-
 	//initialize new fit counters in case this is a new run:
 	if (successfulFitCounter.find(run) == successfulFitCounter.end()) 
 		successfulFitCounter[run] = failedFitCounter[run] = 0;
@@ -308,10 +293,10 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			Sensors[layer] = new SensorHitMap();
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
 			Sensors[layer]->setLabZ(Layer_Z_Positions[layer], Layer_Z_X0s[layer]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
-			Sensors[layer]->setAlignmentParameters(alignmentParameters[100*layer + 11], alignmentParameters[100*layer + 12], alignmentParameters[100*layer + 13],
-																						 alignmentParameters[100*layer + 21], alignmentParameters[100*layer + 22], alignmentParameters[100*layer + 23]);	
-			std::cout<<"Setting alignment parameters for layer "<<layer<<": "<<alignmentParameters[100*layer + 11]<<", "<<alignmentParameters[100*layer + 12]<<", "<<alignmentParameters[100*layer + 13]<<", "<<
-																						 alignmentParameters[100*layer + 21]<<", "<<alignmentParameters[100*layer + 22]<<", "<<alignmentParameters[100*layer + 23]<<std::endl;
+
+			Sensors[layer]->setAlignmentParameters(0.0, 0.0, 0.0,
+				alignmentParameters[100*layer + 11], 0.0, 0.0);	
+	
 			Sensors[layer]->setADCPerMIP(ADC_per_MIP[layer-1]);
 			Sensors[layer]->setSensorSize(SensorSize);
 		}
@@ -432,22 +417,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		//fill the tree
 		outTree->Fill();
 		
-		//update the deviations maxima on the fly
-		if (make2DGraphs) {
-			//store for the two 2D graphs that are written per event
-			x_predicted_v.push_back(x_predicted);
-			y_predicted_v.push_back(y_predicted);
-			x_true_v.push_back(x_true);
-			y_true_v.push_back(y_true);
-			layerZ_cm_v.push_back(layerZ_cm);
-		}
-	}
-
-	if (make2DGraphs) {
-		std::string graphIdentifier = "run_" + std::to_string(run) + "event_" + std::to_string(evId);
-		fs->make<TGraph2D>(("predicted_points_" + graphIdentifier).c_str(), "", layerZ_cm_v.size(), &(x_predicted_v[0]), &(y_predicted_v[0]), &(layerZ_cm_v[0]));
-		fs->make<TGraph2D>(("true_points_" + graphIdentifier).c_str(), "", layerZ_cm_v.size(), &(x_true_v[0]), &(y_true_v[0]), &(layerZ_cm_v[0]));
-		x_predicted_v.clear(); y_predicted_v.clear(); x_true_v.clear(); y_true_v.clear(); layerZ_cm_v.clear();
 	}
 
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
