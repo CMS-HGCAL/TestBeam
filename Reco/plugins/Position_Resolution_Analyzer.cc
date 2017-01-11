@@ -103,6 +103,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		double x_predicted_to_closest_cell, y_predicted_to_closest_cell, x_true_to_closest_cell, y_true_to_closest_cell, layerZ_cm, layerZ_X0, deviation;
 
 		std::pair<int, double> CM_tmp;	//will write the subtract_CM() return values for each layer
+
 };
 
 Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterSet& iConfig) {
@@ -255,13 +256,14 @@ Position_Resolution_Analyzer::~Position_Resolution_Analyzer() {
 
 // ------------ method called for each event  ------------
 void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setup) {
+	eventCounter++;
+
 	edm::Handle<RunData> rd;
 
  	//get the relevant event information
 	event.getByToken(RunDataToken, rd);
 	configuration = rd->configuration;
 	evId = event.id().event();
-	eventCounter++;
 	run = rd->run;
 	energy = rd->energy;
 	if (run == -1) {
@@ -292,10 +294,10 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		if ( Sensors.find(layer) == Sensors.end() ) {
 			Sensors[layer] = new SensorHitMap();
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
-			Sensors[layer]->setLabZ(Layer_Z_Positions[layer], Layer_Z_X0s[layer]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
+			Sensors[layer]->setLabZ(Layer_Z_Positions[layer-1], Layer_Z_X0s[layer-1]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
 
 			Sensors[layer]->setAlignmentParameters(0.0, 0.0, 0.0,
-				alignmentParameters[100*layer + 11], 0.0, 0.0);	
+				alignmentParameters[100*layer + 11], alignmentParameters[100*layer + 12], 0.0);	
 	
 			Sensors[layer]->setADCPerMIP(ADC_per_MIP[layer-1]);
 			Sensors[layer]->setSensorSize(SensorSize);
@@ -410,8 +412,10 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		layerWeight = Sensors[layer]->getTotalWeight();
 
 		//DEBUG
-		if (deviation > 1000.) 
+		if (deviation > 1000.) {
+			std::cout<<"Event: "<<eventCounter<<std::endl;
 			std::cout<<"   layer: "<<layer<<"   x:  "<<x_predicted<<" - "<<x_true<<"     "<<y_predicted<<" - "<<y_true<<std::endl;
+		}
 		//END OF DEBUG
 		
 		//fill the tree
