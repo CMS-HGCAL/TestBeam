@@ -28,7 +28,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
-#include "HGCal/Reco/interface/Mille.h"
+#include "Alignment/MillePedeAlignmentAlgorithm/src/Mille.h"
 
   
 //configuration1:
@@ -56,7 +56,7 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
   	edm::EDGetToken HGCalTBClusterCollection19_Token;
 
 		edm::EDGetTokenT<RunData> RunDataToken;	
-		
+
 		ConsiderationMethod considerationMethod;
 		WeightingMethod weightingMethod;
 		TrackFittingMethod fittingMethod;		
@@ -188,7 +188,7 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 	
 	mille = new Mille((iConfig.getParameter<std::string>("binaryFile")).c_str());
   NLC = 4;
-  NGLperLayer = 2;
+  NGLperLayer = 3;
   NGL = nLayers*NGLperLayer;
 	rMeas = 0.;
 	sigma = 0.;
@@ -199,6 +199,7 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 	for (int l=1; l<=nLayers; l++) {
 		label[(l-1)*NGLperLayer + 0] = l*100 + 11;
 		label[(l-1)*NGLperLayer + 1] = l*100 + 12;
+		label[(l-1)*NGLperLayer + 2] = l*100 + 21;
 	}
 
 	ClusterVetoCounter = 0;
@@ -245,6 +246,8 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			Sensors[layer] = new SensorHitMap();
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
 			Sensors[layer]->setLabZ(Layer_Z_Positions[layer], 0.);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
+			Sensors[layer]->setAlignmentParameters(0.0, 0.0, 0.0,
+				0.0, 0.0, 0.0);	
 			Sensors[layer]->setADCPerMIP(ADC_per_MIP[layer-1]);
 			Sensors[layer]->setSensorSize(SensorSize);
 		}
@@ -339,6 +342,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		
 		derGl[(layer-1)*NGLperLayer+0] = 1.;		
 		derGl[(layer-1)*NGLperLayer+1] = 0.;		
+		derGl[(layer-1)*NGLperLayer+2] = y_predicted;		
 
 		rMeas = x_true - x_predicted;
 		sigma = 0.334;
@@ -353,6 +357,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 
 		derGl[(layer-1)*NGLperLayer+0] = 0.;		
 		derGl[(layer-1)*NGLperLayer+1] = 1.;	
+		derGl[(layer-1)*NGLperLayer+2] = -x_predicted;		
 
 		rMeas = y_true - y_predicted;
 		sigma = 0.334;

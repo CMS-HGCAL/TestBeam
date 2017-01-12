@@ -298,7 +298,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
 			Sensors[layer]->setLabZ(Layer_Z_Positions[layer-1], Layer_Z_X0s[layer-1]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
 
-			Sensors[layer]->setAlignmentParameters(0.0, 0.0, 0.0,
+			Sensors[layer]->setAlignmentParameters(alignmentParameters[100*layer + 21], 0.0, 0.0,
 				alignmentParameters[100*layer + 11], alignmentParameters[100*layer + 12], 0.0);	
 	
 			Sensors[layer]->setADCPerMIP(ADC_per_MIP[layer-1]);
@@ -404,8 +404,8 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		x_true_err = position_error_true.first;
 		y_true_err = position_error_true.second;
 
-		deltaX = x_predicted - x_true;
-		deltaY = y_predicted - y_true;
+		deltaX = x_true - x_predicted;
+		deltaY = y_true - y_predicted;
 		deviation  = sqrt( pow(deltaX, 2) + pow(deltaY, 2) );
 
 		sumFitWeights = Tracks[layer]->getSumOfEnergies();
