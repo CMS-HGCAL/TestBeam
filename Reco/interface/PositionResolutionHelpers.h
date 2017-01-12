@@ -82,7 +82,7 @@ class LineFitter {
     std::vector<double> _x;
     std::vector<double> _y;
     std::vector<double> _sigma_y;
-    double _S, _S_x, _S_xx, _S_xy, _S_y;
+    double _S, _S_x, _S_xx, _S_xy, _S_y, _Delta;
   public:
     LineFitter(std::vector<double> x, std::vector<double> y, std::vector<double> sigma_y);
     void addPoint(double x, double y, double sigma_y);

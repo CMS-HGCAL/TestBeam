@@ -60,7 +60,7 @@ void LineFitter::fit() {
   if (_x.size()==0 || _y.size()==0 || _sigma_y.size()==0) {
     std::cout<<"One of the input vectors has zero dimension!"<<std::endl;
   }
-  _S_x = _S_xx = _S_y = _S_xy = _S = 0.;
+  _S_x = _S_xx = _S_y = _S_xy = _S = _Delta = 0.;
 
   for (size_t i=0; i<_x.size(); i++) {
     if (_sigma_y[i] == 0) continue;
@@ -70,31 +70,37 @@ void LineFitter::fit() {
     _S_xx += _x[i]*_x[i]/pow(_sigma_y[i], 2);
     _S_xy += _x[i]*_y[i]/pow(_sigma_y[i], 2);
   }
+
+  _Delta = _S*_S_xx-_S_x*_S_x;
 }
 bool LineFitter::converged() {
-  return (_S > 0.);
+  return (_Delta > 0.);
 }
 double LineFitter::getM() {
-  return (_S*_S_xy-_S_x*_S_y)/(_S*_S_xx-_S_x*_S_x);
+  return (_S*_S_xy-_S_x*_S_y)/_Delta;
 }
 double LineFitter::getMError() {
-  return sqrt(_S/(_S*_S_xx-_S_x*_S_x));
+  return sqrt(_S/_Delta);
 }
 double LineFitter::getB() {
-  return (_S_xx*_S_y-_S_x*_S_xy)/(_S*_S_xx-_S_x*_S_x);
+  return (_S_xx*_S_y-_S_x*_S_xy)/_Delta;
 }
 double LineFitter::getBError() {
-  return sqrt(_S_xx/(_S*_S_xx-_S_x*_S_x));
+  return sqrt(_S_xx/_Delta);
 }
 double LineFitter::getMBCovariance() {
-  return - _S_x/(_S*_S_xx-_S_x*_S_x);
+  return - _S_x/_Delta;
 }
 
 double LineFitter::eval(double x) {
-  return this->getB() + x * this->getM();
+  if (!converged()) return 0;
+  else 
+    return this->getB() + x * this->getM();
 };
 double LineFitter::evalError(double x) {
-  return sqrt(pow(this->getBError(), 2) + pow(x*this->getMError(),2) + 2*fabs(x)*this->getMBCovariance());
+  if (!converged()) return 0;
+  else
+    return sqrt(pow(this->getBError(), 2) + pow(x*this->getMError(),2) + 2*fabs(x)*this->getMBCovariance());
 };
 
 
