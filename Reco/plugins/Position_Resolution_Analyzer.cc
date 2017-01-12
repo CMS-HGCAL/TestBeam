@@ -163,7 +163,9 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 
 	//read the track fitting method
 	methodString = iConfig.getParameter<std::string>("fittingMethod");
-	if (methodString == "lineTGraphErrors")
+	if (methodString == "lineAnalytical")
+		fittingMethod = LINEFITANALYTICAL;
+	else if (methodString == "lineTGraphErrors")
 		fittingMethod = LINEFITTGRAPHERRORS;
 	else if (methodString == "pol2TGraphErrors")
 		fittingMethod = POL2TGRAPHERRORS;

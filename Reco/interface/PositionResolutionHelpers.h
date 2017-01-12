@@ -49,6 +49,7 @@ enum WeightingMethod {
 
 enum TrackFittingMethod {
   DEFAULTFITTING,
+  LINEFITANALYTICAL,
   LINEFITTGRAPHERRORS,
   POL2TGRAPHERRORS,
   POL3TGRAPHERRORS
@@ -74,6 +75,31 @@ void parseAlignmentFile(std::map<int, double> &alignmentParameters, std::string 
 //
 // class declarations
 //
+
+//class that performs an analytical straight line fit
+class LineFitter {
+  private:
+    std::vector<double> _x;
+    std::vector<double> _y;
+    std::vector<double> _sigma_y;
+    double _S, _S_x, _S_xx, _S_xy, _S_y;
+  public:
+    LineFitter(std::vector<double> x, std::vector<double> y, std::vector<double> sigma_y);
+    void addPoint(double x, double y, double sigma_y);
+    void fit();
+    bool converged();
+    double getM();
+    double getMError();
+    double getB();
+    double getBError();
+    double getMBCovariance();
+
+    double eval(double x);
+    double evalError(double x);
+};
+
+
+
 class SensorHitMap {
   private:
     std::pair<double, double> centralHitPoint;
@@ -158,6 +184,12 @@ class ParticleTrack{
     TrackFittingMethod lastAppliedMethod;
 
     //different fit functions
+    void analyticalStraightLineFit();
+    std::pair<double, double> positionFromAnalyticalStraightLine(double z);
+    std::pair<double, double> positionFromAnalyticalStraightLineErrors(double z);
+    LineFitter* linefit_x;
+    LineFitter* linefit_y;
+
     void polFitTGraphErrors(int degree);  
     std::pair<double, double> positionFromPolFitTGraphErrors(int degree, double z);
     std::pair<double, double> positionErrorFromPolFitTGraphErrors(int degree, double z);

@@ -32,6 +32,72 @@ void parseAlignmentFile(std::map<int, double> &alignmentParameters, std::string 
   }
 }
 
+//****   Line Fiting Class    ****//
+
+LineFitter::LineFitter(std::vector<double> x, std::vector<double> y, std::vector<double> sigma_y) {
+  if (x.size() != y.size()) {
+    std::cout<<"LineFitter class: x and y vectors have different dimension!"<<std::endl;
+    return;
+  }
+  if (x.size() != sigma_y.size()) {
+    std::cout<<"LineFitter class: x and sigma_y vectors have different dimension!"<<std::endl;
+    return;
+  }
+  if (y.size() != sigma_y.size()) {
+    std::cout<<"LineFitter class: y and sigma_y vectors have different dimension!"<<std::endl;
+    return;
+  }
+  _x = x; _y = y; _sigma_y = sigma_y;
+  _S_x = _S_xx = _S_y = _S_xy = 0.;
+  _S = 1.;
+}
+
+void LineFitter::addPoint(double x, double y, double sigma_y) {
+  _x.push_back(x); _y.push_back(y); _sigma_y.push_back(sigma_y);
+}
+
+void LineFitter::fit() {
+  if (_x.size()==0 || _y.size()==0 || _sigma_y.size()==0) {
+    std::cout<<"One of the input vectors has zero dimension!"<<std::endl;
+  }
+  _S_x = _S_xx = _S_y = _S_xy = _S = 0.;
+
+  for (size_t i=0; i<_x.size(); i++) {
+    if (_sigma_y[i] == 0) continue;
+    _S += 1.0/pow(_sigma_y[i], 2);
+    _S_x += _x[i]/pow(_sigma_y[i], 2);
+    _S_y += _y[i]/pow(_sigma_y[i], 2);
+    _S_xx += _x[i]*_x[i]/pow(_sigma_y[i], 2);
+    _S_xy += _x[i]*_y[i]/pow(_sigma_y[i], 2);
+  }
+}
+bool LineFitter::converged() {
+  return (_S > 0.);
+}
+double LineFitter::getM() {
+  return (_S*_S_xy-_S_x*_S_y)/(_S*_S_xx-_S_x*_S_x);
+}
+double LineFitter::getMError() {
+  return sqrt(_S/(_S*_S_xx-_S_x*_S_x));
+}
+double LineFitter::getB() {
+  return (_S_xx*_S_y-_S_x*_S_xy)/(_S*_S_xx-_S_x*_S_x);
+}
+double LineFitter::getBError() {
+  return sqrt(_S_xx/(_S*_S_xx-_S_x*_S_x));
+}
+double LineFitter::getMBCovariance() {
+  return - _S_x/(_S*_S_xx-_S_x*_S_x);
+}
+
+double LineFitter::eval(double x) {
+  return this->getB() + x * this->getM();
+};
+double LineFitter::evalError(double x) {
+  return sqrt(pow(this->getBError(), 2) + pow(x*this->getMError(),2) + 2*fabs(x)*this->getMBCovariance());
+};
+
+
 //****   Sensor Hit Maps    ****//
 
 //public functions
@@ -437,7 +503,8 @@ void SensorHitMap::logWeighting(double log_a, double log_b) {
 //public functions
 ParticleTrack::ParticleTrack(){
   lastAppliedMethod = DEFAULTFITTING;
-  ROOTpol_x = ROOTpol_y = 0;
+  ROOTpol_x = ROOTpol_y = NULL;
+  linefit_x = linefit_y = NULL;
 
   N_points = 0;
 };
@@ -445,6 +512,8 @@ ParticleTrack::ParticleTrack(){
 ParticleTrack::~ParticleTrack(){
   delete ROOTpol_x;
   delete ROOTpol_y;
+  delete linefit_x;
+  delete linefit_y;
   x.clear(); x_err.clear(); y.clear(); y_err.clear(); z.clear(); z_err.clear();
 };
 
@@ -485,6 +554,9 @@ void ParticleTrack::weightFitPoints(FitPointWeightingMethod method) {
 void ParticleTrack::fitTrack(TrackFittingMethod method){
   try {
     switch(method) {
+      case LINEFITANALYTICAL: 
+        analyticalStraightLineFit();
+        break;
       case LINEFITTGRAPHERRORS:
         polFitTGraphErrors(1);
         break;
@@ -507,6 +579,8 @@ void ParticleTrack::fitTrack(TrackFittingMethod method){
 
 std::pair<double, double> ParticleTrack::calculatePositionXY(double z) {
   switch(lastAppliedMethod) {
+    case LINEFITANALYTICAL:
+      return positionFromAnalyticalStraightLine(z);
     case LINEFITTGRAPHERRORS:
       return positionFromPolFitTGraphErrors(1, z);
     case POL2TGRAPHERRORS:
@@ -519,6 +593,8 @@ std::pair<double, double> ParticleTrack::calculatePositionXY(double z) {
 }
 std::pair<double, double> ParticleTrack::calculatePositionErrorXY(double z) {
   switch(lastAppliedMethod) {
+    case LINEFITANALYTICAL:
+      return positionFromAnalyticalStraightLineErrors(z);
     case LINEFITTGRAPHERRORS:
       return positionErrorFromPolFitTGraphErrors(1, z);
     case POL2TGRAPHERRORS:
@@ -539,11 +615,33 @@ double ParticleTrack::getSumOfEnergies() {  //returns the original Energies (i.e
 }
 
 //private functions
+void ParticleTrack::analyticalStraightLineFit() {
+  if (linefit_x != NULL)
+    delete linefit_x;
+  if (linefit_y != NULL)
+    delete linefit_y;
+
+  linefit_x = new LineFitter(z, x, x_err);
+  linefit_y = new LineFitter(z, y, y_err);
+  linefit_x->fit();
+  linefit_y->fit();
+
+  polFitTGraphErrors(1);
+};
+
+std::pair<double, double> ParticleTrack::positionFromAnalyticalStraightLine(double z) {
+  return std::make_pair(linefit_x->eval(z), linefit_y->eval(z));
+};
+std::pair<double, double> ParticleTrack::positionFromAnalyticalStraightLineErrors(double z) {
+  return std::make_pair(linefit_x->evalError(z), linefit_y->evalError(z));
+};
+
+
+
 void ParticleTrack::polFitTGraphErrors(int degree){  
-  //todo: clear existing Polynomial pointers if existing
-  if (ROOTpol_x != 0)
+  if (ROOTpol_x != NULL)
     delete ROOTpol_x;
-  if (ROOTpol_y != 0)
+  if (ROOTpol_y != NULL)
     delete ROOTpol_y;
 
   ROOTpol_x = new TF1("ROOTpol_x", ("pol"+std::to_string(degree)).c_str(), *min_element(z.begin(), z.end())-1.0, *max_element(z.begin(), z.end())+1.0);
@@ -557,7 +655,6 @@ void ParticleTrack::polFitTGraphErrors(int degree){
 
   delete tmp_graph_x;
   delete tmp_graph_y;
-  
 }; 
 
 std::pair<double, double> ParticleTrack::positionFromPolFitTGraphErrors(int degree, double z) {
@@ -575,7 +672,7 @@ std::pair<double, double> ParticleTrack::positionErrorFromPolFitTGraphErrors(int
       err_y += 2*fit_result_y->Correlation(i, j) * ROOTpol_y->GetParError(i) * ROOTpol_y->GetParError(j) * fabs(pow(z, i+j));
     }
   }
-  return std::make_pair(err_x, err_y);
+  return std::make_pair(sqrt(err_x), sqrt(err_y));
 }
 
 
