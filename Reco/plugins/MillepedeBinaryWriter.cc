@@ -143,7 +143,9 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 
 	//read the track fitting method
 	methodString = iConfig.getParameter<std::string>("fittingMethod");
-	if (methodString == "lineTGraphErrors")
+	if (methodString == "lineAnalytical")
+		fittingMethod = LINEFITANALYTICAL;
+	else if (methodString == "lineTGraphErrors")
 		fittingMethod = LINEFITTGRAPHERRORS;
 	else if (methodString == "pol2TGraphErrors")
 		fittingMethod = POL2TGRAPHERRORS;
