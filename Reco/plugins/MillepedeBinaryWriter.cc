@@ -30,13 +30,18 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "Alignment/MillePedeAlignmentAlgorithm/src/Mille.h"
 
-  
+
+/*************/
+/* Some hard coded numbers:  */  
 //configuration1:
 double _config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.92}; 	 //z-coordinate in cm
-
 //configuration2:
 double _config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4}; 				//z-coordinate in cm
-         
+
+double sigma_res_x[] = {0.2, 0.15, 0.15, 0.15, 0.17, 0.18, 0.21, 0.25};					//width of residuals in x dimension (from logweighting(5,1), no reweighting of errors, all cells considered, 2MIP threshold)
+double sigma_res_y[] = {0.21, 0.16, 0.16, 0.16, 0.18, 0.18, 0.21, 0.26};					//width of residuals in y dimension (from logweighting(5,1), no reweighting of errors, all cells considered, 2MIP threshold)
+
+/*************/
 
 class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	public:
@@ -345,7 +350,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		derGl[(layer-1)*NGLperLayer+2] = y_predicted;		
 
 		rMeas = x_true - x_predicted;
-		sigma = 0.334;
+		sigma = sigma_res_x[layer-1];
 		mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
 
 
@@ -360,7 +365,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		derGl[(layer-1)*NGLperLayer+2] = -x_predicted;		
 
 		rMeas = y_true - y_predicted;
-		sigma = 0.334;
+		sigma = sigma_res_y[layer-1];
 		mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
 	}
 	mille->end();
