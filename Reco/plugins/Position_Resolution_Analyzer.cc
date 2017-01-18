@@ -28,22 +28,23 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"	//for the runData type definition
-#include "HGCal/Reco/interface/PositionResolutionHelpers.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
-#include "TStyle.h"
+#include "HGCal/Reco/interface/PositionResolutionHelpers.h"
+#include "HGCal/Reco/interface/Tracks.h"
+#include "HGCal/Reco/interface/Sensors.h"
+
 #include "TFile.h"
 #include "TTree.h"
   
 //configuration1:
-double config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.92}; 	 //z-coordinate in cm
+double config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.92};    //z-coordinate in cm
 double config1X0Depths[] = {6.268, 1.131, 1.131, 1.362, 0.574, 1.301, 0.574, 2.42}; //in radiation lengths, copied from layerSumAnalyzer
-
 //configuration2:
-double config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4}; 				//z-coordinate in cm
+double config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4};         //z-coordinate in cm
 double config2X0Depths[] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021}; //in radiation lengths, copied from layerSumAnalyzer
                      
 class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
@@ -89,7 +90,6 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 
 		std::map<int, int> successfulFitCounter, failedFitCounter;
 
-
 		//helper variables that are set within the event loop, i.e. are defined per event
 		std::map<int, SensorHitMap*> Sensors;
 		std::map<int, ParticleTrack*> Tracks;
@@ -106,9 +106,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 
 };
 
-Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterSet& iConfig) {
-	gStyle->SetOptStat();
-	
+Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterSet& iConfig) {	
 	// initialization
 	usesResource("TFileService");
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
@@ -296,9 +294,10 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		if ( Sensors.find(layer) == Sensors.end() ) {
 			Sensors[layer] = new SensorHitMap();
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
+			Sensors[layer]->setParticleEnergy(energy);
 			Sensors[layer]->setLabZ(Layer_Z_Positions[layer-1], Layer_Z_X0s[layer-1]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
 
-			Sensors[layer]->setAlignmentParameters(alignmentParameters[100*layer + 21], 0.0, 0.0,
+			Sensors[layer]->setAlignmentParameters(0.0, 0.0, 0.0,
 				alignmentParameters[100*layer + 11], alignmentParameters[100*layer + 12], 0.0);	
 	
 			Sensors[layer]->setADCPerMIP(ADC_per_MIP[layer-1]);
@@ -369,9 +368,10 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	
 
 	//step 4: calculate the deviations between each fit missing one layer and exactly that layer's true central position
+	layerZ_X0 = 0;
 	for (layer=1; layer<=nLayers; layer++) {
 		layerZ_cm = Sensors[layer]->getLabZ() + Sensors[layer]->getIntrinsicHitZPosition();
-		layerZ_X0 = Sensors[layer]->getZ_X0();
+		layerZ_X0 += Sensors[layer]->getX0();
 
 		std::pair<double, double> position_predicted = Tracks[layer]->calculatePositionXY(layerZ_cm);
 		x_predicted = position_predicted.first;

@@ -24,19 +24,25 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"	//for the runData type definition
-#include "HGCal/Reco/interface/PositionResolutionHelpers.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
-#include "Alignment/MillePedeAlignmentAlgorithm/src/Mille.h"
+//#include "Alignment/MillePedeAlignmentAlgorithm/src/Mille.h"
+#include "HGCal/Reco/interface/Mille.h"
 
+#include "HGCal/Reco/interface/PositionResolutionHelpers.h"
+#include "HGCal/Reco/interface/Tracks.h"
+#include "HGCal/Reco/interface/Sensors.h"
 
 /*************/
 /* Some hard coded numbers:  */  
+
 //configuration1:
-double _config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.92}; 	 //z-coordinate in cm
+double _config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.92};    //z-coordinate in cm
+double _config1X0Depths[] = {6.268, 1.131, 1.131, 1.362, 0.574, 1.301, 0.574, 2.42}; //in radiation lengths, copied from layerSumAnalyzer
 //configuration2:
-double _config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4}; 				//z-coordinate in cm
+double _config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4};         //z-coordinate in cm
+double _config2X0Depths[] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021}; //in radiation lengths, copied from layerSumAnalyzer
 
 double sigma_res_x[] = {0.2, 0.15, 0.15, 0.15, 0.17, 0.18, 0.21, 0.25};					//width of residuals in x dimension (from logweighting(5,1), no reweighting of errors, all cells considered, 2MIP threshold)
 double sigma_res_y[] = {0.21, 0.16, 0.16, 0.16, 0.18, 0.18, 0.21, 0.26};					//width of residuals in y dimension (from logweighting(5,1), no reweighting of errors, all cells considered, 2MIP threshold)
@@ -69,6 +75,7 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 
 		double pedestalThreshold;
 		std::vector<double> Layer_Z_Positions;
+		std::vector<double> Layer_Z_X0s;
 		std::vector<double> ADC_per_MIP;
 		int LayersConfig;
 		int nLayers;
@@ -85,6 +92,7 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		ParticleTrack* Track;
 
 		int run; 
+		double energy;
 		
 		Mille* mille;
   	int NLC, NGLperLayer, NGL;
@@ -178,10 +186,13 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 	LayersConfig = iConfig.getParameter<int>("layers_config");
 	if (LayersConfig == 1) {
 		Layer_Z_Positions = std::vector<double>(_config1Positions, _config1Positions + sizeof(_config1Positions)/sizeof(double));
+		Layer_Z_X0s 			= std::vector<double>(_config1X0Depths, _config1X0Depths + sizeof(_config1X0Depths)/sizeof(double));
 	} if (LayersConfig == 2) {
 		Layer_Z_Positions = std::vector<double>(_config2Positions, _config2Positions + sizeof(_config2Positions)/sizeof(double));
+		Layer_Z_X0s 			= std::vector<double>(_config2X0Depths, _config2X0Depths + sizeof(_config2X0Depths)/sizeof(double));
 	} else {
 		Layer_Z_Positions = std::vector<double>(_config1Positions, _config1Positions + sizeof(_config1Positions)/sizeof(double));
+		Layer_Z_X0s 			= std::vector<double>(_config1X0Depths, _config1X0Depths + sizeof(_config1X0Depths)/sizeof(double));
 	}
 
 	pedestalThreshold = iConfig.getParameter<double>("pedestalThreshold");
@@ -225,7 +236,8 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	event.getByToken(RunDataToken, rd);
 
 	run = rd->run;
-	
+	energy = rd->energy;
+
 	if (run == -1) {
 		std::cout<<"Run is not in configuration file - is ignored."<<std::endl;
 		return;
@@ -250,7 +262,8 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		if ( Sensors.find(layer) == Sensors.end() ) {
 			Sensors[layer] = new SensorHitMap();
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
-			Sensors[layer]->setLabZ(Layer_Z_Positions[layer], 0.);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
+			Sensors[layer]->setParticleEnergy(energy);
+			Sensors[layer]->setLabZ(Layer_Z_Positions[layer-1], Layer_Z_X0s[layer-1]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
 			Sensors[layer]->setAlignmentParameters(0.0, 0.0, 0.0,
 				0.0, 0.0, 0.0);	
 			Sensors[layer]->setADCPerMIP(ADC_per_MIP[layer-1]);
@@ -347,7 +360,6 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		
 		derGl[(layer-1)*NGLperLayer+0] = 1.;		
 		derGl[(layer-1)*NGLperLayer+1] = 0.;		
-		derGl[(layer-1)*NGLperLayer+2] = y_predicted;		
 
 		rMeas = x_true - x_predicted;
 		sigma = sigma_res_x[layer-1];
@@ -361,8 +373,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		derLc[3] = 1.;
 
 		derGl[(layer-1)*NGLperLayer+0] = 0.;		
-		derGl[(layer-1)*NGLperLayer+1] = 1.;	
-		derGl[(layer-1)*NGLperLayer+2] = -x_predicted;		
+		derGl[(layer-1)*NGLperLayer+1] = 1.;			
 
 		rMeas = y_true - y_predicted;
 		sigma = sigma_res_y[layer-1];
