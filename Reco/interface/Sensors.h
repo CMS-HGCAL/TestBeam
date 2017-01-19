@@ -11,7 +11,6 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
-#include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h" //e.g. to get the cell's dimensions
 
 
@@ -67,8 +66,8 @@ class SensorHitMap {
     HitData* mostSignificantHit;
 
     //helpers to obtain the x-y coordinate
-    HGCalTBCellVertices TheCell;
-    std::pair<double, double> CellCenterXY;
+    //HGCalTBCellVertices TheCell;
+    //std::pair<double, double> CellCenterXY;
     int CM_cells_count;
     double CM_sum;
 

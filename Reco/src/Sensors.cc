@@ -83,9 +83,9 @@ double SensorHitMap::getX0() {
 void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
   int uniqueID = (Rechit.id()).rawId();
 
-  CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), sensorSize);
-  double iux = CellCenterXY.first;
-  double ivy = CellCenterXY.second;
+  //CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), sensorSize);
+  double iux = Rechit.getCellCenterCartesianCoordinate(0);  //CellCenterXY.first;
+  double ivy = Rechit.getCellCenterCartesianCoordinate(1); //CellCenterXY.second;
   int ID = (Rechit.id()).cellType();
 
   if (filterByCellType(ID)) return; //returns false so far

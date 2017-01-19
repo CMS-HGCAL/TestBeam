@@ -3,6 +3,11 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 
 import os,sys
 
+#TEST RUN:
+#cmsRun test_cfg_newEB.py configuration=1 chainSequence=8 outputFolder=/home/outputs/Simulation/September2016/ outputPostfix=test isData=False runType=HGCRun pathToRunEnergyFile=/afs/cern.ch/user/t/tquast/CMS_HGCal_Upgrade/luigiTasks/positionResolutionNovember2016/runEnergiesPositionResolutionSimulation.txt dataFolder=/home/data/MC/September2016
+
+
+
 repoFolder = "/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/"
 
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
@@ -26,6 +31,13 @@ options.register('outputPostfix',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Postfix to the output file')
+
+options.register('isData',
+                 True,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 'Is the analysis run on real data (otherwise on simulated samples) ?')
+
 # options.register('commonPrefix',
 #                  '',
 #                  VarParsing.VarParsing.multiplicity.singleton,
@@ -120,7 +132,7 @@ options.register('fitPointWeightingMethod',
                 )
 
 
-options.maxEvents = -1
+options.maxEvents = 1
 
 options.parseArguments()
 
@@ -160,15 +172,21 @@ process.load('HGCal.StandardSequences.LocalReco_cff')
 process.load('HGCal.StandardSequences.dqm_cff')
 
 
-process.source = cms.Source("HGCalTBTextSource",
-                            run=cms.untracked.int32(options.runNumber), #
+if options.isData:
+    process.source = cms.Source("HGCalTBTextSource",
+                                runEnergyMapFile = cms.untracked.string(options.pathToRunEnergyFile), #the runs from the runEnergyMapFile are automatically added to the fileNames   
+                                inputPathFormat=cms.untracked.string("file:%s/%s_Output_<RUN>.txt"%(options.dataFolder,options.runType)),  
+                                fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are considered
+                                    #["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber) ])
+                                nSpills=cms.untracked.uint32(options.nSpills),
+                                )
+else:
+    process.source = cms.Source("HGCalTBGenSimSource",
+                            HGCalTBRecHitCollectionName=cms.untracked.string(""), 
                             runEnergyMapFile = cms.untracked.string(options.pathToRunEnergyFile), #the runs from the runEnergyMapFile are automatically added to the fileNames   
-                            inputPathFormat=cms.untracked.string("file:%s/%s_Output_<RUN>.txt"%(options.dataFolder,options.runType)),  
-                            fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are conidered
-                                #["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber) ])
-                            nSpills=cms.untracked.uint32(options.nSpills),
+                            inputPathFormat=cms.untracked.string("file:%s/<ENERGY>GeV/TBGenSim_<RUN>.root"%(options.dataFolder)),  
+                            fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are considered
                             )
-
 
 
 ######
@@ -264,22 +282,37 @@ elif(options.configuration == "2"):
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.FourLayerRecHitPlotterMax)
 
 #Using chain sequence 3 only for testing purposes.
-if (options.chainSequence == 1):
-    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
-elif (options.chainSequence == 3):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits)
-elif (options.chainSequence == 4):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
-elif (options.chainSequence == 5):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
-elif (options.chainSequence == 6):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.LayerSumAnalyzer)
-elif (options.chainSequence == 7):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.hgcaltbeventdisplay)
-elif (options.chainSequence == 8):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.position_resolution_analyzer)
-elif (options.chainSequence == 9):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.millepede_binarywriter)
+if options.isData:
+    if (options.chainSequence == 1):
+        process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
+    elif (options.chainSequence == 3):
+        process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits)
+    elif (options.chainSequence == 4):
+        process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
+    elif (options.chainSequence == 5):
+        process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
+    elif (options.chainSequence == 6):
+        process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.LayerSumAnalyzer)
+    elif (options.chainSequence == 7):
+        process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.hgcaltbeventdisplay)
+    elif (options.chainSequence == 8):
+        process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.position_resolution_analyzer)
+    elif (options.chainSequence == 9):
+        process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.millepede_binarywriter)
+else:
+    if (options.chainSequence == 4):
+        process.p =cms.Path(process.hgcaltbrechitsplotter_highgain_new)
+    elif (options.chainSequence == 5):
+        process.p =cms.Path(process.hgcaltbrechitsplotter_highgain_correlation_cm)
+    elif (options.chainSequence == 6):
+        process.p =cms.Path(process.LayerSumAnalyzer)
+    elif (options.chainSequence == 7):
+        process.p =cms.Path(process.hgcaltbclusters*process.hgcaltbeventdisplay)
+    elif (options.chainSequence == 8):
+        process.p =cms.Path()
+        #process.p =cms.Path(process.hgcaltbclusters*process.position_resolution_analyzer)
+    elif (options.chainSequence == 9):
+        process.p =cms.Path(process.hgcaltbclusters*process.millepede_binarywriter)
 
 # example for running display :
 # cmsRun test_cfg_newEB.py runNumber=1291 runType=HGCRun nSpills=1 dataFolder='./' pedestalsHighGain="./CondObjects/data/pedHighGain1200.txt" pedestalsLowGain="./CondObjects/data/pedLowGain1200.txt" chainSequence=7 maxEvents=10
