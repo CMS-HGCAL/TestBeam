@@ -132,7 +132,7 @@ options.register('fitPointWeightingMethod',
                 )
 
 
-options.maxEvents = 1
+options.maxEvents = 1000
 
 options.parseArguments()
 
@@ -182,7 +182,7 @@ if options.isData:
                                 )
 else:
     process.source = cms.Source("HGCalTBGenSimSource",
-                            HGCalTBRecHitCollectionName=cms.untracked.string(""), 
+                            OutputCollectionName = cms.string(''), 
                             runEnergyMapFile = cms.untracked.string(options.pathToRunEnergyFile), #the runs from the runEnergyMapFile are automatically added to the fileNames   
                             inputPathFormat=cms.untracked.string("file:%s/<ENERGY>GeV/TBGenSim_<RUN>.root"%(options.dataFolder)),  
                             fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are considered
@@ -210,6 +210,10 @@ process.position_resolution_analyzer.fitPointWeightingMethod = cms.string(option
 process.position_resolution_analyzer.totalEnergyThreshold = -1000.
 
 
+if not options.isData:
+    process.position_resolution_analyzer.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
+
+
 process.millepede_binarywriter.considerationMethod = cms.string(options.considerationMethod)
 process.millepede_binarywriter.weightingMethod = cms.string(options.weightingMethod)
 process.millepede_binarywriter.pedestalThreshold = cms.double(options.pedestalThreshold)
@@ -226,7 +230,7 @@ process.dumpDigi = cms.EDAnalyzer("HGCalDigiDump")
 if (options.chainSequence == 3):
     options.output = "%s/RECO_type%s_run%06d.root"%(options.outputFolder,options.runType,options.runNumber)
     process.output = cms.OutputModule("PoolOutputModule",
-                                      fileName = cms.untracked.string(options.output)
+                                      fileName = cms.untracked.string("test.root")
                                       )
     
 
@@ -309,8 +313,8 @@ else:
     elif (options.chainSequence == 7):
         process.p =cms.Path(process.hgcaltbclusters*process.hgcaltbeventdisplay)
     elif (options.chainSequence == 8):
-        process.p =cms.Path()
-        #process.p =cms.Path(process.hgcaltbclusters*process.position_resolution_analyzer)
+        process.p =cms.Path(process.hgcaltbclusters*process.position_resolution_analyzer)
+        #process.p =cms.Path()
     elif (options.chainSequence == 9):
         process.p =cms.Path(process.hgcaltbclusters*process.millepede_binarywriter)
 

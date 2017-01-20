@@ -6,12 +6,18 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	inputPathFormat(""),
 	currentRun(-1),
 	currentEvent(-1),
-	rootFile(0)
+	rootFile(NULL)
 {
 
+	//find and fill the configured runs
+	outputCollectionName = pset.getParameter<std::string>("OutputCollectionName");
+	runEnergyMapFile = pset.getUntrackedParameter<std::string>("runEnergyMapFile"); 
+	inputPathFormat = pset.getUntrackedParameter<std::string>("inputPathFormat");
+	
 	produces <HGCalTBRecHitCollection>(outputCollectionName);
 	produces<RunData>("RunData");
-	
+
+
 	if (fileNames()[0] != "file:DUMMY") {
 		for (int i = 0; i<(int)(fileNames().size()); i++) {
 			FileInfo fInfo;
@@ -24,12 +30,8 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 			_fileNames.push_back(fInfo);
 		}
 	}
-
-	//find and fill the configured runs
-	outputCollectionName = pset.getUntrackedParameter<std::string>("HGCalTBRecHitCollectionName");
-	runEnergyMapFile = pset.getUntrackedParameter<std::string>("runEnergyMapFile"); 
-	inputPathFormat = pset.getUntrackedParameter<std::string>("inputPathFormat");
 	
+
 	std::fstream map_file;
 	map_file.open(runEnergyMapFile.c_str(), std::fstream::in);
 	fillConfiguredRuns(map_file);
@@ -49,7 +51,6 @@ void HGCalTBGenSimSource::fillConfiguredRuns(std::fstream& map_file) {
 	while (map_file.is_open() && !map_file.eof()) {
 		readCounter++;
 		map_file >> fragment;
-		std::cout<<"Fragment: "<<fragment<<std::endl;
 		if (readCounter <= 4) continue; 	//skip the header
 		else if (readCounter % 4 == 1) {
 			if (((std::string)fragment).find("//") == std::string::npos)	//skip comments of form //
@@ -74,7 +75,7 @@ void HGCalTBGenSimSource::fillConfiguredRuns(std::fstream& map_file) {
 			
 			filePath.replace(filePath.find("<RUN>"), 5, std::to_string(_run));
 			filePath.replace(filePath.find("<ENERGY>"), 8, std::to_string((int)_energy));
-			std::cout<<"Adding "<<filePath<<std::endl;
+
 			fInfo.name = filePath;
 			
 			_fileNames.push_back(fInfo);			
@@ -87,13 +88,19 @@ void HGCalTBGenSimSource::fillConfiguredRuns(std::fstream& map_file) {
 bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType)
 {	
 
-	if (fileIterator ==_fileNames.end()) return false; 		//end of files is reached
+	if (fileIterator ==_fileNames.end()) {
+		return false; 		//end of files is reached
+	}
 
 	if (currentRun == -1) {		//initial loading of a file
 		currentRun = (*fileIterator).index;
 		currentEvent = 0;
-  	std::cout<<"Opening "<<(*fileIterator).name<<std::endl;
-  	rootFile = new TFile(((*fileIterator).name).c_str());
+		/*
+		if (rootFile != NULL)
+			delete rootFile;
+  	*/
+  
+  	rootFile = new TFile(((*fileIterator).name).c_str());	
   	dir  = (TDirectory*)rootFile->FindObjectAny("HGCalTBAnalyzer");
   	tree = (TTree*)dir->Get("HGCTB");
 
@@ -105,7 +112,6 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 		fileIterator++;
 		currentRun = -1;
 		setRunAndEventInfo(id, time, evType);
-		//delete rootFile;
 	}
 	
 	tree->GetEntry(currentEvent);
@@ -118,7 +124,11 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 
 
 void HGCalTBGenSimSource::produce(edm::Event & event)
-{
+{	
+	if (fileIterator ==_fileNames.end()) {
+		std::cout<<"End of the files in the producer is reached..."<<std::endl;
+		return;
+	}
 	std::auto_ptr<RunData> rd(new RunData);
 	rd->energy = (*fileIterator).energy;
 	rd->configuration = (*fileIterator).config;
@@ -126,32 +136,29 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	rd->run = (*fileIterator).index;
 
 	event.put(std::move(rd), "RunData");	
-
 	std::auto_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection);
 
 	//given code fragment
 	HexGeometry geomc(true);
 	for(unsigned int icell=0; icell<simHitCellIdE->size(); icell++){
 	 int layerno = ((simHitCellIdE->at(icell)>>19)&0x7F);
+	 //int idcell = (simHitCellIdE->at(icell))&0xFF;
+	 
+	 double energy = simHitCellEnE->at(icell) / MIP2GeV_sim * ADCtoMIP_CERN[layerno-1];
 
 	 int cellno = (simHitCellIdE->at(icell)>>0)&0xFF;
 	 std::pair<double,double> xy = geomc.position(cellno);
-	 double x = xy.first;
-	 double y=  xy.second;
-	 cout << "testing icell at layer "<< layerno <<":" << icell << " x:"<<x<<" y:"<<y<<endl;
-	}
+	 double x = xy.first / 10.;		//values are converted from mm to cm
+	 double y =  xy.second / 10.;	//values are converted from mm to cm
+	 std::pair<int, int> iuiv = TheCell.GetCellIUIVCoordinates(x, y);
+	 //std::cout<<"x: "<<x<<"  y: "<<y<<"   iu: "<<iuiv.first<<"   iv: "<<iuiv.second<<std::endl;
+	 HGCalTBRecHit recHit(HGCalTBDetId(layerno, 0, 0, iuiv.first, iuiv.second, 0), energy, energy, energy, 0); 
+	 recHit.setCellCenterCoordinate(x, y);
+	 rechits->push_back(recHit);
+	}	
 
-	//loop over all hits in the event:
-	//HGCalTBRecHit recHit(digi.detid(), energy, energyLow, energyHigh, digi[iSample].tdc()); 
-	HGCalTBRecHit recHit(0, 0, 0, 0, 0); 
-	
-	recHit.setCellCenterCoordinate(0., 0.);
-	recHit.setEnergy(0.0);
-
-	rechits->push_back(recHit);
 	event.put(rechits, outputCollectionName);
 
-	std::cout<<"Event "<<currentEvent<<" has "<<simHitCellIdE->size()<<" entries."<<std::endl;
 }
 
 

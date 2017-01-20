@@ -24,8 +24,6 @@ HexGeometry::HexGeometry(bool fine) {
     }
     ny += 6;
   }
-  std::cout << "Initialize HexGeometry for " << xypos.size() << " cells"
-      << std::endl;
 }
 
 HexGeometry::~HexGeometry() {}

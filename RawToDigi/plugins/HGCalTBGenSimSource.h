@@ -3,6 +3,7 @@
 #include "FWCore/Sources/interface/ProducerSourceFromFiles.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
@@ -26,6 +27,9 @@
  *
  *
 **/
+double ADCtoMIP_CERN[16] =  {17.24, 16.92, 17.51, 16.4, 17.35, 17.49, 16.29, 16.32, 1., 1., 1., 1., 1., 1., 1., 1.};
+double MIP2GeV_sim = 51.91e-06; //mpv muon EMM pysics list
+
 
 struct FileInfo {
 	int index;
@@ -64,6 +68,7 @@ private:
   TBranch                   *b_simHitCellIdE;   
   TBranch                   *b_simHitCellEnE;   
 
+  HGCalTBCellVertices TheCell;
 
 public:
 	explicit HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc);

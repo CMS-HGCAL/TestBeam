@@ -62,6 +62,14 @@ std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int laye
 
 }
 
+std::pair<int, int> HGCalTBCellVertices::GetCellIUIVCoordinates(double x, double y) {
+  auto unrotated = RotateLayer(std::make_pair(x, y), -TEST_BEAM_LAYER_ROTATION);
+  double iv = unrotated.second/vy0;
+  double iu = (unrotated.first - iv*vx0) / x0;
+
+  return std::make_pair(-iu, -iv);      //why is there a minus?
+}
+
 double HGCalTBCellVertices::Xmax(int iv, double y)
 {
 	if(fabs(iv) <= 3) return 11 * x_a * a;
