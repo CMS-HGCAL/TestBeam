@@ -125,7 +125,7 @@ process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
 process.dumpDigi = cms.EDAnalyzer("HGCalDigiDump")
 
 
-if (options.chainSequence == 3):
+if (options.chainSequence == 7):
     options.output = "%s/RECO_type%s_run%06d.root"%(options.outputFolder,options.runType,options.runNumber)
     process.output = cms.OutputModule("PoolOutputModule",
                                       fileName = cms.untracked.string(options.output)
@@ -180,22 +180,19 @@ elif(options.configuration == "2"):
 ################Miscellaneous##############################################################################
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.FourLayerRecHitPlotterMax)
 
-#Using chain sequence 3 only for testing purposes.
 if (options.chainSequence == 1):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
 elif (options.chainSequence == 3):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits)
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter)
 elif (options.chainSequence == 4):
     process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
 elif (options.chainSequence == 5):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm*process.hgcaltbrechitsplotter_highgain_new)
 elif (options.chainSequence == 6):
     process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.LayerSumAnalyzer)
-elif (options.chainSequence == 7):#formal clustering sequence
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.hgcaltbeventdisplay)
-# example for running display :
-# cmsRun test_cfg_newEB.py runNumber=1291 runType=HGCRun nSpills=1 dataFolder='./' pedestalsHighGain="./CondObjects/data/pedHighGain1200.txt" pedestalsLowGain="./CondObjects/data/pedLowGain1200.txt" chainSequence=7 maxEvents=10
+elif (options.chainSequence == 7):
+    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits)
 
 
-if (options.chainSequence == 3):
+if (options.chainSequence == 7):
     process.end = cms.EndPath(process.output)
