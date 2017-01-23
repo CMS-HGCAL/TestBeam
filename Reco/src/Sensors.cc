@@ -4,8 +4,10 @@
 //****   Sensor Hit Maps    ****//
 
 //public functions
-SensorHitMap::SensorHitMap(){
-  mostSignificantHit = NULL;  //will point to the most significant hit
+SensorHitMap::SensorHitMap(int l){
+  _label = l;
+
+  mostSignificantHit = NULL;  //points to the most significant hit
 
   centralHitPoint = std::make_pair(0., 0.);
   centralHitZ = 0;
@@ -261,7 +263,6 @@ double SensorHitMap::getTotalWeight() {
   return this->totalWeight;
 };
 
-
 //private functions 
 
 //only consider certain cellTypes for the N closest approach (analogous to the LayerSumAnalyzer)
@@ -360,8 +361,8 @@ void SensorHitMap::poweredWeighting(int exponent) {
     numerator_x += w*pow((*hit)->x - centralHitPoint.first, 2);
     numerator_y += w*pow((*hit)->y - centralHitPoint.second, 2);
   }
-  centralHitPointError.first = sqrt(numerator_x/totalWeight);
-  centralHitPointError.second = sqrt(numerator_y/totalWeight);
+  centralHitPointError.first = sqrt(numerator_x/totalWeight) > 1./sqrt(12.) ? sqrt(numerator_x/totalWeight): 1./sqrt(12.);
+  centralHitPointError.second = sqrt(numerator_y/totalWeight) > 1./sqrt(12.) ? sqrt(numerator_y/totalWeight): 1./sqrt(12.);
 };
 
 void SensorHitMap::logWeighting(double log_a, double log_b) {
@@ -405,6 +406,6 @@ void SensorHitMap::logWeighting(double log_a, double log_b) {
     numerator_x += w*pow((*hit)->x - centralHitPoint.first, 2);
     numerator_y += w*pow((*hit)->y - centralHitPoint.second, 2);
   }
-  centralHitPointError.first = sqrt(numerator_x/totalWeight);
-  centralHitPointError.second = sqrt(numerator_y/totalWeight);
+  centralHitPointError.first = sqrt(numerator_x/totalWeight) > 1./sqrt(12.) ? sqrt(numerator_x/totalWeight): 1./sqrt(12.);
+  centralHitPointError.second = sqrt(numerator_y/totalWeight) > 1./sqrt(12.) ? sqrt(numerator_y/totalWeight): 1./sqrt(12.);
 };

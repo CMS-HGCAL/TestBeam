@@ -7,6 +7,7 @@ ParticleTrack::ParticleTrack(){
   lastAppliedMethod = DEFAULTFITTING;
   ROOTpol_x = ROOTpol_y = NULL;
   linefit_x = linefit_y = NULL;
+  gblTrajectory = NULL;
 
   N_points = 0;
 };
@@ -16,6 +17,7 @@ ParticleTrack::~ParticleTrack(){
   delete ROOTpol_y;
   delete linefit_x;
   delete linefit_y;
+  delete gblTrajectory;
   x.clear(); x_err.clear(); y.clear(); y_err.clear(); z.clear(); z_err.clear();
 };
 
@@ -27,11 +29,18 @@ void ParticleTrack::addFitPoint(SensorHitMap* sensor){
   y_err.push_back(sensor->getHitPositionError().second);  
   z.push_back(sensor->getLabZ()+sensor->getIntrinsicHitZPosition());  
   z_err.push_back(0.0);
-  particleEnergy.push_back(sensor->getParticleEnergy());
   preAbsorber.push_back(sensor->getX0()); 
+  particleEnergy.push_back(sensor->getParticleEnergy());
 
   Energies.push_back(sensor->getTotalEnergy());
+
+  gblLayers.push_back(gblhelpers::layer(sensor->label(), sensor->getLabZ()+sensor->getIntrinsicHitZPosition(), sensor->getX0(), sensor->getParticleEnergy(), false, sensor->getLabHitPosition(), sensor->getHitPositionError()));
 };
+
+void ParticleTrack::addReferenceSensor(SensorHitMap* sensor) {
+  referenceSensor = sensor;
+  gblLayers.push_back(gblhelpers::layer(sensor->label(), sensor->getLabZ()+sensor->getIntrinsicHitZPosition(), sensor->getX0(), sensor->getParticleEnergy(), true));
+}
 
 void ParticleTrack::weightFitPoints(FitPointWeightingMethod method) {
   //calculate the sum of all Energies first 
@@ -71,6 +80,9 @@ void ParticleTrack::fitTrack(TrackFittingMethod method){
       case POL3TGRAPHERRORS:
         polFitTGraphErrors(3);
         break;
+      case GBLTRACK:
+        gblTrackFit();
+        break;
       default:
         lastAppliedMethod = DEFAULTFITTING;
         break;
@@ -82,7 +94,15 @@ void ParticleTrack::fitTrack(TrackFittingMethod method){
   }
 }
 
-std::pair<double, double> ParticleTrack::calculatePositionXY(double z) {
+std::pair<double, double> ParticleTrack::calculateReferenceXY() {
+  return ParticleTrack::calculatePositionXY(referenceSensor->getLabZ() + referenceSensor->getIntrinsicHitZPosition(), referenceSensor->label());
+};
+
+std::pair<double, double> ParticleTrack::calculateReferenceErrorXY() {
+  return ParticleTrack::calculatePositionErrorXY(referenceSensor->getLabZ() + referenceSensor->getIntrinsicHitZPosition(), referenceSensor->label());
+};
+
+std::pair<double, double> ParticleTrack::calculatePositionXY(double z, int layerLabel) {
   switch(lastAppliedMethod) {
     case LINEFITANALYTICAL:
       return positionFromAnalyticalStraightLine(z);
@@ -92,11 +112,13 @@ std::pair<double, double> ParticleTrack::calculatePositionXY(double z) {
       return positionFromPolFitTGraphErrors(2, z);
     case POL3TGRAPHERRORS:
       return positionFromPolFitTGraphErrors(3, z);
+    case GBLTRACK:
+      return positionFromGblTrackFit(layerLabel);
     default:
       return std::make_pair(0.,0.); 
   }
 }
-std::pair<double, double> ParticleTrack::calculatePositionErrorXY(double z) {
+std::pair<double, double> ParticleTrack::calculatePositionErrorXY(double z, int layerLabel) {
   switch(lastAppliedMethod) {
     case LINEFITANALYTICAL:
       return positionFromAnalyticalStraightLineErrors(z);
@@ -106,6 +128,8 @@ std::pair<double, double> ParticleTrack::calculatePositionErrorXY(double z) {
       return positionErrorFromPolFitTGraphErrors(2, z);
     case POL3TGRAPHERRORS:
       return positionErrorFromPolFitTGraphErrors(3, z);
+    case GBLTRACK:
+      return positionFromGblTrackFitErrors(layerLabel);
     default:
       return std::make_pair(0.,0.); 
   }
@@ -119,16 +143,110 @@ double ParticleTrack::getSumOfEnergies() {  //returns the original Energies (i.e
   return sum_Energies;
 }
 
+void ParticleTrack::gblTrackToMilleBinary(gbl::MilleBinary *milleBinary) {
+  if (gblTrajectory != NULL) {
+    gblTrajectory->milleOut(*milleBinary);
+  }
+}
+
 //private functions
-void ParticleTrack::gblTrackFit() {};
-std::pair<double, double> ParticleTrack::positionFromGblTrackFit(double z) {
-  return std::make_pair(0.0, 0.0);
+void ParticleTrack::gblTrackFit() {
+  std::vector<gbl::GblPoint> listOfGblPoints;
+  double z_prev = 0.;
+  double dz, particleEnergy, layerX0, thetaRMS;
+  int label;
+
+  std::sort(gblLayers.begin(), gblLayers.end());
+
+  for (size_t i=0; i<gblLayers.size(); i++) {
+    dz = gblLayers[i].z() - z_prev;
+    particleEnergy = gblLayers[i].particleEnergy();
+    layerX0 = gblLayers[i].absorberX0();
+    label = gblLayers[i].label();
+
+    thetaRMS = (0.0136*sqrt(layerX0)/particleEnergy*(1+0.038*log(layerX0)));     //according to PDG formula
+
+    TMatrixD jac_abs1(5, 5);
+    jac_abs1.UnitMatrix();
+    jac_abs1[3][1] = (0.5-sqrt(1/12.))*dz;
+    jac_abs1[4][2] = (0.5-sqrt(1/12.))*dz;
+    gbl::GblPoint point_abs1(jac_abs1);
+    TVectorD scat_mean_abs1(2); //mean of kink angle variation
+    scat_mean_abs1.Zero();
+    TVectorD scat_invResRMS_abs1(2);
+    scat_invResRMS_abs1[0] = 1./(2.*thetaRMS*thetaRMS);
+    scat_invResRMS_abs1[1] = 1./(2.*thetaRMS*thetaRMS);
+    point_abs1.addScatterer(scat_mean_abs1, scat_invResRMS_abs1);
+    listOfGblPoints.push_back(point_abs1);
+
+    TMatrixD jac_abs2(5, 5);
+    jac_abs2.UnitMatrix();
+    jac_abs2[3][1] = 2*sqrt(2.)*dz;
+    jac_abs2[4][2] = 2*sqrt(2.)*dz;
+    gbl::GblPoint point_abs2(jac_abs2);
+    TVectorD scat_mean_abs2(2); //mean of kink angle variation
+    scat_mean_abs2.Zero();
+    TVectorD scat_invResRMS_abs2(2);
+    scat_invResRMS_abs2[0] = 1./(2.*thetaRMS*thetaRMS);
+    scat_invResRMS_abs2[1] = 1./(2.*thetaRMS*thetaRMS);
+    point_abs2.addScatterer(scat_mean_abs2, scat_invResRMS_abs2);
+    listOfGblPoints.push_back(point_abs2);
+
+   
+    //1. Make Jacobian (5x5) from plane i-1 to i  
+    TMatrixD jac(5, 5);
+    jac.UnitMatrix();
+    jac[3][1] = (0.5-sqrt(1/12.))*dz;
+    jac[4][2] = (0.5-sqrt(1/12.))*dz;
+    //2. initiate the point
+    gbl::GblPoint point(jac);
+
+    if (!gblLayers[i].isReference()) {
+      //3. add measurement
+      TVectorD meas(2);
+      meas[0] = (gblLayers[i].measurement()).first;
+      meas[1] = (gblLayers[i].measurement()).second;
+      //4. add measurement precision
+      TVectorD meas_prec(2);
+      meas_prec[0] = 1./pow((gblLayers[i].measurementError()).first, 2);
+      meas_prec[1] = 1./pow((gblLayers[i].measurementError()).second,2);
+      //5. add the measurement to the point
+      TMatrixD proL2m(2,2);
+      proL2m.UnitMatrix();
+      point.addMeasurement(proL2m, meas, meas_prec);
+      //6. add global alignment parameters
+      std::vector<int> labels; labels.push_back(100*label + 11); labels.push_back(100*label + 12);
+      TMatrixD glder(2, 2); glder[0][0] = glder[1][1] = 1.;  glder[0][1] = glder[1][0] = 0.;
+      point.addGlobals(labels, glder);
+    }
+
+    listOfGblPoints.push_back(point);
+
+    gblPointLabels[label] = listOfGblPoints.size();
+  }
+
+
+  gblTrajectory = new gbl::GblTrajectory(listOfGblPoints, false);
+  
+
+  double chi2, lw; int ndf;
+  gblTrajectory->fit(chi2, ndf, lw);
+  //std::cout<<"chi2: "<<chi2<<"   lw: "<<lw<<"    ndf: "<<ndf<<"  listOfGblPoints: "<<listOfGblPoints.size()<<std::endl;
 };
 
-std::pair<double, double> ParticleTrack::positionFromGblTrackFitErrors(double z) {
-  return std::make_pair(0.0, 0.0);
+std::pair<double, double> ParticleTrack::positionFromGblTrackFit(int layerLabel) {
+  TVectorD aCorr(5);
+  TMatrixDSym aCov(5);
+  gblTrajectory->getResults(gblPointLabels[layerLabel], aCorr, aCov);
+  return std::make_pair(aCorr(3), aCorr(4));
 };
 
+std::pair<double, double> ParticleTrack::positionFromGblTrackFitErrors(int layerLabel) {
+  TVectorD aCorr(5);
+  TMatrixDSym aCov(5);
+  gblTrajectory->getResults(gblPointLabels[layerLabel], aCorr, aCov);
+  return std::make_pair(sqrt(aCov(3,3)), sqrt(aCov(4,4)));
+};
 
 
 

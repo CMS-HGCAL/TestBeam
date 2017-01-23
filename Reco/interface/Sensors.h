@@ -50,6 +50,7 @@ struct HitData {
 
 class SensorHitMap {
   private:
+    int _label;
     std::pair<double, double> centralHitPoint;
     double centralHitZ;
     std::pair<double, double> centralHitPointError;
@@ -82,8 +83,9 @@ class SensorHitMap {
     void logWeighting(double log_a, double log_b);
 
   public:
-    SensorHitMap();
+    SensorHitMap(int _label);
     ~SensorHitMap();
+    int label() {return _label;};
     void setLabZ(double z_cm, double X0);
     void setParticleEnergy(double e);
     void setAlignmentParameters(double d_alpha, double d_beta, double d_gamma, double d_x0, double d_y0, double d_z0);
@@ -106,7 +108,7 @@ class SensorHitMap {
     std::pair<double, double> getLabHitPosition();  //returns central hit in lab frame
     std::pair<double, double> getHitPositionError(); //calculated via RMS
     std::pair<double, double> getCenterOfClosestCell(std::pair<double, double> X_ref);
-
+    
     //debug
     void printHits();
 };

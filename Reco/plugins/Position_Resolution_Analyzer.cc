@@ -41,10 +41,10 @@
 #include "TTree.h"
   
 //configuration1:
-double config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.92};    //z-coordinate in cm
+double config1Positions[] = {1.0, 6.35, 11.52, 15.44, 19.52, 20.67, 24.78, 26.92};    //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
 double config1X0Depths[] = {6.268, 1.131, 1.131, 1.362, 0.574, 1.301, 0.574, 2.42}; //in radiation lengths, copied from layerSumAnalyzer
 //configuration2:
-double config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4};         //z-coordinate in cm
+double config2Positions[] = {1.0, 5.67, 10.84, 15.27, 20.25, 21.4, 26.8, 32.4};         //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
 double config2X0Depths[] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021}; //in radiation lengths, copied from layerSumAnalyzer
                      
 class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
@@ -169,6 +169,8 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 		fittingMethod = POL2TGRAPHERRORS;
 	else if (methodString == "pol3TGraphErrors")
 		fittingMethod = POL3TGRAPHERRORS;
+	else if (methodString == "gblTrack")
+		fittingMethod = GBLTRACK;
 	else 
 		fittingMethod = DEFAULTFITTING;
 
@@ -292,7 +294,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	for(auto Rechit : *Rechits) {	
 		layer = (Rechit.id()).layer();
 		if ( Sensors.find(layer) == Sensors.end() ) {
-			Sensors[layer] = new SensorHitMap();
+			Sensors[layer] = new SensorHitMap(layer);
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
 			Sensors[layer]->setParticleEnergy(energy);
 			Sensors[layer]->setLabZ(Layer_Z_Positions[layer-1], Layer_Z_X0s[layer-1]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
@@ -359,7 +361,10 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	for (int i=1; i<=nLayers; i++) {
 		Tracks[i] = new ParticleTrack();
 		for (int j=1; j<=nLayers; j++) {
-			if (i==j) continue;
+			if (i==j) {
+				Tracks[i]->addReferenceSensor(Sensors[i]);
+				continue;
+			}
 			Tracks[i]->addFitPoint(Sensors[j]);
 		}
 		Tracks[i]->weightFitPoints(fitPointWeightingMethod);
@@ -373,7 +378,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		layerZ_cm = Sensors[layer]->getLabZ() + Sensors[layer]->getIntrinsicHitZPosition();
 		layerZ_X0 += Sensors[layer]->getX0();
 
-		std::pair<double, double> position_predicted = Tracks[layer]->calculatePositionXY(layerZ_cm);
+		std::pair<double, double> position_predicted = Tracks[layer]->calculateReferenceXY();
 		x_predicted = position_predicted.first;
 		y_predicted = position_predicted.second;
 
@@ -381,7 +386,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		x_predicted_to_closest_cell = position_predicted_to_closest_cell.first;
 		y_predicted_to_closest_cell = position_predicted_to_closest_cell.second;
 
-		std::pair<double, double> position_error_predicted = Tracks[layer]->calculatePositionErrorXY(layerZ_cm);
+		std::pair<double, double> position_error_predicted = Tracks[layer]->calculateReferenceErrorXY();
 		x_predicted_err = position_error_predicted.first;
 		y_predicted_err = position_error_predicted.second;
 
@@ -422,7 +427,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		
 		//fill the tree
 		outTree->Fill();
-		
 	}
 
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {

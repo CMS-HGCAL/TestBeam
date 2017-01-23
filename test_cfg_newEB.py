@@ -3,10 +3,11 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 
 import os,sys
 
-#TEST RUN:
-#cmsRun test_cfg_newEB.py configuration=1 chainSequence=8 outputFolder=/home/outputs/Simulation/September2016/ outputPostfix=test isData=False runType=HGCRun pathToRunEnergyFile=/afs/cern.ch/user/t/tquast/CMS_HGCal_Upgrade/luigiTasks/positionResolutionNovember2016/runEnergiesPositionResolutionSimulation.txt dataFolder=/home/data/MC/September2016
-
-
+# TEST RUN:
+# Simulation:
+# cmsRun test_cfg_newEB.py configuration=1 chainSequence=8 outputFolder=/home/outputs/Simulation/September2016/ outputPostfix=test isData=False runType=HGCRun pathToRunEnergyFile=/afs/cern.ch/user/t/tquast/CMS_HGCal_Upgrade/luigiTasks/positionResolutionNovember2016/runEnergiesPositionResolutionSimulation.txt dataFolder=/home/data/MC/September2016
+# Real data:
+# cmsRun test_cfg_newEB.py configuration=1 chainSequence=8 outputFolder=/home/outputs/Testbeam isData=true runType=HGCRun pathToRunEnergyFile=/afs/cern.ch/user/t/tquast/CMS_HGCal_Upgrade/luigiTasks/positionResolutionNovember2016/runEnergiesPositionResolution.txt dataFolder=/home/data/Testbeam/September2016
 
 repoFolder = "/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/"
 
@@ -101,11 +102,17 @@ options.register('reportEvery',
 
 '''Specific options for the position resolution'''
 options.register('alignmentParameterFile',
-                "",
+                 '',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Alignment parameter file as obtained from the pede framework.'
                 )
+options.register('fittingMethod',
+                'gblTrack',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Model of the electron tracks'    
+    )
 options.register('considerationMethod',
                  'all',
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -132,7 +139,7 @@ options.register('fitPointWeightingMethod',
                 )
 
 
-options.maxEvents = 1000
+options.maxEvents = -1
 
 options.parseArguments()
 
@@ -202,7 +209,11 @@ process.hgcaltbrechits.pedestalHigh = cms.string(options.pedestalsHighGain)
 process.hgcaltbrechits.gainLow = cms.string('')
 process.hgcaltbrechits.gainHigh = cms.string('')
 
+if not options.isData:
+    process.hgcaltbclusters.rechitCollection = cms.InputTag("source","","unpack")
+
 process.position_resolution_analyzer.alignmentParameterFile = cms.string(options.alignmentParameterFile)
+process.position_resolution_analyzer.fittingMethod = cms.string(options.fittingMethod)
 process.position_resolution_analyzer.considerationMethod = cms.string(options.considerationMethod)
 process.position_resolution_analyzer.weightingMethod = cms.string(options.weightingMethod)
 process.position_resolution_analyzer.pedestalThreshold = cms.double(options.pedestalThreshold)
@@ -213,7 +224,7 @@ process.position_resolution_analyzer.totalEnergyThreshold = -1000.
 if not options.isData:
     process.position_resolution_analyzer.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
 
-
+process.millepede_binarywriter.fittingMethod = cms.string(options.fittingMethod)
 process.millepede_binarywriter.considerationMethod = cms.string(options.considerationMethod)
 process.millepede_binarywriter.weightingMethod = cms.string(options.weightingMethod)
 process.millepede_binarywriter.pedestalThreshold = cms.double(options.pedestalThreshold)
@@ -284,6 +295,11 @@ elif(options.configuration == "2"):
 
 ################Miscellaneous##############################################################################
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.FourLayerRecHitPlotterMax)
+
+#add skip event exception which might occur for simulated samples because the last event is not properly passed forward
+process.options = cms.untracked.PSet(
+    SkipEvent = cms.untracked.vstring('ProductNotFound')
+)
 
 #Using chain sequence 3 only for testing purposes.
 if options.isData:

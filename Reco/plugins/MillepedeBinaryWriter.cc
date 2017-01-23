@@ -27,21 +27,22 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
-//#include "Alignment/MillePedeAlignmentAlgorithm/src/Mille.h"
 #include "HGCal/Reco/interface/Mille.h"
 
 #include "HGCal/Reco/interface/PositionResolutionHelpers.h"
 #include "HGCal/Reco/interface/Tracks.h"
 #include "HGCal/Reco/interface/Sensors.h"
 
+#include "Alignment/ReferenceTrajectories/interface/MilleBinary.h"
+
 /*************/
 /* Some hard coded numbers:  */  
 
 //configuration1:
-double _config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.92};    //z-coordinate in cm
+double _config1Positions[] = {1.0, 6.35, 11.52, 15.44, 19.52, 20.67, 24.78, 26.92};    //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
 double _config1X0Depths[] = {6.268, 1.131, 1.131, 1.362, 0.574, 1.301, 0.574, 2.42}; //in radiation lengths, copied from layerSumAnalyzer
 //configuration2:
-double _config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4};         //z-coordinate in cm
+double _config2Positions[] = {1.0, 5.67, 10.84, 15.27, 20.25, 21.4, 26.8, 32.4};         //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
 double _config2X0Depths[] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021}; //in radiation lengths, copied from layerSumAnalyzer
 
 double sigma_res_x[] = {0.2, 0.15, 0.15, 0.15, 0.17, 0.18, 0.21, 0.25};					//width of residuals in x dimension (from logweighting(5,1), no reweighting of errors, all cells considered, 2MIP threshold)
@@ -95,6 +96,8 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		double energy;
 		
 		Mille* mille;
+		gbl::MilleBinary* milleBinary;
+
   	int NLC, NGLperLayer, NGL;
 		float rMeas, sigma;
 		float *derLc, *derGl;
@@ -164,6 +167,8 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 		fittingMethod = POL2TGRAPHERRORS;
 	else if (methodString == "pol3TGraphErrors")
 		fittingMethod = POL3TGRAPHERRORS;
+	else if (methodString == "gblTrack")
+		fittingMethod = GBLTRACK;
 	else 
 		fittingMethod = DEFAULTFITTING;
 
@@ -202,7 +207,15 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 
 	totalEnergyThreshold = iConfig.getParameter<double>("totalEnergyThreshold");
 	
-	mille = new Mille((iConfig.getParameter<std::string>("binaryFile")).c_str());
+	if (fittingMethod==GBLTRACK) {
+		milleBinary = new gbl::MilleBinary((iConfig.getParameter<std::string>("binaryFile")).c_str());
+		mille = NULL;
+	} else{
+		milleBinary = NULL;
+		mille = new Mille((iConfig.getParameter<std::string>("binaryFile")).c_str());
+	}
+  
+
   NLC = 4;
   NGLperLayer = 3;
   NGL = nLayers*NGLperLayer;
@@ -260,7 +273,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	for (auto Rechit : *Rechits) {	
 		int layer = (Rechit.id()).layer();
 		if ( Sensors.find(layer) == Sensors.end() ) {
-			Sensors[layer] = new SensorHitMap();
+			Sensors[layer] = new SensorHitMap(layer);
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
 			Sensors[layer]->setParticleEnergy(energy);
 			Sensors[layer]->setLabZ(Layer_Z_Positions[layer-1], Layer_Z_X0s[layer-1]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
@@ -323,63 +336,66 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	Track->weightFitPoints(fitPointWeightingMethod);
 	Track->fitTrack(fittingMethod);
 	
+	if (fittingMethod==GBLTRACK) {
+		Track->gblTrackToMilleBinary(milleBinary);
+	}else{
+		//step 4: calculate the deviations between each fit missing one layer and exactly that layer's true central position
+		for (int layer=1; layer<=nLayers; layer++) {
+			double layer_labZ = Sensors[layer]->getLabZ();
+			double intrinsic_z = Sensors[layer]->getIntrinsicHitZPosition();	
+			
+			std::pair<double, double> position_predicted = Track->calculatePositionXY(layer_labZ+intrinsic_z, layer);
+			double x_predicted = position_predicted.first;
+			double y_predicted = position_predicted.second;
 
-	//step 4: calculate the deviations between each fit missing one layer and exactly that layer's true central position
-	for (int layer=1; layer<=nLayers; layer++) {
-		double layer_labZ = Sensors[layer]->getLabZ();
-		double intrinsic_z = Sensors[layer]->getIntrinsicHitZPosition();	
-		
-		std::pair<double, double> position_predicted = Track->calculatePositionXY(layer_labZ+intrinsic_z);
-		double x_predicted = position_predicted.first;
-		double y_predicted = position_predicted.second;
+			//std::pair<double, double> position_predicted_err = Track->calculatePositionErrorXY(layer_labZ+intrinsic_z);
+			//double x_predicted_err = position_predicted_err.first;
+			//double y_predicted_err = position_predicted_err.second;
 
-		//std::pair<double, double> position_predicted_err = Track->calculatePositionErrorXY(layer_labZ+intrinsic_z);
-		//double x_predicted_err = position_predicted_err.first;
-		//double y_predicted_err = position_predicted_err.second;
+			std::pair<double, double> position_true = Sensors[layer]->getHitPosition();	
+			double x_true = position_true.first;
+			double y_true = position_true.second;
+			
+			//std::pair<double, double> position_true_err = Sensors[layer]->getHitPositionError();	
+			Sensors[layer]->getHitPositionError();	
+			//double x_true_err = position_true_err.first;
+			//double y_true_err = position_true_err.second;
 
-		std::pair<double, double> position_true = Sensors[layer]->getHitPosition();	
-		double x_true = position_true.first;
-		double y_true = position_true.second;
-		
-		//std::pair<double, double> position_true_err = Sensors[layer]->getHitPositionError();	
-		Sensors[layer]->getHitPositionError();	
-		//double x_true_err = position_true_err.first;
-		//double y_true_err = position_true_err.second;
+		//step5: calculate the necessary derivatives for Mille and fill them into the binary file			
+			//reset all global parameters:
+			for (int k=0; k<NGL; k++){
+				derGl[k] = 0.;
+			}
 
-	//step5: calculate the necessary derivatives for Mille and fill them into the binary file			
-		//reset all global parameters:
-		for (int k=0; k<NGL; k++){
-			derGl[k] = 0.;
+			//the x-coordinate								
+			derLc[0] = layer_labZ;
+			derLc[1] = 1.;
+			derLc[2] = 0.;
+			derLc[3] = 0.;
+			
+			derGl[(layer-1)*NGLperLayer+0] = 1.;		
+			derGl[(layer-1)*NGLperLayer+1] = 0.;		
+
+			rMeas = x_true - x_predicted;
+			sigma = sigma_res_x[layer-1];
+			mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
+
+
+			//the y-coordinate
+			derLc[0] = 0.;
+			derLc[1] = 0.;
+			derLc[2] = layer_labZ;
+			derLc[3] = 1.;
+
+			derGl[(layer-1)*NGLperLayer+0] = 0.;		
+			derGl[(layer-1)*NGLperLayer+1] = 1.;			
+
+			rMeas = y_true - y_predicted;
+			sigma = sigma_res_y[layer-1];
+			mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
 		}
-
-		//the x-coordinate								
-		derLc[0] = layer_labZ;
-		derLc[1] = 1.;
-		derLc[2] = 0.;
-		derLc[3] = 0.;
-		
-		derGl[(layer-1)*NGLperLayer+0] = 1.;		
-		derGl[(layer-1)*NGLperLayer+1] = 0.;		
-
-		rMeas = x_true - x_predicted;
-		sigma = sigma_res_x[layer-1];
-		mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
-
-
-		//the y-coordinate
-		derLc[0] = 0.;
-		derLc[1] = 0.;
-		derLc[2] = layer_labZ;
-		derLc[3] = 1.;
-
-		derGl[(layer-1)*NGLperLayer+0] = 0.;		
-		derGl[(layer-1)*NGLperLayer+1] = 1.;			
-
-		rMeas = y_true - y_predicted;
-		sigma = sigma_res_y[layer-1];
-		mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
+		mille->end();
 	}
-	mille->end();
 	
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		delete (*it).second;
@@ -392,8 +408,13 @@ void MillepedeBinaryWriter::beginJob() {
 }
 
 void MillepedeBinaryWriter::endJob() {
-	mille->kill();
-	delete mille;
+	if (mille != NULL) {
+		mille->kill();
+		delete mille;
+	}
+	if (milleBinary != NULL) {
+		delete milleBinary;
+	}
 	delete derLc; delete derGl; delete label;
 	std::cout<<"ClusterVetos: "<<ClusterVetoCounter<<std::endl;
 	std::cout<<"HitsVetos: "<<HitsVetoCounter<<std::endl;

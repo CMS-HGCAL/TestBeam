@@ -9,7 +9,7 @@
  *  (last update by $Author: flucke $)
  */
 
-#include "HGCal/Reco/interface/Mille.h"
+#include "Mille.h"
 
 #include <fstream>
 #include <iostream>
