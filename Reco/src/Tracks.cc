@@ -145,6 +145,7 @@ double ParticleTrack::getSumOfEnergies() {  //returns the original Energies (i.e
 
 void ParticleTrack::gblTrackToMilleBinary(gbl::MilleBinary *milleBinary) {
   if (gblTrajectory != NULL) {
+    //std::cout<<"Writing to MilleBinary"<<std::endl;
     gblTrajectory->milleOut(*milleBinary);
   }
 }
@@ -153,7 +154,7 @@ void ParticleTrack::gblTrackToMilleBinary(gbl::MilleBinary *milleBinary) {
 void ParticleTrack::gblTrackFit() {
   std::vector<gbl::GblPoint> listOfGblPoints;
   double z_prev = 0.;
-  double dz, particleEnergy, layerX0, thetaRMS;
+  double dz, particleEnergy, layerX0, thetaRMS_abs;//, thetaRMS_sensor;
   int label;
 
   std::sort(gblLayers.begin(), gblLayers.end());
@@ -164,7 +165,8 @@ void ParticleTrack::gblTrackFit() {
     layerX0 = gblLayers[i].absorberX0();
     label = gblLayers[i].label();
 
-    thetaRMS = (0.0136*sqrt(layerX0)/particleEnergy*(1+0.038*log(layerX0)));     //according to PDG formula
+    thetaRMS_abs = (0.0136*sqrt(layerX0)/particleEnergy*(1+0.038*log(layerX0)));     //according to PDG formula
+    //thetaRMS_sensor = (0.0136*sqrt(0.01)/particleEnergy*(1+0.038*log(0.01)));     //according to PDG formula
 
     TMatrixD jac_abs1(5, 5);
     jac_abs1.UnitMatrix();
@@ -174,24 +176,25 @@ void ParticleTrack::gblTrackFit() {
     TVectorD scat_mean_abs1(2); //mean of kink angle variation
     scat_mean_abs1.Zero();
     TVectorD scat_invResRMS_abs1(2);
-    scat_invResRMS_abs1[0] = 1./(2.*thetaRMS*thetaRMS);
-    scat_invResRMS_abs1[1] = 1./(2.*thetaRMS*thetaRMS);
+    scat_invResRMS_abs1[0] = 1./(2.*thetaRMS_abs*thetaRMS_abs);
+    scat_invResRMS_abs1[1] = 1./(2.*thetaRMS_abs*thetaRMS_abs);
     point_abs1.addScatterer(scat_mean_abs1, scat_invResRMS_abs1);
     listOfGblPoints.push_back(point_abs1);
 
+    
     TMatrixD jac_abs2(5, 5);
     jac_abs2.UnitMatrix();
-    jac_abs2[3][1] = 2*sqrt(2.)*dz;
-    jac_abs2[4][2] = 2*sqrt(2.)*dz;
+    jac_abs2[3][1] = 2*sqrt(1./12.)*dz;
+    jac_abs2[4][2] = 2*sqrt(1./12.)*dz;
     gbl::GblPoint point_abs2(jac_abs2);
     TVectorD scat_mean_abs2(2); //mean of kink angle variation
     scat_mean_abs2.Zero();
     TVectorD scat_invResRMS_abs2(2);
-    scat_invResRMS_abs2[0] = 1./(2.*thetaRMS*thetaRMS);
-    scat_invResRMS_abs2[1] = 1./(2.*thetaRMS*thetaRMS);
+    scat_invResRMS_abs2[0] = 1./(2.*thetaRMS_abs*thetaRMS_abs);
+    scat_invResRMS_abs2[1] = 1./(2.*thetaRMS_abs*thetaRMS_abs);
     point_abs2.addScatterer(scat_mean_abs2, scat_invResRMS_abs2);
     listOfGblPoints.push_back(point_abs2);
-
+    
    
     //1. Make Jacobian (5x5) from plane i-1 to i  
     TMatrixD jac(5, 5);
@@ -200,6 +203,12 @@ void ParticleTrack::gblTrackFit() {
     jac[4][2] = (0.5-sqrt(1/12.))*dz;
     //2. initiate the point
     gbl::GblPoint point(jac);
+    //TVectorD scat_mean_sensor(2);
+    //scat_mean_sensor.Zero();
+    //TVectorD scat_invResRMS_sensor(2);
+    //scat_invResRMS_sensor[0] = 1./(thetaRMS_sensor*thetaRMS_sensor);
+    //scat_invResRMS_sensor[1] = 1./(thetaRMS_sensor*thetaRMS_sensor);
+    //point.addScatterer(scat_mean_sensor, scat_invResRMS_sensor);
 
     if (!gblLayers[i].isReference()) {
       //3. add measurement
