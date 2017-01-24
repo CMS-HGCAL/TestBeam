@@ -296,7 +296,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		if ( Sensors.find(layer) == Sensors.end() ) {
 			Sensors[layer] = new SensorHitMap(layer);
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
-			Sensors[layer]->setParticleEnergy(energy);
 			Sensors[layer]->setLabZ(Layer_Z_Positions[layer-1], Layer_Z_X0s[layer-1]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
 
 			Sensors[layer]->setAlignmentParameters(0.0, 0.0, 0.0,
@@ -304,6 +303,10 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	
 			Sensors[layer]->setADCPerMIP(ADC_per_MIP[layer-1]);
 			Sensors[layer]->setSensorSize(SensorSize);
+
+			double X0sum = 0;
+			for (int _x = 0; _x<(int)layer; _x++) X0sum += Layer_Z_X0s[_x];
+			Sensors[layer]->setParticleEnergy(energy - gblhelpers::computeEnergyLoss(X0sum, energy));
 		}
 		Sensors[layer]->addHit(Rechit);
 	}

@@ -10,6 +10,8 @@
 #include "TF1.h"
 #include "TGraphErrors.h"
 #include "TFitResult.h"
+#include "TProfile.h"
+#include "TMath.h"
 
 #include "HGCal/Reco/interface/PositionResolutionHelpers.h"
 #include "HGCal/Reco/interface/Sensors.h"
@@ -65,6 +67,8 @@ namespace gblhelpers {
       std::pair<double, double> _measurementError;
  
   };
+  double showerProfile(double *t, double *par);
+  double computeEnergyLoss(double t, double E0);
 }
 
 //

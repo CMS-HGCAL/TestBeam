@@ -58,6 +58,7 @@ class SensorHitMap {
     double layerX0;
     double particleEnergy;  //approximated energy of the particle at that layer  
     double d_alpha, d_beta, d_gamma, d_x0, d_y0, d_z0; //alignment parameters
+    double residualResolution;    //externally set, from residual histograms
     int sensorSize;
     double CM_threshold;
     double ADC_per_MIP;
@@ -89,6 +90,7 @@ class SensorHitMap {
     void setLabZ(double z_cm, double X0);
     void setParticleEnergy(double e);
     void setAlignmentParameters(double d_alpha, double d_beta, double d_gamma, double d_x0, double d_y0, double d_z0);
+    void setResidualResolution(double r);
     void setADCPerMIP(double ADC_per_MIP);
     void setSensorSize(int s);
     void setPedestalThreshold(double t);
@@ -104,6 +106,7 @@ class SensorHitMap {
     double getX0();
     double getParticleEnergy();
     double getIntrinsicHitZPosition();
+    double getResidualResolution();
     std::pair<double, double> getHitPosition(); //returns central hit in layer's own frame
     std::pair<double, double> getLabHitPosition();  //returns central hit in lab frame
     std::pair<double, double> getHitPositionError(); //calculated via RMS

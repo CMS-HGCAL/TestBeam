@@ -20,6 +20,7 @@ SensorHitMap::SensorHitMap(int l){
   sensorSize = 128;
 
   d_alpha = 0., d_beta = 0., d_gamma = 0., d_x0 = 0., d_y0 = 0., d_z0 = 0.;
+  residualResolution = 0;
 
   CM_cells_count = 0;
   CM_sum = 0.;
@@ -55,6 +56,10 @@ void SensorHitMap::setAlignmentParameters(double d_alpha, double d_beta, double 
   this->d_x0 = d_x0;
   this->d_y0 = d_y0;
   this->d_z0 = d_z0;
+}
+
+void SensorHitMap::setResidualResolution(double r) {
+  residualResolution = r;
 }
 
 void SensorHitMap::setADCPerMIP(double ADC_per_MIP) {
@@ -219,6 +224,10 @@ void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMeth
   //set the displacement in z w.r.t. the rotational angles only
   centralHitZ = -d_gamma*centralHitPoint.first - d_beta*centralHitPoint.second;
 }
+
+double SensorHitMap::getResidualResolution() {
+  return residualResolution;
+};
 
 std::pair<double, double> SensorHitMap::getHitPosition() {
   return centralHitPoint;

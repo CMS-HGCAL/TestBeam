@@ -1,5 +1,35 @@
 #include "HGCal/Reco/interface/Tracks.h"
 
+//****   gblhelpers    ****//
+double gblhelpers::showerProfile(double *t, double *par) {
+  return par[0]*par[2]*(pow(par[2]*t[0], par[1]-1)*exp(-par[2]*t[0]))/TMath::Gamma(par[1]);
+}
+
+double gblhelpers::computeEnergyLoss(double t, double E0) {
+  double tmax;
+  if (E0 <= 45.) {
+    tmax = 5.;
+  } else if(E0 <= 85.) {
+    tmax = 7.;
+  } else if(E0 <= 150.) {
+    tmax = 8.5;
+  } else if(E0 <= 225.) {
+    tmax = 9.5;
+  } else {
+    tmax = 10.;
+  }
+
+  TF1 *profile = new TF1("profile", showerProfile, 0., 50., 3);
+  profile->SetParameter(0, E0);
+  profile->SetParameter(1, 0.5*tmax+1); //valid approximation for b ~0.5 yields this a
+  profile->SetParameter(2, 0.5);
+
+  double integral = profile->Integral(0, t);
+  delete profile;
+  return integral;
+}
+
+
 //****   Particle Tracks    ****//
 
 //public functions
@@ -34,7 +64,11 @@ void ParticleTrack::addFitPoint(SensorHitMap* sensor){
 
   Energies.push_back(sensor->getTotalEnergy());
 
-  gblLayers.push_back(gblhelpers::layer(sensor->label(), sensor->getLabZ()+sensor->getIntrinsicHitZPosition(), sensor->getX0(), sensor->getParticleEnergy(), false, sensor->getLabHitPosition(), sensor->getHitPositionError()));
+  //This is for gbl: Check why this has to be set to exactly those values for it to work
+  std::pair<double, double> measurementError = sensor->getHitPositionError();
+  measurementError.first = sensor->getResidualResolution() ==-1 ? measurementError.first : sensor->getResidualResolution();
+  measurementError.second = sensor->getResidualResolution() ==-1 ? measurementError.second : sensor->getResidualResolution();
+  gblLayers.push_back(gblhelpers::layer(sensor->label(), sensor->getLabZ()+sensor->getIntrinsicHitZPosition(), sensor->getX0(), sensor->getParticleEnergy(), false, sensor->getLabHitPosition(), measurementError));
 };
 
 void ParticleTrack::addReferenceSensor(SensorHitMap* sensor) {

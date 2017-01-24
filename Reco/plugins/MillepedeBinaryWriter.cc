@@ -45,8 +45,7 @@ double _config1X0Depths[] = {6.268, 1.131, 1.131, 1.362, 0.574, 1.301, 0.574, 2.
 double _config2Positions[] = {1.0, 5.67, 10.84, 15.27, 20.25, 21.4, 26.8, 32.4};         //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
 double _config2X0Depths[] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021}; //in radiation lengths, copied from layerSumAnalyzer
 
-double sigma_res_x[] = {0.2, 0.15, 0.15, 0.15, 0.17, 0.18, 0.21, 0.25};					//width of residuals in x dimension (from logweighting(5,1), no reweighting of errors, all cells considered, 2MIP threshold)
-double sigma_res_y[] = {0.21, 0.16, 0.16, 0.16, 0.18, 0.18, 0.21, 0.26};					//width of residuals in y dimension (from logweighting(5,1), no reweighting of errors, all cells considered, 2MIP threshold)
+double sigma_res[] = {0.205, 0.155, 0.155, 0.155, 0.175, 0.18, 0.21, 0.255};					//width of residuals in x dimension (from logweighting(5,1), no reweighting of errors, all cells considered, 2MIP threshold)
 
 /*************/
 
@@ -275,12 +274,16 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		if ( Sensors.find(layer) == Sensors.end() ) {
 			Sensors[layer] = new SensorHitMap(layer);
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
-			Sensors[layer]->setParticleEnergy(energy);
 			Sensors[layer]->setLabZ(Layer_Z_Positions[layer-1], Layer_Z_X0s[layer-1]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
 			Sensors[layer]->setAlignmentParameters(0.0, 0.0, 0.0,
 				0.0, 0.0, 0.0);	
+			Sensors[layer]->setResidualResolution(sigma_res[layer-1]);
 			Sensors[layer]->setADCPerMIP(ADC_per_MIP[layer-1]);
 			Sensors[layer]->setSensorSize(SensorSize);
+
+			double X0sum = 0;
+			for (int _x = 0; _x<(int)layer; _x++) X0sum += Layer_Z_X0s[_x];
+			Sensors[layer]->setParticleEnergy(energy - gblhelpers::computeEnergyLoss(X0sum, energy));
 		}
 		Sensors[layer]->addHit(Rechit);
 	}
@@ -377,7 +380,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			derGl[(layer-1)*NGLperLayer+1] = 0.;		
 
 			rMeas = x_true - x_predicted;
-			sigma = sigma_res_x[layer-1];
+			sigma = Sensors[layer]->getResidualResolution();
 			mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
 
 
@@ -391,7 +394,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			derGl[(layer-1)*NGLperLayer+1] = 1.;			
 
 			rMeas = y_true - y_predicted;
-			sigma = sigma_res_y[layer-1];
+			sigma = Sensors[layer]->getResidualResolution();
 			mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
 		}
 		mille->end();
