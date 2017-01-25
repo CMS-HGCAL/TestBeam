@@ -63,11 +63,15 @@ std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int laye
 }
 
 std::pair<int, int> HGCalTBCellVertices::GetCellIUIVCoordinates(double x, double y) {
-  auto unrotated = RotateLayer(std::make_pair(x, y), -TEST_BEAM_LAYER_ROTATION);
-  double iv = unrotated.second/vy0;
-  double iu = (unrotated.first - iv*vx0) / x0;
+  x = -x;
 
-  return std::make_pair(-iu, -iv);      //why is there a minus?
+  double X_old = (x) * cos(-TEST_BEAM_LAYER_ROTATION) - (y) * sin(-TEST_BEAM_LAYER_ROTATION);
+  double Y_old = (x) * sin(-TEST_BEAM_LAYER_ROTATION) + (y) * cos(-TEST_BEAM_LAYER_ROTATION);
+
+  double iv = Y_old/vy0;
+  double iu = (X_old - iv*vx0) / x0;
+
+  return std::make_pair(iu, iv);      //why is there a minus?
 }
 
 double HGCalTBCellVertices::Xmax(int iv, double y)
@@ -79,7 +83,7 @@ double HGCalTBCellVertices::Xmax(int iv, double y)
 std::pair<double, double> HGCalTBCellVertices::RotateLayer(std::pair<double, double> Vertex, double Angle)
 {
 	double X_new = (Vertex.first) * cos(Angle) - (Vertex.second) * sin(Angle);
-	double Y_new = (Vertex.first) * sin(Angle) - (Vertex.second) * cos(Angle);
+	double Y_new = (Vertex.first) * sin(Angle) + (Vertex.second) * cos(Angle);
 	return std::make_pair(-X_new, Y_new);// The negative sign for the x coordinate is to account for the TB cartesian coordinate system.
 }
 
