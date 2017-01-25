@@ -20,7 +20,7 @@ SensorHitMap::SensorHitMap(int l){
   sensorSize = 128;
 
   d_alpha = 0., d_beta = 0., d_gamma = 0., d_x0 = 0., d_y0 = 0., d_z0 = 0.;
-  residualResolution = 0;
+  residualResolution = -1;
 
   CM_cells_count = 0;
   CM_sum = 0.;
