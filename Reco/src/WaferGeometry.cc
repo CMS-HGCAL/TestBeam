@@ -20,51 +20,30 @@ HexGeometry::HexGeometry(bool fine) {
     for (int ic = 0; ic<column; ++ic) {
       double xpos = dx*nx;
       nx += 2;
-
-      double x_rot = cos(30.0*M_PI/180.0) * xpos - sin(30.0*M_PI/180.0) * ypos; 
-      double y_rot = sin(30.0*M_PI/180.0) * xpos + cos(30.0*M_PI/180.0) * ypos;
-      //std::cout<<xypos.size()<<"  "<<x_rot<<"  "<<y_rot<<std::endl;
+      double x_rot = cos(90.0*M_PI/180.0) * xpos - sin(90.0*M_PI/180.0) * ypos; 
+      double y_rot = sin(90.0*M_PI/180.0) * xpos + cos(90.0*M_PI/180.0) * ypos;
       xypos.push_back(std::pair<double,double>(x_rot,y_rot));
+
+      int type = 0;
+      if (ir==0) type = 2;
+      else if (ir==1 && (ic==0 || ic==4)) type = 2;
+      else if (ir==2 && (ic==0 || ic==7)) type = 2;
+      else if (ir==3 && (ic==0 || ic==10)) type = 2;
+      else if (ir==4 && (ic==0 || ic==11)) type = 2;
+      else if (ir==6 && (ic==0 || ic==11)) type = 2;
+      else if (ir==8 && (ic==0 || ic==11)) type = 2;
+      else if (ir==10 && (ic==0 || ic==11)) type = 2;
+      else if (ir==11 && (ic==0 || ic==10)) type = 2;
+      else if (ir==12 && (ic==0 || ic==7)) type = 2;
+      else if (ir==13 && (ic==0 || ic==4)) type = 2;
+      else if (ir==14) type = 2;
+
+
+      types.push_back(type);
     }
     ny += 6;
   }
 }
-
-/*
-HexGeometry::HexGeometry(bool fine) {
-  double alpha = 30.0*M_PI/180.0;
-
-  const int nRows(23);      //row is along the y-axis, we start iterating from negative values
-                            //http://cms-hgcal.github.io/TestBeam/coordinates_.html
-  int nColumns[nRows] = {4, 5, 4, 5, 6, 5, 6, 7, 6, 7, 8, 7 ,8, 7, 6, 7, 6, 5, 6, 5, 4, 5, 4};
-
-
-  double dx = 2*HGCAL_TB_CELL::FULL_CELL_SIDE * 10;        //use the correct dimension of the 133 cell sensor in cm
-  double dy = dx*cos(alpha);
-  
-
-  std::cout<<"DX = "<<dx<<std::endl<<std::endl<<std::endl;
-
-  for (int ir = 0; ir < nRows; ++ir) {
-    double ypos = (ir-11)*dy/2.;
-
-    int nColumn = nColumns[ir];
-    for (int ic = 0; ic<nColumn; ++ic) {
-      double xpos;
-      
-      if (nColumn % 2) {
-       int center_index = (nColumn/2);    //automatic rounding to the lower integer value
-       xpos = (ic - center_index) * dx * (1+sin(alpha));
-      } else {
-        xpos = (ic - (nColumn/2. - 0.5)) * dx * (1+sin(alpha));
-      }
-      
-      xypos.push_back(std::pair<double,double>(xpos,ypos));
-      std::cout<<xypos.size()<<"  "<<xpos<<"  "<<ypos<<std::endl;
-    }
-  }
-}
-*/
 
 
 HexGeometry::~HexGeometry() {}
@@ -79,6 +58,14 @@ std::pair<double,double> HexGeometry::position(const int cell) {
   return xy;
 }
 
+int HexGeometry::cellType(const int cell) {
+  int t = -1;
+  if (cell >= 0 && cell < (int)(types.size())) {
+    t = types[cell];
+  } 
+  return t; 
+  
+}
 
 void testGeometry() {
 

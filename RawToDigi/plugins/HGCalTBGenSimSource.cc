@@ -156,11 +156,13 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	 std::pair<double,double> xy = geomc->position(cellno);
 	 double x = xy.first / 10.;		//values are converted from mm to cm
 	 double y =  xy.second / 10.;	//values are converted from mm to cm
+	 int cellType = geomc->cellType(cellno);
 
 	 std::pair<int, int> iuiv = TheCell.GetCellIUIVCoordinates(x, y);
-	 //std::cout<<"cell number: "<<cellno<<"  x: "<<x<<"  y: "<<y<<"   iu: "<<iuiv.first<<"   iv: "<<iuiv.second<<std::endl;
+	 
+	 //std::cout<<"cell number: "<<cellno<<"  x: "<<x<<"  y: "<<y<<"   iu: "<<iuiv.first<<"   iv: "<<iuiv.second<<"   type: "<<cellType<<std::endl;
 
-	 HGCalTBRecHit recHit(HGCalTBDetId(layer, 0, 0, iuiv.first, iuiv.second, 0), energy, energy, energy, 0); 
+	 HGCalTBRecHit recHit(HGCalTBDetId(layer, 0, 0, iuiv.first, iuiv.second, cellType), energy, energy, energy, 0); 
 	 	
 	 /* Back and forth computation, if correct: Numbers should be identical!
 	 std::pair<double, double> CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((recHit.id()).layer(), (recHit.id()).sensorIU(), (recHit.id()).sensorIV(), (recHit.id()).iu(), (recHit.id()).iv(), 128); 	//TODO: Hard Coded Number!

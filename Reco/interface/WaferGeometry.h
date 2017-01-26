@@ -19,9 +19,12 @@ public :
   ~HexGeometry();
 
   std::pair<double,double> position(const int cell);
+  int cellType(const int cell);
+
 
 private :
   std::vector<std::pair<double,double> > xypos;
+  std::vector<int> types;
 
 };
 
