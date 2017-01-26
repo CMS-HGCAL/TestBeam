@@ -23,6 +23,9 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
+#include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
+#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"	//for the runData type definition
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
@@ -61,6 +64,11 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		virtual void endJob() override;
 
 		// ----------member data ---------------------------
+		struct {
+  		HGCalElectronicsMap emap_;
+		} essource_;
+		std::string _e_mapFile;
+
 		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;
 	 	edm::EDGetToken HGCalTBClusterCollection_Token;
   	edm::EDGetToken HGCalTBClusterCollection7_Token;
@@ -106,6 +114,14 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 	
 	// initialization
+	_e_mapFile = iConfig.getParameter<std::string>("e_mapFile_CERN");	
+	HGCalCondObjectTextIO io(0);
+	edm::FileInPath fip(_e_mapFile);
+ 	
+  if (!io.load(fip.fullPath(), essource_.emap_)) {
+	  throw cms::Exception("Unable to load electronics map");
+	};
+
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
   HGCalTBClusterCollection_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS"));
@@ -278,8 +294,12 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			Sensors[layer]->setAlignmentParameters(0.0, 0.0, 0.0,
 				0.0, 0.0, 0.0);	
 			Sensors[layer]->setResidualResolution(sigma_res[layer-1]);
-			Sensors[layer]->setADCPerMIP(ADC_per_MIP[layer-1]);
 			Sensors[layer]->setSensorSize(SensorSize);
+	
+			uint32_t EID = essource_.emap_.detId2eid(Rechit.id());
+			HGCalTBElectronicsId eid(EID);	 
+			int skiRocIndex = (eid.iskiroc() - 1) > 0 ? eid.iskiroc() - 1 : 0;	
+			Sensors[layer]->setADCPerMIP(ADC_per_MIP[skiRocIndex]);
 
 			double X0sum = 0;
 			for (int _x = 0; _x<(int)layer; _x++) X0sum += Layer_Z_X0s[_x];

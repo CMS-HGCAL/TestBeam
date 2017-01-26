@@ -3,6 +3,9 @@
 #include "FWCore/Sources/interface/ProducerSourceFromFiles.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
+#include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
+#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
@@ -20,8 +23,6 @@
 #include "TBranch.h"
 #include "TTree.h"
 #include "TDirectory.h"
-#include "TH2D.h"
-#include "TCanvas.h"
 /**
  *
  *
@@ -29,8 +30,13 @@
  *
  *
 **/
-double ADCtoMIP_CERN[16] =  {17.24, 16.92, 17.51, 16.4, 17.35, 17.49, 16.29, 16.32, 1., 1., 1., 1., 1., 1., 1., 1.};
+double ADCtoMIP_CERN[16] =  {17.31, 17.12, 16.37, 17.45, 17.31, 16.98, 16.45, 16.19, 17.55, 17.19, 16.99, 17.92, 15.95, 16.64, 16.79, 15.66};
 double MIP2GeV_sim = 51.91e-06; //mpv muon EMM pysics list
+
+//must be a globally available variable, otherwise a segmentation fault is thrown  
+struct {
+  HGCalElectronicsMap emap_;
+} essource_;
 
 
 struct FileInfo {
@@ -70,6 +76,9 @@ private:
   std::vector<float>        *simHitCellEnE;
   TBranch                   *b_simHitCellIdE;   
   TBranch                   *b_simHitCellEnE;   
+
+  //getting the required electronic mapping
+  std::string _e_mapFile;
 
   HGCalTBCellVertices TheCell;
   HexGeometry* geomc;
