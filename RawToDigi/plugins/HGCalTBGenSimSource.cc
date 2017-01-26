@@ -37,6 +37,8 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	fillConfiguredRuns(map_file);
 	map_file.close();
 
+	geomc = new HexGeometry(false);
+
 	tree = 0;
 }
 
@@ -125,6 +127,7 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 
 void HGCalTBGenSimSource::produce(edm::Event & event)
 {	
+
 	if (fileIterator ==_fileNames.end()) {
 		std::cout<<"End of the files in the producer is reached..."<<std::endl;
 		return;
@@ -137,28 +140,44 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 
 	event.put(std::move(rd), "RunData");	
 	std::auto_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection);
+	std::map<int, TH2D*> histograms;
+	for (int layer=1; layer<=8; layer++) {
+		histograms[layer] = new TH2D(("event_"+std::to_string(currentEvent)+"__layer_"+std::to_string(layer)).c_str(),("event_"+std::to_string(currentEvent)+"__layer_"+std::to_string(layer)).c_str(), 13, -6, 6, 13, -6, 6);
+	}
 
 	//given code fragment
-	HexGeometry geomc(true);
 	for(unsigned int icell=0; icell<simHitCellIdE->size(); icell++){
-	 int layerno = ((simHitCellIdE->at(icell)>>19)&0x7F);
+	 int layer = ((simHitCellIdE->at(icell)>>19)&0x7F);
 	 //int idcell = (simHitCellIdE->at(icell))&0xFF;
 	 
-	 double energy = simHitCellEnE->at(icell) / MIP2GeV_sim * ADCtoMIP_CERN[layerno-1];
+	 double energy = simHitCellEnE->at(icell) / MIP2GeV_sim * ADCtoMIP_CERN[layer-1];
 
 	 int cellno = (simHitCellIdE->at(icell)>>0)&0xFF;
-	 std::pair<double,double> xy = geomc.position(cellno);
+	 std::pair<double,double> xy = geomc->position(cellno);
 	 double x = xy.first / 10.;		//values are converted from mm to cm
 	 double y =  xy.second / 10.;	//values are converted from mm to cm
+
 	 std::pair<int, int> iuiv = TheCell.GetCellIUIVCoordinates(x, y);
-	 //std::cout<<"x: "<<x<<"  y: "<<y<<"   iu: "<<iuiv.first<<"   iv: "<<iuiv.second<<std::endl;
-	 HGCalTBRecHit recHit(HGCalTBDetId(layerno, 0, 0, iuiv.first, iuiv.second, 0), energy, energy, energy, 0); 
+	 //std::cout<<"cell number: "<<cellno<<"  x: "<<x<<"  y: "<<y<<"   iu: "<<iuiv.first<<"   iv: "<<iuiv.second<<std::endl;
+
+	 HGCalTBRecHit recHit(HGCalTBDetId(layer, 0, 0, iuiv.first, iuiv.second, 0), energy, energy, energy, 0); 
+	 	
+	 /* Back and forth computation, if correct: Numbers should be identical!
+	 std::pair<double, double> CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((recHit.id()).layer(), (recHit.id()).sensorIU(), (recHit.id()).sensorIV(), (recHit.id()).iu(), (recHit.id()).iv(), 128); 	//TODO: Hard Coded Number!
+	 std::pair<int, int> iuiv2 = TheCell.GetCellIUIVCoordinates(CellCenterXY.first, CellCenterXY.second);
+	 std::cout<<"x: "<<CellCenterXY.first<<"  y: "<<CellCenterXY.second<<"   iu: "<<iuiv2.first<<"   iv: "<<iuiv2.second<<std::endl;
+	 std::cout<<std::endl;
+	 */ 
+
 	 recHit.setCellCenterCoordinate(x, y);
 	 rechits->push_back(recHit);
 	}	
 
 	event.put(rechits, outputCollectionName);
 
+}
+
+void HGCalTBGenSimSource::endJob() {
 }
 
 

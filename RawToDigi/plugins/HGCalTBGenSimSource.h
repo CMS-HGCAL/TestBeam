@@ -20,6 +20,8 @@
 #include "TBranch.h"
 #include "TTree.h"
 #include "TDirectory.h"
+#include "TH2D.h"
+#include "TCanvas.h"
 /**
  *
  *
@@ -47,6 +49,7 @@ private:
 	void fillConfiguredRuns(std::fstream& map_file);
 	bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&);
 	virtual void produce(edm::Event & e);
+  virtual void endJob() override;
 	
 	std::string outputCollectionName;
 
@@ -69,6 +72,7 @@ private:
   TBranch                   *b_simHitCellEnE;   
 
   HGCalTBCellVertices TheCell;
+  HexGeometry* geomc;
 
 public:
 	explicit HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc);

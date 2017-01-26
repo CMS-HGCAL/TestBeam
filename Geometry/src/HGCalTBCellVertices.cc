@@ -52,17 +52,7 @@ std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int laye
 {
 	double centre_x_tmp = 0., centre_y_tmp = 0.;
 	bool ValidFlag   = Top.iu_iv_valid(layer, sensor_iu, sensor_iv, iu, iv, sensorsize);
-	if(ValidFlag) {
-    /*
-    double alpha = 30./180. * PI;
-    double dx = HGCAL_TB_CELL::FULL_CELL_SIDE;
-    double dy = dx*cos(alpha);
-		double x = -iv * dx * (1+sin(alpha));
-    double y = -dy*(2*iu+iv);
-
-    return std::make_pair(x, y);
-    */
-    
+	if(ValidFlag) {    
     centre_x_tmp = iu * x0 + iv * vx0;
 		centre_y_tmp = iv * vy0;
 		auto point = RotateLayer(std::make_pair(centre_x_tmp, centre_y_tmp), TEST_BEAM_LAYER_ROTATION);
@@ -82,18 +72,6 @@ std::pair<int, int> HGCalTBCellVertices::GetCellIUIVCoordinates(double x, double
   double iu = (-y/dy - iv)/2.;
 
   return std::make_pair(iu, iv);
-  
-  /*
-  x = -x;
-
-  double X_old = (x) * cos(-TEST_BEAM_LAYER_ROTATION) - (y) * sin(-TEST_BEAM_LAYER_ROTATION);
-  double Y_old = (x) * sin(-TEST_BEAM_LAYER_ROTATION) + (y) * cos(-TEST_BEAM_LAYER_ROTATION);
-
-  double iv = Y_old/vy0;
-  double iu = (X_old - iv*vx0) / x0;
-
-  return std::make_pair(iu, iv);      //why is there a minus?
-  */
   
 }
 

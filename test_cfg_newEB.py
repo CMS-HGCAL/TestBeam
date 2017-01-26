@@ -5,7 +5,7 @@ import os,sys
 
 # TEST RUN:
 # Simulation:
-# cmsRun test_cfg_newEB.py configuration=1 chainSequence=8 outputFolder=/home/outputs/Simulation/September2016/ outputPostfix=test isData=False runType=HGCRun pathToRunEnergyFile=/afs/cern.ch/user/t/tquast/CMS_HGCal_Upgrade/luigiTasks/positionResolutionNovember2016/runEnergiesPositionResolutionSimulation.txt dataFolder=/home/data/MC/September2016
+# cmsRun test_cfg_newEB.py configuration=1 chainSequence=1 outputFolder=/home/outputs/Simulation/September2016/ outputPostfix=test isData=False runType=HGCRun pathToRunEnergyFile=/afs/cern.ch/user/t/tquast/CMS_HGCal_Upgrade/luigiTasks/positionResolutionNovember2016/runEnergiesPositionResolutionSimulation.txt dataFolder=/home/data/MC/September2016
 # Real data:
 # cmsRun test_cfg_newEB.py configuration=1 chainSequence=8 outputFolder=/home/outputs/Testbeam isData=true runType=HGCRun pathToRunEnergyFile=/afs/cern.ch/user/t/tquast/CMS_HGCal_Upgrade/luigiTasks/positionResolutionNovember2016/runEnergiesPositionResolution.txt dataFolder=/home/data/Testbeam/September2016
 
@@ -320,6 +320,8 @@ if options.isData:
     elif (options.chainSequence == 9):
         process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.millepede_binarywriter)
 else:
+    if (options.chainSequence == 1):
+        process.p =cms.Path()
     if (options.chainSequence == 4):
         process.p =cms.Path(process.hgcaltbrechitsplotter_highgain_new)
     elif (options.chainSequence == 5):

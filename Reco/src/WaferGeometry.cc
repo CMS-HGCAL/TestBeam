@@ -20,8 +20,11 @@ HexGeometry::HexGeometry(bool fine) {
     for (int ic = 0; ic<column; ++ic) {
       double xpos = dx*nx;
       nx += 2;
-      std::cout<<xypos.size()<<"  "<<xpos<<"  "<<ypos<<std::endl;
-      xypos.push_back(std::pair<double,double>(xpos,ypos));
+
+      double x_rot = cos(30.0*M_PI/180.0) * xpos - sin(30.0*M_PI/180.0) * ypos; 
+      double y_rot = sin(30.0*M_PI/180.0) * xpos + cos(30.0*M_PI/180.0) * ypos;
+      //std::cout<<xypos.size()<<"  "<<x_rot<<"  "<<y_rot<<std::endl;
+      xypos.push_back(std::pair<double,double>(x_rot,y_rot));
     }
     ny += 6;
   }
