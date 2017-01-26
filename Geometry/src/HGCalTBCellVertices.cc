@@ -53,16 +53,37 @@ std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int laye
 	double centre_x_tmp = 0., centre_y_tmp = 0.;
 	bool ValidFlag   = Top.iu_iv_valid(layer, sensor_iu, sensor_iv, iu, iv, sensorsize);
 	if(ValidFlag) {
-		centre_x_tmp = iu * x0 + iv * vx0;
+    /*
+    double alpha = 30./180. * PI;
+    double dx = HGCAL_TB_CELL::FULL_CELL_SIDE;
+    double dy = dx*cos(alpha);
+		double x = -iv * dx * (1+sin(alpha));
+    double y = -dy*(2*iu+iv);
+
+    return std::make_pair(x, y);
+    */
+    
+    centre_x_tmp = iu * x0 + iv * vx0;
 		centre_y_tmp = iv * vy0;
 		auto point = RotateLayer(std::make_pair(centre_x_tmp, centre_y_tmp), TEST_BEAM_LAYER_ROTATION);
 //		if(flipX==true) point.first = - point.first;
 		return point;
+    
 	} else return std::make_pair(-123456, -123456); //iu_iv_Valid() is sufficient to decide if a given iu,iv is a valid sensor index but this is done if some future need may arise.
 
 }
 
 std::pair<int, int> HGCalTBCellVertices::GetCellIUIVCoordinates(double x, double y) {
+  double alpha = 30./180. * PI;
+  double dx = HGCAL_TB_CELL::FULL_CELL_SIDE*cos(alpha);
+  double dy = dx*cos(alpha);
+  
+  double iv = -x/(dx*(1+sin(alpha)));
+  double iu = (-y/dy - iv)/2.;
+
+  return std::make_pair(iu, iv);
+  
+  /*
   x = -x;
 
   double X_old = (x) * cos(-TEST_BEAM_LAYER_ROTATION) - (y) * sin(-TEST_BEAM_LAYER_ROTATION);
@@ -72,6 +93,8 @@ std::pair<int, int> HGCalTBCellVertices::GetCellIUIVCoordinates(double x, double
   double iu = (X_old - iv*vx0) / x0;
 
   return std::make_pair(iu, iv);      //why is there a minus?
+  */
+  
 }
 
 double HGCalTBCellVertices::Xmax(int iv, double y)

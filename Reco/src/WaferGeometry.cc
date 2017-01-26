@@ -20,11 +20,49 @@ HexGeometry::HexGeometry(bool fine) {
     for (int ic = 0; ic<column; ++ic) {
       double xpos = dx*nx;
       nx += 2;
+      std::cout<<xypos.size()<<"  "<<xpos<<"  "<<ypos<<std::endl;
       xypos.push_back(std::pair<double,double>(xpos,ypos));
     }
     ny += 6;
   }
 }
+
+/*
+HexGeometry::HexGeometry(bool fine) {
+  double alpha = 30.0*M_PI/180.0;
+
+  const int nRows(23);      //row is along the y-axis, we start iterating from negative values
+                            //http://cms-hgcal.github.io/TestBeam/coordinates_.html
+  int nColumns[nRows] = {4, 5, 4, 5, 6, 5, 6, 7, 6, 7, 8, 7 ,8, 7, 6, 7, 6, 5, 6, 5, 4, 5, 4};
+
+
+  double dx = 2*HGCAL_TB_CELL::FULL_CELL_SIDE * 10;        //use the correct dimension of the 133 cell sensor in cm
+  double dy = dx*cos(alpha);
+  
+
+  std::cout<<"DX = "<<dx<<std::endl<<std::endl<<std::endl;
+
+  for (int ir = 0; ir < nRows; ++ir) {
+    double ypos = (ir-11)*dy/2.;
+
+    int nColumn = nColumns[ir];
+    for (int ic = 0; ic<nColumn; ++ic) {
+      double xpos;
+      
+      if (nColumn % 2) {
+       int center_index = (nColumn/2);    //automatic rounding to the lower integer value
+       xpos = (ic - center_index) * dx * (1+sin(alpha));
+      } else {
+        xpos = (ic - (nColumn/2. - 0.5)) * dx * (1+sin(alpha));
+      }
+      
+      xypos.push_back(std::pair<double,double>(xpos,ypos));
+      std::cout<<xypos.size()<<"  "<<xpos<<"  "<<ypos<<std::endl;
+    }
+  }
+}
+*/
+
 
 HexGeometry::~HexGeometry() {}
 

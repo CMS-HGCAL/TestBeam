@@ -5,6 +5,8 @@
 #include <fstream>
 #include <string>
 #include <vector>
+
+#include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
   
 
 //this code patches the fact that the digitization step of the simulation is not implemented yet
