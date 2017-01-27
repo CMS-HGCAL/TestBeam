@@ -22,4 +22,10 @@
   <class name="reco::HGCalTBClusterCollection"/>
   <class name="edm::Wrapper<edm::EDCollection<reco::HGCalTBCluster> >"/>
 
+  <class name="MultiWireChamberData"/>
+  <class name="edm::Wrapper<MultiWireChamberData>"/>
+  <class name="std::vector<MultiWireChamberData>"/>
+  <class name="edm::Wrapper<std::vector<MultiWireChamberData> >"/>
+  
+
 </lcgdict>

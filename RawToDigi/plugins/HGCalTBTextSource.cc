@@ -8,6 +8,8 @@ T 0x0072D911 0xBEC20B15	T 0x0072D93F 0xBED19F54	T 0x0072D96E 0xBED19F56	T 0x0072
 0x118F11BD 0x1081108D	0x11A511B7 0x118A108C	0x119311F2 0x119F1195	0x109E109E 0x1083108D	0x118D11F2 0x11FD1198	0x11881195 0x118D1196	0x11911190 0x1193118A	0x1088109F 0x118C118A
 */
 
+
+//it is crucial that the format of the configuration file is respected!
 void HGCalTBTextSource::fillConfiguredRuns(std::fstream& map_file) {
 	std::string run_prefix;
 	std::string filePath;
@@ -15,21 +17,22 @@ void HGCalTBTextSource::fillConfiguredRuns(std::fstream& map_file) {
 	//perform the loop and fill configuredRuns
 	char fragment[100];
 	int readCounter = 0;
-	int _run = 0, _configuration = 0; double _energy = 0; std::string _runType = ""; 
+	int _run = 0, _mwcrun = 0, _configuration = 0; double _energy = 0; std::string _runType = ""; 
 
 	while (map_file.is_open() && !map_file.eof()) {
 		readCounter++;
 		map_file >> fragment;
-		if (readCounter <= 4) continue; 	//skip the header
-		else if (readCounter % 4 == 1) {
+		if (readCounter <= 5) continue; 	//skip the header
+		else if (readCounter % 5 == 1) {
 			if (((std::string)fragment).find("//") == std::string::npos)	//skip comments of form //
 				_run = atoi(fragment); 
 			else
-				readCounter = 1;
+				readCounter = 1;	//artificially mimics the line as a header
 		}
-		else if (readCounter % 4 == 2) _energy = atof(fragment); 
-		else if (readCounter % 4 == 3) _runType = (std::string)fragment; 
-		else if (readCounter % 4 == 0) {
+		else if (readCounter % 5 == 2) _mwcrun = atoi(fragment);
+		else if (readCounter % 5 == 3) _energy = atof(fragment); 
+		else if (readCounter % 5 == 4) _runType = (std::string)fragment; 
+		else if (readCounter % 5 == 0) {
 			_configuration = atoi(fragment); 
 			//store
 			configuredRuns[_run].energy = _energy;
@@ -46,13 +49,50 @@ void HGCalTBTextSource::fillConfiguredRuns(std::fstream& map_file) {
 			
 			
 			filePath = inputPathFormat;		
-			
 			filePath.replace(filePath.find("<RUN>"), 5, run_prefix+std::to_string(_run));
-			std::cout<<"Adding "<<filePath<<std::endl;
+			std::cout<<"Adding DAQ file "<<filePath<<std::endl;
 			_fileNames.push_back(filePath);
 			
+			filePath = MWCInputPathFormat;		
+			filePath.replace(filePath.find("<RUN>"), 5, std::to_string(_mwcrun));
+			filePath.replace(filePath.find("file:"), 5, "");
+			std::cout<<"Adding MWC file "<<filePath<<std::endl;
+			_MWCFileNames.push_back(filePath);
 		}
 	}
+}
+
+void HGCalTBTextSource::readMWCDataFromFile(std::string filepath) {
+	EventMultiWireChambers.clear();
+	mwcCounter = 0;
+
+	std::fstream mwc_file;
+	 mwc_file.open(filepath.c_str(), std::fstream::in);	
+	char fragment[100];
+	while (mwc_file.is_open()) {
+		MultiWireChambers _mwcs;
+		mwc_file >> fragment;
+		double x1 = atof(fragment);
+		mwc_file >> fragment;
+		double x2 = atof(fragment);
+		mwc_file >> fragment;
+		double y1 = atof(fragment);
+		mwc_file >> fragment;
+		double y2 = atof(fragment);
+
+		if (mwc_file.eof())
+			break;
+
+		_mwcs.push_back(MultiWireChamberData(1, x1, y1, -126.-147.));
+		_mwcs.push_back(MultiWireChamberData(2, x2, y2, -147.));
+		EventMultiWireChambers.push_back(_mwcs);
+		mwcCounter++;
+
+	}
+
+	std::cout<<mwcCounter<<" MWC entries..."<<std::endl;
+	mwcCounter = 0;
+
 }
 
 bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType)
@@ -63,7 +103,10 @@ bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& t
 	//magic must come here!
 	if (currentFileIndex != newFileIndex) {
 		currentFileIndex = newFileIndex;
-		std::string name = _fileNames[currentFileIndex].c_str(); /// \todo FIX in order to take several files
+		std::string name = _fileNames[currentFileIndex].c_str(); 
+		std::string MWCname = _MWCFileNames[currentFileIndex]; 
+		readMWCDataFromFile(MWCname);
+
 		if (name.find("file:") == 0) name = name.substr(5);
 		m_file = fopen(name.c_str(), "r");
 		if (m_file == 0) {
@@ -185,6 +228,18 @@ void HGCalTBTextSource::produce(edm::Event & event)
 	event.put(std::move(rd), "RunData");	
 
 
+	//add the multi-wire chambers only if available
+	if (mwcCounter < (int)EventMultiWireChambers.size()) {
+		std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
+		for (size_t _imwc=0; _imwc < (size_t)EventMultiWireChambers[mwcCounter].size(); _imwc++) {
+			mwcs->push_back(EventMultiWireChambers[mwcCounter][_imwc]);
+		}
+		mwcCounter++;
+		if(mwcs->size() > 0)
+			event.put(std::move(mwcs), "MultiWireChambers");		
+	}
+
+
 	std::auto_ptr<FEDRawDataCollection> bare_product(new  FEDRawDataCollection());
 	// here we parse the data
 	std::vector<uint16_t> skiwords;
@@ -214,6 +269,7 @@ void HGCalTBTextSource::fillDescriptions(edm::ConfigurationDescriptions& descrip
 	desc.addUntracked<int>("run", 101);
 	desc.addUntracked<std::vector<std::string> >("fileNames");
 	desc.addUntracked<std::string>("inputPathFormat");
+	desc.addUntracked<std::string>("MWCInputPathFormat");
 	desc.addUntracked<std::string>("runEnergyMapFile");
 	desc.addUntracked<unsigned int>("nSpills", 6);
 	descriptions.add("source", desc);
