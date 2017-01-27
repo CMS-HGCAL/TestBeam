@@ -176,6 +176,12 @@ void HGCalTBTextSource::produce(edm::Event & event)
 		rd->runType = "-1";
 		rd->run = -1;
 	}
+
+	if (eventsPerRun.find(m_run) == eventsPerRun.end()) {
+		eventsPerRun[m_run] = 0;
+	}
+	eventsPerRun[m_run]++;
+
 	event.put(std::move(rd), "RunData");	
 
 
@@ -213,6 +219,11 @@ void HGCalTBTextSource::fillDescriptions(edm::ConfigurationDescriptions& descrip
 	descriptions.add("source", desc);
 }
 
+void HGCalTBTextSource::endJob() {
+	for (std::map<int, int>::iterator it = eventsPerRun.begin(); it != eventsPerRun.end(); it++) {
+		std::cout<<it->first<<": "<<it->second<<std::endl;
+	}
+}
 
 #include "FWCore/Framework/interface/InputSourceMacros.h"
 

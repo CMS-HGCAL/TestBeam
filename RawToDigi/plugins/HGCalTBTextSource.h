@@ -69,6 +69,7 @@ private:
 	void fillConfiguredRuns(std::fstream& map_file);
 	bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&);
 	virtual void produce(edm::Event & e);
+	virtual void endJob() override;
 	bool readHeader(void);
 	bool readLines(void);
 	runMap configuredRuns;
@@ -82,4 +83,6 @@ private:
 	unsigned int m_event, m_run, m_spill, max_boards;
 	unsigned int NSpills;//Read while running how many spills we wish to run over
 	int m_sourceId;
+
+	std::map<int, int> eventsPerRun;
 };
