@@ -88,6 +88,7 @@ class SensorHitMap {
     ~SensorHitMap();
     int label() {return _label;};
     void setLabZ(double z_cm, double X0);
+    void setCenterHitPosition(double x, double y, double x_err, double y_err);
     void setParticleEnergy(double e);
     void setAlignmentParameters(double d_alpha, double d_beta, double d_gamma, double d_x0, double d_y0, double d_z0);
     void setResidualResolution(double r);

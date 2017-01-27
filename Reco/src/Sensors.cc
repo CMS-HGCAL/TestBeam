@@ -40,6 +40,15 @@ void SensorHitMap::setSensorSize(int s) {
   sensorSize = s;
 }
 
+void SensorHitMap::setCenterHitPosition(double x, double y, double x_err, double y_err) {
+  centralHitPoint.first = x;
+  centralHitPoint.second = y;
+  centralHitPointError.first = x_err;
+  centralHitPointError.second = y_err;
+
+  centralHitZ = -d_gamma*centralHitPoint.first - d_beta*centralHitPoint.second;
+}
+
 void SensorHitMap::setLabZ(double z_cm, double X0) {
   this->layerLabZ = z_cm;
   this->layerX0 = X0;
