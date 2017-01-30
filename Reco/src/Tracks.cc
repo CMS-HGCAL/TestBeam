@@ -305,7 +305,6 @@ void ParticleTrack::analyticalStraightLineFit() {
   linefit_x->fit();
   linefit_y->fit();
 
-  polFitTGraphErrors(1);
 };
 
 std::pair<double, double> ParticleTrack::positionFromAnalyticalStraightLine(double z) {
