@@ -46,10 +46,11 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	  throw cms::Exception("Unable to load electronics map");
 	};
 	
-
 	geomc = new HexGeometry(false);
 
 	tree = 0;
+  	simHitCellIdE = 0;
+  	simHitCellEnE = 0;
 }
 
 void HGCalTBGenSimSource::fillConfiguredRuns(std::fstream& map_file) {
@@ -106,18 +107,19 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 
 	if (currentRun == -1) {		//initial loading of a file
 		currentRun = (*fileIterator).index;
+
 		currentEvent = 0;
 		/*
 		if (rootFile != NULL)
 			delete rootFile;
-  	*/
+  		*/
   
-  	rootFile = new TFile(((*fileIterator).name).c_str());	
-  	dir  = (TDirectory*)rootFile->FindObjectAny("HGCalTBAnalyzer");
-  	tree = (TTree*)dir->Get("HGCTB");
+  		rootFile = new TFile(((*fileIterator).name).c_str());	
+  		dir  = (TDirectory*)rootFile->FindObjectAny("HGCalTBAnalyzer");
+  		tree = (TTree*)dir->Get("HGCTB");
 
-   	tree->SetBranchAddress("simHitCellIdE", &simHitCellIdE, &b_simHitCellIdE);
-  	tree->SetBranchAddress("simHitCellEnE", &simHitCellEnE, &b_simHitCellEnE);
+   		tree->SetBranchAddress("simHitCellIdE", &simHitCellIdE, &b_simHitCellIdE);
+  		tree->SetBranchAddress("simHitCellEnE", &simHitCellEnE, &b_simHitCellEnE);
 	} 
 
 	if (currentEvent == tree->GetEntries()) {
@@ -125,7 +127,7 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 		currentRun = -1;
 		setRunAndEventInfo(id, time, evType);
 	}
-
+	
 	tree->GetEntry(currentEvent);
 
 	currentEvent++;
@@ -191,7 +193,6 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 
 		rechits->push_back(recHit);
 	}	
-
 	event.put(rechits, outputCollectionName);
 
 }
