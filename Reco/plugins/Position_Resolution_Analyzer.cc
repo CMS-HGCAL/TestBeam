@@ -87,7 +87,6 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		std::vector<double> Layer_Z_X0s;
 		std::vector<double> ADC_per_MIP;
 		int LayersConfig;
-		int nLayers;
 		int SensorSize;
 
 		double totalEnergyThreshold;
@@ -223,7 +222,6 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 
 	pedestalThreshold = iConfig.getParameter<double>("pedestalThreshold");
 	SensorSize = iConfig.getParameter<int>("SensorSize");
-	nLayers = iConfig.getParameter<int>("nLayers");
 	ADC_per_MIP = iConfig.getParameter<std::vector<double> >("ADC_per_MIP");
 
 	totalEnergyThreshold = iConfig.getParameter<double>("totalEnergyThreshold");
@@ -300,8 +298,8 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 
 	//opening Clusters (made from all, closest 7, closest 9)
 	edm::Handle<reco::HGCalTBClusterCollection> clusters;
-  edm::Handle<reco::HGCalTBClusterCollection> clusters7;
-  edm::Handle<reco::HGCalTBClusterCollection> clusters19;
+  	edm::Handle<reco::HGCalTBClusterCollection> clusters7;
+  	edm::Handle<reco::HGCalTBClusterCollection> clusters19;
 	event.getByToken(HGCalTBClusterCollection_Token, clusters);
 	event.getByToken(HGCalTBClusterCollection7_Token, clusters7);
 	event.getByToken(HGCalTBClusterCollection19_Token, clusters19);
@@ -367,7 +365,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		return;
 	} 
 
-
 	//step 2: calculate impact point with technique indicated as the argument
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		//subtract common first
@@ -379,12 +376,13 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		it->second->calculateCenterPosition(considerationMethod, weightingMethod);
 	}
 
-
 	//step 3: fill particle tracks
 	std::map<int, ParticleTrack*> Tracks; 	//the integer index indicates which layer is omitted in the track calculation
-	for (int i=1; i<=nLayers; i++) {
+	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
+		int i = it->first;
 		Tracks[i] = new ParticleTrack();
-		for (int j=1; j<=nLayers; j++) {
+		for (std::map<int, SensorHitMap*>::iterator jt=Sensors.begin(); jt!=Sensors.end(); jt++) {
+			int j = jt->first;
 			if (i==j) {
 				Tracks[i]->addReferenceSensor(Sensors[i]);
 				continue;
@@ -394,22 +392,20 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		Tracks[i]->weightFitPoints(fitPointWeightingMethod);
 		Tracks[i]->fitTrack(fittingMethod);
 	}
-	
+
 
 	//step 4: calculate the deviations between each fit missing one layer and exactly that layer's true central position
 	layerZ_X0 = 0;
-	for (layer=1; layer<=nLayers; layer++) {
+	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
+		layer = it->first;
 		layerZ_cm = Sensors[layer]->getLabZ() + Sensors[layer]->getIntrinsicHitZPosition();
 		layerZ_X0 += Sensors[layer]->getX0();
-
 		std::pair<double, double> position_predicted = Tracks[layer]->calculateReferenceXY();
 		x_predicted = position_predicted.first;
 		y_predicted = position_predicted.second;
-
 		std::pair<double, double> position_predicted_to_closest_cell = Sensors[layer]->getCenterOfClosestCell(position_predicted);
 		x_predicted_to_closest_cell = position_predicted_to_closest_cell.first;
 		y_predicted_to_closest_cell = position_predicted_to_closest_cell.second;
-
 		std::pair<double, double> position_error_predicted = Tracks[layer]->calculateReferenceErrorXY();
 		x_predicted_err = position_error_predicted.first;
 		y_predicted_err = position_error_predicted.second;
@@ -424,15 +420,12 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		std::pair<double, double> position_true = Sensors[layer]->getLabHitPosition();
 		x_true = position_true.first;
 		y_true = position_true.second;
-
 		std::pair<double, double> position_true_to_closest_cell = Sensors[layer]->getCenterOfClosestCell(position_true);
 		x_true_to_closest_cell = position_true_to_closest_cell.first;
 		y_true_to_closest_cell = position_true_to_closest_cell.second;
-
 		std::pair<double, double> position_error_true = Sensors[layer]->getHitPositionError();
 		x_true_err = position_error_true.first;
 		y_true_err = position_error_true.second;
-
 		deltaX = x_true - x_predicted;
 		deltaY = y_true - y_predicted;
 		deviation  = sqrt( pow(deltaX, 2) + pow(deltaY, 2) );
@@ -453,15 +446,14 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		outTree->Fill();
 	}
 
+	
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		delete (*it).second;
 	};	Sensors.clear();
-	
 	for(std::map<int, ParticleTrack*>::iterator it=Tracks.begin(); it!=Tracks.end(); it++) {
 		delete (*it).second;
 	}; Tracks.clear();
 	
-
 }// analyze ends here
 
 void Position_Resolution_Analyzer::beginJob() {	

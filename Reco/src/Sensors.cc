@@ -266,7 +266,9 @@ std::pair<double, double> SensorHitMap::getCenterOfClosestCell(std::pair<double,
       return a.first < b.first;
     }
   );  
-  return std::make_pair(to_sort[0].second->x, to_sort[0].second->y);
+
+  if (to_sort.size()==0) return std::make_pair(-1, -1); 
+  else return std::make_pair(to_sort[0].second->x, to_sort[0].second->y);
 }
 
 double SensorHitMap::getTotalEnergy() {
