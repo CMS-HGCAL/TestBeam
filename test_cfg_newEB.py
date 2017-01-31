@@ -183,6 +183,7 @@ if options.isData:
     process.source = cms.Source("HGCalTBTextSource",
                                 runEnergyMapFile = cms.untracked.string(options.pathToRunEnergyFile), #the runs from the runEnergyMapFile are automatically added to the fileNames   
                                 inputPathFormat=cms.untracked.string("file:%s/%s_Output_<RUN>.txt"%(options.dataFolder,options.runType)),  
+                                MWCInputPathFormat=cms.untracked.string("file:%s/WC_H4Run<RUN>.txt"%options.dataFolder),
                                 fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are considered
                                     #["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber) ])
                                 nSpills=cms.untracked.uint32(options.nSpills),
@@ -232,6 +233,9 @@ process.millepede_binarywriter.pedestalThreshold = cms.double(options.pedestalTh
 process.millepede_binarywriter.fitPointWeightingMethod = cms.string(options.fitPointWeightingMethod)
 process.millepede_binarywriter.totalEnergyThreshold = -1000.
 process.millepede_binarywriter.binaryFile = "%s/%s_MillepedeBinary_%s.bin"%(options.outputFolder,options.runType,options.outputPostfix)
+
+if not options.isData:
+    process.millepede_binarywriter.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
 
 process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
                               dumpPayload=cms.untracked.bool(True))

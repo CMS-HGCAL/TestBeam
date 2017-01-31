@@ -1,5 +1,5 @@
 /* 
- * Write out residuals and derivatives to pass forward to millepede.
+ * Write out residuals and derivatives to pass forward to millepede. Relies on the fact that all layers have proper hits. 
  */
 
 /**
@@ -118,30 +118,30 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 	HGCalCondObjectTextIO io(0);
 	edm::FileInPath fip(_e_mapFile);
  	
-  if (!io.load(fip.fullPath(), essource_.emap_)) {
+  	if (!io.load(fip.fullPath(), essource_.emap_)) {
 	  throw cms::Exception("Unable to load electronics map");
 	};
 
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
-  HGCalTBClusterCollection_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS"));
-  HGCalTBClusterCollection7_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS7"));
-  HGCalTBClusterCollection19_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS19"));
+  	HGCalTBClusterCollection_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS"));
+  	HGCalTBClusterCollection7_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS7"));
+  	HGCalTBClusterCollection19_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS19"));
 
 	//read the cell consideration option to calculate the central hit point
 	std::string methodString = iConfig.getParameter<std::string>("considerationMethod");
 	if (methodString == "all")
-  	considerationMethod = CONSIDERALL;
-  else if (methodString == "closest7")
-  	considerationMethod = CONSIDERSEVEN;
-  else if (methodString == "closest19")
-  	considerationMethod = CONSIDERNINETEEN;
-  else if(methodString == "clustersAll")
-  	considerationMethod = CONSIDERCLUSTERSALL;
-  else if(methodString == "clusters7")
-  	considerationMethod = CONSIDERCLUSTERSSEVEN;
-  else if(methodString == "clusters19")
-  	considerationMethod = CONSIDERCLUSTERSNINETEEN;
+  		considerationMethod = CONSIDERALL;
+  	else if (methodString == "closest7")
+  		considerationMethod = CONSIDERSEVEN;
+	else if (methodString == "closest19")
+		considerationMethod = CONSIDERNINETEEN;
+	else if(methodString == "clustersAll")
+		considerationMethod = CONSIDERCLUSTERSALL;
+	else if(methodString == "clusters7")
+		considerationMethod = CONSIDERCLUSTERSSEVEN;
+	else if(methodString == "clusters19")
+		considerationMethod = CONSIDERCLUSTERSNINETEEN;
 
 	//read the weighting method to obtain the central hit point
 	methodString = iConfig.getParameter<std::string>("weightingMethod");
@@ -351,7 +351,20 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		it->second->calculateCenterPosition(considerationMethod, weightingMethod);
 	}
 
-	//step 3: fill particle tracks
+	//step 3: fill all remaining layers that do not have any hits (e.g. in simulation with low energetic electrons)
+	for (int layer=1; layer<=nLayers; layer++) {
+		if (Sensors.find(layer)==Sensors.end()) {
+			Sensors[layer] = new SensorHitMap(layer);
+		
+			double X0sum = 0;
+			for (int _x = 0; _x<(int)layer; _x++) X0sum += Layer_Z_X0s[_x];
+			Sensors[layer]->setParticleEnergy(energy - gblhelpers::computeEnergyLoss(X0sum, energy));
+
+			Sensors[layer]->setCenterHitPosition(0, 0, 12./sqrt(12.), 12./sqrt(12.));	
+		}
+	}
+
+	//step 4: fill particle tracks
 	Track = new ParticleTrack();
 	for (int i=1; i<=nLayers; i++) {
 		Track->addFitPoint(Sensors[i]);
