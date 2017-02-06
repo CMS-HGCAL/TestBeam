@@ -92,6 +92,7 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		int SensorSize;
 
 		double totalEnergyThreshold;
+		bool useMWCReference;
 
 		int ClusterVetoCounter;
 		int HitsVetoCounter;
@@ -224,6 +225,8 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 	ADC_per_MIP = iConfig.getParameter<std::vector<double> >("ADC_per_MIP");
 
 	totalEnergyThreshold = iConfig.getParameter<double>("totalEnergyThreshold");
+
+	useMWCReference = iConfig.getParameter<bool>("useMWCReference");
 	
 	if (fittingMethod==GBLTRACK) {
 		milleBinary = new gbl::MilleBinary((iConfig.getParameter<std::string>("binaryFile")).c_str());
@@ -270,8 +273,12 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	energy = rd->energy;
 
 	if (rd->hasDanger) {
-		std::cout<<"Event "<<event.id().event()<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has DANGER=true"<<std::endl<<std::endl;
+		std::cout<<"Event "<<event.id().event()<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has DANGER=true"<<std::endl;
 		return;
+	}
+	if (useMWCReference && ! rd->hasValidMWCMeasurement) {
+		std::cout<<"Event "<<event.id().event()<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has an invalid MWC measurement"<<std::endl;
+		return;	
 	}
 	if (run == -1) {
 		std::cout<<"Run is not in configuration file - is ignored."<<std::endl;

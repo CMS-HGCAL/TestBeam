@@ -137,9 +137,14 @@ options.register('fitPointWeightingMethod',
                  VarParsing.VarParsing.varType.string,
                  'Fit points (one per layer) in the track fit are linearly weighted according to the deposited energy (in MIPs)'
                 )
+options.register('useMWCReference',
+                 True,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 'Are the multi wire chamber information used for the prediction of impact points?')
 
 
-options.maxEvents = 10
+options.maxEvents = -1
 
 options.parseArguments()
 
@@ -183,7 +188,7 @@ if options.isData:
     process.source = cms.Source("HGCalTBTextSource",
                                 runEnergyMapFile = cms.untracked.string(options.pathToRunEnergyFile), #the runs from the runEnergyMapFile are automatically added to the fileNames   
                                 inputPathFormat=cms.untracked.string("file:%s/%s_Output_<RUN>.txt"%(options.dataFolder,options.runType)),  
-                                MWCInputPathFormat=cms.untracked.string("file:%s/WC_H4Run<RUN>.txt"%options.dataFolder),
+                                MWCInputPathFormat=cms.untracked.string("file:%s/MWC/WC_H4Run<RUN>.txt"%options.dataFolder),
                                 fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are considered
                                     #["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber) ])
                                 nSpills=cms.untracked.uint32(options.nSpills),
@@ -222,6 +227,7 @@ process.position_resolution_analyzer.weightingMethod = cms.string(options.weight
 process.position_resolution_analyzer.pedestalThreshold = cms.double(options.pedestalThreshold)
 process.position_resolution_analyzer.fitPointWeightingMethod = cms.string(options.fitPointWeightingMethod)
 process.position_resolution_analyzer.totalEnergyThreshold = -1000.
+process.position_resolution_analyzer.useMWCReference = cms.bool(options.useMWCReference)
 
 
 if not options.isData:
@@ -233,6 +239,7 @@ process.millepede_binarywriter.weightingMethod = cms.string(options.weightingMet
 process.millepede_binarywriter.pedestalThreshold = cms.double(options.pedestalThreshold)
 process.millepede_binarywriter.fitPointWeightingMethod = cms.string(options.fitPointWeightingMethod)
 process.millepede_binarywriter.totalEnergyThreshold = -1000.
+process.millepede_binarywriter.useMWCReference = cms.bool(options.useMWCReference)
 process.millepede_binarywriter.binaryFile = "%s/%s_MillepedeBinary_%s.bin"%(options.outputFolder,options.runType,options.outputPostfix)
 
 if not options.isData:
@@ -322,9 +329,11 @@ if options.isData:
     elif (options.chainSequence == 7):
         process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.hgcaltbeventdisplay)
     elif (options.chainSequence == 8):
-        process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.position_resolution_analyzer)
+        #process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.position_resolution_analyzer)
+        process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbclusters*process.position_resolution_analyzer)
     elif (options.chainSequence == 9):
-        process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.millepede_binarywriter)
+        #process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.millepede_binarywriter)
+        process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbclusters*process.millepede_binarywriter)
 else:
     if (options.chainSequence == 1):
         process.p =cms.Path()

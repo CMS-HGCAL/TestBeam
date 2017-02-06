@@ -92,6 +92,8 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		int SensorSize;
 
 		double totalEnergyThreshold;
+		bool useMWCReference;
+
 
 		int ClusterVetoCounter;
 		int HitsVetoCounter;
@@ -229,6 +231,8 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 
 	totalEnergyThreshold = iConfig.getParameter<double>("totalEnergyThreshold");
 
+	useMWCReference = iConfig.getParameter<bool>("useMWCReference");
+
 	//initialize tree and set Branch addresses
 	outTree = fs->make<TTree>("deviations", "deviations");
 	outTree->Branch("configuration", &configuration, "configuration/I");
@@ -286,8 +290,12 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	run = rd->run;
 	energy = rd->energy;
 	if (rd->hasDanger) {
-		std::cout<<"Event "<<evId<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has DANGER=true"<<std::endl<<std::endl;
+		std::cout<<"Event "<<evId<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has DANGER=true"<<std::endl;
 		return;
+	}
+	if (useMWCReference && ! rd->hasValidMWCMeasurement) {
+		std::cout<<"Event "<<event.id().event()<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has an invalid MWC measurement"<<std::endl;
+		return;	
 	}
 	if (run == -1) {
 		std::cout<<"Run is not in configuration file - is ignored."<<std::endl;
