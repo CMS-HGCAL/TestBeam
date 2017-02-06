@@ -280,7 +280,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		return;
 	}
 	if (useMWCReference && ! rd->hasValidMWCMeasurement) {
-		std::cout<<"Event "<<event.id().event()<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has an invalid MWC measurement"<<std::endl;
+		//std::cout<<"Event "<<event.id().event()<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has an invalid MWC measurement"<<std::endl;
 		return;	
 	}
 	if (run == -1) {

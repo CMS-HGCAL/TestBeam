@@ -296,7 +296,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		return;
 	}
 	if (useMWCReference && ! rd->hasValidMWCMeasurement) {
-		std::cout<<"Event "<<event.id().event()<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has an invalid MWC measurement"<<std::endl;
+		//std::cout<<"Event "<<event.id().event()<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has an invalid MWC measurement"<<std::endl;
 		return;	
 	}
 	if (run == -1) {
@@ -466,7 +466,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			continue; 	//ignore those cases but count them
 		}
 		successfulFitCounter[run]++; 
-		
 		std::pair<double, double> position_true = Sensors[layer]->getLabHitPosition();
 		x_true = position_true.first;
 		y_true = position_true.second;
