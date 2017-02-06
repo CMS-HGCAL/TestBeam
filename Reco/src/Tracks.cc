@@ -6,18 +6,7 @@ double gblhelpers::showerProfile(double *t, double *par) {
 }
 
 double gblhelpers::computeEnergyLoss(double t, double E0) {
-  double tmax;
-  if (E0 <= 45.) {
-    tmax = 5.;
-  } else if(E0 <= 85.) {
-    tmax = 7.;
-  } else if(E0 <= 150.) {
-    tmax = 8.5;
-  } else if(E0 <= 225.) {
-    tmax = 9.5;
-  } else {
-    tmax = 10.;
-  }
+  double tmax = 2.6648 * pow(10., -7) * pow(E0, 3) + -1.72 * pow(10., -4) * pow(E0, 2) + 0.05003425 * E0 + 4.09805383;
 
   TF1 *profile = new TF1("profile", showerProfile, 0., 50., 3);
   profile->SetParameter(0, E0);
