@@ -139,7 +139,7 @@ options.register('fitPointWeightingMethod',
                 )
 
 
-options.maxEvents = -1
+options.maxEvents = 10
 
 options.parseArguments()
 
@@ -194,7 +194,8 @@ else:
                             e_mapFile_CERN = cms.string('HGCal/CondObjects/data/map_CERN_8Layers_Sept2016.txt'),
                             runEnergyMapFile = cms.untracked.string(options.pathToRunEnergyFile), #the runs from the runEnergyMapFile are automatically added to the fileNames   
                             inputPathFormat=cms.untracked.string("file:%s/<ENERGY>GeV/TBGenSim_<RUN>.root"%(options.dataFolder)),  
-                            fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are considered
+                            fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are considered,
+                            MWCSmearingResolution=cms.double(50.)     #value is in microns! 
                             )
 
 

@@ -8,6 +8,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"
+#include "HGCal/DataFormats/interface/HGCalTBMultiWireChamberData.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Reco/interface/WaferGeometry.h"
@@ -23,6 +24,7 @@
 #include "TBranch.h"
 #include "TTree.h"
 #include "TDirectory.h"
+#include "TRandom.h"
 /**
  *
  *
@@ -55,7 +57,7 @@ private:
 	void fillConfiguredRuns(std::fstream& map_file);
 	bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&);
 	virtual void produce(edm::Event & e);
-  virtual void endJob() override;
+  	virtual void endJob() override;
 	
 	std::string outputCollectionName;
 
@@ -69,19 +71,26 @@ private:
 	int currentEvent;
 
 	TFile *rootFile;
-  TTree *tree;   //!pointer to the analyzed TTree or TChain
-  TDirectory *dir;
+  	TTree *tree;   //!pointer to the analyzed TTree or TChain
+  	TDirectory *dir;
 
-  std::vector<unsigned int> *simHitCellIdE;
-  std::vector<float>        *simHitCellEnE;
-  TBranch                   *b_simHitCellIdE;   
-  TBranch                   *b_simHitCellEnE;   
+  	std::vector<unsigned int> *simHitCellIdE;
+  	std::vector<float>        *simHitCellEnE;
+  	double					  beamX;
+  	double					  beamY;
+  	TBranch                   *b_simHitCellIdE;   
+  	TBranch                   *b_simHitCellEnE;   
+  	TBranch                   *b_beamX;   
+  	TBranch                   *b_beamY;   
 
-  //getting the required electronic mapping
-  std::string _e_mapFile;
+	//getting the required electronic mapping
+	std::string _e_mapFile;
 
-  HGCalTBCellVertices TheCell;
-  HexGeometry* geomc;
+	HGCalTBCellVertices TheCell;
+	HexGeometry* geomc;
+
+	TRandom* MWCSmearer;
+	double smearingResolution;
 
 public:
 	explicit HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc);

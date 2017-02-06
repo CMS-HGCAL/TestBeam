@@ -13,9 +13,11 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	outputCollectionName = pset.getParameter<std::string>("OutputCollectionName");
 	runEnergyMapFile = pset.getUntrackedParameter<std::string>("runEnergyMapFile"); 
 	inputPathFormat = pset.getUntrackedParameter<std::string>("inputPathFormat");
+	smearingResolution = pset.getParameter<double>("MWCSmearingResolution")/1000.;		//configuration is in microns, convert to cm
 	
 	produces <HGCalTBRecHitCollection>(outputCollectionName);
 	produces<RunData>("RunData");
+	produces<MultiWireChambers>("MultiWireChambers");
 
 
 	if (fileNames()[0] != "file:DUMMY") {
@@ -51,6 +53,11 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	tree = 0;
   	simHitCellIdE = 0;
   	simHitCellEnE = 0;
+  	beamX	 = 0;
+  	beamY 	 = 0;
+
+
+  	MWCSmearer = new TRandom();
 }
 
 void HGCalTBGenSimSource::fillConfiguredRuns(std::fstream& map_file) {
@@ -120,7 +127,9 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 
    		tree->SetBranchAddress("simHitCellIdE", &simHitCellIdE, &b_simHitCellIdE);
   		tree->SetBranchAddress("simHitCellEnE", &simHitCellEnE, &b_simHitCellEnE);
-	} 
+  		tree->SetBranchAddress("xBeam", &beamX, &b_beamX);
+  		tree->SetBranchAddress("yBeam", &beamY, &b_beamY);
+	}
 
 	if (currentEvent == tree->GetEntries()) {
 		fileIterator++;
@@ -195,9 +204,23 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	}	
 	event.put(rechits, outputCollectionName);
 
+	
+	//add the multi-wire chambers only if available
+	double x1_mc = beamX + MWCSmearer->Gaus(0, smearingResolution);
+	double y1_mc = beamY + MWCSmearer->Gaus(0, smearingResolution);
+	double x2_mc = beamX + MWCSmearer->Gaus(0, smearingResolution);
+	double y2_mc = beamY + MWCSmearer->Gaus(0, smearingResolution);
+	
+	std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
+	mwcs->push_back(MultiWireChamberData(1, x1_mc, y1_mc, -126.-147.));
+	mwcs->push_back(MultiWireChamberData(2, x2_mc, y2_mc, -147.));
+	
+	event.put(std::move(mwcs), "MultiWireChambers");		
+	
 }
 
 void HGCalTBGenSimSource::endJob() {
+	delete MWCSmearer;
 }
 
 
