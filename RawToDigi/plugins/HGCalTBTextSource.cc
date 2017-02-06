@@ -65,20 +65,20 @@ void HGCalTBTextSource::fillConfiguredRuns(std::fstream& map_file) {
 void HGCalTBTextSource::readMWCDataFromFile(std::string filepath) {
 	EventMultiWireChambers.clear();
 	mwcCounter = 0;
-
 	std::fstream mwc_file;
 	 mwc_file.open(filepath.c_str(), std::fstream::in);	
+	std::cout<<"Opening "<<filepath.c_str()<<std::endl;
 	char fragment[100];
 	while (mwc_file.is_open()) {
 		MultiWireChambers _mwcs;
 		mwc_file >> fragment;
-		double x1 = atof(fragment);
+		double x1 = atof(fragment)/10.;	//values are given in mm and are converted to cm here
 		mwc_file >> fragment;
-		double x2 = atof(fragment);
+		double x2 = atof(fragment)/10.;	//values are given in mm and are converted to cm here
 		mwc_file >> fragment;
-		double y1 = atof(fragment);
+		double y1 = atof(fragment)/10.;	//values are given in mm and are converted to cm here
 		mwc_file >> fragment;
-		double y2 = atof(fragment);
+		double y2 = atof(fragment)/10.;	//values are given in mm and are converted to cm here
 
 		if (mwc_file.eof())
 			break;
@@ -206,40 +206,25 @@ bool HGCalTBTextSource::readLines()
 void HGCalTBTextSource::produce(edm::Event & event)
 {
 
-	//add energy and configuration here
-	std::auto_ptr<RunData> rd(new RunData);
-	if (configuredRuns.find(m_run) != configuredRuns.end()) {
-		rd->energy = configuredRuns[m_run].energy;
-		rd->configuration = configuredRuns[m_run].configuration;
-		rd->runType = configuredRuns[m_run].runType;
-		rd->run = m_run;
-	} else {
-		rd->energy = -1;
-		rd->configuration = -1;
-		rd->runType = "-1";
-		rd->run = -1;
-	}
-
-	if (eventsPerRun.find(m_run) == eventsPerRun.end()) {
-		eventsPerRun[m_run] = 0;
-	}
-	eventsPerRun[m_run]++;
-
-	event.put(std::move(rd), "RunData");	
-
-
 	//add the multi-wire chambers only if available
+	bool _hasValidMWCMeasurement = true;
 	if (mwcCounter < (int)EventMultiWireChambers.size()) {
 		std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
 		for (size_t _imwc=0; _imwc < (size_t)EventMultiWireChambers[mwcCounter].size(); _imwc++) {
 			mwcs->push_back(EventMultiWireChambers[mwcCounter][_imwc]);
+			std::cout<<EventMultiWireChambers[mwcCounter][_imwc].x<<"  "<<EventMultiWireChambers[mwcCounter][_imwc].y<<std::endl;
+			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].x != -99.9) && _hasValidMWCMeasurement;
+			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].y != -99.9) && _hasValidMWCMeasurement;
 		}
 		mwcCounter++;
 		if(mwcs->size() > 0)
 			event.put(std::move(mwcs), "MultiWireChambers");		
+	} else {
+		_hasValidMWCMeasurement = false;
 	}
 
 
+	//add the DAQ data
 	std::auto_ptr<FEDRawDataCollection> bare_product(new  FEDRawDataCollection());
 	// here we parse the data
 	std::vector<uint16_t> skiwords;
@@ -258,6 +243,30 @@ void HGCalTBTextSource::produce(edm::Event & event)
 	fed.resize(len);
 	memcpy(fed.data(), &(skiwords[0]), len);
 	event.put(bare_product);
+
+
+
+	//add the RunData
+	std::auto_ptr<RunData> rd(new RunData);
+	if (configuredRuns.find(m_run) != configuredRuns.end()) {
+		rd->energy = configuredRuns[m_run].energy;
+		rd->configuration = configuredRuns[m_run].configuration;
+		rd->runType = configuredRuns[m_run].runType;
+		rd->run = m_run;
+	} else {
+		rd->energy = -1;
+		rd->configuration = -1;
+		rd->runType = "-1";
+		rd->run = -1;
+	}
+
+	if (eventsPerRun.find(m_run) == eventsPerRun.end()) {
+		eventsPerRun[m_run] = 0;
+	}
+	eventsPerRun[m_run]++;
+	
+	rd->hasValidMWCMeasurment = _hasValidMWCMeasurement;
+	event.put(std::move(rd), "RunData");	
 }
 
 

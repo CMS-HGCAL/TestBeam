@@ -152,21 +152,14 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 		std::cout<<"End of the files in the producer is reached..."<<std::endl;
 		return;
 	}
-	std::auto_ptr<RunData> rd(new RunData);
-	rd->energy = (*fileIterator).energy;
-	rd->configuration = (*fileIterator).config;
-	rd->runType = (*fileIterator).runType;
-	rd->run = (*fileIterator).index;
 
-	event.put(std::move(rd), "RunData");	
+
+	//first: fill the rechits
 	std::auto_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection);
 
-	//given code fragment
 	for(unsigned int icell=0; icell<simHitCellIdE->size(); icell++){
 		int layer = ((simHitCellIdE->at(icell)>>19)&0x7F);
-		//int idcell = (simHitCellIdE->at(icell))&0xFF;
-
-
+		
 		int cellno = (simHitCellIdE->at(icell)>>0)&0xFF;
 		std::pair<double,double> xy = geomc->position(cellno);
 		double x = xy.first / 10.;		//values are converted from mm to cm
@@ -205,7 +198,7 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	event.put(rechits, outputCollectionName);
 
 	
-	//add the multi-wire chambers only if available
+	//second: add fake multi-wire chambers from xBeam, yBeam
 	double x1_mc = beamX + MWCSmearer->Gaus(0, smearingResolution);
 	double y1_mc = beamY + MWCSmearer->Gaus(0, smearingResolution);
 	double x2_mc = beamX + MWCSmearer->Gaus(0, smearingResolution);
@@ -217,6 +210,24 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	
 	event.put(std::move(mwcs), "MultiWireChambers");		
 	
+
+	//third: fill the run data
+	std::auto_ptr<RunData> rd(new RunData);
+	rd->energy = (*fileIterator).energy;
+	rd->configuration = (*fileIterator).config;
+	rd->runType = (*fileIterator).runType;
+	rd->run = (*fileIterator).index;
+
+	bool _hasValidMWCMeasurement = true;
+	_hasValidMWCMeasurement = (x1_mc != -99.9) && _hasValidMWCMeasurement;
+	_hasValidMWCMeasurement = (y1_mc != -99.9) && _hasValidMWCMeasurement;
+	_hasValidMWCMeasurement = (x2_mc != -99.9) && _hasValidMWCMeasurement;
+	_hasValidMWCMeasurement = (y2_mc != -99.9) && _hasValidMWCMeasurement;
+	rd->hasValidMWCMeasurment = _hasValidMWCMeasurement;
+
+	event.put(std::move(rd), "RunData");	
+
+
 }
 
 void HGCalTBGenSimSource::endJob() {
