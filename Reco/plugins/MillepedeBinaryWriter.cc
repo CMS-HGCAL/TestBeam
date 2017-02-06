@@ -231,9 +231,9 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 	}
   
 
-  NLC = 4;
-  NGLperLayer = 3;
-  NGL = nLayers*NGLperLayer;
+	NLC = 4;
+	NGLperLayer = 3;
+	NGL = nLayers*NGLperLayer;
 	rMeas = 0.;
 	sigma = 0.;
 	derLc = new float[NLC];
@@ -411,6 +411,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			
 			derGl[(layer-1)*NGLperLayer+0] = 1.;		
 			derGl[(layer-1)*NGLperLayer+1] = 0.;		
+			derGl[(layer-1)*NGLperLayer+2] = y_true;		
 
 			rMeas = x_true - x_predicted;
 			sigma = Sensors[layer]->getResidualResolution();
@@ -425,6 +426,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 
 			derGl[(layer-1)*NGLperLayer+0] = 0.;		
 			derGl[(layer-1)*NGLperLayer+1] = 1.;			
+			derGl[(layer-1)*NGLperLayer+2] = -x_true;		
 
 			rMeas = y_true - y_predicted;
 			sigma = Sensors[layer]->getResidualResolution();

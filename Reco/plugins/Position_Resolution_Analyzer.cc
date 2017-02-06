@@ -70,8 +70,8 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		edm::Service<TFileService> fs;
 		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;
 	 	edm::EDGetToken HGCalTBClusterCollection_Token;
-  	edm::EDGetToken HGCalTBClusterCollection7_Token;
-  	edm::EDGetToken HGCalTBClusterCollection19_Token;
+  		edm::EDGetToken HGCalTBClusterCollection7_Token;
+  		edm::EDGetToken HGCalTBClusterCollection19_Token;
 
 		edm::EDGetTokenT<RunData> RunDataToken;	
 		
@@ -127,24 +127,24 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	usesResource("TFileService");
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
-  HGCalTBClusterCollection_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS"));
-  HGCalTBClusterCollection7_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS7"));
-  HGCalTBClusterCollection19_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS19"));
+	HGCalTBClusterCollection_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS"));
+	HGCalTBClusterCollection7_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS7"));
+	HGCalTBClusterCollection19_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS19"));
 
 	//read the cell consideration option to calculate the central hit point
 	std::string methodString = iConfig.getParameter<std::string>("considerationMethod");
 	if (methodString == "all")
-  	considerationMethod = CONSIDERALL;
-  else if (methodString == "closest7")
-  	considerationMethod = CONSIDERSEVEN;
-  else if (methodString == "closest19")
-  	considerationMethod = CONSIDERNINETEEN;
-  else if(methodString == "clustersAll")
-  	considerationMethod = CONSIDERCLUSTERSALL;
-  else if(methodString == "clusters7")
-  	considerationMethod = CONSIDERCLUSTERSSEVEN;
-  else if(methodString == "clusters19")
-  	considerationMethod = CONSIDERCLUSTERSNINETEEN;
+		considerationMethod = CONSIDERALL;
+	else if (methodString == "closest7")
+		considerationMethod = CONSIDERSEVEN;
+	else if (methodString == "closest19")
+		considerationMethod = CONSIDERNINETEEN;
+	else if(methodString == "clustersAll")
+		considerationMethod = CONSIDERCLUSTERSALL;
+	else if(methodString == "clusters7")
+		considerationMethod = CONSIDERCLUSTERSSEVEN;
+	else if(methodString == "clusters19")
+		considerationMethod = CONSIDERCLUSTERSNINETEEN;
 
 	//read the weighting method to obtain the central hit point
 	methodString = iConfig.getParameter<std::string>("weightingMethod");
@@ -283,6 +283,10 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	evId = event.id().event();
 	run = rd->run;
 	energy = rd->energy;
+	if (rd->hasDanger) {
+		std::cout<<"Valid MWC Measurement ? "<<rd->hasValidMWCMeasurment<<std::endl;
+		std::cout<<"Has danger ? "<<rd->hasDanger<<std::endl<<std::endl;
+	}
 	if (run == -1) {
 		std::cout<<"Run is not in configuration file - is ignored."<<std::endl;
 		return;
@@ -313,7 +317,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
 			Sensors[layer]->setLabZ(Layer_Z_Positions[layer-1], Layer_Z_X0s[layer-1]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
 
-			Sensors[layer]->setAlignmentParameters(0.0, 0.0, 0.0,
+			Sensors[layer]->setAlignmentParameters(alignmentParameters[100*layer + 21], 0.0, 0.0,
 				alignmentParameters[100*layer + 11], alignmentParameters[100*layer + 12], 0.0);	
 	
 			Sensors[layer]->setSensorSize(SensorSize);

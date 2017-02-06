@@ -187,11 +187,13 @@ void ParticleTrack::gblTrackToMilleBinary(gbl::MilleBinary *milleBinary) {
 //private functions
 void ParticleTrack::gblTrackFit() {
   std::vector<gbl::GblPoint> listOfGblPoints;
-  double z_prev = 0.;
+  std::sort(gblLayers.begin(), gblLayers.end());
+  
   double dz, particleEnergy, layerX0, thetaRMS_abs;//, thetaRMS_sensor;
   int label;
 
-  std::sort(gblLayers.begin(), gblLayers.end());
+  double z_prev = gblLayers[0].z();
+  std::cout<<"Initiating gbl trajectory at z = "<<z_prev<<std::endl;
 
   for (size_t i=0; i<gblLayers.size(); i++) {
     dz = gblLayers[i].z() - z_prev;
@@ -200,7 +202,6 @@ void ParticleTrack::gblTrackFit() {
     label = gblLayers[i].label();
 
     thetaRMS_abs = (0.0136*sqrt(layerX0)/particleEnergy*(1+0.038*log(layerX0)));     //according to PDG formula
-    //thetaRMS_sensor = (0.0136*sqrt(0.01)/particleEnergy*(1+0.038*log(0.01)));     //according to PDG formula
 
     TMatrixD jac_abs1(5, 5);
     jac_abs1.UnitMatrix();
@@ -237,12 +238,6 @@ void ParticleTrack::gblTrackFit() {
     jac[4][2] = (0.5-sqrt(1/12.))*dz;
     //2. initiate the point
     gbl::GblPoint point(jac);
-    //TVectorD scat_mean_sensor(2);
-    //scat_mean_sensor.Zero();
-    //TVectorD scat_invResRMS_sensor(2);
-    //scat_invResRMS_sensor[0] = 1./(thetaRMS_sensor*thetaRMS_sensor);
-    //scat_invResRMS_sensor[1] = 1./(thetaRMS_sensor*thetaRMS_sensor);
-    //point.addScatterer(scat_mean_sensor, scat_invResRMS_sensor);
 
     if (!gblLayers[i].isReference()) {
       //3. add measurement
@@ -258,8 +253,8 @@ void ParticleTrack::gblTrackFit() {
       proL2m.UnitMatrix();
       point.addMeasurement(proL2m, meas, meas_prec);
       //6. add global alignment parameters
-      std::vector<int> labels; labels.push_back(100*label + 11); labels.push_back(100*label + 12);
-      TMatrixD glder(2, 2); glder[0][0] = glder[1][1] = 1.;  glder[0][1] = glder[1][0] = 0.;
+      std::vector<int> labels; labels.push_back(100*label + 11); labels.push_back(100*label + 12); labels.push_back(100*label + 21);
+      TMatrixD glder(2, 3); glder[0][0] = glder[1][1] = 1.;  glder[0][1] = glder[1][0] = 0.; glder[0][2] = meas[1]; glder[1][2] = -meas[0];
       point.addGlobals(labels, glder);
     }
 
