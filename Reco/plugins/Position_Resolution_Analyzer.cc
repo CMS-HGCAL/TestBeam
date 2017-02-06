@@ -31,6 +31,7 @@
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"	//for the runData type definition
+#include "HGCal/DataFormats/interface/HGCalTBMultiWireChamberData.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
@@ -44,10 +45,10 @@
 #include "TTree.h"
   
 //configuration1:
-double config1Positions[] = {1.0, 6.35, 11.52, 15.44, 19.52, 20.67, 24.78, 26.92};    //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
+double config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.92};    //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
 double config1X0Depths[] = {6.268, 1.131, 1.131, 1.362, 0.574, 1.301, 0.574, 2.42}; //in radiation lengths, copied from layerSumAnalyzer
 //configuration2:
-double config2Positions[] = {1.0, 5.67, 10.84, 15.27, 20.25, 21.4, 26.8, 32.4};         //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
+double config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4};         //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
 double config2X0Depths[] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021}; //in radiation lengths, copied from layerSumAnalyzer
                      
 class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
@@ -74,6 +75,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
   		edm::EDGetToken HGCalTBClusterCollection19_Token;
 
 		edm::EDGetTokenT<RunData> RunDataToken;	
+		edm::EDGetTokenT<MultiWireChambers> MWCToken;
 		
 		std::map<int, double> alignmentParameters; //all entries are set to zero if no valid file is given 
 
@@ -127,6 +129,7 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	usesResource("TFileService");
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
+	MWCToken= consumes<MultiWireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
 	HGCalTBClusterCollection_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS"));
 	HGCalTBClusterCollection7_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS7"));
 	HGCalTBClusterCollection19_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS19"));
@@ -276,7 +279,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	eventCounter++;
 
 	edm::Handle<RunData> rd;
-
  	//get the relevant event information
 	event.getByToken(RunDataToken, rd);
 	configuration = rd->configuration;
@@ -291,6 +293,9 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		std::cout<<"Run is not in configuration file - is ignored."<<std::endl;
 		return;
 	}
+
+	edm::Handle<MultiWireChambers> mwcs;
+	event.getByToken(MWCToken, mwcs);
 
 	//initialize new fit counters in case this is a new run:
 	if (successfulFitCounter.find(run) == successfulFitCounter.end()) 

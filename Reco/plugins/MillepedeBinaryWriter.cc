@@ -27,6 +27,7 @@
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"	//for the runData type definition
+#include "HGCal/DataFormats/interface/HGCalTBMultiWireChamberData.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
@@ -42,10 +43,10 @@
 /* Some hard coded numbers:  */  
 
 //configuration1:
-double _config1Positions[] = {1.0, 6.35, 11.52, 15.44, 19.52, 20.67, 24.78, 26.92};    //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
+double _config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.92};    //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
 double _config1X0Depths[] = {6.268, 1.131, 1.131, 1.362, 0.574, 1.301, 0.574, 2.42}; //in radiation lengths, copied from layerSumAnalyzer
 //configuration2:
-double _config2Positions[] = {1.0, 5.67, 10.84, 15.27, 20.25, 21.4, 26.8, 32.4};         //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
+double _config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4};         //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
 double _config2X0Depths[] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021}; //in radiation lengths, copied from layerSumAnalyzer
 
 double sigma_res[] = {0.205, 0.155, 0.155, 0.155, 0.175, 0.18, 0.21, 0.255};					//width of residuals in x dimension (from logweighting(5,1), no reweighting of errors, all cells considered, 2MIP threshold)
@@ -71,10 +72,11 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 
 		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;
 	 	edm::EDGetToken HGCalTBClusterCollection_Token;
-  	edm::EDGetToken HGCalTBClusterCollection7_Token;
-  	edm::EDGetToken HGCalTBClusterCollection19_Token;
+  		edm::EDGetToken HGCalTBClusterCollection7_Token;
+  		edm::EDGetToken HGCalTBClusterCollection19_Token;
 
 		edm::EDGetTokenT<RunData> RunDataToken;	
+		edm::EDGetTokenT<MultiWireChambers> MWCToken;
 
 		ConsiderationMethod considerationMethod;
 		WeightingMethod weightingMethod;
@@ -124,6 +126,7 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
+	MWCToken= consumes<MultiWireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
   	HGCalTBClusterCollection_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS"));
   	HGCalTBClusterCollection7_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS7"));
   	HGCalTBClusterCollection19_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS19"));
@@ -271,14 +274,18 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		return;
 	}
 
+	//get the multi wire chambers
+	edm::Handle<MultiWireChambers> mwcs;
+	event.getByToken(MWCToken, mwcs);
+
 	//opening Rechits
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_Token, Rechits);
 
 	//opening Clusters (made from all, closest 7, closest 9)
 	edm::Handle<reco::HGCalTBClusterCollection> clusters;
-  edm::Handle<reco::HGCalTBClusterCollection> clusters7;
-  edm::Handle<reco::HGCalTBClusterCollection> clusters19;
+  	edm::Handle<reco::HGCalTBClusterCollection> clusters7;
+  	edm::Handle<reco::HGCalTBClusterCollection> clusters19;
 	event.getByToken(HGCalTBClusterCollection_Token, clusters);
 	event.getByToken(HGCalTBClusterCollection7_Token, clusters7);
 	event.getByToken(HGCalTBClusterCollection19_Token, clusters19);
