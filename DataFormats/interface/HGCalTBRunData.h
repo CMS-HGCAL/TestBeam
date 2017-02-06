@@ -10,6 +10,7 @@ struct RunData {
   double energy;
   std::string runType;
   bool hasValidMWCMeasurment;
+  bool hasDanger;
 };
 
 typedef std::map<int, RunData> runMap;

@@ -217,6 +217,7 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	rd->configuration = (*fileIterator).config;
 	rd->runType = (*fileIterator).runType;
 	rd->run = (*fileIterator).index;
+	rd->hasDanger = false;
 
 	bool _hasValidMWCMeasurement = true;
 	_hasValidMWCMeasurement = (x1_mc != -99.9) && _hasValidMWCMeasurement;

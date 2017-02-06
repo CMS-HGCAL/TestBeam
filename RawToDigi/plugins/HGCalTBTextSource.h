@@ -90,6 +90,7 @@ private:
 	std::vector<MultiWireChambers> EventMultiWireChambers;
 	unsigned int m_time;
 	unsigned int m_event, m_run, m_spill, max_boards;
+	bool _hasDanger;
 	unsigned int NSpills;//Read while running how many spills we wish to run over
 	int m_sourceId;
 

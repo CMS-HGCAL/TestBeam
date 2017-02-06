@@ -67,7 +67,6 @@ void HGCalTBTextSource::readMWCDataFromFile(std::string filepath) {
 	mwcCounter = 0;
 	std::fstream mwc_file;
 	 mwc_file.open(filepath.c_str(), std::fstream::in);	
-	std::cout<<"Opening "<<filepath.c_str()<<std::endl;
 	char fragment[100];
 	while (mwc_file.is_open()) {
 		MultiWireChambers _mwcs;
@@ -150,7 +149,8 @@ bool HGCalTBTextSource::readHeader()
 	std::cout << "------------------------------\n";
 	std::cout << b << std::endl;
 #endif
-	if(b.find("DANGER=true") != std::string::npos) return false;
+	if(b.find("DANGER=true") != std::string::npos) _hasDanger=true; //return false;
+	else _hasDanger=false;
 //RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=09	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=12	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=14	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=17	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=18	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=19	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=22	RUN=000880	SPILL=01	EVENT=000000	GLOBALTIME=0x01B6EAF2	BOARD=23
 
 	if(sscanf(buffer, "RUN=%u\tSPILL=%u\tEVENT=%u\tGLOBALTIME=%x", &m_run, &m_spill, &m_event, &m_time) != 4) {
@@ -212,7 +212,6 @@ void HGCalTBTextSource::produce(edm::Event & event)
 		std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
 		for (size_t _imwc=0; _imwc < (size_t)EventMultiWireChambers[mwcCounter].size(); _imwc++) {
 			mwcs->push_back(EventMultiWireChambers[mwcCounter][_imwc]);
-			std::cout<<EventMultiWireChambers[mwcCounter][_imwc].x<<"  "<<EventMultiWireChambers[mwcCounter][_imwc].y<<std::endl;
 			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].x != -99.9) && _hasValidMWCMeasurement;
 			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].y != -99.9) && _hasValidMWCMeasurement;
 		}
@@ -264,8 +263,9 @@ void HGCalTBTextSource::produce(edm::Event & event)
 		eventsPerRun[m_run] = 0;
 	}
 	eventsPerRun[m_run]++;
-	
+	rd->hasDanger = _hasDanger;
 	rd->hasValidMWCMeasurment = _hasValidMWCMeasurement;
+
 	event.put(std::move(rd), "RunData");	
 }
 
