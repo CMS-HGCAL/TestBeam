@@ -19,6 +19,7 @@
 #include <sstream>
 #include "stdlib.h"
 #include <vector>
+#include <cmath>
 
 #include "TFile.h"
 #include "TBranch.h"

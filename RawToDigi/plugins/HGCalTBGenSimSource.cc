@@ -205,8 +205,8 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	double y2_mc = beamY + MWCSmearer->Gaus(0, smearingResolution);
 	
 	std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
-	mwcs->push_back(MultiWireChamberData(1, x1_mc, y1_mc, -126.-147.));
-	mwcs->push_back(MultiWireChamberData(2, x2_mc, y2_mc, -147.));
+	mwcs->push_back(MultiWireChamberData(1, x1_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y1_mc, -x1_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y1_mc, -126.-147.));
+	mwcs->push_back(MultiWireChamberData(2, x2_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y2_mc, -x2_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y2_mc, -147.));
 	
 	event.put(std::move(mwcs), "MultiWireChambers");		
 	
