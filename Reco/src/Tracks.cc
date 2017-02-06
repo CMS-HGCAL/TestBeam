@@ -192,7 +192,7 @@ void ParticleTrack::gblTrackFit() {
   double dz, particleEnergy, layerX0, thetaRMS_abs;//, thetaRMS_sensor;
   int label;
 
-  double z_prev = gblLayers[0].z();
+  double z_prev = gblLayers[0].z() - 1.;    //1cm to incorporate possible absorbers
   std::cout<<"Initiating gbl trajectory at z = "<<z_prev<<std::endl;
 
   for (size_t i=0; i<gblLayers.size(); i++) {
