@@ -206,8 +206,8 @@ void HGCalTBTextSource::produce(edm::Event & event)
 
 	//add the multi-wire chambers only if available
 	bool _hasValidMWCMeasurement = true;
+	std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
 	if (mwcCounter < (int)EventMultiWireChambers.size()) {
-		std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
 		for (size_t _imwc=0; _imwc < (size_t)EventMultiWireChambers[mwcCounter].size(); _imwc++) {
 			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].x != -999) && _hasValidMWCMeasurement;
 			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].y != -999) && _hasValidMWCMeasurement;
@@ -219,12 +219,12 @@ void HGCalTBTextSource::produce(edm::Event & event)
 			mwcs->push_back(EventMultiWireChambers[mwcCounter][_imwc]);
 		}
 		mwcCounter++;
-		if(mwcs->size() > 0) {
-			event.put(std::move(mwcs), "MultiWireChambers");		
-		}
 	} else {
 		_hasValidMWCMeasurement = false;
+		//push some dummy value for the MWCs, subsequent plugins using this information should check the _hadValidMWCMeasurement flag
+		mwcs->push_back(MultiWireChamberData(1, -999, -999, 0));
 	}
+	event.put(std::move(mwcs), "MultiWireChambers");		
 
 
 	//add the DAQ data
