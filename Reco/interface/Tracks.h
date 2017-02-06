@@ -81,6 +81,7 @@ class ParticleTrack{
     ~ParticleTrack();
     void addFitPoint(SensorHitMap* sensor);
     void addReferenceSensor(SensorHitMap* reference);
+    void addDummySensor(SensorHitMap* dummy);
     void weightFitPoints(FitPointWeightingMethod method);
     void fitTrack(TrackFittingMethod method);
     std::pair<double, double> calculateReferenceXY();

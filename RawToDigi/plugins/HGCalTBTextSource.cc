@@ -71,13 +71,13 @@ void HGCalTBTextSource::readMWCDataFromFile(std::string filepath) {
 	while (mwc_file.is_open()) {
 		MultiWireChambers _mwcs;
 		mwc_file >> fragment;
-		double x1 = atof(fragment)/10.;	//values are given in mm and are converted to cm here
+		double x1 = atof(fragment);
 		mwc_file >> fragment;
-		double x2 = atof(fragment)/10.;	//values are given in mm and are converted to cm here
+		double x2 = atof(fragment);
 		mwc_file >> fragment;
-		double y1 = atof(fragment)/10.;	//values are given in mm and are converted to cm here
+		double y1 = atof(fragment);
 		mwc_file >> fragment;
-		double y2 = atof(fragment)/10.;	//values are given in mm and are converted to cm here
+		double y2 = atof(fragment);
 
 		if (mwc_file.eof())
 			break;
@@ -209,9 +209,14 @@ void HGCalTBTextSource::produce(edm::Event & event)
 	if (mwcCounter < (int)EventMultiWireChambers.size()) {
 		std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
 		for (size_t _imwc=0; _imwc < (size_t)EventMultiWireChambers[mwcCounter].size(); _imwc++) {
+			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].x != -999) && _hasValidMWCMeasurement;
+			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].y != -999) && _hasValidMWCMeasurement;
+			double rotAngle = mwcRotation*M_PI/180.;
+			double x_preRot = EventMultiWireChambers[mwcCounter][_imwc].x/10.;		//conersion from mm to cm 
+			double y_preRot = EventMultiWireChambers[mwcCounter][_imwc].y/10.; 
+			EventMultiWireChambers[mwcCounter][_imwc].x = cos(rotAngle) * x_preRot + sin(rotAngle) * y_preRot; 	//apply the rotation just here because the filtering for -999 must occur first
+			EventMultiWireChambers[mwcCounter][_imwc].y = -sin(rotAngle) * x_preRot + cos(rotAngle) * y_preRot; 
 			mwcs->push_back(EventMultiWireChambers[mwcCounter][_imwc]);
-			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].x != -99.9) && _hasValidMWCMeasurement;
-			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].y != -99.9) && _hasValidMWCMeasurement;
 		}
 		mwcCounter++;
 		if(mwcs->size() > 0) {

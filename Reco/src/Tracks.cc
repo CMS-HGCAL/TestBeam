@@ -65,6 +65,10 @@ void ParticleTrack::addReferenceSensor(SensorHitMap* sensor) {
   gblLayers.push_back(gblhelpers::layer(sensor->label(), sensor->getLabZ()+sensor->getIntrinsicHitZPosition(), sensor->getX0(), sensor->getParticleEnergy(), true));
 }
 
+void ParticleTrack::addDummySensor(SensorHitMap* sensor) {
+  gblLayers.push_back(gblhelpers::layer(sensor->label(), sensor->getLabZ()+sensor->getIntrinsicHitZPosition(), sensor->getX0(), sensor->getParticleEnergy(), true));
+}
+
 void ParticleTrack::weightFitPoints(FitPointWeightingMethod method) {
   //calculate the sum of all Energies first 
   double sum_Energies = 0.0;
@@ -182,10 +186,10 @@ void ParticleTrack::gblTrackFit() {
   int label;
 
   double z_prev = gblLayers[0].z() - 1.;    //1cm to incorporate possible absorbers
-  std::cout<<"Initiating gbl trajectory at z = "<<z_prev<<std::endl;
 
   for (size_t i=0; i<gblLayers.size(); i++) {
     dz = gblLayers[i].z() - z_prev;
+    z_prev = gblLayers[i].z();
     particleEnergy = gblLayers[i].particleEnergy();
     layerX0 = gblLayers[i].absorberX0();
     label = gblLayers[i].label();
@@ -248,7 +252,6 @@ void ParticleTrack::gblTrackFit() {
     }
 
     listOfGblPoints.push_back(point);
-
     gblPointLabels[label] = listOfGblPoints.size();
   }
 

@@ -90,6 +90,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		std::vector<double> ADC_per_MIP;
 		int LayersConfig;
 		int SensorSize;
+		int nLayers;
 
 		double totalEnergyThreshold;
 		bool useMWCReference;
@@ -227,6 +228,7 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 
 	pedestalThreshold = iConfig.getParameter<double>("pedestalThreshold");
 	SensorSize = iConfig.getParameter<int>("SensorSize");
+	nLayers = iConfig.getParameter<int>("nLayers");
 	ADC_per_MIP = iConfig.getParameter<std::vector<double> >("ADC_per_MIP");
 
 	totalEnergyThreshold = iConfig.getParameter<double>("totalEnergyThreshold");
@@ -380,7 +382,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	if(sumClusterEnergy < totalEnergyThreshold) ClusterVetoCounter+=1;
 	if(sumEnergy < totalEnergyThreshold && sumClusterEnergy < totalEnergyThreshold) {
 		CommonVetoCounter+=1;
-		return;
+		//return;		//this is also done in the plotting
 	} 
 
 	//step 2: calculate impact point with technique indicated as the argument
@@ -394,28 +396,58 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		it->second->calculateCenterPosition(considerationMethod, weightingMethod);
 	}
 
-	//step 3: fill particle tracks
+	//Step 3: add MWCs to the setup if useMWCReference option is set true
+	if (useMWCReference) {
+		double mwc_resolution = 0.005; //cm
+	
+		Sensors[(nLayers+1)] = new SensorHitMap((nLayers+1));				//attention: This is specifically tailored for the 8-layer setup
+		Sensors[(nLayers+1)]->setLabZ(mwcs->at(0).z, 0.001);
+		Sensors[(nLayers+1)]->setCenterHitPosition(mwcs->at(0).x, mwcs->at(0).y ,mwc_resolution , mwc_resolution);
+		Sensors[(nLayers+1)]->setParticleEnergy(energy);
+		Sensors[(nLayers+1)]->setAlignmentParameters(alignmentParameters[100*(nLayers+1) + 21], 0.0, 0.0,
+				alignmentParameters[100*(nLayers+1) + 11], alignmentParameters[100*(nLayers+1) + 12], 0.0);	
+		Sensors[(nLayers+1)]->setResidualResolution(mwc_resolution);	
+
+		Sensors[(nLayers+2)] = new SensorHitMap((nLayers+2));				//attention: This is specifically tailored for the 8-layer setup
+		Sensors[(nLayers+2)]->setLabZ(mwcs->at(1).z, 0.001);
+		Sensors[(nLayers+2)]->setCenterHitPosition(mwcs->at(1).x, mwcs->at(1).y ,mwc_resolution , mwc_resolution);
+		Sensors[(nLayers+2)]->setParticleEnergy(energy);
+		Sensors[(nLayers+2)]->setAlignmentParameters(alignmentParameters[100*(nLayers+2) + 21], 0.0, 0.0,
+				alignmentParameters[100*(nLayers+2) + 11], alignmentParameters[100*(nLayers+2) + 12], 0.0);	
+		Sensors[(nLayers+2)]->setResidualResolution(mwc_resolution);
+	}
+	
+	//step 4: fill particle tracks
 	std::map<int, ParticleTrack*> Tracks; 	//the integer index indicates which layer is omitted in the track calculation
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		int i = it->first;
+		if (i>(nLayers)) continue;		//just fit for the layers 1-8 and not the MWC, Attention: '8' must be adjusted as soon as there are more layers
 		Tracks[i] = new ParticleTrack();
 		for (std::map<int, SensorHitMap*>::iterator jt=Sensors.begin(); jt!=Sensors.end(); jt++) {
 			int j = jt->first;
+			if (j>nLayers) continue;		//just fit for the layers 1-8 and not the MWC, Attention: '8' must be adjusted as soon as there are more layers
 			if (i==j) {
 				Tracks[i]->addReferenceSensor(Sensors[i]);
 				continue;
 			}
+	
 			Tracks[i]->addFitPoint(Sensors[j]);
+		}
+		if (useMWCReference) {
+			Tracks[i]->addFitPoint(Sensors[9]);
+			Tracks[i]->addFitPoint(Sensors[10]);
 		}
 		Tracks[i]->weightFitPoints(fitPointWeightingMethod);
 		Tracks[i]->fitTrack(fittingMethod);
 	}
 
 
-	//step 4: calculate the deviations between each fit missing one layer and exactly that layer's true central position
+	//step 5: calculate the deviations between each fit missing one layer and exactly that layer's true central position
 	layerZ_X0 = 0;
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		layer = it->first;
+		if (layer>8) continue;		//just fit for the layers 1-8 and not the MWC, Attention: '8' must be adjusted as soon as there are more layers
+
 		layerZ_cm = Sensors[layer]->getLabZ() + Sensors[layer]->getIntrinsicHitZPosition();
 		layerZ_X0 += Sensors[layer]->getX0();
 		std::pair<double, double> position_predicted = Tracks[layer]->calculateReferenceXY();

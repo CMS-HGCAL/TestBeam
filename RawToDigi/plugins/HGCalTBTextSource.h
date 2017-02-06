@@ -13,6 +13,7 @@
 #include <string>
 #include <sstream>
 #include "stdlib.h"
+#include <math.h>
 /**
  * \class HGCalTBTextSource HGCal/RawToDigi/plugins/HGCalTBTextSource.h
  *
@@ -35,6 +36,7 @@ public:
 		newFileIndex(0),
 		inputPathFormat(""),
 		MWCInputPathFormat(""),
+		mwcRotation(pset.getUntrackedParameter<double>("mwcRotation", 270.)),
 		m_file(0),
 		NSpills(pset.getUntrackedParameter<unsigned int>("nSpills", 6))
 	{
@@ -84,6 +86,7 @@ private:
 	std::vector<std::string> _fileNames;
 	std::vector<std::string> _MWCFileNames;
 	int mwcCounter;
+	double mwcRotation;
 
 	std::array< std::vector < unsigned int> , MAXLAYERS> m_lines;
 	FILE* m_file;

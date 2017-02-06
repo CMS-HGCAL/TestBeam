@@ -89,6 +89,7 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		std::vector<double> ADC_per_MIP;
 		int LayersConfig;
 		int nLayers;
+		int nPlanes;
 		int SensorSize;
 
 		double totalEnergyThreshold;
@@ -237,16 +238,18 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 	}
   
 
+	nPlanes = nLayers + (useMWCReference ? 2: 0);
+
 	NLC = 4;
 	NGLperLayer = 3;
-	NGL = nLayers*NGLperLayer;
+	NGL = nPlanes*NGLperLayer;
 	rMeas = 0.;
 	sigma = 0.;
 	derLc = new float[NLC];
 	derGl = new float[NGL];
 	label = new int[NGL];
 
-	for (int l=1; l<=nLayers; l++) {
+	for (int l=1; l<=nPlanes; l++) {
 		label[(l-1)*NGLperLayer + 0] = l*100 + 11;
 		label[(l-1)*NGLperLayer + 1] = l*100 + 12;
 		label[(l-1)*NGLperLayer + 2] = l*100 + 21;
@@ -382,19 +385,37 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		}
 	}
 
-	//step 4: fill particle tracks
+	//Step 4: add MWCs to the setup if useMWCReference option is set true
+	if (useMWCReference) {
+		double mwc_resolution = 0.005; //cm
+		
+		Sensors[(nLayers+1)] = new SensorHitMap((nLayers+1));				//attention: This is specifically tailored for the 8-layer setup
+		Sensors[(nLayers+1)]->setLabZ(mwcs->at(0).z, 0.001);
+		Sensors[(nLayers+1)]->setCenterHitPosition(mwcs->at(0).x, mwcs->at(0).y ,mwc_resolution , mwc_resolution);
+		Sensors[(nLayers+1)]->setParticleEnergy(energy);
+		Sensors[(nLayers+1)]->setResidualResolution(mwc_resolution);	
+
+		Sensors[(nLayers+2)] = new SensorHitMap((nLayers+2));				//attention: This is specifically tailored for the 8-layer setup
+		Sensors[(nLayers+2)]->setLabZ(mwcs->at(1).z, 0.001);
+		Sensors[(nLayers+2)]->setCenterHitPosition(mwcs->at(1).x, mwcs->at(1).y ,mwc_resolution , mwc_resolution);
+		Sensors[(nLayers+2)]->setParticleEnergy(energy);
+		Sensors[(nLayers+2)]->setResidualResolution(mwc_resolution);
+	}
+
+	//step 5: fill particle tracks
 	Track = new ParticleTrack();
-	for (int i=1; i<=nLayers; i++) {
+	for (int i=1; i<=nPlanes; i++) {
 		Track->addFitPoint(Sensors[i]);
 	}
 	Track->weightFitPoints(fitPointWeightingMethod);
 	Track->fitTrack(fittingMethod);
 	
+	//step 6: calculate the deviations between each fit missing one layer and exactly that layer's true central position
 	if (fittingMethod==GBLTRACK) {
 		Track->gblTrackToMilleBinary(milleBinary);
 	}else{
-		//step 4: calculate the deviations between each fit missing one layer and exactly that layer's true central position
-		for (int layer=1; layer<=nLayers; layer++) {
+		
+		for (int layer=1; layer<=nPlanes; layer++) {
 			double layer_labZ = Sensors[layer]->getLabZ();
 			double intrinsic_z = Sensors[layer]->getIntrinsicHitZPosition();	
 			
@@ -402,20 +423,14 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			double x_predicted = position_predicted.first;
 			double y_predicted = position_predicted.second;
 
-			//std::pair<double, double> position_predicted_err = Track->calculatePositionErrorXY(layer_labZ+intrinsic_z);
-			//double x_predicted_err = position_predicted_err.first;
-			//double y_predicted_err = position_predicted_err.second;
 
 			std::pair<double, double> position_true = Sensors[layer]->getHitPosition();	
 			double x_true = position_true.first;
 			double y_true = position_true.second;
 			
-			//std::pair<double, double> position_true_err = Sensors[layer]->getHitPositionError();	
 			Sensors[layer]->getHitPositionError();	
-			//double x_true_err = position_true_err.first;
-			//double y_true_err = position_true_err.second;
 
-		//step5: calculate the necessary derivatives for Mille and fill them into the binary file			
+			//step7: calculate the necessary derivatives for Mille and fill them into the binary file			
 			//reset all global parameters:
 			for (int k=0; k<NGL; k++){
 				derGl[k] = 0.;
