@@ -94,5 +94,5 @@ private:
 	unsigned int NSpills;//Read while running how many spills we wish to run over
 	int m_sourceId;
 
-	std::map<int, int> eventsPerRun;
+	std::map<int, std::pair<int, int>> eventsPerRun;
 };

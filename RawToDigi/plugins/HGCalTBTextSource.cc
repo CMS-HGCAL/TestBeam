@@ -90,8 +90,6 @@ void HGCalTBTextSource::readMWCDataFromFile(std::string filepath) {
 	}
 
 	std::cout<<mwcCounter<<" MWC entries..."<<std::endl;
-	mwcCounter = 0;
-
 }
 
 bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType)
@@ -260,9 +258,10 @@ void HGCalTBTextSource::produce(edm::Event & event)
 	}
 
 	if (eventsPerRun.find(m_run) == eventsPerRun.end()) {
-		eventsPerRun[m_run] = 0;
+		eventsPerRun[m_run].first = 0;
+		eventsPerRun[m_run].second = mwcCounter;
 	}
-	eventsPerRun[m_run]++;
+	eventsPerRun[m_run].first++;
 	rd->hasDanger = _hasDanger;
 	rd->hasValidMWCMeasurment = _hasValidMWCMeasurement;
 
@@ -285,8 +284,9 @@ void HGCalTBTextSource::fillDescriptions(edm::ConfigurationDescriptions& descrip
 }
 
 void HGCalTBTextSource::endJob() {
-	for (std::map<int, int>::iterator it = eventsPerRun.begin(); it != eventsPerRun.end(); it++) {
-		std::cout<<it->first<<": "<<it->second<<std::endl;
+	std::cout<<"Run 	DAQ events 		MWC events"<<std::endl;
+	for (std::map<int, std::pair<int, int> >::iterator it = eventsPerRun.begin(); it != eventsPerRun.end(); it++) {
+		std::cout<<it->first<<": "<<it->second.first<<" , "<<it->second.second<<std::endl;
 	}
 }
 
