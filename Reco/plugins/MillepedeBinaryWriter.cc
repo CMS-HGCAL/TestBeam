@@ -269,6 +269,10 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	run = rd->run;
 	energy = rd->energy;
 
+	if (rd->hasDanger) {
+		std::cout<<"Event "<<event.id().event()<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has DANGER=true"<<std::endl<<std::endl;
+		return;
+	}
 	if (run == -1) {
 		std::cout<<"Run is not in configuration file - is ignored."<<std::endl;
 		return;

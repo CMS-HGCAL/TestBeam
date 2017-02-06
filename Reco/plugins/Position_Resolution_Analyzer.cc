@@ -286,13 +286,14 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	run = rd->run;
 	energy = rd->energy;
 	if (rd->hasDanger) {
-		std::cout<<"Valid MWC Measurement ? "<<rd->hasValidMWCMeasurment<<std::endl;
-		std::cout<<"Has danger ? "<<rd->hasDanger<<std::endl<<std::endl;
+		std::cout<<"Event "<<evId<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has DANGER=true"<<std::endl<<std::endl;
+		return;
 	}
 	if (run == -1) {
 		std::cout<<"Run is not in configuration file - is ignored."<<std::endl;
 		return;
 	}
+
 
 	edm::Handle<MultiWireChambers> mwcs;
 	event.getByToken(MWCToken, mwcs);
