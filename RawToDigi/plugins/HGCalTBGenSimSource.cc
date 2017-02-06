@@ -224,7 +224,7 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	_hasValidMWCMeasurement = (y1_mc != -99.9) && _hasValidMWCMeasurement;
 	_hasValidMWCMeasurement = (x2_mc != -99.9) && _hasValidMWCMeasurement;
 	_hasValidMWCMeasurement = (y2_mc != -99.9) && _hasValidMWCMeasurement;
-	rd->hasValidMWCMeasurment = _hasValidMWCMeasurement;
+	rd->hasValidMWCMeasurement = _hasValidMWCMeasurement;
 
 	event.put(std::move(rd), "RunData");	
 

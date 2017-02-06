@@ -207,7 +207,6 @@ void HGCalTBTextSource::produce(edm::Event & event)
 	//add the multi-wire chambers only if available
 	bool _hasValidMWCMeasurement = true;
 	if (mwcCounter < (int)EventMultiWireChambers.size()) {
-		std::cout<<"HELLO"<<std::endl;
 		std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
 		for (size_t _imwc=0; _imwc < (size_t)EventMultiWireChambers[mwcCounter].size(); _imwc++) {
 			mwcs->push_back(EventMultiWireChambers[mwcCounter][_imwc]);
@@ -216,7 +215,6 @@ void HGCalTBTextSource::produce(edm::Event & event)
 		}
 		mwcCounter++;
 		if(mwcs->size() > 0) {
-			std::cout<<"PUTTING THE MWCS"<<std::endl;
 			event.put(std::move(mwcs), "MultiWireChambers");		
 		}
 	} else {
@@ -266,7 +264,7 @@ void HGCalTBTextSource::produce(edm::Event & event)
 	}
 	eventsPerRun[m_run].first++;
 	rd->hasDanger = _hasDanger;
-	rd->hasValidMWCMeasurment = _hasValidMWCMeasurement;
+	rd->hasValidMWCMeasurement = _hasValidMWCMeasurement;
 
 	event.put(std::move(rd), "RunData");	
 }

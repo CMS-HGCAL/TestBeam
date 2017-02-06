@@ -9,7 +9,7 @@ struct RunData {
   int run;
   double energy;
   std::string runType;
-  bool hasValidMWCMeasurment;
+  bool hasValidMWCMeasurement;
   bool hasDanger;
 };
 
