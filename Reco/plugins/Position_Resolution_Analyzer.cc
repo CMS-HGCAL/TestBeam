@@ -114,6 +114,10 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		double x_predicted, x_predicted_err, y_predicted, y_predicted_err, x_true, x_true_err, y_true, y_true_err, deltaX, deltaY;
 		double x_predicted_to_closest_cell, y_predicted_to_closest_cell, x_true_to_closest_cell, y_true_to_closest_cell, layerZ_cm, layerZ_X0, deviation;
 
+		//averaged information up to the corresponding layers
+		double average_x_predicted, average_y_predicted, average_x_true, average_y_true, average_deltaX, average_deltaY; 
+
+		//MWCs
 		int useMWC;
 		double MWC_x1, MWC_y1, MWC_z1, MWC_x2, MWC_y2, MWC_z2;
 
@@ -282,6 +286,13 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("layerZ_cm", &layerZ_cm, "layerZ_cm/D");
 	outTree->Branch("layerZ_X0", &layerZ_X0, "layerZ_X0/D");
 	outTree->Branch("deviation", &deviation, "deviation/D");
+
+	outTree->Branch("average_x_predicted", &average_x_predicted, "average_x_predicted/D");
+	outTree->Branch("average_y_predicted", &average_y_predicted, "average_y_predicted/D");
+	outTree->Branch("average_x_true", &average_x_true, "average_x_true/D");
+	outTree->Branch("average_y_true", &average_y_true, "average_y_true/D");
+	outTree->Branch("average_deltaX", &average_deltaX, "average_deltaX/D");
+	outTree->Branch("average_deltaY", &average_deltaY, "average_deltaY/D");
 
 	alignmentParameters = new AlignmentParameters(iConfig.getParameter<std::vector<std::string> >("alignmentParameterFiles")); 
 
@@ -470,23 +481,32 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 
 
 	//step 5: calculate the deviations between each fit missing one layer and exactly that layer's true central position
+	double sum_x_predicted = 0, sum_y_predicted = 0, sum_x_true = 0, sum_y_true = 0, sum_energy = 0;
+
 	layerZ_X0 = 0;
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		layer = it->first;
-
+		sumFitWeights = Tracks[layer]->getSumOfEnergies();
+		layerEnergy = Sensors[layer]->getTotalEnergy();
+		sum_energy += layerEnergy;
+		layerClusterEnergy = Sensors[layer]->getTotalClusterEnergy(-1);
+		layerWeight = Sensors[layer]->getTotalWeight();
 		layerZ_cm = Sensors[layer]->getLabZ() + Sensors[layer]->getIntrinsicHitZPosition();
 		layerZ_X0 += Sensors[layer]->getX0();
-		if (layer==9) {
-			std::pair<double, double> position_predicted = Tracks[layer]->calculateReferenceXY();
+		
+		std::pair<double, double> position_predicted = Tracks[layer]->calculateReferenceXY();
 		x_predicted = position_predicted.first;
+		sum_x_predicted  += x_predicted*layerEnergy;
 		y_predicted = position_predicted.second;
+		sum_y_predicted  += y_predicted*layerEnergy;
+
 		std::pair<double, double> position_predicted_to_closest_cell = Sensors[layer]->getCenterOfClosestCell(position_predicted);
 		x_predicted_to_closest_cell = position_predicted_to_closest_cell.first;
 		y_predicted_to_closest_cell = position_predicted_to_closest_cell.second;
 		std::pair<double, double> position_error_predicted = Tracks[layer]->calculateReferenceErrorXY();
 		x_predicted_err = position_error_predicted.first;
 		y_predicted_err = position_error_predicted.second;
-		}
+
 
 		if (!(x_predicted!=0 || y_predicted!=0 || x_predicted_err!=0 || y_predicted_err!=0))	{
 			//default fitting has been applied, i.e. the regular fit has failed or the selected method is not implemented
@@ -494,9 +514,13 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			continue; 	//ignore those cases but count them
 		}
 		successfulFitCounter[run]++; 
+
 		std::pair<double, double> position_true = Sensors[layer]->getLabHitPosition();
 		x_true = position_true.first;
+		sum_x_true += x_true*layerEnergy;
 		y_true = position_true.second;
+		sum_y_true += y_true*layerEnergy;
+		
 		std::pair<double, double> position_true_to_closest_cell = Sensors[layer]->getCenterOfClosestCell(position_true);
 		x_true_to_closest_cell = position_true_to_closest_cell.first;
 		y_true_to_closest_cell = position_true_to_closest_cell.second;
@@ -507,11 +531,13 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		deltaY = y_true - y_predicted;
 		deviation  = sqrt( pow(deltaX, 2) + pow(deltaY, 2) );
 
-		sumFitWeights = Tracks[layer]->getSumOfEnergies();
-		layerEnergy = Sensors[layer]->getTotalEnergy();
-		layerClusterEnergy = Sensors[layer]->getTotalClusterEnergy(-1);
-		layerWeight = Sensors[layer]->getTotalWeight();
 
+		average_x_predicted = layer <= 8 ? sum_x_predicted / sum_energy : -999;
+		average_y_predicted = layer <= 8 ? sum_y_predicted / sum_energy : -999;
+		average_x_true = layer <= 8 ? sum_x_true / sum_energy : -999;
+		average_y_true = layer <= 8 ? sum_y_true / sum_energy : -999;
+		average_deltaX = layer <= 8 ? average_x_true - average_x_predicted : -999;
+		average_deltaY = layer <= 8 ? average_y_true - average_y_predicted : -999;
 		//DEBUG
 		if (deviation > 1000.) {
 			std::cout<<"Event: "<<eventCounter<<std::endl;
