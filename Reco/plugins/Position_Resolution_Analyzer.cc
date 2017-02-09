@@ -77,7 +77,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		edm::EDGetTokenT<RunData> RunDataToken;	
 		edm::EDGetTokenT<MultiWireChambers> MWCToken;
 		
-		std::map<int, double> alignmentParameters; //all entries are set to zero if no valid file is given 
+		AlignmentParameters* alignmentParameters; //all entries are set to zero if no valid file is given 
 
 		ConsiderationMethod considerationMethod;
 		WeightingMethod weightingMethod;
@@ -269,7 +269,7 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("layerZ_X0", &layerZ_X0, "layerZ_X0/D");
 	outTree->Branch("deviation", &deviation, "deviation/D");
 
-	parseAlignmentFile(alignmentParameters, iConfig.getParameter<std::string>("alignmentParameterFile")); 
+	alignmentParameters = new AlignmentParameters(iConfig.getParameter<std::vector<std::string> >("alignmentParameterFiles")); 
 
 	ClusterVetoCounter = 0;
 	HitsVetoCounter = 0;
@@ -333,8 +333,8 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
 			Sensors[layer]->setLabZ(Layer_Z_Positions[layer-1], Layer_Z_X0s[layer-1]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
 
-			Sensors[layer]->setAlignmentParameters(alignmentParameters[100*layer + 21], 0.0, 0.0,
-				alignmentParameters[100*layer + 11], alignmentParameters[100*layer + 12], 0.0);	
+			Sensors[layer]->setAlignmentParameters(alignmentParameters->getValue(energy, 100*layer + 21), 0.0, 0.0,
+				alignmentParameters->getValue(energy, 100*layer + 11), alignmentParameters->getValue(energy, 100*layer + 12), 0.0);	
 	
 			Sensors[layer]->setSensorSize(SensorSize);
 
@@ -404,16 +404,16 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		Sensors[(nLayers+1)]->setLabZ(mwcs->at(0).z, 0.001);
 		Sensors[(nLayers+1)]->setCenterHitPosition(mwcs->at(0).x, mwcs->at(0).y ,mwc_resolution , mwc_resolution);
 		Sensors[(nLayers+1)]->setParticleEnergy(energy);
-		Sensors[(nLayers+1)]->setAlignmentParameters(alignmentParameters[100*(nLayers+1) + 21], 0.0, 0.0,
-				alignmentParameters[100*(nLayers+1) + 11], alignmentParameters[100*(nLayers+1) + 12], 0.0);	
+		Sensors[(nLayers+1)]->setAlignmentParameters(alignmentParameters->getValue(energy, 100*(nLayers+1) + 21), 0.0, 0.0,
+				alignmentParameters->getValue(energy, 100*(nLayers+1) + 11), alignmentParameters->getValue(energy, 100*(nLayers+1) + 12), 0.0);	
 		Sensors[(nLayers+1)]->setResidualResolution(mwc_resolution);	
 
 		Sensors[(nLayers+2)] = new SensorHitMap((nLayers+2));				//attention: This is specifically tailored for the 8-layer setup
 		Sensors[(nLayers+2)]->setLabZ(mwcs->at(1).z, 0.001);
 		Sensors[(nLayers+2)]->setCenterHitPosition(mwcs->at(1).x, mwcs->at(1).y ,mwc_resolution , mwc_resolution);
 		Sensors[(nLayers+2)]->setParticleEnergy(energy);
-		Sensors[(nLayers+2)]->setAlignmentParameters(alignmentParameters[100*(nLayers+2) + 21], 0.0, 0.0,
-				alignmentParameters[100*(nLayers+2) + 11], alignmentParameters[100*(nLayers+2) + 12], 0.0);	
+		Sensors[(nLayers+2)]->setAlignmentParameters(alignmentParameters->getValue(energy, 100*(nLayers+2) + 21), 0.0, 0.0,
+				alignmentParameters->getValue(energy, 100*(nLayers+2) + 11), alignmentParameters->getValue(energy, 100*(nLayers+2) + 12), 0.0);	
 		Sensors[(nLayers+2)]->setResidualResolution(mwc_resolution);
 	}
 	
@@ -512,7 +512,8 @@ void Position_Resolution_Analyzer::endJob() {
 	std::cout<<"ClusterVetos: "<<ClusterVetoCounter<<std::endl;
 	std::cout<<"HitsVetos: "<<HitsVetoCounter<<std::endl;
 	std::cout<<"CommonVetos: "<<CommonVetoCounter<<std::endl;
-	
+
+	delete alignmentParameters;
 }
 
 void Position_Resolution_Analyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {

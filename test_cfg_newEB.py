@@ -99,13 +99,19 @@ options.register('reportEvery',
                 VarParsing.VarParsing.varType.int,
                 'Frequency of event count print outs on the console')
 
+options.register('readOnlyEnergy',
+                 -1,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.float,
+                 'Run the analysis only for this specific energy.'
+                )
 
 '''Specific options for the position resolution'''
-options.register('alignmentParameterFile',
+options.register('alignmentParameterFiles',
                  '',
-                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.multiplicity.list,
                  VarParsing.VarParsing.varType.string,
-                 'Alignment parameter file as obtained from the pede framework.'
+                 'Alignment parameter files as obtained from the pede framework.'
                 )
 options.register('fittingMethod',
                 'gblTrack',
@@ -191,6 +197,7 @@ if options.isData:
                                 MWCInputPathFormat=cms.untracked.string("file:%s/MWC/WC_H4Run<RUN>.txt"%options.dataFolder),
                                 fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are considered
                                     #["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber) ])
+                                readOnlyEnergy=cms.untracked.double(options.readOnlyEnergy),
                                 nSpills=cms.untracked.uint32(options.nSpills),
                                 )
 else:
@@ -220,7 +227,7 @@ process.hgcaltbrechits.gainHigh = cms.string('')
 if not options.isData:
     process.hgcaltbclusters.rechitCollection = cms.InputTag("source","","unpack")
 
-process.position_resolution_analyzer.alignmentParameterFile = cms.string(options.alignmentParameterFile)
+process.position_resolution_analyzer.alignmentParameterFiles = cms.vstring(options.alignmentParameterFiles)
 process.position_resolution_analyzer.fittingMethod = cms.string(options.fittingMethod)
 process.position_resolution_analyzer.considerationMethod = cms.string(options.considerationMethod)
 process.position_resolution_analyzer.weightingMethod = cms.string(options.weightingMethod)

@@ -2,7 +2,7 @@ import FWCore.ParameterSet.Config as cms
 
 position_resolution_analyzer = cms.EDAnalyzer("Position_Resolution_Analyzer",
                                 e_mapFile_CERN = cms.string('HGCal/CondObjects/data/map_CERN_8Layers_Sept2016.txt'),
-                                alignmentParameterFile = cms.string(''),
+                                alignmentParameterFiles = cms.vstring(['']),
                                 considerationMethod = cms.string('all'),
                                 weightingMethod = cms.string('squaredWeighting'),
                                 fittingMethod = cms.string('lineAnalytical'),

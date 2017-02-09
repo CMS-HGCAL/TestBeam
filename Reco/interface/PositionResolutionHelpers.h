@@ -7,6 +7,8 @@
 #include <cmath>
 #include <fstream>
 
+#include <boost/regex.hpp>
+
 #include "TF1.h"
 #include "TGraphErrors.h"
 #include "TFitResult.h"
@@ -17,6 +19,19 @@ void parseAlignmentFile(std::map<int, double> &alignmentParameters, std::string 
 //
 // class declarations
 //
+
+//class that stores the alignmentParameters
+class AlignmentParameters {
+    private:
+        std::map<double, std::map<int, double> > _params;
+        std::map<int, double> parseFile(std::string file);
+        double defaultEnergy;
+    public:
+        AlignmentParameters(std::vector<std::string> files, double defaultEnergy);
+        AlignmentParameters(std::vector<std::string> files);
+        double getValue(double energy, int paramId, bool tryDefault=true);
+};
+
 
 //class that performs an analytical straight line fit
 class LineFitter {

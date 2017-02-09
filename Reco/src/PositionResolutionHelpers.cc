@@ -2,8 +2,70 @@
 
 
 //****   Parsing of alignment values    ****//
+
+
+    
+    
+AlignmentParameters::AlignmentParameters(std::vector<std::string> files, double _defaultEnergy) : defaultEnergy(_defaultEnergy) {
+  boost::regex energy_regex("^.*ENERGY_([0-9]+)_.*$");
+  boost::smatch energy_matches;
+
+  for(size_t i = 0; i<files.size(); i++) {
+    std::string filePath = files[i];
+
+    std::cout<<filePath<<std::endl;
+    if (boost::regex_match(filePath, energy_matches, energy_regex)) {
+      std::string energy_str(energy_matches[1].first, energy_matches[1].second);
+
+      _params[atof(energy_str.c_str())] = parseFile(filePath);
+    }
+
+  }
+};
+
+AlignmentParameters::AlignmentParameters(std::vector<std::string> files) : AlignmentParameters(files, 250.){};
+
+std::map<int, double> AlignmentParameters::parseFile(std::string path) {
+  std::map<int, double> fileParams;
+  std::fstream file;
+  
+  char fragment[100];
+  int readCounter = -2, currentParameter = 0;
+  file.open(path.c_str(), std::fstream::in);
+
+  while (file.is_open() && !file.eof()) {
+    if (readCounter!=-2) readCounter++;
+    file >> fragment;
+    if (std::string(fragment)=="111") readCounter = 0;  //first parameter is read out
+
+    if (readCounter==0) currentParameter = atoi(fragment);
+    if (readCounter==1) currentParameter = fileParams[currentParameter] = atof(fragment);
+    if (readCounter==4) readCounter = -1;
+  }
+
+  if (readCounter==-2) {
+    for (int i=1; i<= 8; i++) {
+      fileParams[i*100+11] = 0;
+      fileParams[i*100+12] = 0;
+      fileParams[i*100+13] = 0;
+      fileParams[i*100+21] = 0;
+      fileParams[i*100+22] = 0;
+      fileParams[i*100+23] = 0;
+    }
+  }
+
+  return fileParams;
+}
+
+double AlignmentParameters::getValue(double energy, int paramId, bool tryDefault) {
+  if (_params.find(energy) == _params.end() && tryDefault) return getValue(defaultEnergy, paramId, false);
+  else if (_params[energy].find(paramId) == _params[energy].end()) return 0.;
+  else return _params[energy][paramId];
+};
+
+
+
 void parseAlignmentFile(std::map<int, double> &alignmentParameters, std::string path) {
-  //std::cout<<"PARSING"<<std::endl<<std::endl<<std::endl;
   std::fstream file;
   
   char fragment[100];
