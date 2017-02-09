@@ -404,9 +404,16 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 
 	//step 5: fill particle tracks
 	Track = new ParticleTrack();
-	for (int i=1; i<=nPlanes; i++) {
-		Track->addFitPoint(Sensors[i]);
+	if (!useMWCReference) {
+		for (int i=1; i<=nLayers; i++) {
+			Track->addFitPoint(Sensors[i]);
+		}
+	} else {
+		for (int i=nLayers+1; i<=nPlanes; i++) {
+			Track->addFitPoint(Sensors[i]);
+		}
 	}
+	
 	Track->weightFitPoints(fitPointWeightingMethod);
 	Track->fitTrack(fittingMethod);
 	
