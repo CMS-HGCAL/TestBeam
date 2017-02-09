@@ -446,22 +446,24 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	std::map<int, ParticleTrack*> Tracks; 	//the integer index indicates which layer is omitted in the track calculation
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		int i = it->first;
-		if (i>(nLayers)) continue;		//just fit for the layers 1-8 and not the MWC, Attention: '8' must be adjusted as soon as there are more layers
+		
 		Tracks[i] = new ParticleTrack();
+		Tracks[i]->addReferenceSensor(Sensors[i]);
+
 		for (std::map<int, SensorHitMap*>::iterator jt=Sensors.begin(); jt!=Sensors.end(); jt++) {
 			int j = jt->first;
-			if (j>nLayers) continue;		//just fit for the layers 1-8 and not the MWC, Attention: '8' must be adjusted as soon as there are more layers
-			if (i==j) {
-				Tracks[i]->addReferenceSensor(Sensors[i]);
-				continue;
+			if (i==j) continue;
+
+			if (i<=nLayers) {
+				if(useMWCReference && j>nLayers) Tracks[i]->addFitPoint(Sensors[j]);
+				else if(!useMWCReference && j<=nLayers) Tracks[i]->addFitPoint(Sensors[j]);
+			} else {
+				if(useMWCReference && j<=nLayers) 
+					Tracks[i]->addFitPoint(Sensors[j]);	
+				
 			}
-	
-			Tracks[i]->addFitPoint(Sensors[j]);
 		}
-		if (useMWCReference) {
-			Tracks[i]->addFitPoint(Sensors[9]);
-			Tracks[i]->addFitPoint(Sensors[10]);
-		}
+
 		Tracks[i]->weightFitPoints(fitPointWeightingMethod);
 		Tracks[i]->fitTrack(fittingMethod);
 	}
@@ -471,11 +473,11 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	layerZ_X0 = 0;
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		layer = it->first;
-		if (layer>8) continue;		//just fit for the layers 1-8 and not the MWC, Attention: '8' must be adjusted as soon as there are more layers
 
 		layerZ_cm = Sensors[layer]->getLabZ() + Sensors[layer]->getIntrinsicHitZPosition();
 		layerZ_X0 += Sensors[layer]->getX0();
-		std::pair<double, double> position_predicted = Tracks[layer]->calculateReferenceXY();
+		if (layer==9) {
+			std::pair<double, double> position_predicted = Tracks[layer]->calculateReferenceXY();
 		x_predicted = position_predicted.first;
 		y_predicted = position_predicted.second;
 		std::pair<double, double> position_predicted_to_closest_cell = Sensors[layer]->getCenterOfClosestCell(position_predicted);
@@ -484,6 +486,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		std::pair<double, double> position_error_predicted = Tracks[layer]->calculateReferenceErrorXY();
 		x_predicted_err = position_error_predicted.first;
 		y_predicted_err = position_error_predicted.second;
+		}
 
 		if (!(x_predicted!=0 || y_predicted!=0 || x_predicted_err!=0 || y_predicted_err!=0))	{
 			//default fitting has been applied, i.e. the regular fit has failed or the selected method is not implemented
