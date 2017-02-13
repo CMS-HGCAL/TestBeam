@@ -36,7 +36,6 @@ public:
 		newFileIndex(0),
 		inputPathFormat(""),
 		MWCInputPathFormat(""),
-		readOnlyEnergy(-1),
 		mwcRotation(pset.getUntrackedParameter<double>("mwcRotation", 270.)),
 		m_file(0),
 		NSpills(pset.getUntrackedParameter<unsigned int>("nSpills", 6))
@@ -54,7 +53,7 @@ public:
 		runEnergyMapFile = pset.getUntrackedParameter<std::string>("runEnergyMapFile"); 
 		inputPathFormat = pset.getUntrackedParameter<std::string>("inputPathFormat");
 		MWCInputPathFormat = pset.getUntrackedParameter<std::string>("MWCInputPathFormat");
-		readOnlyEnergy = pset.getUntrackedParameter<double>("readOnlyEnergy");
+		readOnlyRuns = pset.getUntrackedParameter<std::vector<int> >("readOnlyRuns");
 		
 		std::fstream map_file;
 		map_file.open(runEnergyMapFile.c_str(), std::fstream::in);
@@ -85,7 +84,7 @@ private:
 	std::string runEnergyMapFile;
 	std::string inputPathFormat;
 	std::string MWCInputPathFormat;
-	double readOnlyEnergy;
+	std::vector<int> readOnlyRuns;
 	std::vector<std::string> _fileNames;
 	std::vector<std::string> _MWCFileNames;
 	int mwcCounter;

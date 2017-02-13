@@ -14,8 +14,6 @@
 #include "TFitResult.h"
 
 
-void parseAlignmentFile(std::map<int, double> &alignmentParameters, std::string path);
-
 //
 // class declarations
 //
@@ -25,9 +23,9 @@ class AlignmentParameters {
     private:
         std::map<double, std::map<int, double> > _params;
         std::map<int, double> parseFile(std::string file);
-        double defaultEnergy;
+        double defaultRun;
     public:
-        AlignmentParameters(std::vector<std::string> files, double defaultEnergy);
+        AlignmentParameters(std::vector<std::string> files, double defaultRun);
         AlignmentParameters(std::vector<std::string> files);
         double getValue(double energy, int paramId, bool tryDefault=true);
 };

@@ -35,8 +35,8 @@ void HGCalTBTextSource::fillConfiguredRuns(std::fstream& map_file) {
 		else if (readCounter % 5 == 0) {
 			_configuration = atoi(fragment); 
 			
-			//if readOnlyEnergy parameter is set, make sure to only run the analysis for files of exactly that energy
-			if (readOnlyEnergy!=-1 && readOnlyEnergy!=_energy)
+			//if readOnlyRuns parameter is set, make sure to only run the analysis for files of exactly that energy
+			if (readOnlyRuns.size()>0 && std::find(readOnlyRuns.begin(), readOnlyRuns.end(), _run) == readOnlyRuns.end())
 				continue;
 
 			//store
@@ -289,7 +289,7 @@ void HGCalTBTextSource::fillDescriptions(edm::ConfigurationDescriptions& descrip
 	desc.addUntracked<std::vector<std::string> >("fileNames");
 	desc.addUntracked<std::string>("inputPathFormat");
 	desc.addUntracked<std::string>("MWCInputPathFormat");
-	desc.addUntracked<double>("readOnlyEnergy");
+	desc.addUntracked<std::vector<int> >("readOnlyRuns");
 	desc.addUntracked<std::string>("runEnergyMapFile");
 	desc.addUntracked<unsigned int>("nSpills", 6);
 	descriptions.add("source", desc);

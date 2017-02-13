@@ -358,8 +358,8 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
 			Sensors[layer]->setLabZ(Layer_Z_Positions[layer-1], Layer_Z_X0s[layer-1]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
 
-			Sensors[layer]->setAlignmentParameters(alignmentParameters->getValue(energy, 100*layer + 21), 0.0, 0.0,
-				alignmentParameters->getValue(energy, 100*layer + 11), alignmentParameters->getValue(energy, 100*layer + 12), 0.0);	
+			Sensors[layer]->setAlignmentParameters(alignmentParameters->getValue(run, 100*layer + 21), 0.0, 0.0,
+				alignmentParameters->getValue(run, 100*layer + 11), alignmentParameters->getValue(run, 100*layer + 12), 0.0);	
 	
 			Sensors[layer]->setSensorSize(SensorSize);
 

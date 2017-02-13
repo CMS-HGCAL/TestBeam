@@ -99,11 +99,11 @@ options.register('reportEvery',
                 VarParsing.VarParsing.varType.int,
                 'Frequency of event count print outs on the console')
 
-options.register('readOnlyEnergy',
-                 -1,
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.float,
-                 'Run the analysis only for this specific energy.'
+options.register('readOnlyRuns',
+                 '',
+                 VarParsing.VarParsing.multiplicity.list,
+                 VarParsing.VarParsing.varType.int,
+                 'Run the analysis only for the indicated runs'
                 )
 
 '''Specific options for the position resolution'''
@@ -197,7 +197,7 @@ if options.isData:
                                 MWCInputPathFormat=cms.untracked.string("file:%s/MWC/WC_H4Run<RUN>.txt"%options.dataFolder),
                                 fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are considered
                                     #["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber) ])
-                                readOnlyEnergy=cms.untracked.double(options.readOnlyEnergy),
+                                readOnlyRuns=cms.untracked.vint32(options.readOnlyRuns),
                                 nSpills=cms.untracked.uint32(options.nSpills),
                                 )
 else:

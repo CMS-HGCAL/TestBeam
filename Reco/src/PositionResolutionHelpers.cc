@@ -6,24 +6,24 @@
 
     
     
-AlignmentParameters::AlignmentParameters(std::vector<std::string> files, double _defaultEnergy) : defaultEnergy(_defaultEnergy) {
-  boost::regex energy_regex("^.*ENERGY_([0-9]+)_.*$");
-  boost::smatch energy_matches;
+AlignmentParameters::AlignmentParameters(std::vector<std::string> files, double _defaultRun) : defaultRun(_defaultRun) {
+  boost::regex run_regex("^.*RUN_([0-9]+)_.*$");
+  boost::smatch run_matches;
 
   for(size_t i = 0; i<files.size(); i++) {
     std::string filePath = files[i];
 
     std::cout<<filePath<<std::endl;
-    if (boost::regex_match(filePath, energy_matches, energy_regex)) {
-      std::string energy_str(energy_matches[1].first, energy_matches[1].second);
+    if (boost::regex_match(filePath, run_matches, run_regex)) {
+      std::string run_str(run_matches[1].first, run_matches[1].second);
 
-      _params[atof(energy_str.c_str())] = parseFile(filePath);
+      _params[atof(run_str.c_str())] = parseFile(filePath);
     }
 
   }
 };
 
-AlignmentParameters::AlignmentParameters(std::vector<std::string> files) : AlignmentParameters(files, 250.){};
+AlignmentParameters::AlignmentParameters(std::vector<std::string> files) : AlignmentParameters(files, 887){};
 
 std::map<int, double> AlignmentParameters::parseFile(std::string path) {
   std::map<int, double> fileParams;
@@ -57,42 +57,13 @@ std::map<int, double> AlignmentParameters::parseFile(std::string path) {
   return fileParams;
 }
 
-double AlignmentParameters::getValue(double energy, int paramId, bool tryDefault) {
-  if (_params.find(energy) == _params.end() && tryDefault) return getValue(defaultEnergy, paramId, false);
-  else if (_params[energy].find(paramId) == _params[energy].end()) return 0.;
-  else return _params[energy][paramId];
+double AlignmentParameters::getValue(double run, int paramId, bool tryDefault) {
+  if (_params.find(run) == _params.end() && tryDefault) return getValue(defaultRun, paramId, false);
+  else if (_params[run].find(paramId) == _params[run].end()) return 0.;
+  else return _params[run][paramId];
 };
 
 
-
-void parseAlignmentFile(std::map<int, double> &alignmentParameters, std::string path) {
-  std::fstream file;
-  
-  char fragment[100];
-  int readCounter = -2, currentParameter = 0;
-  file.open(path.c_str(), std::fstream::in);
-
-  while (file.is_open() && !file.eof()) {
-    if (readCounter!=-2) readCounter++;
-    file >> fragment;
-    if (std::string(fragment)=="111") readCounter = 0;  //first parameter is read out
-
-    if (readCounter==0) currentParameter = atoi(fragment);
-    if (readCounter==1) currentParameter = alignmentParameters[currentParameter] = atof(fragment);
-    if (readCounter==4) readCounter = -1;
-  }
-
-  if (readCounter==-2) {
-    for (int i=1; i<= 8; i++) {
-      alignmentParameters[i*100+11] = 0;
-      alignmentParameters[i*100+12] = 0;
-      alignmentParameters[i*100+13] = 0;
-      alignmentParameters[i*100+21] = 0;
-      alignmentParameters[i*100+22] = 0;
-      alignmentParameters[i*100+23] = 0;
-    }
-  }
-}
 
 //****   Line Fiting Class    ****//
 
