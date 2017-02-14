@@ -196,32 +196,98 @@ void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMeth
     case LOGWEIGHTING_30_10:
       SensorHitMap::logWeighting(3.0, 1.0);
       break;
-    case LOGWEIGHTING_30_15:
-      SensorHitMap::logWeighting(3.0, 1.5);
+    case LOGWEIGHTING_31_10:
+      SensorHitMap::logWeighting(3.1, 1.0);
+      break;
+    case LOGWEIGHTING_32_10:
+      SensorHitMap::logWeighting(3.2, 1.0);
+      break;
+    case LOGWEIGHTING_33_10:
+      SensorHitMap::logWeighting(3.3, 1.0);
+      break;
+    case LOGWEIGHTING_34_10:
+      SensorHitMap::logWeighting(3.4, 1.0);
+      break;
+    case LOGWEIGHTING_35_10:
+      SensorHitMap::logWeighting(3.5, 1.0);
+      break;
+    case LOGWEIGHTING_36_10:
+      SensorHitMap::logWeighting(3.6, 1.0);
+      break;
+    case LOGWEIGHTING_37_10:
+      SensorHitMap::logWeighting(3.7, 1.0);
+      break;
+    case LOGWEIGHTING_38_10:
+      SensorHitMap::logWeighting(3.8, 1.0);
+      break;
+    case LOGWEIGHTING_39_10:
+      SensorHitMap::logWeighting(3.9, 1.0);
       break;
     case LOGWEIGHTING_40_10:
       SensorHitMap::logWeighting(4.0, 1.0);
       break;
-    case LOGWEIGHTING_40_15:
-      SensorHitMap::logWeighting(4.0, 1.5);
+    case LOGWEIGHTING_41_10:
+      SensorHitMap::logWeighting(4.1, 1.0);
+      break;
+    case LOGWEIGHTING_42_10:
+      SensorHitMap::logWeighting(4.2, 1.0);
+      break;
+    case LOGWEIGHTING_43_10:
+      SensorHitMap::logWeighting(4.3, 1.0);
+      break;
+    case LOGWEIGHTING_44_10:
+      SensorHitMap::logWeighting(4.4, 1.0);
+      break;
+    case LOGWEIGHTING_45_10:
+      SensorHitMap::logWeighting(4.5, 1.0);
+      break;
+    case LOGWEIGHTING_46_10:
+      SensorHitMap::logWeighting(4.6, 1.0);
+      break;
+    case LOGWEIGHTING_47_10:
+      SensorHitMap::logWeighting(4.7, 1.0);
+      break;
+    case LOGWEIGHTING_48_10:
+      SensorHitMap::logWeighting(4.8, 1.0);
+      break;
+    case LOGWEIGHTING_49_10:
+      SensorHitMap::logWeighting(4.9, 1.0);
       break;
     case LOGWEIGHTING_50_10:
       SensorHitMap::logWeighting(5.0, 1.0);
       break;
-    case LOGWEIGHTING_50_15:
-      SensorHitMap::logWeighting(5.0, 1.5);
+    case LOGWEIGHTING_51_10:
+      SensorHitMap::logWeighting(5.1, 1.0);
+      break;
+    case LOGWEIGHTING_52_10:
+      SensorHitMap::logWeighting(5.2, 1.0);
+      break;
+    case LOGWEIGHTING_53_10:
+      SensorHitMap::logWeighting(5.3, 1.0);
+      break;
+    case LOGWEIGHTING_54_10:
+      SensorHitMap::logWeighting(5.4, 1.0);
+      break;
+    case LOGWEIGHTING_55_10:
+      SensorHitMap::logWeighting(5.5, 1.0);
+      break;
+    case LOGWEIGHTING_56_10:
+      SensorHitMap::logWeighting(5.6, 1.0);
+      break;
+    case LOGWEIGHTING_57_10:
+      SensorHitMap::logWeighting(5.7, 1.0);
+      break;
+    case LOGWEIGHTING_58_10:
+      SensorHitMap::logWeighting(5.8, 1.0);
+      break;
+    case LOGWEIGHTING_59_10:
+      SensorHitMap::logWeighting(5.9, 1.0);
       break;
     case LOGWEIGHTING_60_10:
       SensorHitMap::logWeighting(6.0, 1.0);
       break;
-    case LOGWEIGHTING_60_15:
-      SensorHitMap::logWeighting(6.0, 1.5);
-      break;
     case LOGWEIGHTING_70_10:
       SensorHitMap::logWeighting(7.0, 1.0);
-      break;
-    case LOGWEIGHTING_70_15:
-      SensorHitMap::logWeighting(7.0, 1.5);
       break;
     //case NEWMETHOD:
       //SensorHitMap::newWeightingFunction()

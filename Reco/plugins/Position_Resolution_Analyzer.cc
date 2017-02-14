@@ -166,24 +166,68 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 		weightingMethod = LINEARWEIGHTING;
 	else if (methodString == "logWeighting_3.0_1.0")
 		weightingMethod = LOGWEIGHTING_30_10;
-	else if (methodString == "logWeighting_3.0_1.5")
-		weightingMethod = LOGWEIGHTING_30_15;
+	else if (methodString == "logWeighting_3.1_1.0")
+		weightingMethod = LOGWEIGHTING_31_10;
+	else if (methodString == "logWeighting_3.2_1.0")
+		weightingMethod = LOGWEIGHTING_32_10;
+	else if (methodString == "logWeighting_3.3_1.0")
+		weightingMethod = LOGWEIGHTING_33_10;
+	else if (methodString == "logWeighting_3.4_1.0")
+		weightingMethod = LOGWEIGHTING_34_10;
+	else if (methodString == "logWeighting_3.5_1.0")
+		weightingMethod = LOGWEIGHTING_35_10;
+	else if (methodString == "logWeighting_3.6_1.0")
+		weightingMethod = LOGWEIGHTING_36_10;
+	else if (methodString == "logWeighting_3.7_1.0")
+		weightingMethod = LOGWEIGHTING_37_10;
+	else if (methodString == "logWeighting_3.8_1.0")
+		weightingMethod = LOGWEIGHTING_38_10;
+	else if (methodString == "logWeighting_3.9_1.0")
+		weightingMethod = LOGWEIGHTING_39_10;
 	else if (methodString == "logWeighting_4.0_1.0")
 		weightingMethod = LOGWEIGHTING_40_10;
-	else if (methodString == "logWeighting_4.0_1.5")
-		weightingMethod = LOGWEIGHTING_40_15;
+	else if (methodString == "logWeighting_4.1_1.0")
+		weightingMethod = LOGWEIGHTING_41_10;
+	else if (methodString == "logWeighting_4.2_1.0")
+		weightingMethod = LOGWEIGHTING_42_10;
+	else if (methodString == "logWeighting_4.3_1.0")
+		weightingMethod = LOGWEIGHTING_43_10;
+	else if (methodString == "logWeighting_4.4_1.0")
+		weightingMethod = LOGWEIGHTING_44_10;
+	else if (methodString == "logWeighting_4.5_1.0")
+		weightingMethod = LOGWEIGHTING_45_10;
+	else if (methodString == "logWeighting_4.6_1.0")
+		weightingMethod = LOGWEIGHTING_46_10;
+	else if (methodString == "logWeighting_4.7_1.0")
+		weightingMethod = LOGWEIGHTING_47_10;
+	else if (methodString == "logWeighting_4.8_1.0")
+		weightingMethod = LOGWEIGHTING_48_10;
+	else if (methodString == "logWeighting_4.9_1.0")
+		weightingMethod = LOGWEIGHTING_49_10;
 	else if (methodString == "logWeighting_5.0_1.0")
 		weightingMethod = LOGWEIGHTING_50_10;
-	else if (methodString == "logWeighting_5.0_1.5")
-		weightingMethod = LOGWEIGHTING_50_15;
+	else if (methodString == "logWeighting_5.1_1.0")
+		weightingMethod = LOGWEIGHTING_51_10;
+	else if (methodString == "logWeighting_5.2_1.0")
+		weightingMethod = LOGWEIGHTING_52_10;
+	else if (methodString == "logWeighting_5.3_1.0")
+		weightingMethod = LOGWEIGHTING_53_10;
+	else if (methodString == "logWeighting_5.4_1.0")
+		weightingMethod = LOGWEIGHTING_54_10;
+	else if (methodString == "logWeighting_5.5_1.0")
+		weightingMethod = LOGWEIGHTING_55_10;
+	else if (methodString == "logWeighting_5.6_1.0")
+		weightingMethod = LOGWEIGHTING_56_10;
+	else if (methodString == "logWeighting_5.7_1.0")
+		weightingMethod = LOGWEIGHTING_57_10;
+	else if (methodString == "logWeighting_5.8_1.0")
+		weightingMethod = LOGWEIGHTING_58_10;
+	else if (methodString == "logWeighting_5.9_1.0")
+		weightingMethod = LOGWEIGHTING_59_10;
 	else if (methodString == "logWeighting_6.0_1.0")
 		weightingMethod = LOGWEIGHTING_60_10;
-	else if (methodString == "logWeighting_6.0_1.5")
-		weightingMethod = LOGWEIGHTING_60_15;
 	else if (methodString == "logWeighting_7.0_1.0")
 		weightingMethod = LOGWEIGHTING_70_10;
-	else if (methodString == "logWeighting_7.0_1.5")
-		weightingMethod = LOGWEIGHTING_70_15;	
 	else 
 		weightingMethod = DEFAULTWEIGHTING;
 
