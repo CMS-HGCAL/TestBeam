@@ -13,8 +13,10 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	outputCollectionName = pset.getParameter<std::string>("OutputCollectionName");
 	runEnergyMapFile = pset.getUntrackedParameter<std::string>("runEnergyMapFile"); 
 	inputPathFormat = pset.getUntrackedParameter<std::string>("inputPathFormat");
+	energyNoise = pset.getParameter<double>("energyNoise");
+	energyNoiseResolution = pset.getParameter<double>("energyNoiseResolution");
 	smearingResolution = pset.getParameter<double>("MWCSmearingResolution")/1000.;		//configuration is in microns, convert to cm
-	
+
 	produces <HGCalTBRecHitCollection>(outputCollectionName);
 	produces<RunData>("RunData");
 	produces<MultiWireChambers>("MultiWireChambers");
@@ -57,7 +59,7 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
   	beamY 	 = 0;
 
 
-  	MWCSmearer = new TRandom();
+  	randgen = new TRandom();
 }
 
 void HGCalTBGenSimSource::fillConfiguredRuns(std::fstream& map_file) {
@@ -189,6 +191,9 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 
 		double energy = simHitCellEnE->at(icell) / MIP2GeV_sim * ADCtoMIP_CERN[skiRocIndex];
 	 	
+		//additional noise to the energy
+		energy += randgen->Gaus(energyNoise, energyNoiseResolution);
+
 	 	recHit.setEnergy(energy);
 	 	recHit._energyLow = energy;
 	 	recHit._energyHigh = energy;
@@ -199,10 +204,10 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 
 	
 	//second: add fake multi-wire chambers from xBeam, yBeam
-	double x1_mc = beamX + MWCSmearer->Gaus(0, smearingResolution);
-	double y1_mc = beamY + MWCSmearer->Gaus(0, smearingResolution);
-	double x2_mc = beamX + MWCSmearer->Gaus(0, smearingResolution);
-	double y2_mc = beamY + MWCSmearer->Gaus(0, smearingResolution);
+	double x1_mc = beamX + randgen->Gaus(0, smearingResolution);
+	double y1_mc = beamY + randgen->Gaus(0, smearingResolution);
+	double x2_mc = beamX + randgen->Gaus(0, smearingResolution);
+	double y2_mc = beamY + randgen->Gaus(0, smearingResolution);
 	
 	std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
 	mwcs->push_back(MultiWireChamberData(1, x1_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y1_mc, -x1_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y1_mc, -126.-147.));
@@ -232,7 +237,7 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 }
 
 void HGCalTBGenSimSource::endJob() {
-	delete MWCSmearer;
+	delete randgen;
 }
 
 

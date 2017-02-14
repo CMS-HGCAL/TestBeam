@@ -90,7 +90,9 @@ private:
 	HGCalTBCellVertices TheCell;
 	HexGeometry* geomc;
 
-	TRandom* MWCSmearer;
+	TRandom* randgen;
+	double energyNoise;
+	double energyNoiseResolution;
 	double smearingResolution;
 
 public:
