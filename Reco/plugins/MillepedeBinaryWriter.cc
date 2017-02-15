@@ -378,7 +378,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			double delta_x12 = mwcs->at(0).x - mwcs->at(1).x;
 			double delta_y12 = mwcs->at(0).y - mwcs->at(1).y;
 			
-			if (fabs(delta_x12) > 1.0 || fabs(delta_y12) > 1.0) return;
+			if (fabs(delta_x12-0.45) > 1.0 || fabs(delta_y12-0.076) > 1.0) return;			//Todo: Hard coded numbers! Offsets correspond to angles
 		}
 	}
 	if (run == -1) {
