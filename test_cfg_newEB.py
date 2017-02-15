@@ -207,8 +207,8 @@ else:
                             runEnergyMapFile = cms.untracked.string(options.pathToRunEnergyFile), #the runs from the runEnergyMapFile are automatically added to the fileNames   
                             inputPathFormat=cms.untracked.string("file:%s/<ENERGY>GeV/TBGenSim_<RUN>.root"%(options.dataFolder)),  
                             fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are considered,
-                            energyNoise=cms.double(options.pedestalThreshold),   #value in MIPS, represents additional value to the energy with gaussian distribution and 10% width
-                            energyNoiseResolution=cms.double(options.pedestalThreshold/10.),
+                            energyNoise=cms.double(0.0),   #value in MIPS, represents additional value to the energy with gaussian distribution and 10% width
+                            energyNoiseResolution=cms.double(0.0),
                             MWCSmearingResolution=cms.double(50.)     #value is in microns! 
                             )
 
