@@ -195,6 +195,9 @@ if options.isData:
                                 runEnergyMapFile = cms.untracked.string(options.pathToRunEnergyFile), #the runs from the runEnergyMapFile are automatically added to the fileNames   
                                 inputPathFormat=cms.untracked.string("file:%s/%s_Output_<RUN>.txt"%(options.dataFolder,options.runType)),  
                                 MWCInputPathFormat=cms.untracked.string("file:%s/MWC/WC_H4Run<RUN>.txt"%options.dataFolder),
+                                mwcRotation=cms.untracked.double(270.),
+                                mwc2DeltaX=cms.untracked.double(0.45),
+                                mwc2DeltaY=cms.untracked.double(0.077),
                                 fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are considered
                                     #["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber) ])
                                 readOnlyRuns=cms.untracked.vint32(options.readOnlyRuns),

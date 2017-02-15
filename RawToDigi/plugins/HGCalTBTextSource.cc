@@ -221,6 +221,12 @@ void HGCalTBTextSource::produce(edm::Event & event)
 			double y_preRot = EventMultiWireChambers[mwcCounter][_imwc].y/10.; 
 			EventMultiWireChambers[mwcCounter][_imwc].x = cos(rotAngle) * x_preRot + sin(rotAngle) * y_preRot; 	//apply the rotation just here because the filtering for -999 must occur first
 			EventMultiWireChambers[mwcCounter][_imwc].y = -sin(rotAngle) * x_preRot + cos(rotAngle) * y_preRot; 
+			
+			if (_imwc==1) {//i.e. the second MWC
+				EventMultiWireChambers[mwcCounter][_imwc].x += mwc2DeltaX;
+				EventMultiWireChambers[mwcCounter][_imwc].y += mwc2DeltaY;
+			}
+
 			mwcs->push_back(EventMultiWireChambers[mwcCounter][_imwc]);
 		}
 		mwcCounter++;
@@ -289,6 +295,9 @@ void HGCalTBTextSource::fillDescriptions(edm::ConfigurationDescriptions& descrip
 	desc.addUntracked<std::vector<std::string> >("fileNames");
 	desc.addUntracked<std::string>("inputPathFormat");
 	desc.addUntracked<std::string>("MWCInputPathFormat");
+	desc.addUntracked<double>("mwcRotation");
+	desc.addUntracked<double>("mwc2DeltaX");
+	desc.addUntracked<double>("mwc2DeltaY");
 	desc.addUntracked<std::vector<int> >("readOnlyRuns");
 	desc.addUntracked<std::string>("runEnergyMapFile");
 	desc.addUntracked<unsigned int>("nSpills", 6);

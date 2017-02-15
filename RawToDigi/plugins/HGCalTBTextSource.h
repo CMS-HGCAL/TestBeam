@@ -37,6 +37,8 @@ public:
 		inputPathFormat(""),
 		MWCInputPathFormat(""),
 		mwcRotation(pset.getUntrackedParameter<double>("mwcRotation", 270.)),
+		mwc2DeltaX(pset.getUntrackedParameter<double>("mwc2DeltaX", 0.45)),		//additional correction after the rotation to the new x-coordinate of the second MWC
+		mwc2DeltaY(pset.getUntrackedParameter<double>("mwc2DeltaY", 0.077)),	//additional correction after the rotation to the new y-coordinate of the second MWC
 		m_file(0),
 		NSpills(pset.getUntrackedParameter<unsigned int>("nSpills", 6))
 	{
@@ -89,6 +91,8 @@ private:
 	std::vector<std::string> _MWCFileNames;
 	int mwcCounter;
 	double mwcRotation;
+	double mwc2DeltaX;
+	double mwc2DeltaY;
 
 	std::array< std::vector < unsigned int> , MAXLAYERS> m_lines;
 	FILE* m_file;
