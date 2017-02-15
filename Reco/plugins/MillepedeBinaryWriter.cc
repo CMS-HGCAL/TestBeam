@@ -94,6 +94,7 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 
 		double totalEnergyThreshold;
 		bool useMWCReference;
+		bool MWCQualityCut;
 
 		int ClusterVetoCounter;
 		int HitsVetoCounter;
@@ -314,7 +315,8 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 	totalEnergyThreshold = iConfig.getParameter<double>("totalEnergyThreshold");
 
 	useMWCReference = iConfig.getParameter<bool>("useMWCReference");
-	
+	MWCQualityCut = iConfig.getParameter<bool>("MWCQualityCut");
+
 	if (fittingMethod==GBLTRACK) {
 		milleBinary = new gbl::MilleBinary((iConfig.getParameter<std::string>("binaryFile")).c_str());
 		mille = NULL;
@@ -365,18 +367,25 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		std::cout<<"Event "<<event.id().event()<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has DANGER=true"<<std::endl;
 		return;
 	}
-	if (useMWCReference && ! rd->hasValidMWCMeasurement) {
-		//std::cout<<"Event "<<event.id().event()<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has an invalid MWC measurement"<<std::endl;
-		return;	
+
+	//get the multi wire chambers
+	edm::Handle<MultiWireChambers> mwcs;
+
+	if (useMWCReference) {
+		event.getByToken(MWCToken, mwcs);
+	  if (!rd->hasValidMWCMeasurement) return;	
+		if (MWCQualityCut) {
+			double delta_x12 = mwcs->at(0).x - mwcs->at(1).x;
+			double delta_y12 = mwcs->at(0).y - mwcs->at(1).y;
+			
+			if (fabs(delta_x12) > 1.0 || fabs(delta_y12) > 1.0) return;
+		}
 	}
 	if (run == -1) {
 		std::cout<<"Run is not in configuration file - is ignored."<<std::endl;
 		return;
 	}
 
-	//get the multi wire chambers
-	edm::Handle<MultiWireChambers> mwcs;
-	event.getByToken(MWCToken, mwcs);
 
 	//opening Rechits
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
