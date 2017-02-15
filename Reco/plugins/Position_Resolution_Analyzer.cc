@@ -539,9 +539,9 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		Sensors[(nLayers+1)]->setAlignmentParameters(alignmentParameters->getValue(energy, 100*(nLayers+1) + 21), 0.0, 0.0,
 				alignmentParameters->getValue(energy, 100*(nLayers+1) + 11), alignmentParameters->getValue(energy, 100*(nLayers+1) + 12), 0.0);	
 		Sensors[(nLayers+1)]->setResidualResolution(mwc_resolution);	
-		MWC_x1 = mwcs->at(0).x;
-		MWC_y1 = mwcs->at(0).y;
-		MWC_z1 = mwcs->at(0).z;
+		MWC_x1 = Sensors[nLayers+1]->getLabHitPosition().first; //mwcs->at(0).x;
+		MWC_y1 = Sensors[nLayers+1]->getLabHitPosition().second; //mwcs->at(0).y;
+		MWC_z1 = Sensors[nLayers+1]->getLabZ() + Sensors[nLayers+1]->getIntrinsicHitZPosition(); //mwcs->at(0).z;
 
 		Sensors[(nLayers+2)] = new SensorHitMap((nLayers+2));				//attention: This is specifically tailored for the 8-layer setup
 		Sensors[(nLayers+2)]->setLabZ(mwcs->at(1).z, 0.001);
@@ -550,9 +550,9 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		Sensors[(nLayers+2)]->setAlignmentParameters(alignmentParameters->getValue(energy, 100*(nLayers+2) + 21), 0.0, 0.0,
 				alignmentParameters->getValue(energy, 100*(nLayers+2) + 11), alignmentParameters->getValue(energy, 100*(nLayers+2) + 12), 0.0);	
 		Sensors[(nLayers+2)]->setResidualResolution(mwc_resolution);
-		MWC_x2 = mwcs->at(1).x;
-		MWC_y2 = mwcs->at(1).y;
-		MWC_z2 = mwcs->at(1).z;
+		MWC_x2 = Sensors[nLayers+2]->getLabHitPosition().first; //mwcs->at(1).x;
+		MWC_y2 = Sensors[nLayers+2]->getLabHitPosition().second; //mwcs->at(1).y;
+		MWC_z2 = Sensors[nLayers+2]->getLabZ() + Sensors[nLayers+1]->getIntrinsicHitZPosition(); //mwcs->at(1).z;
 
 	} else {
 		useMWC = 0;
