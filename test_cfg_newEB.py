@@ -219,10 +219,7 @@ else:
 
 
 ######
-process.BadSpillFilter.configFile1 = "%s/CondObjects/data/Bad_Run_Spill_CFG1.txt" % repoFolder
-process.BadSpillFilter.configFile2 = "%s/CondObjects/data/Bad_Run_Spill_CFG2.txt" % repoFolder
                            
-
 process.hgcaltbdigisplotter.pedestalsHighGain = cms.untracked.string(options.pedestalsHighGain)
 process.hgcaltbdigisplotter.pedestalsLowGain  = cms.untracked.string(options.pedestalsLowGain)
 
@@ -265,7 +262,7 @@ process.dumpRaw = cms.EDAnalyzer("DumpFEDRawDataProduct",
 process.dumpDigi = cms.EDAnalyzer("HGCalDigiDump")
 
 
-if (options.chainSequence == 3):
+if (options.chainSequence == 7):
     options.output = "%s/RECO_type%s_run%06d.root"%(options.outputFolder,options.runType,options.runNumber)
     process.output = cms.OutputModule("PoolOutputModule",
                                       fileName = cms.untracked.string("test.root")
@@ -288,6 +285,9 @@ elif (options.chainSequence == 7):
 elif (options.chainSequence == 8):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_Position_Resolution_%s.root"%(options.outputFolder,options.runType,options.outputPostfix)))
 
+                              
+process.BadSpillFilter.nameCFG1 = cms.string("/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/CondObjects/data/Bad_Run_Spill_CFG1.txt")
+process.BadSpillFilter.nameCFG2 = cms.string("/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/CondObjects/data/Bad_Run_Spill_CFG2.txt")
 
 if(options.configuration == "-1"):
     process.BadSpillFilter.layers_config = cms.int32(-1)
@@ -343,11 +343,10 @@ if options.isData:
     elif (options.chainSequence == 7):
         process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.hgcaltbeventdisplay)
     elif (options.chainSequence == 8):
-        #process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.position_resolution_analyzer)
-        process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbclusters*process.position_resolution_analyzer)
+        process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.position_resolution_analyzer)
     elif (options.chainSequence == 9):
-        #process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.millepede_binarywriter)
-        process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbclusters*process.millepede_binarywriter)
+        process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.millepede_binarywriter)
+        
 else:
     if (options.chainSequence == 1):
         process.p =cms.Path()
@@ -369,6 +368,7 @@ else:
 # cmsRun test_cfg_newEB.py runNumber=1291 runType=HGCRun nSpills=1 dataFolder='./' pedestalsHighGain="./CondObjects/data/pedHighGain1200.txt" pedestalsLowGain="./CondObjects/data/pedLowGain1200.txt" chainSequence=7 maxEvents=10
 
 
-if (options.chainSequence == 3):
+
+if (options.chainSequence == 7):
     process.end = cms.EndPath(process.output)
 

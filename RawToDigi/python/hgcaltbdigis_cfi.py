@@ -11,6 +11,7 @@ hgcaltbdigis = cms.EDProducer("HGCalTBRawToDigi",
 
 BadSpillFilter = cms.EDFilter("Bad_Spill_Filter",
                               layers_config = cms.int32(-1),
-                              configFile1 = cms.string("/afs/cern.ch/work/r/rchatter/newTextInputFormat_Working/CMSSW_8_0_1/src/HGCal/CondObjects/data/Bad_Run_Spill_CFG1.txt"),
-                              configFile2 = cms.string("/afs/cern.ch/work/r/rchatter/newTextInputFormat_Working/CMSSW_8_0_1/src/HGCal/CondObjects/data/Bad_Run_Spill_CFG2.txt")
+                              nameCFG1 = cms.string('CondObjects/data/Bad_Run_Spill_CFG1.txt'),
+                              nameCFG2 = cms.string('CondObjects/data/Bad_Run_Spill_CFG2.txt')
+
                               )

@@ -52,6 +52,7 @@ class Bad_Spill_Filter : public edm::stream::EDFilter<> {
       virtual bool filter(edm::Event&, const edm::EventSetup&) override;
       virtual void endStream() override;
       int layers_config_;
+      std::string name_CFG_;
       char buffer[1024];
       int m_run, tmp_run, m_spill, tmp_spill;
       int spill_counter = 0;
@@ -63,9 +64,9 @@ class Bad_Spill_Filter : public edm::stream::EDFilter<> {
 //	int Bad_Runs_CFG2[98] = {1202, 1203, 1204, 1206, 1208, 1214, 1215, 1216, 1217, 1219, 1220, 1221, 1222, 1223, 1179, 1180, 1181, 1185, 1186, 1188, 1189, 1190, 1191, 1192, 1193, 1194, 1195, 1197, 1199, 1122, 1123, 1124, 1125, 1126, 1128, 1129, 1130, 1131, 1132, 1133, 1134, 1137, 1138, 1141, 1144, 1145, 1146, 1150, 1248, 1249, 1250, 1251, 1253, 1254, 1257, 1260, 1261, 1263, 1264, 1267, 1291, 1292, 1294, 1295, 1296, 1298, 1299, 1301, 1302, 1303, 1305, 1307, 1308, 1309, 1227, 1228, 1233, 1235, 1240, 1242, 1243, 1244, 1246, 1247, 1154, 1156, 1157, 1161, 1162, 1163, 1164, 1165, 1166, 1167, 1168, 1169, 1172, 1173};
 
       std::array< std::vector <int> , Num_BAD_RUNS_CFG> Bad_Run_Spill_Array;
-	   FILE* m_file;
-	   string name_CFG1;
-	   string name_CFG2;
+
+	  FILE* m_file;
+
       //virtual void beginRun(edm::Run const&, edm::EventSetup const&) override;
       //virtual void endRun(edm::Run const&, edm::EventSetup const&) override;
       //virtual void beginLuminosityBlock(edm::LuminosityBlock const&, edm::EventSetup const&) override;
@@ -91,16 +92,17 @@ Bad_Spill_Filter::Bad_Spill_Filter(const edm::ParameterSet& iConfig)
 	bool Not_Filled_Once = true;
 	int run_counter = 0;
 	layers_config_ = iConfig.getParameter<int>("layers_config");
-  name_CFG1 = iConfig.getParameter<std::string>("configFile1");
-  name_CFG2 = iConfig.getParameter<std::string>("configFile2");
-	if(layers_config_ == 1) m_file = fopen(name_CFG1.c_str(),"r");	
-	else if(layers_config_ == 2) m_file = fopen(name_CFG2.c_str(),"r");
 
+	if(layers_config_ == 1) name_CFG_ = iConfig.getParameter<std::string>("nameCFG1");
+	else if(layers_config_ == 2) name_CFG_ = iConfig.getParameter<std::string>("nameCFG2");
+
+
+	m_file = fopen(name_CFG_.c_str(),"r");
 	if (m_file == 0) {
-                        if(layers_config_ == 1) cout<<endl << "Unable to open file " << name_CFG1;
-			if(layers_config_ == 2) cout<<endl << "Unable to open file " << name_CFG2;
-                        exit(0);
-                }
+	  if(layers_config_ == 1) cout<<endl << "Unable to open file for cfg1 " << name_CFG_;
+	  if(layers_config_ == 2) cout<<endl << "Unable to open file for cfg2" << name_CFG_;
+	  exit(0);
+	}
 
 	while(!feof(m_file)){
 

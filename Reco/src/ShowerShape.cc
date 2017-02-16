@@ -73,13 +73,18 @@ public:
 
   void eccentricity(int layer, float &ratio) {ratio = eccentr[layer]; return;};
   
-  ShowerShape(edm::Handle<HGCalTBRecHitCollection> Rechits_, double ADCtoMIP_[MAXLAYERS], double commonmode_[MAXLAYERS], int CMTHRESHOLD, double maxE[MAXLAYERS], double maxX[MAXLAYERS], double maxY[MAXLAYERS]);
+  ShowerShape(std::string _mapFile, edm::Handle<HGCalTBRecHitCollection> Rechits_, double ADCtoMIP_[MAXSKIROCS], double commonmode_[MAXLAYERS], int CMTHRESHOLD, double maxE[MAXLAYERS], double maxX[MAXLAYERS], double maxY[MAXLAYERS]);
   ~ShowerShape();
   
   
 private:
 
   // ----------member data ---------------------------
+  struct {
+    HGCalElectronicsMap emap_;
+  } essource_;
+
+
   edm::Handle<HGCalTBRecHitCollection> Rechits;
   
   int sensorsize = 128;
@@ -94,7 +99,7 @@ private:
   double maxdist_fourthNB = (0.5 + sqrt(3) * 3.) * HGCAL_TB_CELL::FULL_CELL_SIDE;
 
   
-  double ADCtoMIP[MAXLAYERS];
+  double ADCtoMIP[MAXSKIROCS];
   
   double commonmode[MAXLAYERS];
   double maxE[MAXLAYERS], maxX[MAXLAYERS], maxY[MAXLAYERS];
@@ -131,23 +136,32 @@ private:
   //eccentricity
   float eccentr[MAXLAYERS];
 
+
 };
 
 
 
-ShowerShape::ShowerShape(edm::Handle<HGCalTBRecHitCollection> Rechits_, double ADCtoMIP_[MAXLAYERS], double commonmode_[MAXLAYERS], int CMTHRESHOLD_, 
+ShowerShape::ShowerShape(std::string _mapFile, edm::Handle<HGCalTBRecHitCollection> Rechits_, double ADCtoMIP_[MAXSKIROCS], double commonmode_[MAXLAYERS], int CMTHRESHOLD_, 
 			 double maxE_[MAXLAYERS], double maxX_[MAXLAYERS], double maxY_[MAXLAYERS])
 {
   
   Rechits =  Rechits_;
   CMTHRESHOLD = CMTHRESHOLD_;
-  for(int i=0; i<MAXLAYERS; ++i){
+  for(int i=0; i<MAXSKIROCS; ++i)
     ADCtoMIP[i] = ADCtoMIP_[i];
+  for(int i=0; i<MAXLAYERS; ++i){
     commonmode[i] = commonmode_[i];
     maxE[i] = maxE_[i];
     maxX[i] = maxX_[i];
     maxY[i] = maxY_[i];
   }
+
+  HGCalCondObjectTextIO io(0);
+  edm::FileInPath fip(_mapFile);
+  if (!io.load(fip.fullPath(), essource_.emap_)) {
+    throw cms::Exception("Unable to load electronics map");
+  };
+
   init();
 
 }//constructor ends here
@@ -193,11 +207,14 @@ void ShowerShape::init(){
     
     int eLayer = (Rechit.id()).layer()-1;
     int eCellType = (Rechit.id()).cellType();
+    uint32_t EID = essource_.emap_.detId2eid(Rechit.id());
+    HGCalTBElectronicsId eid(EID);
+    int eSkiroc = (eid.iskiroc() - 1);
 
     if(eCellType != 0 && eCellType != 1 && eCellType != 4) continue;
 
-    float energyCMsub = (Rechit.energy() - commonmode[eLayer]) / ADCtoMIP[eLayer];
-    if(eCellType == 1) energyCMsub = (Rechit.energy()) / ADCtoMIP[eLayer];
+    float energyCMsub = (Rechit.energy() - commonmode[eLayer]) / ADCtoMIP[eSkiroc];
+    if(eCellType == 1) energyCMsub = (Rechit.energy()) / ADCtoMIP[eSkiroc];
 
     radius = sqrt( pow(CellCentreXY.first - maxX[eLayer], 2) + pow(CellCentreXY.second - maxY[eLayer], 2) );
 
@@ -252,11 +269,14 @@ void ShowerShape::init(){
     
     int eLayer = (Rechit1.id()).layer()-1;
     int eCellType = (Rechit1.id()).cellType();
+    uint32_t EID = essource_.emap_.detId2eid(Rechit1.id());
+    HGCalTBElectronicsId eid(EID);
+    int eSkiroc = (eid.iskiroc() - 1);
 
     if(eCellType != 0 && eCellType != 1 && eCellType != 4) continue;
 
-    float energyCMsub = (Rechit1.energy() - commonmode[eLayer]) / ADCtoMIP[eLayer];
-    if(eCellType == 1) energyCMsub = (Rechit1.energy()) / ADCtoMIP[eLayer];
+    float energyCMsub = (Rechit1.energy() - commonmode[eLayer]) / ADCtoMIP[eSkiroc];
+    if(eCellType == 1) energyCMsub = (Rechit1.energy()) / ADCtoMIP[eSkiroc];
 
     radius = sqrt( pow(CellCentreXY.first - maxX[eLayer], 2) + pow(CellCentreXY.second - maxY[eLayer], 2) );
 
