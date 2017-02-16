@@ -1,4 +1,4 @@
-#include "HGCal/Reco/interface/WaferGeometry.h"
+#include "HGCal/Geometry/interface/HGCalWaferGeometry.h"
   
 
 HexGeometry::HexGeometry(bool fine) {

@@ -11,7 +11,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBMultiWireChamberData.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
-#include "HGCal/Reco/interface/WaferGeometry.h"
+#include "HGCal/Geometry/interface/HGCalWaferGeometry.h"
 #include <fstream>
 #include <iostream>
 #include <stdio.h>

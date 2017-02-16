@@ -27,11 +27,6 @@ options.register('outputFolder',
                  VarParsing.VarParsing.varType.string,
                  'Result of processing')
 
-options.register('outputPostfix',
-                 'default',
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 'Postfix to the output file')
 
 options.register('isData',
                  True,
@@ -93,6 +88,7 @@ options.register('configuration',
                  VarParsing.VarParsing.varType.string,
                  '-1 ADCtoMIP CERN; 0 ADCtoMIP FNAL; 1 if 8Layers with 5X0 sampling the center of the shower only; 2 if 8Layers with 25X0 sampling up to the tail of the shower')
 
+
 options.register('reportEvery',
                 100,
                 VarParsing.VarParsing.multiplicity.singleton,
@@ -105,6 +101,12 @@ options.register('readOnlyRuns',
                  VarParsing.VarParsing.varType.int,
                  'Run the analysis only for the indicated runs'
                 )
+
+options.register('outputPostfix',
+                 'default',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Postfix to the output file')
 
 '''Specific options for the position resolution'''
 options.register('alignmentParameterFiles',
@@ -198,8 +200,6 @@ if options.isData:
                                 mwcRotation=cms.untracked.double(270.),
                                 mwc2DeltaX=cms.untracked.double(0.),
                                 mwc2DeltaY=cms.untracked.double(0.),
-                                #mwc2DeltaX=cms.untracked.double(0.45),
-                                #mwc2DeltaY=cms.untracked.double(0.077),
                                 fileNames=cms.untracked.vstring(["file:DUMMY"]), #'file:DUMMY'-->only files in the runEnergyMapFile are considered
                                     #["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber) ])
                                 readOnlyRuns=cms.untracked.vint32(options.readOnlyRuns),
