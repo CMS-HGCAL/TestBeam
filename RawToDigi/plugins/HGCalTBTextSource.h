@@ -48,19 +48,20 @@ public:
 		produces<RunData>("RunData");
 		produces<MultiWireChambers>("MultiWireChambers");
 
-		if (fileNames()[0] != "file:DUMMY") {
-			_fileNames = fileNames();
-		}
 		//find and fill the configured runs
 		runEnergyMapFile = pset.getUntrackedParameter<std::string>("runEnergyMapFile"); 
 		inputPathFormat = pset.getUntrackedParameter<std::string>("inputPathFormat");
 		MWCInputPathFormat = pset.getUntrackedParameter<std::string>("MWCInputPathFormat");
 		readOnlyRuns = pset.getUntrackedParameter<std::vector<int> >("readOnlyRuns");
 		
-		std::fstream map_file;
-		map_file.open(runEnergyMapFile.c_str(), std::fstream::in);
-		fillConfiguredRuns(map_file);
-		map_file.close();
+		if (fileNames()[0] != "file:DUMMY") {
+			_fileNames = fileNames();
+		} else {
+			std::fstream map_file;
+			map_file.open(runEnergyMapFile.c_str(), std::fstream::in);
+			fillConfiguredRuns(map_file);
+			map_file.close();
+		}
 
 	}
 
