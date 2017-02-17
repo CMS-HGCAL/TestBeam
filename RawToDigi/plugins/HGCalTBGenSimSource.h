@@ -70,6 +70,7 @@ private:
 
 	int currentRun;
 	int currentEvent;
+	int eventCounter;
 
 	TFile *rootFile;
   	TTree *tree;   //!pointer to the analyzed TTree or TChain

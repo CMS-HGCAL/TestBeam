@@ -350,8 +350,8 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	//initialize tree and set Branch addresses
 	outTree = fs->make<TTree>("deviations", "deviations");
 	outTree->Branch("configuration", &configuration, "configuration/I");
-	outTree->Branch("eventId", &evId, "eventId/I");	//event ID as it comes from the reader
-	outTree->Branch("eventCounter", &eventCounter, "eventCounter/I");	//event counter, current iteration of this analysis w.r.t. the individual events
+	outTree->Branch("eventId", &evId, "eventId/I");	//event ID as it comes from the reader, as it is stored in the txt files
+	outTree->Branch("eventCounter", &eventCounter, "eventCounter/I");	//event counter, current iteration, indexing occurs chronologically in the readin plugins
 	outTree->Branch("run", &run, "run/I");
 	outTree->Branch("layer", &layer, "layer/I");
 	outTree->Branch("energy", &energy, "energy/D");	//electron energy in GeV
@@ -413,7 +413,6 @@ Position_Resolution_Analyzer::~Position_Resolution_Analyzer() {
 
 // ------------ method called for each event  ------------
 void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setup) {
-	eventCounter++;
 
 	edm::Handle<RunData> rd;
  	//get the relevant event information
@@ -421,6 +420,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	configuration = rd->configuration;
 	evId = event.id().event();
 	run = rd->run;
+	eventCounter = rd->event;
 	energy = rd->energy;
 	if (rd->hasDanger) {
 		std::cout<<"Event "<<evId<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has DANGER=true"<<std::endl;

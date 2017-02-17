@@ -93,7 +93,7 @@ void HGCalTBTextSource::readMWCDataFromFile(std::string filepath) {
 		mwcCounter++;
 	}
 
-	std::cout<<mwcCounter<<" MWC entries..."<<std::endl;
+	//std::cout<<mwcCounter<<" MWC entries..."<<std::endl;
 	mwcCounter = 0;
 }
 
@@ -106,8 +106,11 @@ bool HGCalTBTextSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& t
 	if (currentFileIndex != newFileIndex) {
 		currentFileIndex = newFileIndex;
 		std::string name = _fileNames[currentFileIndex].c_str(); 
-		std::string MWCname = _MWCFileNames[currentFileIndex]; 
-		readMWCDataFromFile(MWCname);
+
+		if (currentFileIndex < (int)_MWCFileNames.size()) {
+			std::string MWCname = _MWCFileNames[currentFileIndex]; 
+			readMWCDataFromFile(MWCname);
+		}
 
 		if (name.find("file:") == 0) name = name.substr(5);
 		m_file = fopen(name.c_str(), "r");
@@ -206,8 +209,8 @@ bool HGCalTBTextSource::readLines()
 	return !m_lines.empty();
 }
 
-void HGCalTBTextSource::produce(edm::Event & event)
-{
+void HGCalTBTextSource::produce(edm::Event & event){
+	eventCounter++;	//indexes each event chronologically passing this plugin
 
 	//add the multi-wire chambers only if available
 	bool _hasValidMWCMeasurement = true;
@@ -267,11 +270,13 @@ void HGCalTBTextSource::produce(edm::Event & event)
 		rd->configuration = configuredRuns[m_run].configuration;
 		rd->runType = configuredRuns[m_run].runType;
 		rd->run = m_run;
+		rd->event = eventCounter;
 	} else {
 		rd->energy = -1;
 		rd->configuration = -1;
 		rd->runType = "-1";
 		rd->run = -1;
+		rd->event = eventCounter;
 	}
 
 	if (eventsPerRun.find(m_run) == eventsPerRun.end()) {

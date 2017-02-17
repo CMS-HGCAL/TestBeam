@@ -48,11 +48,13 @@ public:
 		produces<RunData>("RunData");
 		produces<MultiWireChambers>("MultiWireChambers");
 
+		eventCounter = 0;
+
 		//find and fill the configured runs
-		runEnergyMapFile = pset.getUntrackedParameter<std::string>("runEnergyMapFile"); 
-		inputPathFormat = pset.getUntrackedParameter<std::string>("inputPathFormat");
-		MWCInputPathFormat = pset.getUntrackedParameter<std::string>("MWCInputPathFormat");
-		readOnlyRuns = pset.getUntrackedParameter<std::vector<int> >("readOnlyRuns");
+		runEnergyMapFile = pset.getUntrackedParameter<std::string>("runEnergyMapFile", ""); 
+		inputPathFormat = pset.getUntrackedParameter<std::string>("inputPathFormat", "");
+		MWCInputPathFormat = pset.getUntrackedParameter<std::string>("MWCInputPathFormat", "");
+		readOnlyRuns = pset.getUntrackedParameter<std::vector<int> >("readOnlyRuns", std::vector<int>({}));
 		
 		if (fileNames()[0] != "file:DUMMY") {
 			_fileNames = fileNames();
@@ -91,6 +93,7 @@ private:
 	std::vector<std::string> _fileNames;
 	std::vector<std::string> _MWCFileNames;
 	int mwcCounter;
+	int eventCounter;
 	double mwcRotation;
 	double mwc2DeltaX;
 	double mwc2DeltaY;

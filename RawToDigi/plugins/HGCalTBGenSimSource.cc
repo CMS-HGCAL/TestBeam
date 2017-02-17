@@ -8,6 +8,7 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	currentEvent(-1),
 	rootFile(NULL)
 {
+	eventCounter = 0;
 
 	//find and fill the configured runs
 	outputCollectionName = pset.getParameter<std::string>("OutputCollectionName");
@@ -33,13 +34,14 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 
 			_fileNames.push_back(fInfo);
 		}
+	} else {
+		std::fstream map_file;
+		map_file.open(runEnergyMapFile.c_str(), std::fstream::in);
+		fillConfiguredRuns(map_file);
+		map_file.close();	
 	}
 	
 
-	std::fstream map_file;
-	map_file.open(runEnergyMapFile.c_str(), std::fstream::in);
-	fillConfiguredRuns(map_file);
-	map_file.close();
 
 	 
 	_e_mapFile = pset.getParameter<std::string>("e_mapFile_CERN");	
@@ -155,6 +157,7 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 		return;
 	}
 
+	eventCounter++;	//indexes each event chronologically passing this plugin 
 
 	//first: fill the rechits
 	std::auto_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection);
@@ -222,6 +225,7 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	rd->configuration = (*fileIterator).config;
 	rd->runType = (*fileIterator).runType;
 	rd->run = (*fileIterator).index;
+	rd->run = eventCounter;
 	rd->hasDanger = false;
 
 	bool _hasValidMWCMeasurement = true;
