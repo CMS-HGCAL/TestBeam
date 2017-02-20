@@ -192,10 +192,12 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 		//any analysis on the simulated data must respect that by computing MIP-ADC factors in the same way and by converting energies into MIP units
 		int skiRocIndex = (eid.iskiroc() - 1) > 0 ? eid.iskiroc() - 1 : 0;		
 
-		double energy = simHitCellEnE->at(icell) / MIP2GeV_sim * ADCtoMIP_CERN[skiRocIndex];
+		double energy = simHitCellEnE->at(icell) / MIP2GeV_sim;
 	 	
-		//additional noise to the energy
+		//additional noise to the energy in MIPs
 		energy += randgen->Gaus(energyNoise, energyNoiseResolution);
+
+		energy *= ADCtoMIP_CERN[skiRocIndex];
 
 	 	recHit.setEnergy(energy);
 	 	recHit._energyLow = energy;
