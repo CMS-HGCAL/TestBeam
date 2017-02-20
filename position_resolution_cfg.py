@@ -12,14 +12,14 @@ options.register('repoFolder',
                 '/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'directory to the repository to correctly navigate to some file in CondObjects'
+                 'Directory to the repository to correctly navigate to some file in CondObjects'
                 )
 
 options.register('dataFolder',
                  '/home/data/Testbeam/September2016',        #use this for running on pclcd
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'folder containing raw text input')
+                 'Main directory containing raw text input')
 
 options.register('pathToRunEnergyFile',
                  '/',
@@ -31,20 +31,20 @@ options.register('readOnlyRuns',
                  '',
                  VarParsing.VarParsing.multiplicity.list,
                  VarParsing.VarParsing.varType.int,
-                 'Run the analysis only for the indicated runs'
+                 'Run the analysis only for the indicated runs.'
                 )
 
 options.register('isData',
                  True,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
-                 'Is the analysis run on real data (otherwise on simulated samples) ?')
+                 'Is the analysis run on real data (otherwise on simulated samples)?')
 
 options.register('nSpills',
                  15,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
-                 'Number of spills in run')
+                 'Number of spills per run before read-out is stopped.')
 
 
 ####################################
@@ -53,13 +53,13 @@ options.register('pedestalsHighGain',
                  '%s/CondObjects/data/Ped_HighGain_L8.txt' % options.repoFolder,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'Path to high gain pedestals file')
+                 'Path to high gain pedestals file.')
 
 options.register('pedestalsLowGain',
                  '%s/CondObjects/data/Ped_LowGain_L8.txt' % options.repoFolder,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'Path to low gain pedestals file')
+                 'Path to low gain pedestals file.')
 
 
 
@@ -69,13 +69,13 @@ options.register('chainSequence',
                  8,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
-                 'Here: only 8 (position resolution) and 9 (writing of millepede binary) is considered')
+                 'Here: only 8 (position resolution) and 9 (writing of millepede binary) is configured.')
 
 options.register('reportEvery',
                 100,
                 VarParsing.VarParsing.multiplicity.singleton,
                 VarParsing.VarParsing.varType.int,
-                'Frequency of event count print outs on the console')
+                'Frequency of event count printouts on the console.')
 
 
 ####################################
@@ -84,15 +84,14 @@ options.register('configuration',
                  -1,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 '-1 ADCtoMIP CERN; 0 ADCtoMIP FNAL; 1 if 8Layers with 5X0 sampling the center of the shower only; 2 if 8Layers with 25X0 sampling up to the tail of the shower')
-
+                 '1 if 8Layers with 5X0 sampling the center of the shower only; 2 if 8Layers with 25X0 sampling up to the tail of the shower')
 
 
 options.register('alignmentParameterFiles',
                  '',
                  VarParsing.VarParsing.multiplicity.list,
                  VarParsing.VarParsing.varType.string,
-                 'Alignment parameter files as obtained from the pede framework.'
+                 'Alignment parameter files as obtained from the (mille)pede framework.'
                 )
 
 
@@ -102,43 +101,37 @@ options.register('useMWCReference',
                  True,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
-                 'Are the multi wire chamber information used for the prediction of impact points?')
+                 'Are the multi wire chamber information used for the exrapolation of referemce impact points?')
 
 options.register('fittingMethod',
-                'gblTrack',
+                'lineAnalytical',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'Model of the electron tracks'    
+                 'Model of the electron tracks.'    
     )
 
-options.register('fitPointWeightingMethod',
-                 "none",
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 'Fit points (one per layer) in the track fit are linearly weighted according to the deposited energy (in MIPs)'
-                )
 
 ####################################
 #Specific options for reconstruction of impact positions in the MillepedeBinaryWrite and positionResolutionAnalyzer
 options.register('considerationMethod',
-                 'all',
+                 'closest19',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'Possible arguments are: all, closest7, closest19, clusters'
+                 'Possible arguments are: all, closest7, closest19, clusters.'
                 )
 
 options.register('weightingMethod',
-                 'squaredWeighting',
+                 'logWeighting_3.5_1.0',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'Possible arguments are: squaredWeighting, linearWeighting, logWeighting_5.0_1.0, logWeighting_5.0_0.5, logWeighting_7.0_1.0 '
+                 'Possible arguments are: squaredWeighting, linearWeighting, logWeighting_<a>_1.0, .... '
                 )
 
 options.register('pedestalThreshold',
                  2.,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.float,
-                 'Threshold for the pedestal subtraction calculation in the position resolution plugin. Unit is MIP.'
+                 'Threshold for the common mode noise subtraction. Unit is MIP.'
                 )
 
 ####################################
@@ -147,13 +140,13 @@ options.register('outputFolder',
                  '/home/outputs/Testbeam/September2016/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'Result of processing')
+                 'Main directory of the output files.')
 
 options.register('outputPostfix',
                  'default',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'Postfix to the output file')
+                 'Postfix to the output file.')
 
 
 options.parseArguments()
@@ -249,8 +242,7 @@ process.position_resolution_analyzer.fittingMethod = cms.string(options.fittingM
 process.position_resolution_analyzer.considerationMethod = cms.string(options.considerationMethod)
 process.position_resolution_analyzer.weightingMethod = cms.string(options.weightingMethod)
 process.position_resolution_analyzer.pedestalThreshold = cms.double(options.pedestalThreshold)
-process.position_resolution_analyzer.fitPointWeightingMethod = cms.string(options.fitPointWeightingMethod)
-process.position_resolution_analyzer.totalEnergyThreshold = -1000.
+process.position_resolution_analyzer.fitPointWeightingMethod = cms.string("none")
 process.position_resolution_analyzer.useMWCReference = cms.bool(options.useMWCReference)
 
 ####################################
@@ -259,7 +251,7 @@ process.millepede_binarywriter.fittingMethod = cms.string(options.fittingMethod)
 process.millepede_binarywriter.considerationMethod = cms.string(options.considerationMethod)
 process.millepede_binarywriter.weightingMethod = cms.string(options.weightingMethod)
 process.millepede_binarywriter.pedestalThreshold = cms.double(options.pedestalThreshold)
-process.millepede_binarywriter.fitPointWeightingMethod = cms.string(options.fitPointWeightingMethod)
+process.millepede_binarywriter.fitPointWeightingMethod = cms.string("none")
 process.millepede_binarywriter.totalEnergyThreshold = -1000.
 process.millepede_binarywriter.useMWCReference = cms.bool(options.useMWCReference)
 process.millepede_binarywriter.binaryFile = "%s/HGCRun_MillepedeBinary_%s.bin"%(options.outputFolder,options.outputPostfix)

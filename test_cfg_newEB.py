@@ -104,7 +104,7 @@ process.load('HGCal.StandardSequences.dqm_cff')
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(options.runNumber), ### maybe this should be read from the file
                             #fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXE
-                            fileNames=cms.untracked.vstring("file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber)), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+                            fileNames=cms.untracked.vstring(["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber), "file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber)]), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
                             nSpills=cms.untracked.uint32(options.nSpills),
                             inputPathFormat = cms.untracked.string(""),
                             MWCInputPathFormat = cms.untracked.string(""),
@@ -204,5 +204,3 @@ elif (options.chainSequence == 7):
 
 if (options.chainSequence == 7):
     process.end = cms.EndPath(process.output)
-
-print "END"
