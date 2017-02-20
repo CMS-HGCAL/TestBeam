@@ -6,7 +6,14 @@ CMS HGCal Testbeam Analysis Framework
 - [Download the code](#download-the-code)
 - [Location of data files](#location-of-data-files)
 - [Running the code](#running-the-code)
-- [Updates from the positionResolution branch](#updates-from-the-positionResolution-branch)
+- [positionResolution branch](#positionresolution-branch)
+    - [(Extended) TextInput Plugin](#(extended)-textinput-plugin) 
+    - [(New) GenSim to RecHit Converter](#(new)-gensim-to-rechit-converter)
+    - [(Extended) HGCalTBRecHitProducer](#(extended)-hgcaltbrechitproducer)
+    - [(New) PositionResolutionAnalyzer](#(new)-positionresolutionanalyzer)
+    - [(New) MillepedeBinaryWriter](#(new)-millepedebinarywriter)
+    - [Helper Classes](#helper-classes) 
+    - [Steering files](#steering-files) 
 - [More information](#more-information)
 
 
@@ -23,7 +30,7 @@ CMS HGCal Testbeam Analysis Framework
 * **`git pull`**
 * **`scram b -j16`**
 
-## Location of the data files
+## Location of data files
 
 #### Raw data files
 The RAW files can be found in **`/afs/cern.ch/user/r/rchatter/public/FNAL_TB_May/FNAL_TB_May_4Module_Runs`**.
@@ -83,9 +90,9 @@ cmsRun test_cfg_newEB.py chainSequence=6 pedestalsHighGain=CondObjects/data/Ped_
 * **`configuration=-1`** ADCtoMIP for CERN (0 = ADCtoMIP for FNAL) 
 * **`configuration=1`** (2) to select weights for 5X0 (25X0) 8 layers cern runs
 
-## Updates from the positionResolution branch
+## PositionResolution branch
 
-### (Extended)TextInput Plugin
+### (Extended) TextInput Plugin
 The `HGCalTextSource` plugin has been modified to cope with the analysis of multiple runs / data files per execution. Except for the removed veto on `Danger=true` events, downward compatibility is granted. Application of the `BadSpillFilter` plugin should restore the compatibility.
 The usage of the new features is optional. Besides the usual data readout, this plugin also adds a `RunData` collection (```c++ produces<RunData>("RunData");```) to the event, such that the information on beam energies, run numbers, ... is available for all subsequent plugins in the chain on an event-basis. Furthermore, MWC data are read and put to the event as `HGCalTBMultiWireChamberData` (```c++ produces<MultiWireChambers>("MultiWireChambers");```). Hereby, it is assumed that the reconstructed coordinates are given in [mm].
 
