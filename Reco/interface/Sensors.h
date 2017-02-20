@@ -114,7 +114,6 @@ class SensorHitMap {
     double residualResolution;    //externally set, from residual histograms
     int sensorSize;
     double CM_threshold;
-    double ADC_per_MIP;
     std::map<int, HitData*> Hits; //those are all the hits in the layer
     std::map<int, std::vector<int>> clusterIndexes;
     std::vector<HitData*> HitsForPositioning;
@@ -145,11 +144,10 @@ class SensorHitMap {
     void setParticleEnergy(double e);
     void setAlignmentParameters(double d_alpha, double d_beta, double d_gamma, double d_x0, double d_y0, double d_z0);
     void setResidualResolution(double r);
-    void setADCPerMIP(double ADC_per_MIP);
     void setSensorSize(int s);
     void setPedestalThreshold(double t);
     //reduces the information from the Rechit towards what is necessary for the impact point calculation
-    void addHit(HGCalTBRecHit Rechit);
+    void addHit(HGCalTBRecHit Rechit, double ADC_per_MIP);
     void registerClusterHit(HGCalTBDetId hit, int N_considered);
     std::pair<int, double> subtractCM();  //returns the sum of Common mode noise and the number of cells that enter the calculation
     void calculateCenterPosition(ConsiderationMethod considerationMethod, WeightingMethod weightingMethod);

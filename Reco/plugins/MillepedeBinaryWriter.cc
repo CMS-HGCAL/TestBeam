@@ -412,16 +412,14 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			Sensors[layer]->setResidualResolution(sigma_res[layer-1]);
 			Sensors[layer]->setSensorSize(SensorSize);
 	
-			uint32_t EID = essource_.emap_.detId2eid(Rechit.id());
-			HGCalTBElectronicsId eid(EID);	 
-			int skiRocIndex = (eid.iskiroc() - 1) > 0 ? eid.iskiroc() - 1 : 0;	
-			Sensors[layer]->setADCPerMIP(ADC_per_MIP[skiRocIndex]);
-
 			double X0sum = 0;
 			for (int _x = 0; _x<(int)layer; _x++) X0sum += Layer_Z_X0s[_x];
 			Sensors[layer]->setParticleEnergy(energy - gblhelpers::computeEnergyLoss(X0sum, energy));
 		}
-		Sensors[layer]->addHit(Rechit);
+		uint32_t EID = essource_.emap_.detId2eid(Rechit.id());
+		HGCalTBElectronicsId eid(EID);	 
+		int skiRocIndex = (eid.iskiroc() - 1) > 0 ? eid.iskiroc() - 1 : 0;	
+		Sensors[layer]->addHit(Rechit, ADC_per_MIP[skiRocIndex]);
 	}
 
 	//fill the hits from the cluster collections 

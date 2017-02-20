@@ -16,8 +16,7 @@ SensorHitMap::SensorHitMap(int l){
   layerLabZ = 0;
   layerX0 = 0;
   particleEnergy = 0;
-  ADC_per_MIP = 1.;
-  sensorSize = 128;
+  sensorSize = 133;
 
   d_alpha = 0., d_beta = 0., d_gamma = 0., d_x0 = 0., d_y0 = 0., d_z0 = 0.;
   residualResolution = -1;
@@ -71,10 +70,6 @@ void SensorHitMap::setResidualResolution(double r) {
   residualResolution = r;
 }
 
-void SensorHitMap::setADCPerMIP(double ADC_per_MIP) {
-  this->ADC_per_MIP = ADC_per_MIP;
-}
-
 void SensorHitMap::setPedestalThreshold(double t) {
   this->CM_threshold = t; 
 }
@@ -96,7 +91,7 @@ double SensorHitMap::getX0() {
 }
 //reduces the information from the Rechit towards what is necessary for the impact point calculation
 //here all hits independent from the cellType are included
-void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
+void SensorHitMap::addHit(HGCalTBRecHit Rechit, double ADC_per_MIP) {
   int uniqueID = (Rechit.id()).rawId();
 
   //CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), sensorSize);
@@ -130,7 +125,7 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit) {
 void SensorHitMap::registerClusterHit(HGCalTBDetId hit, int N_considered) {  //requires that all hits have been added to the layer
   int uniqueID = hit.rawId();
 
-  if(Hits.find(uniqueID) == Hits.end()) return; //if cluster hit does not represent a valid cell type, do not add it
+  if(Hits.find(uniqueID) == Hits.end()) return; 
 
   if (totalClusterEnergy.find(N_considered) == totalClusterEnergy.end()) {
     totalClusterEnergy[N_considered] = 0;

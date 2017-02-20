@@ -1,14 +1,10 @@
 /* 
  * Determination of the position resolution of the setup.
- * Hits per layer are calculated using dedicated weighting algorithms.
- * Hypothetical particle tracks are obtained from all but one layer.
- * The predicted position in that layer is then compared to the reconstructed one.
- * Thus, for each event and each layer there is one deviation to be calculated and filled into a 2D histogram.
  */
 
 /**
 	@Author: Thorben Quast <tquast>
-		16 Nov 2016
+		20 Febr 2017
 		thorben.quast@cern.ch / thorben.quast@rwth-aachen.de
 */
 
@@ -92,7 +88,6 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		int SensorSize;
 		int nLayers;
 
-		double totalEnergyThreshold;
 		bool useMWCReference;
 
 
@@ -343,7 +338,6 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	nLayers = iConfig.getParameter<int>("nLayers");
 	ADC_per_MIP = iConfig.getParameter<std::vector<double> >("ADC_per_MIP");
 
-	totalEnergyThreshold = iConfig.getParameter<double>("totalEnergyThreshold");
 
 	useMWCReference = iConfig.getParameter<bool>("useMWCReference");
 
@@ -466,19 +460,16 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 
 			Sensors[layer]->setAlignmentParameters(alignmentParameters->getValue(run, 100*layer + 21), 0.0, 0.0,
 				alignmentParameters->getValue(run, 100*layer + 11), alignmentParameters->getValue(run, 100*layer + 12), 0.0);	
-	
 			Sensors[layer]->setSensorSize(SensorSize);
-
-			uint32_t EID = essource_.emap_.detId2eid(Rechit.id());
-			HGCalTBElectronicsId eid(EID);	 
-			int skiRocIndex = (eid.iskiroc() - 1) > 0 ? eid.iskiroc() - 1 : 0;	
-			Sensors[layer]->setADCPerMIP(ADC_per_MIP[skiRocIndex]);
 
 			double X0sum = 0;
 			for (int _x = 0; _x<(int)layer; _x++) X0sum += Layer_Z_X0s[_x];
 			Sensors[layer]->setParticleEnergy(energy - gblhelpers::computeEnergyLoss(X0sum, energy));
 		}
-		Sensors[layer]->addHit(Rechit);
+		uint32_t EID = essource_.emap_.detId2eid(Rechit.id());
+		HGCalTBElectronicsId eid(EID);	 
+		int skiRocIndex = (eid.iskiroc() - 1) > 0 ? eid.iskiroc() - 1 : 0;	
+		Sensors[layer]->addHit(Rechit, ADC_per_MIP[skiRocIndex]);
 	}
 
 	//fill the hits from the cluster collections 
@@ -501,20 +492,13 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		}
 	}
 
-	//Event selection: sum of energies of all cells(=hits) from RecHits Collection and Clusters only must 
-	//be larger than an externally configured parameter 'totalEnergyThreshold' (in MIP)
+	//Possible event selection: sum of energies of all cells(=hits) from RecHits Collection and Clusters
 	sumEnergy = 0., sumClusterEnergy = 0.;
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {	
 		sumEnergy += it->second->getTotalEnergy();
 		sumClusterEnergy += it->second->getTotalClusterEnergy(-1);
 	}
 	
-	if(sumEnergy < totalEnergyThreshold) HitsVetoCounter+=1;	//make this energy dependent!
-	if(sumClusterEnergy < totalEnergyThreshold) ClusterVetoCounter+=1;
-	if(sumEnergy < totalEnergyThreshold && sumClusterEnergy < totalEnergyThreshold) {
-		CommonVetoCounter+=1;
-		//return;		//this is also done in the plotting
-	} 
 
 	//step 2: calculate impact point with technique indicated as the argument
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
