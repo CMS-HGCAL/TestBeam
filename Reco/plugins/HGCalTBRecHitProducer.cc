@@ -96,8 +96,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
 			float energy = -1.;
 
-			HGCalTBRecHit recHit(digi.detid(), energy, energyLow, energyHigh, digi[iSample].tdc()); //, _LG2HG_value, _gainThr_value * adcToGeV_high_value); ///\todo use time calibration!
-			CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((recHit.id()).layer(), (recHit.id()).sensorIU(), (recHit.id()).sensorIV(), (recHit.id()).iu(), (recHit.id()).iv(), 128); 	//TODO: Hard Coded Number!
+			HGCalTBRecHit recHit(digi.detid(), energy, energyLow, energyHigh, digi[iSample].tdc()); 
+			CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((recHit.id()).layer(), (recHit.id()).sensorIU(), (recHit.id()).sensorIV(), (recHit.id()).iu(), (recHit.id()).iv(), 133); 	
 			recHit.setCellCenterCoordinate(CellCenterXY.first, CellCenterXY.second);
 			//Consistency check if the reversion of the x,y - iu iv formula can be reverted
 			//std::pair<int, int> iuiv = TheCell.GetCellIUIVCoordinates(CellCenterXY.first, CellCenterXY.second);
