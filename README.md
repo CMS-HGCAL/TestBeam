@@ -104,8 +104,8 @@ produces<RunData>("RunData");
 ``` 
 to the event, such that the information on beam energies, run numbers, ... is available for all subsequent plugins in the chain on an event-basis. Furthermore, MWC data are read and put to the event as `HGCalTBMultiWireChamberData`: 
 
-```
-c++ produces<MultiWireChambers>("MultiWireChambers");
+```c++ 
+produces<MultiWireChambers>("MultiWireChambers");
 ```
 Hereby, it is assumed that the reconstructed coordinates are given in [mm].
 
