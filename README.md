@@ -7,11 +7,11 @@ CMS HGCal Testbeam Analysis Framework
 - [Location of data files](#location-of-data-files)
 - [Running the code](#running-the-code)
 - [positionResolution branch](#positionresolution-branch)
-    - [(Extended) TextInput Plugin](#(extended)-textinput-plugin) 
-    - [(New) GenSim to RecHit Converter](#(new)-gensim-to-rechit-converter)
-    - [(Extended) HGCalTBRecHitProducer](#(extended)-hgcaltbrechitproducer)
-    - [(New) PositionResolutionAnalyzer](#(new)-positionresolutionanalyzer)
-    - [(New) MillepedeBinaryWriter](#(new)-millepedebinarywriter)
+    - [TextInput Plugin](#textinput-plugin) 
+    - [GenSim to RecHit Converter](#gensim-to-rechit-converter)
+    - [HGCalTBRecHitProducer](#hgcaltbrechitproducer)
+    - [PositionResolutionAnalyzer](#positionresolutionanalyzer)
+    - [MillepedeBinaryWriter](#millepedebinarywriter)
     - [Helper Classes](#helper-classes) 
     - [Steering files](#steering-files) 
 - [More information](#more-information)
@@ -21,14 +21,17 @@ CMS HGCal Testbeam Analysis Framework
 
 ## Download the code
 * CMSMSW Version 8.0.1
-* **`scram project ${RELEASE}`**
-* **`cd ${RELEASE}/src/`**
-* **`cmsenv`** 
-* **`git cms-init`**
-* **`git clone git@github.com:CMS-HGCAL/TestBeam.git HGCal/`**
-* **`git checkout FNAL_TB_4Layers`**
-* **`git pull`**
-* **`scram b -j16`**
+
+```bash
+>> scram project ${RELEASE}
+>> cd ${RELEASE}/src/
+>> cmsenv
+>> git cms-init
+>> git clone git@github.com:CMS-HGCAL/TestBeam.git HGCal/
+>> git checkout FNAL_TB_4Layers
+>> git pull
+>> scram b -j16
+```
 
 ## Location of data files
 
@@ -92,9 +95,19 @@ cmsRun test_cfg_newEB.py chainSequence=6 pedestalsHighGain=CondObjects/data/Ped_
 
 ## PositionResolution branch
 
-### (Extended) TextInput Plugin
+### TextInput Plugin
 The `HGCalTextSource` plugin has been modified to cope with the analysis of multiple runs / data files per execution. Except for the removed veto on `Danger=true` events, downward compatibility is granted. Application of the `BadSpillFilter` plugin should restore the compatibility.
-The usage of the new features is optional. Besides the usual data readout, this plugin also adds a `RunData` collection (```c++ produces<RunData>("RunData");```) to the event, such that the information on beam energies, run numbers, ... is available for all subsequent plugins in the chain on an event-basis. Furthermore, MWC data are read and put to the event as `HGCalTBMultiWireChamberData` (```c++ produces<MultiWireChambers>("MultiWireChambers");```). Hereby, it is assumed that the reconstructed coordinates are given in [mm].
+The usage of the new features is optional. Besides the usual data readout, this plugin also adds a `RunData` collection:
+
+```c++ 
+produces<RunData>("RunData");
+``` 
+to the event, such that the information on beam energies, run numbers, ... is available for all subsequent plugins in the chain on an event-basis. Furthermore, MWC data are read and put to the event as `HGCalTBMultiWireChamberData`: 
+
+```
+c++ produces<MultiWireChambers>("MultiWireChambers");
+```
+Hereby, it is assumed that the reconstructed coordinates are given in [mm].
 
  __**Options:**__
 
@@ -121,7 +134,7 @@ inputPathFormat=cms.untracked.string("file:%s/HGCRun_Output_<RUN>.txt"%options.d
 
 
 
-### (New) GenSim to RecHit Converter
+### GenSim to RecHit Converter
 This plugin reads the simulated simulated data formats and converts the information into **`HGCalTBRecHit`** collections. Multi-wire chamber data are faked using the xBeam and yBeam branch of the input trees. Their distance w.r.t. the first module is hard-coded.
 (x,y) position information of the cells are computed from the cell IDs as they are placed in the Geant4 simulation. So far, only the sensors with `133 cells` are implemented. Energies are converted from GeV to MIPs to ADC using the identical conversion factors in data.
 Smearing effects in the fake MWC measurements and the noise have appropriate parameters.
@@ -144,12 +157,12 @@ inputPathFormat=cms.untracked.string("file:%s/<ENERGY>GeV/TBGenSim_<RUN>.root"%(
  * **`MWCSmearingResolution`**: Resolution of the multi-wire chamber fake measurements. The coordinates are smeared by a Gaussian centered at zero with width `MWCSmearingResolution` (in microns).
 
 
-### (Extended) HGCalTBRecHitProducer
+### HGCalTBRecHitProducer
 * HGCalTBRecHits have the cell center coordinates as additional members `cellCenter_x`, `cellCenter_y`.
 * The center's coordinates are set in this producer (lines 99 ff.) or in the `HGCalTBGenSimSource` plugin to grant a common interface for the position retrieval in the next steps.
 
 
-### (New) PositionResolutionAnalyzer
+### PositionResolutionAnalyzer
 Plugin that reconstructs impact positions of the incident particles for each layer, extra- or interpolates them and computes the differences of both approaches. Both the reconstruction and the inter-/extrapolation schemes are configurable. Output of this plugin is a ROOT TTree (name: `deviations`) with information on the layerIndex, the impacts positions in x&y, the deviations to the reference, ... (see lines 351 ff in `Position_Resolution_Analyzer.cc`).
 Z-positioning of the layers along the beam line in cm and radiation length is hard-coded. 
 
@@ -215,7 +228,7 @@ In principle, the procedure can be segmented into the following:
 
  
 
-### (New) MillepedeBinaryWriter
+### MillepedeBinaryWriter
 This plugin is very similar to the PositionResolutionAnalyzer as it also reconstructs impact positions and compares those references.
 Yet, the output is not a voluminous ROOT TTree but a binary file that is subsequently input to the alignment procedure using `Millepede`.
 Thus, the main difference is the track model derivation which is either done using the two MWCs in front (extrapolation) or all eight HGC stack layers only (for interpolation). Besides the residuals, their local derivatives w.r.t. the alignment parameters are computed and written to the binary file. [Link to the millepde manual.](http://www.desy.de/~blobel/Mptwo.pdf)
