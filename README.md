@@ -178,27 +178,39 @@ In principle, the procedure can be segmented into the following:
 
 * **`RUNDATA`**: Input tag to the RunData collection. Name is fixed in the read-out plugins. E.g. 
 
-```python RUNDATA = cms.InputTag("source","RunData","unpack" )```
+```python 
+RUNDATA = cms.InputTag("source","RunData","unpack" )
+```
 
 * **`MWCHAMBERS`**: Input tag to the multi-wire chambers collection. Name is fixed in the read-out plugins. E.g. 
 
-```python MWCHAMBERS = cms.InputTag("source","MultiWireChambers","unpack" )``` 
+```python 
+MWCHAMBERS = cms.InputTag("source","MultiWireChambers","unpack" )
+``` 
 
 * **`HGCALTBRECHITS`**: Input tag to the recHits collection. E.g. 
 
-```python HGCALTBRECHITS = cms.InputTag("hgcaltbrechits","","unpack" )```
+```python 
+HGCALTBRECHITS = cms.InputTag("hgcaltbrechits","","unpack" )
+```
 
 * **`HGCALTBCLUSTERS`**: Input tag to the cluster collection. E.g. 
 
-```python HGCALTBCLUSTERS = cms.InputTag("hgcaltbclusters","","unpack" )```
+```python 
+HGCALTBCLUSTERS = cms.InputTag("hgcaltbclusters","","unpack" )
+```
 
 * **`HGCALTBCLUSTERS7`**: Input tag to the cluster (with seven closest cells) collection. E.g. 
 
-```python HGCALTBCLUSTERS7 = cms.InputTag("hgcaltbclusters","7","unpack" )```
+```python 
+HGCALTBCLUSTERS7 = cms.InputTag("hgcaltbclusters","7","unpack" )
+```
 
 * **`HGCALTBCLUSTERS19`**: Input tag to the cluster (with 19 closest cells) collection. E.g. 
 
-```python HGCALTBCLUSTERS19 = cms.InputTag("hgcaltbclusters","19","unpack" )```
+```python 
+HGCALTBCLUSTERS19 = cms.InputTag("hgcaltbclusters","19","unpack" )
+```
 
 * **`e_mapFile_CERN`**: Electronics mapping file to perform the matching of the cell IDs to the hypothetical skiRocs on which MIP to ADC conversions depend.
 
@@ -209,7 +221,9 @@ In principle, the procedure can be segmented into the following:
 * **`SensorSize`**: Size of the sensors in terms of number of cells. `Supported: 133`.
 * **`ADC_per_MIP`**: MIP to ADC conversion factors for each of the 2x8 skirocs. Example: 
 
-```python ADC_per_MIP = cms.vdouble([17.31, 17.12, 16.37, 17.45, 17.31, 16.98, 16.45, 16.19, 17.55, 17.19, 16.99, 17.92, 15.95, 16.64, 16.79, 15.66])```
+```python 
+ADC_per_MIP = cms.vdouble([17.31, 17.12, 16.37, 17.45, 17.31, 16.98, 16.45, 16.19, 17.55, 17.19, 16.99, 17.92, 15.95, 16.64, 16.79, 15.66])
+```
 
 * **`pedestalThreshold`**: Threshold in MIP unit to specify the boundary under which cell energy deposits are included in the common mode noise calculation and subsequent subtraction. `Default: 2`.
 * **`alignmentParameterFiles`**: Array of paths to alignment files. The content of such files must follow the format as dictated by the `millepede` program. The parameter files are matched to each run. For this purpose, the path to the corresponding alignment parameter file must contain the substring `RUN_<theNumber>_`. Otherwise, i.e. if not available, values are assumed to be zero (=no alignment). The functionality of the readout is implemented in `Reco/src/PositionResolutionHelpers.cc`.
