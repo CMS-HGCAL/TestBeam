@@ -13,7 +13,8 @@ CMS HGCal Testbeam Analysis Framework
     - [PositionResolutionAnalyzer](#positionresolutionanalyzer)
     - [MillepedeBinaryWriter](#millepedebinarywriter)
     - [Helper Classes](#helper-classes) 
-    - [Steering files](#steering-files) 
+    - [Steering files](#steering-files)
+    - [Run Commands](#run-commands) 
 - [More information](#more-information)
 
 
@@ -73,11 +74,11 @@ cms.Source("HGCalTBTextSource",
 process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_1600_Reco.root") )
 ```
 
-#### Event-based reconstruction (Outdated?)
+#### Event-based reconstruction 
 ```bash
 sh scripts/rearrangeTxtFile.sh input.txt
 >> CERN raw data rearranged in /eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/
-cmsRun test_cfg_newEB.py chainSequence=6 pedestalsHighGain=CondObjects/data/Ped_HighGain_L8.txt pedestalsLowGain=CondObjects/data/Ped_LowGain_L8.txt runNumber=930 configuration=2 runType=HGCRun
+>> cmsRun test_cfg_newEB.py chainSequence=6 pedestalsHighGain=CondObjects/data/Ped_HighGain_L8.txt pedestalsLowGain=CondObjects/data/Ped_LowGain_L8.txt runNumber=930 configuration=2 runType=HGCRun
 >> chainSequence=<configuration>
 >> test_cfg_newEB.py to load the reqarranged .txt:
 -> mount eos
@@ -518,6 +519,124 @@ __**Output Options:**__
 * **`outputFolder`**: Main directory of the output files.
 
 * **`outputPostfix`**: Postfix to the output file.
+
+#### Run Commands
+For the following run command examples, these assumptions are made:
+
+* *`repoFolder=/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal`*: Location of the analysis framework repository. It corresponds to the ROOT directory in which the run steering file is executed.
+
+* *`configuration=1`*: CERN 6-15X0 setup is chosen. The second configuration could be analysed the same way.
+
+* *`dataFolder=/home/data/Testbeam/September2016`*: Main directory of the data files in which the text files (e.g. `HGCRun_Output_000927.txt`) are located. The multi-wire chamber text files are located in its subdirectory `MWC` (e.g. `MWC/WC_H4Run4814.txt`).
+
+* *`pathToRunEnergyFile=CondObjects/data/runEnergiesPositionResolution.txt`*: Path to the run-energy mapping file.
+
+* *`useMWCReference=1`*: Selects the extrapolation from the MWC measurements as reference. If set to `=0`, the HGC stack interpolation is used.
+
+* *`fittingMethod=lineAnalytical`*: Track model - assumes the electron induced showers to follow straight lines.  
+
+* *`considerationMethod=closest19`*: Considers two rings around the cell with highest energy deposition for the impact position reconstruction.
+
+* *`weightingMethod=logWeighting_3.5_1.0`*: Specification of the weighting formula for the impact position reconstruction.
+
+* *`pedestalThreshold=2.`*: Threshold at 2 MIPs under which all cells are taken into account during the common mode noise calculation.
+
+* *`outputFolder=/tmp/`*: Output-folder to which the files are being written.
+
+* *`reportEvery=1000`*: Optional parameter. Sets the event number print-out frequency to every 1000.
+
+__**Running the Millepede Binary Writer Analyzer:**__
+
+1. Creation of binary files for the alignment program `pede`. In the position resolution analysis, this is done for each run seperately. The output
+
+* *`chainSequence=9`*: Index of the corresponding chain is 9.
+* *`readOnlyRuns=927`*: Only run number 927 is processed in this example.
+* *`outputPostfix=testOnData`*: Specifies a postfix to the default filename.
+
+Full command:
+
+```bash
+>> cmsRun position_resolution_cfg.py repoFolder=/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal chainSequence=9 configuration=1 reportEvery=1000 useMWCReference=1 fittingMethod=lineAnalytical considerationMethod=closest19 weightingMethod=logWeighting_3.5_1.0 pedestalThreshold=2. outputFolder=/tmp/ outputPostfix=testOnData isData=True pathToRunEnergyFile=CondObjects/data/runEnergiesPositionResolution.txt dataFolder=/home/data/Testbeam/September2016 readOnlyRuns=927
+```
+It creates a binary file, `/tmp/HGCRun_MillepedeBinary_testOnData.bin`.
+
+
+2. An internal alignment of the HGC stack using all runs in the run-energy mapping file is possible.
+
+* Ommit the *`readOnlyRuns`* parameter.
+* *`useMWCReference=0`*: No MWC but stack reference.
+
+Full command:
+
+```bash
+>> cmsRun position_resolution_cfg.py repoFolder=/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal chainSequence=9 configuration=1 reportEvery=1000 useMWCReference=0 fittingMethod=lineAnalytical considerationMethod=closest19 weightingMethod=logWeighting_3.5_1.0 pedestalThreshold=2. outputFolder=/tmp/ outputPostfix=testOnDataStack isData=True pathToRunEnergyFile=CondObjects/data/runEnergiesPositionResolution.txt dataFolder=/home/data/Testbeam/September2016 
+```
+The file *`/tmp/HGCRun_MillepedeBinary_testOnDataStack.bin`* should be created.
+
+__**Running the Position Resolution Analyzer:**__
+
+1. Calculation of deviations for the aligned run 927 using the MWC reference.
+
+* *`chainSequence=8`*: Index of the corresponding chain is 8.
+* *`readOnlyRuns=927`*: Only run 927.
+* *`alignmentParameterFiles=/tmp/alignmentParameters__RUN_927_.txt`*: Indication of the alignment parameter file as it is output from the `pede` execution. It is obligatory to include the substring `RUN_<number>_` in the filename, as the mapping of the files to the events is based on the run numbers. 
+
+Full command:
+
+```bash
+>> cmsRun position_resolution_cfg.py repoFolder=/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal chainSequence=8 configuration=1 reportEvery=1000 useMWCReference=1 fittingMethod=lineAnalytical considerationMethod=closest19 weightingMethod=logWeighting_3.5_1.0 pedestalThreshold=2. outputFolder=/tmp/ outputPostfix=testOnDataRun927 isData=True pathToRunEnergyFile=CondObjects/data/runEnergiesPositionResolution.txt dataFolder=/home/data/Testbeam/September2016 readOnlyRuns=927 alignmentParameterFiles=/tmp/alignmentParameters__RUN_927_.txt
+```
+
+The output .root file is stored in `/tmp/HGCRun_Output_Position_Resolution_testOnDataRun927.root`. It contains a TTree with a tabular-like storage of many relevant computed quantities that can be plotted in various ways.
+
+
+2. Calculation of deviations for multiple aligned runs using the MWC reference.
+
+* *`readOnlyRuns=927 readOnlyRuns=927`*: Only runs 927 and 937.
+* *`alignmentParameterFiles=/tmp/alignmentParameters__RUN_927_.txt alignmentParameterFiles=/tmp/alignmentParameters__RUN_937_.txt`*: Indicate paths of both.
+
+Full command:
+
+```bash
+>> cmsRun position_resolution_cfg.py repoFolder=/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal chainSequence=8 configuration=1 reportEvery=1000 useMWCReference=1 fittingMethod=lineAnalytical considerationMethod=closest19 weightingMethod=logWeighting_3.5_1.0 pedestalThreshold=2. outputFolder=/tmp/ outputPostfix=testOnDataRun927Run937 isData=True pathToRunEnergyFile=CondObjects/data/runEnergiesPositionResolution.txt dataFolder=/home/data/Testbeam/September2016 readOnlyRuns=927 readOnlyRuns=937 alignmentParameterFiles=/tmp/alignmentParameters__RUN_927_.txt alignmentParameterFiles=/tmp/alignmentParameters__RUN_937_.txt
+```
+
+Output file `/tmp/HGCRun_Output_Position_Resolution_testOnDataRun927Run937.root` with same format as before but for the analysis of two runs with one execution.
+
+
+3. Consideration of all runs using the MWC reference with alignment.
+
+* Ommit the *`readOnlyRuns`* parameter.
+* Indicate all available `alignmentParameterFiles`.
+
+Full command (remove `...`):
+
+```bash
+>> cmsRun position_resolution_cfg.py repoFolder=/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal chainSequence=8 configuration=1 reportEvery=1000 useMWCReference=1 fittingMethod=lineAnalytical considerationMethod=closest19 weightingMethod=logWeighting_3.5_1.0 pedestalThreshold=2. outputFolder=/tmp/ outputPostfix=testOnDataAllRuns isData=True pathToRunEnergyFile=CondObjects/data/runEnergiesPositionResolution.txt dataFolder=/home/data/Testbeam/September2016 alignmentParameterFiles=/tmp/alignmentParameters__RUN_927_.txt alignmentParameterFiles=/tmp/...
+```
+
+4. Consideration of all runs using the MWC reference without alignment.
+
+* Omit the `alignmentParameterFiles` parameter.
+
+Full command:
+
+```bash
+>> cmsRun position_resolution_cfg.py repoFolder=/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal chainSequence=8 configuration=1 reportEvery=1000 useMWCReference=1 fittingMethod=lineAnalytical considerationMethod=closest19 weightingMethod=logWeighting_3.5_1.0 pedestalThreshold=2. outputFolder=/tmp/ outputPostfix=testOnData isData=True pathToRunEnergyFile=CondObjects/data/runEnergiesPositionResolution.txt dataFolder=/home/data/Testbeam/September2016
+```
+
+5. Run on simulated samples (no alignment):
+
+* `dataFolder=/home/data/MC/September2016`: Main directory in which the simulated samples are stored. It must contain the structure `<ENERGY>GeV/TBGenSim_<RUN>.root`.
+* `isData=False`: Important to specify that data are not real, because the chaining of plugins depend on it.
+
+Full command:
+
+```bash
+>> cmsRun position_resolution_cfg.py repoFolder=/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal  chainSequence=8 configuration=1 reportEvery=1000 useMWCReference=1 fittingMethod=lineAnalytical considerationMethod=closest19 weightingMethod=logWeighting_3.5_1.0 pedestalThreshold=2. outputFolder=/tmp/ outputPostfix=testOnSim isData=False pathToRunEnergyFile=CondObjects/data/runEnergiesPositionResolutionSimulation.txt dataFolder=/home/data/MC/September2016
+```
+The event loop frequency is noticeably higher compared to the analysis of real data. (It seems that most of the CPU resources are spent on the conversion of the original string inputs to HGCalTBRecHits.)
+The output file is `/tmp/HGCRun_Output_Position_Resolution_testOnSim.root`.
 
 ## More Information
 For general instructions on the framework, co-ordinate system, reconstruction sequence, etc please refer to
