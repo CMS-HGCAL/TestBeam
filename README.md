@@ -21,7 +21,7 @@ CMS HGCal Testbeam Analysis Framework
 
 
 ## Download the code
-* CMSMSW Version 8.0.1
+* CMSSW Version 8.0.1
 
 ```bash
 >> scram project ${RELEASE}
@@ -547,7 +547,7 @@ For the following run command examples, these assumptions are made:
 
 __**Running the Millepede Binary Writer Analyzer:**__
 
-I. Creation of binary files for the alignment program `pede`. In the position resolution analysis, this is done for each run seperately. The output
+__I. Creation of binary files for the alignment program `pede`. In the position resolution analysis, this is done for each run seperately:__
 
 * *`chainSequence=9`*: Index of the corresponding chain is 9.
 * *`readOnlyRuns=927`*: Only run number 927 is processed in this example.
@@ -561,7 +561,7 @@ Full command:
 It creates a binary file, `/tmp/HGCRun_MillepedeBinary_testOnData.bin`.
 
 
-II. An internal alignment of the HGC stack using all runs in the run-energy mapping file is possible.
+__II. An internal alignment of the HGC stack using all runs in the run-energy mapping file is possible:__
 
 * Ommit the *`readOnlyRuns`* parameter.
 * *`useMWCReference=0`*: No MWC but stack reference.
@@ -575,7 +575,7 @@ The file *`/tmp/HGCRun_MillepedeBinary_testOnDataStack.bin`* should be created.
 
 __**Running the Position Resolution Analyzer:**__
 
-I. Calculation of deviations for the aligned run 927 using the MWC reference.
+__I. Calculation of deviations for the aligned run 927 using the MWC reference:__
 
 * *`chainSequence=8`*: Index of the corresponding chain is 8.
 * *`readOnlyRuns=927`*: Only run 927.
@@ -590,7 +590,7 @@ Full command:
 The output .root file is stored in `/tmp/HGCRun_Output_Position_Resolution_testOnDataRun927.root`. It contains a TTree with a tabular-like storage of many relevant computed quantities that can be plotted in various ways.
 
 
-II. Calculation of deviations for multiple aligned runs using the MWC reference.
+__II. Calculation of deviations for multiple aligned runs using the MWC reference:__
 
 * *`readOnlyRuns=927 readOnlyRuns=927`*: Only runs 927 and 937.
 * *`alignmentParameterFiles=/tmp/alignmentParameters__RUN_927_.txt alignmentParameterFiles=/tmp/alignmentParameters__RUN_937_.txt`*: Indicate paths of both.
@@ -604,7 +604,7 @@ Full command:
 Output file `/tmp/HGCRun_Output_Position_Resolution_testOnDataRun927Run937.root` with same format as before but for the analysis of two runs with one execution.
 
 
-III. Consideration of all runs using the MWC reference with alignment.
+__III. Consideration of all runs using the MWC reference with alignment:__
 
 * Ommit the *`readOnlyRuns`* parameter.
 * Indicate all available `alignmentParameterFiles`.
@@ -615,7 +615,7 @@ Full command (remove `...`):
 >> cmsRun position_resolution_cfg.py repoFolder=/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal chainSequence=8 configuration=1 reportEvery=1000 useMWCReference=1 fittingMethod=lineAnalytical considerationMethod=closest19 weightingMethod=logWeighting_3.5_1.0 pedestalThreshold=2. outputFolder=/tmp/ outputPostfix=testOnDataAllRuns isData=True pathToRunEnergyFile=CondObjects/data/runEnergiesPositionResolution.txt dataFolder=/home/data/Testbeam/September2016 alignmentParameterFiles=/tmp/alignmentParameters__RUN_927_.txt alignmentParameterFiles=/tmp/...
 ```
 
-IV. Consideration of all runs using the MWC reference without alignment.
+__IV. Consideration of all runs using the MWC reference without alignment:__
 
 * Omit the `alignmentParameterFiles` parameter.
 
@@ -625,7 +625,7 @@ Full command:
 >> cmsRun position_resolution_cfg.py repoFolder=/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal chainSequence=8 configuration=1 reportEvery=1000 useMWCReference=1 fittingMethod=lineAnalytical considerationMethod=closest19 weightingMethod=logWeighting_3.5_1.0 pedestalThreshold=2. outputFolder=/tmp/ outputPostfix=testOnData isData=True pathToRunEnergyFile=CondObjects/data/runEnergiesPositionResolution.txt dataFolder=/home/data/Testbeam/September2016
 ```
 
-V. Run on simulated samples (no alignment):
+__V. Run on simulated samples (no alignment):__
 
 * `dataFolder=/home/data/MC/September2016`: Main directory in which the simulated samples are stored. It must contain the structure `<ENERGY>GeV/TBGenSim_<RUN>.root`.
 * `isData=False`: Important to specify that data are not real, because the chaining of plugins depend on it.
