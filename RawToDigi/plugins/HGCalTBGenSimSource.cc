@@ -26,14 +26,14 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	if (fileNames()[0] != "file:DUMMY") {
 		for (int i = 0; i<(int)(fileNames().size()); i++) {
 			FileInfo fInfo;
-			fInfo.index = -1;
+			fInfo.index = 0;
 			fInfo.energy = -1;
 			fInfo.runType = "";
 			fInfo.config = -1;
 			fInfo.name = fileNames()[i];
-
 			_fileNames.push_back(fInfo);
 		}
+		fileIterator = _fileNames.begin();
 	} else {
 		std::fstream map_file;
 		map_file.open(runEnergyMapFile.c_str(), std::fstream::in);
@@ -118,7 +118,6 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 
 	if (currentRun == -1) {		//initial loading of a file
 		currentRun = (*fileIterator).index;
-
 		currentEvent = 0;
 		/*
 		if (rootFile != NULL)
@@ -127,7 +126,11 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
   
   		rootFile = new TFile(((*fileIterator).name).c_str());	
   		dir  = (TDirectory*)rootFile->FindObjectAny("HGCalTBAnalyzer");
-  		tree = (TTree*)dir->Get("HGCTB");
+  		if (dir != NULL) {
+  			tree = (TTree*)dir->Get("HGCTB");
+  		} else {
+  			tree = (TTree*)rootFile->Get("HGCTB");
+  		}
 
    		tree->SetBranchAddress("simHitCellIdE", &simHitCellIdE, &b_simHitCellIdE);
   		tree->SetBranchAddress("simHitCellEnE", &simHitCellEnE, &b_simHitCellEnE);
@@ -153,7 +156,7 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 
 void HGCalTBGenSimSource::produce(edm::Event & event)
 {	
-	if (fileIterator ==_fileNames.end()) {
+	if (fileIterator == _fileNames.end()) {
 		std::cout<<"End of the files in the producer is reached..."<<std::endl;
 		return;
 	}
