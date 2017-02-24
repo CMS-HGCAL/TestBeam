@@ -80,10 +80,12 @@ private:
   	std::vector<float>        *simHitCellEnE;
   	double					  beamX;
   	double					  beamY;
+  	double					  beamP;
   	TBranch                   *b_simHitCellIdE;   
   	TBranch                   *b_simHitCellEnE;   
   	TBranch                   *b_beamX;   
   	TBranch                   *b_beamY;   
+  	TBranch                   *b_beamP;   
 
 	//getting the required electronic mapping
 	std::string _e_mapFile;

@@ -133,6 +133,7 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
   		tree->SetBranchAddress("simHitCellEnE", &simHitCellEnE, &b_simHitCellEnE);
   		tree->SetBranchAddress("xBeam", &beamX, &b_beamX);
   		tree->SetBranchAddress("yBeam", &beamY, &b_beamY);
+  		tree->SetBranchAddress("pBeam", &beamP, &b_beamP);
 	}
 
 	if (currentEvent == tree->GetEntries()) {
@@ -223,12 +224,13 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 
 	//third: fill the run data
 	std::auto_ptr<RunData> rd(new RunData);
-	rd->energy = (*fileIterator).energy;
+	rd->energy = (*fileIterator).energy;		//mean energy of the beam configuration
 	rd->configuration = (*fileIterator).config;
 	rd->runType = (*fileIterator).runType;
 	rd->run = (*fileIterator).index;
-	rd->run = eventCounter;
+	rd->event = eventCounter;
 	rd->hasDanger = false;
+	rd->trueEnergy = beamP;						//energy as truely simulated
 
 	bool _hasValidMWCMeasurement = true;
 	_hasValidMWCMeasurement = (x1_mc != -99.9) && _hasValidMWCMeasurement;
