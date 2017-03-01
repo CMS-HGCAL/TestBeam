@@ -104,10 +104,16 @@ process.load('HGCal.StandardSequences.dqm_cff')
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(options.runNumber), ### maybe this should be read from the file
                             #fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXE
-                            fileNames=cms.untracked.vstring("file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber)), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+                            fileNames=cms.untracked.vstring(["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber), "file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber)]), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
                             nSpills=cms.untracked.uint32(options.nSpills),
+                            inputPathFormat = cms.untracked.string(""),
+                            MWCInputPathFormat = cms.untracked.string(""),
+                            mwcRotation = cms.untracked.double(0.),
+                            mwc2DeltaX = cms.untracked.double(0.),
+                            mwc2DeltaY = cms.untracked.double(0.),
+                            readOnlyRuns = cms.untracked.vint32([]),
+                            runEnergyMapFile = cms.untracked.string("runEnergyMapFile")
                             )
-
 
 
 ######
@@ -164,6 +170,8 @@ elif(options.configuration == "2"):
     process.BadSpillFilter.layers_config = cms.int32(2)
     process.LayerSumAnalyzer.layers_config = cms.int32(2)
     process.hgcaltbrechits.layers_config = cms.int32(2)
+else:
+    sys.exit("Error: Configuarion % is not supported in the position resolution analysis" % options.configuration)
 
 ########Activate this to produce event displays#########################################
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)

@@ -24,6 +24,7 @@
 #include "HGCal/CondObjects/interface/HGCalTBNumberingScheme.h"
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
+#include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 //#define DEBUG
 
 
@@ -49,6 +50,8 @@ private:
 	struct {
 	  HGCalElectronicsMap emap_;
         } essource_;
+  HGCalTBCellVertices TheCell;
+  std::pair<double, double> CellCenterXY;
 };
 
 

@@ -4,6 +4,7 @@
 #include <iosfwd>
 #include "DataFormats/DetId/interface/DetId.h"
 #include "DataFormats/ForwardDetId/interface/ForwardSubdetector.h"
+#include <iostream>
 
 /*
    On a sensor, the indexes are X and V.  X is horizontal (in most diagrams) and V increases along the hexagon faces towards the upper right.
