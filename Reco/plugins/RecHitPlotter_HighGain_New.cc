@@ -251,13 +251,13 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 				h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy());
 			}
 
-			if((RecHit.id()).cellType() != 2 ) {
+			if((RecHit.id()).cellType() == 2 ) {
 				h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy() - (Average_Pedestal_Per_Event_Half / Cell_counter_Half) );
 			}
-			if((RecHit.id()).cellType() != 3 ) {
+			if((RecHit.id()).cellType() == 3 ) {
                                 h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy() - (Average_Pedestal_Per_Event_MB/Cell_counter_MB) );
                         }
-			if((RecHit.id()).cellType() != 5 ) {
+			if((RecHit.id()).cellType() == 5 ) {
                                 h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy() - (Average_Pedestal_Per_Event_Merged/Cell_counter_Merged) );
                         }
 
