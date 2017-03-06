@@ -123,7 +123,7 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 		if (rootFile != NULL)
 			delete rootFile;
   		*/
-  
+  		//std::cout<<"Opening: "<<((*fileIterator).name).c_str()<<std::endl;
   		rootFile = new TFile(((*fileIterator).name).c_str());	
   		dir  = (TDirectory*)rootFile->FindObjectAny("HGCalTBAnalyzer");
   		if (dir != NULL) {
@@ -137,6 +137,10 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
   		tree->SetBranchAddress("xBeam", &beamX, &b_beamX);
   		tree->SetBranchAddress("yBeam", &beamY, &b_beamY);
   		tree->SetBranchAddress("pBeam", &beamP, &b_beamP);
+  		tree->SetBranchAddress("MWC_x1", &MWC_x1, &b_MWC_x1);
+  		tree->SetBranchAddress("MWC_x2", &MWC_x2, &b_MWC_x2);
+  		tree->SetBranchAddress("MWC_y1", &MWC_y1, &b_MWC_y1);
+  		tree->SetBranchAddress("MWC_y2", &MWC_y2, &b_MWC_y2);
 	}
 
 	if (currentEvent == tree->GetEntries()) {
@@ -162,7 +166,6 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	}
 
 	eventCounter++;	//indexes each event chronologically passing this plugin 
-
 	//first: fill the rechits
 	std::auto_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection);
 
@@ -213,13 +216,13 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 
 	
 	//second: add fake multi-wire chambers from xBeam, yBeam
-	double x1_mc = beamX + randgen->Gaus(0, smearingResolution);
-	double y1_mc = beamY + randgen->Gaus(0, smearingResolution);
-	double x2_mc = beamX + randgen->Gaus(0, smearingResolution);
-	double y2_mc = beamY + randgen->Gaus(0, smearingResolution);
+	double x1_mc = MWC_x1 + randgen->Gaus(0, smearingResolution);
+	double y1_mc = MWC_y1 + randgen->Gaus(0, smearingResolution);
+	double x2_mc = MWC_x2 + randgen->Gaus(0, smearingResolution);
+	double y2_mc = MWC_y2 + randgen->Gaus(0, smearingResolution);
 	
 	std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
-	mwcs->push_back(MultiWireChamberData(1, x1_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y1_mc, -x1_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y1_mc, -126.-147.));
+	mwcs->push_back(MultiWireChamberData(1, x1_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y1_mc, -x1_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y1_mc, -273.));
 	mwcs->push_back(MultiWireChamberData(2, x2_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y2_mc, -x2_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y2_mc, -147.));
 	
 	event.put(std::move(mwcs), "MultiWireChambers");		
