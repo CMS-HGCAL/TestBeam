@@ -233,35 +233,38 @@ RecHitPlotter_HighGain_New::analyze(const edm::Event& event, const edm::EventSet
 	for(auto RecHit : *Rechits) {
 		if(((evId - 1)%Event_multiple) != 0) continue;
 		
-		if(!IsCellValid.iu_iv_valid((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize))  continue;
+		if(!IsCellValid.iu_iv_valid((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize))  {
+			continue;
+		}
 		int n_layer = (RecHit.id()).layer();
 		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize);
 		double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
 		double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
 		uint32_t EID = essource_.emap_.detId2eid(RecHit.id());
 		HGCalTBElectronicsId eid(EID);
+		double energy_to_fill = 0.;
+
 		if(!DoCommonMode) {
-			h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy());
+			energy_to_fill = RecHit.energy();
 		}
 		else{//If Common mode subtraction is enabled
 			if(((RecHit.id()).cellType() == 0 ) || ((RecHit.id()).cellType() == 4) ) {
-				h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, (RecHit.energy() - (Average_Pedestal_Per_Event_Full / (Cell_counter_Full))) );
+				energy_to_fill = (RecHit.energy() - (Average_Pedestal_Per_Event_Full / (Cell_counter_Full)));
 			}
-			if((RecHit.id()).cellType() == 1 ) {
-				h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy());
+			else if((RecHit.id()).cellType() == 1 ) {
+				energy_to_fill = RecHit.energy();
 			}
-
-			if((RecHit.id()).cellType() != 2 ) {
-				h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy() - (Average_Pedestal_Per_Event_Half / Cell_counter_Half) );
+			else if((RecHit.id()).cellType() == 2 ) {
+				energy_to_fill = RecHit.energy() - (Average_Pedestal_Per_Event_Half / Cell_counter_Half);
 			}
-			if((RecHit.id()).cellType() != 3 ) {
-                                h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy() - (Average_Pedestal_Per_Event_MB/Cell_counter_MB) );
-                        }
-			if((RecHit.id()).cellType() != 5 ) {
-                                h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energy() - (Average_Pedestal_Per_Event_Merged/Cell_counter_Merged) );
-                        }
-
+			else if((RecHit.id()).cellType() == 3 ) {
+				energy_to_fill = RecHit.energy() - (Average_Pedestal_Per_Event_MB/Cell_counter_MB);
+            }
+			else if((RecHit.id()).cellType() == 5 ) {
+				energy_to_fill =  RecHit.energy() - (Average_Pedestal_Per_Event_Merged/Cell_counter_Merged);
+			}
 		}//else common mode condition
+		h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, std::max(energy_to_fill, 0.0));
 	}//Rechits loop ends here
 
 
