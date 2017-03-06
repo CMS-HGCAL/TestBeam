@@ -16,6 +16,7 @@
 #include "TH2Poly.h"
 #include "TH1F.h"
 #include "TF1.h"
+#include "TTree.h"
 #include "TProfile.h"
 #include <sstream>
 #include <fstream>
@@ -33,6 +34,7 @@
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
+#include "HGCal/DataFormats/interface/HGCalTBRunData.h" //for the runData type definition
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
@@ -115,6 +117,7 @@ private:
 
 	// ----------member data ---------------------------
 	edm::EDGetToken HGCalTBRecHitCollection_;
+  edm::EDGetTokenT<RunData> RunDataToken; 
         int layers_config_;
 
 	struct {
@@ -179,6 +182,55 @@ private:
 	TH2F *HighGain_LowGain_2D;
 	TH2F *Energy_LowGain_2D;
 
+
+  TTree* outTree;
+  double pBeam;
+  
+  double E1SumL_R;
+  double E7SumL_R;
+  double E19SumL_R;
+  double EAllSumL_R;
+  double E1SumL_Rup;
+  double E7SumL_Rup;
+  double E19SumL_Rup;
+  double EAllSumL_Rup;
+  double E1SumL_Rdw;
+  double E7SumL_Rdw;
+  double E19SumL_Rdw;
+  double EAllSumL_Rdw;
+
+  double E1SumL_AbsW_Mip;
+  double E7SumL_AbsW_Mip;
+  double E19SumL_AbsW_Mip;
+  double EAllSumL_AbsW_Mip;
+
+  double E1SumL_AbsW_GeV;
+  double E7SumL_AbsW_GeV;
+  double E19SumL_AbsW_GeV;
+  double EAllSumL_AbsW_GeV;
+
+  double E1SumL_AbsW_Mip_up;
+  double E7SumL_AbsW_Mip_up;
+  double E19SumL_AbsW_Mip_up;
+  double EAllSumL_AbsW_Mip_up;
+
+  double E1SumL_AbsW_GeV_up;
+  double E7SumL_AbsW_GeV_up;
+  double E19SumL_AbsW_GeV_up;
+  double EAllSumL_AbsW_GeV_up;
+
+  double E1SumL_AbsW_Mip_dw;
+  double E7SumL_AbsW_Mip_dw;
+  double E19SumL_AbsW_Mip_dw;
+  double EAllSumL_AbsW_Mip_dw;
+
+  double E1SumL_AbsW_GeV_dw;
+  double E7SumL_AbsW_GeV_dw;
+  double E19SumL_AbsW_GeV_dw;
+  double EAllSumL_AbsW_GeV_dw;
+
+
+
         int EVENT = 0;
 
 	map<int, double> Time_Stamp;
@@ -195,8 +247,11 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
   usesResource("TFileService");
   edm::Service<TFileService> fs;
   HGCalTBRecHitCollection_ = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
+  RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
   layers_config_ = iConfig.getParameter<int>("layers_config");
   
+
+
   //booking the histos
   for(int layer = 0; layer < MAXLAYERS; layer++) {
     h_CM_layer[layer] = fs->make<TH1F>(Form("h_CM_layer%d",layer+1), "", 5000, -500, 500);
@@ -348,6 +403,47 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
   tp_E7oE19_vs_L = fs->make<TProfile>("tp_E7oE19_vs_L", "", MAXLAYERS+1, 0, MAXLAYERS+1);
   
   
+  outTree = fs->make<TTree>("energySums", "energySums");
+  outTree->Branch("pBeam", &pBeam, "pBeam/D");
+  
+  outTree->Branch("E1SumL_R", &E1SumL_R, "E1SumL_R/D") ;
+  outTree->Branch("E7SumL_R", &E7SumL_R, "E7SumL_R/D") ;
+  outTree->Branch("E19SumL_R", &E19SumL_R, "E19SumL_R/D") ;
+  outTree->Branch("EAllSumL_R", &EAllSumL_R, "EAllSumL_R/D") ;
+  outTree->Branch("E1SumL_Rup", &E1SumL_Rup, "E1SumL_Rup/D") ;
+  outTree->Branch("E7SumL_Rup", &E7SumL_Rup, "E7SumL_Rup/D") ;
+  outTree->Branch("E19SumL_Rup", &E19SumL_Rup, "E19SumL_Rup/D") ;
+  outTree->Branch("EAllSumL_Rup", &EAllSumL_Rup, "EAllSumL_Rup/D") ;
+  outTree->Branch("E1SumL_Rdw", &E1SumL_Rdw, "E1SumL_Rdw/D") ;
+  outTree->Branch("E7SumL_Rdw", &E7SumL_Rdw, "E7SumL_Rdw/D") ;
+  outTree->Branch("E19SumL_Rdw", &E19SumL_Rdw, "E19SumL_Rdw/D") ;
+  outTree->Branch("EAllSumL_Rdw", &EAllSumL_Rdw, "EAllSumL_Rdw/D") ;
+  outTree->Branch("E1SumL_AbsW_Mip", &E1SumL_AbsW_Mip, "E1SumL_AbsW_Mip/D") ;
+  outTree->Branch("E7SumL_AbsW_Mip", &E7SumL_AbsW_Mip, "E7SumL_AbsW_Mip/D") ;
+  outTree->Branch("E19SumL_AbsW_Mip", &E19SumL_AbsW_Mip, "E19SumL_AbsW_Mip/D") ;
+  outTree->Branch("EAllSumL_AbsW_Mip", &EAllSumL_AbsW_Mip, "EAllSumL_AbsW_Mip/D") ;
+  outTree->Branch("E1SumL_AbsW_GeV", &E1SumL_AbsW_GeV, "E1SumL_AbsW_GeV/D") ;
+  outTree->Branch("E7SumL_AbsW_GeV", &E7SumL_AbsW_GeV, "E7SumL_AbsW_GeV/D") ;
+  outTree->Branch("E19SumL_AbsW_GeV", &E19SumL_AbsW_GeV, "E19SumL_AbsW_GeV/D") ;
+  outTree->Branch("EAllSumL_AbsW_GeV", &EAllSumL_AbsW_GeV, "EAllSumL_AbsW_GeV/D") ;
+  outTree->Branch("E1SumL_AbsW_Mip_up", &E1SumL_AbsW_Mip_up, "E1SumL_AbsW_Mip_up/D") ;
+  outTree->Branch("E7SumL_AbsW_Mip_up", &E7SumL_AbsW_Mip_up, "E7SumL_AbsW_Mip_up/D") ;
+  outTree->Branch("E19SumL_AbsW_Mip_up", &E19SumL_AbsW_Mip_up, "E19SumL_AbsW_Mip_up/D") ;
+  outTree->Branch("EAllSumL_AbsW_Mip_up", &EAllSumL_AbsW_Mip_up, "EAllSumL_AbsW_Mip_up/D") ;
+  outTree->Branch("E1SumL_AbsW_GeV_up", &E1SumL_AbsW_GeV_up, "E1SumL_AbsW_GeV_up/D") ;
+  outTree->Branch("E7SumL_AbsW_GeV_up", &E7SumL_AbsW_GeV_up, "E7SumL_AbsW_GeV_up/D") ;
+  outTree->Branch("E19SumL_AbsW_GeV_up", &E19SumL_AbsW_GeV_up, "E19SumL_AbsW_GeV_up/D") ;
+  outTree->Branch("EAllSumL_AbsW_GeV_up", &EAllSumL_AbsW_GeV_up, "EAllSumL_AbsW_GeV_up/D") ;
+  outTree->Branch("E1SumL_AbsW_Mip_dw", &E1SumL_AbsW_Mip_dw, "E1SumL_AbsW_Mip_dw/D") ;
+  outTree->Branch("E7SumL_AbsW_Mip_dw", &E7SumL_AbsW_Mip_dw, "E7SumL_AbsW_Mip_dw/D") ;
+  outTree->Branch("E19SumL_AbsW_Mip_dw", &E19SumL_AbsW_Mip_dw, "E19SumL_AbsW_Mip_dw/D") ;
+  outTree->Branch("EAllSumL_AbsW_Mip_dw", &EAllSumL_AbsW_Mip_dw, "EAllSumL_AbsW_Mip_dw/D") ;
+  outTree->Branch("E1SumL_AbsW_GeV_dw", &E1SumL_AbsW_GeV_dw, "E1SumL_AbsW_GeV_dw/D") ;
+  outTree->Branch("E7SumL_AbsW_GeV_dw", &E7SumL_AbsW_GeV_dw, "E7SumL_AbsW_GeV_dw/D") ;
+  outTree->Branch("E19SumL_AbsW_GeV_dw", &E19SumL_AbsW_GeV_dw, "E19SumL_AbsW_GeV_dw/D") ;
+  outTree->Branch("EAllSumL_AbsW_GeV_dw", &EAllSumL_AbsW_GeV_dw, "EAllSumL_AbsW_GeV_dw/D") ;
+
+
   //loading the proper weights
   if(MAXLAYERS != 8) {
     std::cout << " update weights " << std::endl;
@@ -416,6 +512,12 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
     Time_Temp = event.time().value();
   }
   
+  //opening run data
+  edm::Handle<RunData> rd;
+  //get the relevant event information
+  event.getByToken(RunDataToken, rd);
+  pBeam = rd->trueEnergy;
+
   //opening Rechits
   edm::Handle<HGCalTBRecHitCollection> Rechits;
   event.getByToken(HGCalTBRecHitCollection_, Rechits);
@@ -499,48 +601,48 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
   //  std::cout << " >>> down " << std::endl;
   ShowerShape shosha_dw(mapfile_, Rechits, ADCtoMIPdw, commonmode, CMTHRESHOLD, max, max_x, max_y);
  
-  float E1SumL_R = 0.;
-  float E7SumL_R = 0.;
-  float E19SumL_R = 0.;
-  float EAllSumL_R = 0.;
-  float E1SumL_Rup = 0.;
-  float E7SumL_Rup = 0.;
-  float E19SumL_Rup = 0.;
-  float EAllSumL_Rup = 0.;
-  float E1SumL_Rdw = 0.;
-  float E7SumL_Rdw = 0.;
-  float E19SumL_Rdw = 0.;
-  float EAllSumL_Rdw = 0.;
+  E1SumL_R = 0.;
+  E7SumL_R = 0.;
+  E19SumL_R = 0.;
+  EAllSumL_R = 0.;
+  E1SumL_Rup = 0.;
+  E7SumL_Rup = 0.;
+  E19SumL_Rup = 0.;
+  EAllSumL_Rup = 0.;
+  E1SumL_Rdw = 0.;
+  E7SumL_Rdw = 0.;
+  E19SumL_Rdw = 0.;
+  EAllSumL_Rdw = 0.;
 
-  float E1SumL_AbsW_Mip = 0.;
-  float E7SumL_AbsW_Mip = 0.;
-  float E19SumL_AbsW_Mip = 0.;
-  float EAllSumL_AbsW_Mip = 0.;
+  E1SumL_AbsW_Mip = 0.;
+  E7SumL_AbsW_Mip = 0.;
+  E19SumL_AbsW_Mip = 0.;
+  EAllSumL_AbsW_Mip = 0.;
 
-  float E1SumL_AbsW_GeV = 0.;
-  float E7SumL_AbsW_GeV = 0.;
-  float E19SumL_AbsW_GeV = 0.;
-  float EAllSumL_AbsW_GeV = 0.;
+  E1SumL_AbsW_GeV = 0.;
+  E7SumL_AbsW_GeV = 0.;
+  E19SumL_AbsW_GeV = 0.;
+  EAllSumL_AbsW_GeV = 0.;
 
-  float E1SumL_AbsW_Mip_up = 0.;
-  float E7SumL_AbsW_Mip_up = 0.;
-  float E19SumL_AbsW_Mip_up = 0.;
-  float EAllSumL_AbsW_Mip_up = 0.;
+  E1SumL_AbsW_Mip_up = 0.;
+  E7SumL_AbsW_Mip_up = 0.;
+  E19SumL_AbsW_Mip_up = 0.;
+  EAllSumL_AbsW_Mip_up = 0.;
 
-  float E1SumL_AbsW_GeV_up = 0.;
-  float E7SumL_AbsW_GeV_up = 0.;
-  float E19SumL_AbsW_GeV_up = 0.;
-  float EAllSumL_AbsW_GeV_up = 0.;
+  E1SumL_AbsW_GeV_up = 0.;
+  E7SumL_AbsW_GeV_up = 0.;
+  E19SumL_AbsW_GeV_up = 0.;
+  EAllSumL_AbsW_GeV_up = 0.;
 
-  float E1SumL_AbsW_Mip_dw = 0.;
-  float E7SumL_AbsW_Mip_dw = 0.;
-  float E19SumL_AbsW_Mip_dw = 0.;
-  float EAllSumL_AbsW_Mip_dw = 0.;
+  E1SumL_AbsW_Mip_dw = 0.;
+  E7SumL_AbsW_Mip_dw = 0.;
+  E19SumL_AbsW_Mip_dw = 0.;
+  EAllSumL_AbsW_Mip_dw = 0.;
 
-  float E1SumL_AbsW_GeV_dw = 0.;
-  float E7SumL_AbsW_GeV_dw = 0.;
-  float E19SumL_AbsW_GeV_dw = 0.;
-  float EAllSumL_AbsW_GeV_dw = 0.;
+  E1SumL_AbsW_GeV_dw = 0.;
+  E7SumL_AbsW_GeV_dw = 0.;
+  E19SumL_AbsW_GeV_dw = 0.;
+  EAllSumL_AbsW_GeV_dw = 0.;
 
 
   for(int iL=0; iL<MAXLAYERS; ++iL){
@@ -758,7 +860,8 @@ Layer_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setu
   h_e7_all_AbsW_GeV_dw->Fill(E7SumL_AbsW_GeV_dw);
   h_e19_all_AbsW_GeV_dw->Fill(E19SumL_AbsW_GeV_dw);
  
-  
+  outTree->Fill();
+
 }// analyze ends here
 
 

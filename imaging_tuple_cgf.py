@@ -179,6 +179,7 @@ process.hgcaltbrechits.gainHigh = cms.string('')
 # Necessary redefinition of sources if the input data is not read with the HGCalTBTextSource plugin
 if not options.isData:
     process.imaging_tuple_writer.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
+    process.LayerSumAnalyzer.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
 
                               
 ####################################
@@ -186,6 +187,7 @@ if not options.isData:
 if(options.configuration == "1"):
     process.BadSpillFilter.layers_config = cms.int32(1)
     process.hgcaltbrechits.layers_config = cms.int32(1)
+    process.LayerSumAnalyzer.layers_config = cms.int32(1)
 else:
     sys.exit("Error: Configuarion %s is not supported in the position resolution analysis" % options.configuration)
 
@@ -194,7 +196,8 @@ else:
 # Define the output file using TFileService. The MillepedeBinaryWriter defines its own, non-ROOT file as output
 if (options.chainSequence == 10):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/HGCRun_Output_Imaging_Tuple_%s.root"%(options.outputFolder,options.outputPostfix)))
-
+elif (options.chainSequence == 6):
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/HGCRun_LayerSumAnalyzer_%s.root"%(options.outputFolder,options.outputPostfix)))
 
 
 ####################################
@@ -203,12 +206,14 @@ if (options.chainSequence == 10):
 if options.isData:
     if (options.chainSequence == 10):
         process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.imaging_tuple_writer)
-    
-        
+    elif (options.chainSequence == 6):
+        process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.LayerSumAnalyzer)    
+
 else:
     if (options.chainSequence == 10):
         process.p =cms.Path(process.imaging_tuple_writer)
-    
+    elif (options.chainSequence == 6):
+        process.p =cms.Path(process.LayerSumAnalyzer)       
 
 
 
