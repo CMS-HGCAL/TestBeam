@@ -46,6 +46,11 @@ options.register('nSpills',
                  VarParsing.VarParsing.varType.int,
                  'Number of spills per run before read-out is stopped.')
 
+options.register('NEvents',
+                 -1,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Number of read events before execution is stopped.')
 
 ####################################
 # Options specific for the pedestal subtraction
@@ -166,10 +171,9 @@ if not os.path.isdir(options.outputFolder):
 
 ################################
 # Setting an upper limit for the events to be processed, e.g. for debugging
-options.maxEvents = -1
 process = cms.Process("unpack")
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(options.maxEvents)
+    input = cms.untracked.int32(options.NEvents)
 )
 
 ####################################
@@ -260,6 +264,7 @@ process.millepede_binarywriter.binaryFile = "%s/HGCRun_MillepedeBinary_%s.bin"%(
 ####################################
 # Necessary redefinition of sources if the input data is not read with the HGCalTBTextSource plugin
 if not options.isData:
+    process.hgcaltbrechitsplotter_highgain_new.HGCALTBRECHITS = cms.InputTag("source","","unpack")
     process.hgcaltbclusters.rechitCollection = cms.InputTag("source","","unpack")
     process.position_resolution_analyzer.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
     process.millepede_binarywriter.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
@@ -281,7 +286,9 @@ else:
 
 ####################################
 # Define the output file using TFileService. The MillepedeBinaryWriter defines its own, non-ROOT file as output
-if (options.chainSequence == 8):
+if (options.chainSequence == 1):
+    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/HGCRun_RecHitPlotter_%s.root"%(options.outputFolder,options.outputPostfix)))
+elif (options.chainSequence == 8):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/HGCRun_Output_Position_Resolution_%s.root"%(options.outputFolder,options.outputPostfix)))
 
 
@@ -290,13 +297,17 @@ if (options.chainSequence == 8):
 # Setup the sequences. With simulated data, 'process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits' do not run but are replaced by the HGCalTBGenSimSource plugin that converts
 # the root tuples to HGCalRechits.
 if options.isData:
-    if (options.chainSequence == 8):
+    if (options.chainSequence == 1):
+        process.p = cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
+    elif (options.chainSequence == 8):
         process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.position_resolution_analyzer)
     elif (options.chainSequence == 9):
         process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.millepede_binarywriter)
         
 else:
-    if (options.chainSequence == 8):
+    if (options.chainSequence == 1):
+        process.p = cms.Path(process.hgcaltbrechitsplotter_highgain_new)
+    elif (options.chainSequence == 8):
         process.p =cms.Path(process.hgcaltbclusters*process.position_resolution_analyzer)
     elif (options.chainSequence == 9):
         process.p =cms.Path(process.hgcaltbclusters*process.millepede_binarywriter)
