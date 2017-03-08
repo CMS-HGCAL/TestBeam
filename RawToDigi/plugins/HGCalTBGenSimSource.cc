@@ -16,6 +16,7 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	inputPathFormat = pset.getUntrackedParameter<std::string>("inputPathFormat");
 	energyNoise = pset.getParameter<double>("energyNoise");
 	energyNoiseResolution = pset.getParameter<double>("energyNoiseResolution");
+	createMWC = pset.getParameter<bool>("createMWC");
 	smearingResolution = pset.getParameter<double>("MWCSmearingResolution")/1000.;		//configuration is in microns, convert to cm
 
 	produces <HGCalTBRecHitCollection>(outputCollectionName);
@@ -137,10 +138,12 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
   		tree->SetBranchAddress("xBeam", &beamX, &b_beamX);
   		tree->SetBranchAddress("yBeam", &beamY, &b_beamY);
   		tree->SetBranchAddress("pBeam", &beamP, &b_beamP);
-  		tree->SetBranchAddress("MWC_x1", &MWC_x1, &b_MWC_x1);
-  		tree->SetBranchAddress("MWC_x2", &MWC_x2, &b_MWC_x2);
-  		tree->SetBranchAddress("MWC_y1", &MWC_y1, &b_MWC_y1);
-  		tree->SetBranchAddress("MWC_y2", &MWC_y2, &b_MWC_y2);
+  		if (createMWC) {
+	  		tree->SetBranchAddress("MWC_x1", &MWC_x1, &b_MWC_x1);
+  			tree->SetBranchAddress("MWC_x2", &MWC_x2, &b_MWC_x2);
+  			tree->SetBranchAddress("MWC_y1", &MWC_y1, &b_MWC_y1);
+  			tree->SetBranchAddress("MWC_y2", &MWC_y2, &b_MWC_y2);
+  		}
 	}
 
 	if (currentEvent == tree->GetEntries()) {
@@ -214,21 +217,7 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	}	
 	event.put(rechits, outputCollectionName);
 
-	
-	//second: add fake multi-wire chambers from xBeam, yBeam
-	double x1_mc = MWC_x1 + randgen->Gaus(0, smearingResolution);
-	double y1_mc = MWC_y1 + randgen->Gaus(0, smearingResolution);
-	double x2_mc = MWC_x2 + randgen->Gaus(0, smearingResolution);
-	double y2_mc = MWC_y2 + randgen->Gaus(0, smearingResolution);
-	
-	std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
-	mwcs->push_back(MultiWireChamberData(1, x1_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y1_mc, -x1_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y1_mc, -273.));
-	mwcs->push_back(MultiWireChamberData(2, x2_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y2_mc, -x2_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y2_mc, -147.));
-	
-	event.put(std::move(mwcs), "MultiWireChambers");		
-	
-
-	//third: fill the run data
+	//fill the run data
 	std::auto_ptr<RunData> rd(new RunData);
 	rd->energy = (*fileIterator).energy;		//mean energy of the beam configuration
 	rd->configuration = (*fileIterator).config;
@@ -237,16 +226,33 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	rd->event = eventCounter;
 	rd->hasDanger = false;
 	rd->trueEnergy = beamP;						//energy as truely simulated
+	
+
 
 	bool _hasValidMWCMeasurement = true;
-	_hasValidMWCMeasurement = (x1_mc != -99.9) && _hasValidMWCMeasurement;
-	_hasValidMWCMeasurement = (y1_mc != -99.9) && _hasValidMWCMeasurement;
-	_hasValidMWCMeasurement = (x2_mc != -99.9) && _hasValidMWCMeasurement;
-	_hasValidMWCMeasurement = (y2_mc != -99.9) && _hasValidMWCMeasurement;
+	//second: add fake multi-wire chambers from xBeam, yBeam
+	if (createMWC) {
+		double x1_mc = MWC_x1 + randgen->Gaus(0, smearingResolution);
+		double y1_mc = MWC_y1 + randgen->Gaus(0, smearingResolution);
+		double x2_mc = MWC_x2 + randgen->Gaus(0, smearingResolution);
+		double y2_mc = MWC_y2 + randgen->Gaus(0, smearingResolution);
+		
+		std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
+		mwcs->push_back(MultiWireChamberData(1, x1_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y1_mc, -x1_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y1_mc, -273.));
+		mwcs->push_back(MultiWireChamberData(2, x2_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y2_mc, -x2_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y2_mc, -147.));
+
+		_hasValidMWCMeasurement = (x1_mc != -99.9) && _hasValidMWCMeasurement;
+		_hasValidMWCMeasurement = (y1_mc != -99.9) && _hasValidMWCMeasurement;
+		_hasValidMWCMeasurement = (x2_mc != -99.9) && _hasValidMWCMeasurement;
+		_hasValidMWCMeasurement = (y2_mc != -99.9) && _hasValidMWCMeasurement;
+
+		event.put(std::move(mwcs), "MultiWireChambers");		
+	} else {
+		_hasValidMWCMeasurement = false;
+	}
+
 	rd->hasValidMWCMeasurement = _hasValidMWCMeasurement;
-
 	event.put(std::move(rd), "RunData");	
-
 
 }
 

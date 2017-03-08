@@ -98,6 +98,7 @@ private:
 	TRandom* randgen;
 	double energyNoise;
 	double energyNoiseResolution;
+	bool createMWC;
 	double smearingResolution;
 
 public:

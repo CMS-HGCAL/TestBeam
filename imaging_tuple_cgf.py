@@ -147,6 +147,7 @@ else:
                             fileNames=cms.untracked.vstring(options.fileNames), 
                             energyNoise=cms.double(0.0),  
                             energyNoiseResolution=cms.double(0.0),
+                            createMWC=cms.bool(False),
                             MWCSmearingResolution=cms.double(50.)     #value is in microns! 
                             )
 
