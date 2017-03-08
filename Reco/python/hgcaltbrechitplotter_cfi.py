@@ -39,6 +39,7 @@ FourLayerRecHitPlotterMax = cms.EDAnalyzer("FourLayerRecHitPlotterMax",
 
 LayerSumAnalyzer = cms.EDAnalyzer("Layer_Sum_Analyzer",
                                   HGCALTBRECHITS = cms.InputTag("hgcaltbrechits","","unpack" ),
+                                  RUNDATA = cms.InputTag("source","RunData","unpack" ),
                                   layers_config = cms.int32(-1),
                                   mapFile_CERN = cms.string('HGCal/CondObjects/data/map_CERN_8Layers_Sept2016.txt'),
                                   mapFile_FNAL = cms.string('')
