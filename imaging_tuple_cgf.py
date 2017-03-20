@@ -189,6 +189,10 @@ if(options.configuration == "1"):
     process.BadSpillFilter.layers_config = cms.int32(1)
     process.hgcaltbrechits.layers_config = cms.int32(1)
     process.LayerSumAnalyzer.layers_config = cms.int32(1)
+elif(options.configuration == "2"):
+    process.BadSpillFilter.layers_config = cms.int32(2)
+    process.hgcaltbrechits.layers_config = cms.int32(2)
+    process.LayerSumAnalyzer.layers_config = cms.int32(2)
 else:
     sys.exit("Error: Configuarion %s is not supported in the position resolution analysis" % options.configuration)
 
