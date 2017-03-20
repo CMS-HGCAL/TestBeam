@@ -213,7 +213,7 @@ else:
                             energyNoise=cms.double(0.0),  
                             energyNoiseResolution=cms.double(0.0),
                             createMWC=cms.bool(True),
-                            MWCSmearingResolution=cms.double(50.)     #value is in microns! 
+                            MWCSmearingResolution=cms.double(200.)     #value is in microns! 
                             )
 
 
