@@ -17,7 +17,7 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	energyNoise = pset.getParameter<double>("energyNoise");
 	energyNoiseResolution = pset.getParameter<double>("energyNoiseResolution");
 	createMWC = pset.getParameter<bool>("createMWC");
-	smearingResolution = pset.getParameter<double>("MWCSmearingResolution")/1000.;		//configuration is in microns, convert to cm
+	smearingResolution = pset.getParameter<double>("MWCSmearingResolution")/10000.;		//configuration value is in microns, convert to cm
 
 	produces <HGCalTBRecHitCollection>(outputCollectionName);
 	produces<RunData>("RunData");
@@ -42,8 +42,6 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 		map_file.close();	
 	}
 	
-
-
 	 
 	_e_mapFile = pset.getParameter<std::string>("e_mapFile_CERN");	
 	HGCalCondObjectTextIO io(0);
