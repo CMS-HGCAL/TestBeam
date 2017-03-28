@@ -24,6 +24,7 @@
 #include "TFile.h"
 #include "TBranch.h"
 #include "TTree.h"
+#include "TF1.h"
 #include "TDirectory.h"
 #include "TRandom.h"
 /**
@@ -73,21 +74,21 @@ private:
 	int eventCounter;
 
 	TFile *rootFile;
-  	TTree *tree;   //!pointer to the analyzed TTree or TChain
-  	TDirectory *dir;
+	TTree *tree;   //!pointer to the analyzed TTree or TChain
+	TDirectory *dir;
 
-  	std::vector<unsigned int> *simHitCellIdE;
-  	std::vector<float>        *simHitCellEnE;
-  	double					  beamX;
-  	double					  beamY;
-    double            beamP;
-  	double					  MWC_x1, MWC_x2, MWC_y1, MWC_y2;
-  	TBranch                   *b_simHitCellIdE;   
-  	TBranch                   *b_simHitCellEnE;   
-  	TBranch                   *b_beamX;   
-  	TBranch                   *b_beamY;   
-  	TBranch                   *b_beamP;   
-    TBranch                   *b_MWC_x1, *b_MWC_x2, *b_MWC_y1, *b_MWC_y2;   
+	std::vector<unsigned int> *simHitCellIdE;
+	std::vector<float>        *simHitCellEnE;
+	double					  beamX;
+	double					  beamY;
+  double            beamP;
+	double					  MWC_x1, MWC_x2, MWC_y1, MWC_y2;
+	TBranch                   *b_simHitCellIdE;   
+	TBranch                   *b_simHitCellEnE;   
+	TBranch                   *b_beamX;   
+	TBranch                   *b_beamY;   
+	TBranch                   *b_beamP;   
+  TBranch                   *b_MWC_x1, *b_MWC_x2, *b_MWC_y1, *b_MWC_y2;   
 
 	//getting the required electronic mapping
 	std::string _e_mapFile;
@@ -99,7 +100,13 @@ private:
 	double energyNoise;
 	double energyNoiseResolution;
 	bool createMWC;
-	double smearingResolution;
+
+  std::string modellingFilePath;
+  TFile *modellingFile;
+
+  bool resolutionsAvailable;
+  TF1 *mwcResolutionX; 
+  TF1 *mwcResolutionY; 
 
 public:
 	explicit HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc);

@@ -17,12 +17,11 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	energyNoise = pset.getParameter<double>("energyNoise");
 	energyNoiseResolution = pset.getParameter<double>("energyNoiseResolution");
 	createMWC = pset.getParameter<bool>("createMWC");
-	smearingResolution = pset.getParameter<double>("MWCSmearingResolution")/10000.;		//configuration value is in microns, convert to cm
+	modellingFilePath = pset.getUntrackedParameter<std::string>("modellingFilePath");		//configuration value is in microns, convert to cm
 
 	produces <HGCalTBRecHitCollection>(outputCollectionName);
 	produces<RunData>("RunData");
 	produces<MultiWireChambers>("MultiWireChambers");
-
 
 	if (fileNames()[0] != "file:DUMMY") {
 		for (int i = 0; i<(int)(fileNames().size()); i++) {
@@ -42,7 +41,15 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 		map_file.close();	
 	}
 	
-	 
+	modellingFile = new TFile(modellingFilePath.c_str(), "READ");
+	resolutionsAvailable = (modellingFile->GetListOfKeys()->Contains("mwcResolutionX") && modellingFile->GetListOfKeys()->Contains("mwcResolutionY"));
+  if (resolutionsAvailable) {
+  	mwcResolutionX = (TF1*)modellingFile->Get("mwcResolutionX"); 
+  	mwcResolutionY = (TF1*)modellingFile->Get("mwcResolutionY");
+  } else {
+  	std::cout<<"[WARNING] Resolution parameterization is not available!"<<std::endl;
+  }
+
 	_e_mapFile = pset.getParameter<std::string>("e_mapFile_CERN");	
 	HGCalCondObjectTextIO io(0);
 	edm::FileInPath fip(_e_mapFile);
@@ -54,13 +61,13 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	geomc = new HexGeometry(false);
 
 	tree = 0;
-  	simHitCellIdE = 0;
-  	simHitCellEnE = 0;
-  	beamX	 = 0;
-  	beamY 	 = 0;
+	simHitCellIdE = 0;
+	simHitCellEnE = 0;
+	beamX	 = 0;
+	beamY 	 = 0;
 
+  randgen = new TRandom();
 
-  	randgen = new TRandom();
 }
 
 void HGCalTBGenSimSource::fillConfiguredRuns(std::fstream& map_file) {
@@ -230,11 +237,18 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	bool _hasValidMWCMeasurement = true;
 	//second: add fake multi-wire chambers from xBeam, yBeam
 	if (createMWC) {
-		double x1_mc = MWC_x1 + randgen->Gaus(0, smearingResolution);
-		double y1_mc = MWC_y1 + randgen->Gaus(0, smearingResolution);
-		double x2_mc = MWC_x2 + randgen->Gaus(0, smearingResolution);
-		double y2_mc = MWC_y2 + randgen->Gaus(0, smearingResolution);
+
+		//apply the smearing of the wire chamber reference in x
+		double _smearRes = resolutionsAvailable ? mwcResolutionX->Eval(rd->energy) : 0;
+		double x1_mc = MWC_x1 + randgen->Gaus(0, _smearRes);
+		double x2_mc = MWC_x2 + randgen->Gaus(0, _smearRes);
 		
+		//apply the smearing of the wire chamber reference in y
+		_smearRes = resolutionsAvailable ? mwcResolutionY->Eval(rd->energy) : 0;
+		double y1_mc = MWC_y1 + randgen->Gaus(0, _smearRes);
+		double y2_mc = MWC_y2 + randgen->Gaus(0, _smearRes);
+		
+
 		std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
 		mwcs->push_back(MultiWireChamberData(1, x1_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y1_mc, -x1_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y1_mc, -273.));
 		mwcs->push_back(MultiWireChamberData(2, x2_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y2_mc, -x2_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y2_mc, -147.));

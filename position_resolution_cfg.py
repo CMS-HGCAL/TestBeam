@@ -213,7 +213,7 @@ else:
                             energyNoise=cms.double(0.0),  
                             energyNoiseResolution=cms.double(0.0),
                             createMWC=cms.bool(True),
-                            MWCSmearingResolution=cms.double(450.)     #value is in microns! 
+                            modellingFilePath=cms.untracked.string("file:%s/modelling.root"%(options.dataFolder))
                             )
 
 
