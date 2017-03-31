@@ -34,6 +34,8 @@ std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(i
 			vertex_y_tmp = y_co_FullHex[iii] + iv * vy0;
 //The general strategy is to translate starting from the central hexagonal cell to the iu,iv desired. If any vertex goes out of the sensor boundary its cordinates are not filled into the vector of pairs.
 			if(fabs(vertex_x_tmp) <= Xmax(iv, fabs(vertex_y_tmp)) + delta) {
+				vertex_x_tmp += sensor_iu*X0 + sensor_iv*VX0;
+				vertex_y_tmp += sensor_iv*VY0;
 				auto point = RotateLayer(std::make_pair(vertex_x_tmp, vertex_y_tmp), TEST_BEAM_LAYER_ROTATION);
 //				if(flipX==true) point.first=-point.first;
 				Cell_co.push_back(point);
@@ -53,8 +55,8 @@ std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int laye
 	double centre_x_tmp = 0., centre_y_tmp = 0.;
 	bool ValidFlag   = Top.iu_iv_valid(layer, sensor_iu, sensor_iv, iu, iv, sensorsize);
 	if(ValidFlag) {    
-    centre_x_tmp = iu * x0 + iv * vx0;
-		centre_y_tmp = iv * vy0;
+		centre_x_tmp = iu * x0 + iv * vx0 + sensor_iu*X0 + sensor_iv*VX0;
+		centre_y_tmp = iv * vy0 + iv * vy0 + sensor_iv*VY0;
 		auto point = RotateLayer(std::make_pair(centre_x_tmp, centre_y_tmp), TEST_BEAM_LAYER_ROTATION);
 //		if(flipX==true) point.first = - point.first;
 		return point;

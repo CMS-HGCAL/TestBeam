@@ -7,9 +7,20 @@
 
 bool HGCalTBTopology::iu_iv_valid(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorSize) const
 {
-	int aiv = abs(iv);
-	int iuc = (iv < 0) ? (-iu) : (iu);
-	if(layer <= 28 && sensor_iu == 0 && sensor_iv == 0) {
+	bool Is_Valid_sensor_iu_iv = 0;
+        int aiv = abs(iv);
+        int iuc = (iv < 0) ? (-iu) : (iu);
+
+        int aIv = abs(sensor_iv);
+        int Iuc = (sensor_iv < 0)?(-sensor_iu):(sensor_iu);
+
+        if(layer <= 28) Is_Valid_sensor_iu_iv = (Iuc == 0 && aIv == 0);
+        else{
+                if(aIv == 0) Is_Valid_sensor_iu_iv = (Iuc >= -1 && Iuc <= 1);
+                else if(aIv == 1) Is_Valid_sensor_iu_iv = (Iuc >= -1 && Iuc <= 0);
+        }
+
+	if(layer <= 40 && Is_Valid_sensor_iu_iv) {
 		if(sensorSize == 128) {
 			if (iv == 0) return (iu >= -5 && iu <= 5);
 			else if (aiv == 1) return (iuc >= -6 && iuc <= 5);
@@ -46,6 +57,7 @@ double HGCalTBTopology::Cell_Area(int cell_type) const
 	else return -1.; //signifies an invalid cell type
 }
 
+
 std::set<HGCalTBDetId> HGCalTBTopology::getNeighboringCellsDetID(HGCalTBDetId detid, int sensorSize, int maxDistance, const HGCalElectronicsMap& emap) const
 {
 	int layer=detid.layer();
@@ -74,3 +86,4 @@ std::set<HGCalTBDetId> HGCalTBTopology::getNeighboringCellsDetID(HGCalTBDetId de
 	}
 	return detids;
 }
+
