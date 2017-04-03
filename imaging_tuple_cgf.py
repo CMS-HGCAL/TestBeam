@@ -181,6 +181,7 @@ process.hgcaltbrechits.gainHigh = cms.string('')
 if not options.isData:
     process.imaging_tuple_writer.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
     process.LayerSumAnalyzer.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
+    process.LayerSumAnalyzer.convertFromADCToMIP = cms.bool(False)
 
                               
 ####################################
