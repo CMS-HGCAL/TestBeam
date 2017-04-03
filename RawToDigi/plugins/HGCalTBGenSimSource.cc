@@ -204,19 +204,10 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 
 		recHit.setCellCenterCoordinate(x, y);
 	
-		uint32_t EID = essource_.emap_.detId2eid(recHit.id());
-		HGCalTBElectronicsId eid(EID);	 
-
-		//attention! the electric ID to skiroc mapping takes the cellType information as well which is only 0, 2 in the simulation!
-		//any analysis on the simulated data must respect that by computing MIP-ADC factors in the same way and by converting energies into MIP units
-		int skiRocIndex = (eid.iskiroc() - 1) > 0 ? eid.iskiroc() - 1 : 0;		
-
 		double energy = simHitCellEnE->at(icell) / MIP2GeV_sim;
 	 	
 		//additional noise to the energy in MIPs
 		energy += randgen->Gaus(energyNoise, energyNoiseResolution);
-
-		energy *= ADCtoMIP_CERN[skiRocIndex];
 
 	 	recHit.setEnergy(energy);
 	 	recHit._energyLow = energy;

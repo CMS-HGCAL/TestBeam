@@ -34,7 +34,7 @@
  *
  *
 **/
-double ADCtoMIP_CERN[16] =  {17.31, 17.12, 16.37, 17.45, 17.31, 16.98, 16.45, 16.19, 17.55, 17.19, 16.99, 17.92, 15.95, 16.64, 16.79, 15.66};
+
 double MIP2GeV_sim = 51.91e-06; //mpv muon EMM pysics list
 
 //must be a globally available variable, otherwise a segmentation fault is thrown  
