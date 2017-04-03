@@ -41,14 +41,18 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 		map_file.close();	
 	}
 	
-	modellingFile = new TFile(modellingFilePath.c_str(), "READ");
-	resolutionsAvailable = (modellingFile->GetListOfKeys()->Contains("mwcResolutionX") && modellingFile->GetListOfKeys()->Contains("mwcResolutionY"));
-  if (resolutionsAvailable) {
-  	mwcResolutionX = (TF1*)modellingFile->Get("mwcResolutionX"); 
-  	mwcResolutionY = (TF1*)modellingFile->Get("mwcResolutionY");
-  } else {
-  	std::cout<<"[WARNING] Resolution parameterization is not available!"<<std::endl;
-  }
+	try {
+		modellingFile = new TFile(modellingFilePath.c_str(), "READ");
+		resolutionsAvailable = (modellingFile->GetListOfKeys()->Contains("mwcResolutionX") && modellingFile->GetListOfKeys()->Contains("mwcResolutionY"));
+	  if (resolutionsAvailable) {
+	  	mwcResolutionX = (TF1*)modellingFile->Get("mwcResolutionX"); 
+	  	mwcResolutionY = (TF1*)modellingFile->Get("mwcResolutionY");
+	  } else {
+	  	std::cout<<"[WARNING] Resolution parameterization is not available!"<<std::endl;
+	  }
+	} catch(int e) {
+		resolutionsAvailable = false;
+	}
 
 	_e_mapFile = pset.getParameter<std::string>("e_mapFile_CERN");	
 	HGCalCondObjectTextIO io(0);
