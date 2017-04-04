@@ -88,7 +88,7 @@ private:
 	TBranch                   *b_beamX;   
 	TBranch                   *b_beamY;   
 	TBranch                   *b_beamP;   
-  TBranch                   *b_MWC_x1, *b_MWC_x2, *b_MWC_y1, *b_MWC_y2;   
+  	TBranch                   *b_MWC_x1, *b_MWC_x2, *b_MWC_y1, *b_MWC_y2;   
 
 	//getting the required electronic mapping
 	std::string _e_mapFile;
@@ -100,6 +100,8 @@ private:
 	double energyNoise;
 	double energyNoiseResolution;
 	bool createMWC;
+
+	double defaultADCPerMIP;
 
   std::string modellingFilePath;
   TFile *modellingFile;

@@ -230,6 +230,7 @@ private:
   double E19SumL_AbsW_GeV_dw;
   double EAllSumL_AbsW_GeV_dw;
 
+  double defaultADCPerMIP;
 
 
         int EVENT = 0;
@@ -252,7 +253,7 @@ Layer_Sum_Analyzer::Layer_Sum_Analyzer(const edm::ParameterSet& iConfig)
   layers_config_ = iConfig.getParameter<int>("layers_config");
   convertFromADCToMIP = iConfig.getParameter<bool>("convertFromADCToMIP");
   
-
+  defaultADCPerMIP = 17.;
 
   //booking the histos
   for(int layer = 0; layer < MAXLAYERS; layer++) {
@@ -880,16 +881,16 @@ Layer_Sum_Analyzer::beginJob()
 
 	if(layers_config_ != 0){
 	  for(int iii = 0; iii < MAXSKIROCS; iii++){
-	    ADCtoMIP[iii] = convertFromADCToMIP ? ADCtoMIP[iii] * MIP2ParticleCalib : 1; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
-	    ADCtoMIPup[iii] = convertFromADCToMIP ? ADCtoMIPup[iii] * MIP2ParticleCalib : 1; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
-	    ADCtoMIPdw[iii] = convertFromADCToMIP ? ADCtoMIPdw[iii] * MIP2ParticleCalib : 1; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
+	    ADCtoMIP[iii] = convertFromADCToMIP ? ADCtoMIP[iii] * MIP2ParticleCalib : defaultADCPerMIP; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
+	    ADCtoMIPup[iii] = convertFromADCToMIP ? ADCtoMIPup[iii] * MIP2ParticleCalib : defaultADCPerMIP; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
+	    ADCtoMIPdw[iii] = convertFromADCToMIP ? ADCtoMIPdw[iii] * MIP2ParticleCalib : defaultADCPerMIP; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
 	  }
 	}
 	else{
 	  for(int iii = 0; iii < MAXLAYERS; iii++){
-	    ADCtoMIP[iii] = convertFromADCToMIP ? ADCtoMIP[iii] * MIP2ParticleCalib : 1; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
-	    ADCtoMIPup[iii] = convertFromADCToMIP ? ADCtoMIPup[iii] * MIP2ParticleCalib : 1; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
-	    ADCtoMIPdw[iii] = convertFromADCToMIP ? ADCtoMIPdw[iii] * MIP2ParticleCalib : 1; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
+	    ADCtoMIP[iii] = convertFromADCToMIP ? ADCtoMIP[iii] * MIP2ParticleCalib : defaultADCPerMIP; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
+	    ADCtoMIPup[iii] = convertFromADCToMIP ? ADCtoMIPup[iii] * MIP2ParticleCalib : defaultADCPerMIP; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
+	    ADCtoMIPdw[iii] = convertFromADCToMIP ? ADCtoMIPdw[iii] * MIP2ParticleCalib : defaultADCPerMIP; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
 	  }
 	}
 	/*

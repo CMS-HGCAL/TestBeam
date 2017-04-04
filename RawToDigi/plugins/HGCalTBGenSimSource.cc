@@ -70,7 +70,8 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	beamX	 = 0;
 	beamY 	 = 0;
 
-  randgen = new TRandom();
+	randgen = new TRandom();
+	defaultADCPerMIP = 17.;
 
 }
 
@@ -204,8 +205,10 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 
 		recHit.setCellCenterCoordinate(x, y);
 	
-		double energy = simHitCellEnE->at(icell) / MIP2GeV_sim;
-	 	
+		double energy = simHitCellEnE->at(icell); 
+		energy /= MIP2GeV_sim;
+		energy *= defaultADCPerMIP;
+
 		//additional noise to the energy in MIPs
 		energy += randgen->Gaus(energyNoise, energyNoiseResolution);
 

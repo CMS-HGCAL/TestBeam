@@ -269,8 +269,8 @@ if not options.isData:
     process.hgcaltbclusters.rechitCollection = cms.InputTag("source","","unpack")
     process.position_resolution_analyzer.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
     process.millepede_binarywriter.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
-    process.position_resolution_analyzer.ADC_per_MIP = cms.vdouble([1 for i in range(16)])
-    process.millepede_binarywriter.ADC_per_MIP = cms.vdouble([1 for i in range(16)])
+    process.position_resolution_analyzer.ADC_per_MIP = cms.vdouble([17. for i in range(16)])
+    process.millepede_binarywriter.ADC_per_MIP = cms.vdouble([17. for i in range(16)])
 
                               
 ####################################

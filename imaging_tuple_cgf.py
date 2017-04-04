@@ -148,7 +148,7 @@ else:
                             energyNoise=cms.double(0.0),  
                             energyNoiseResolution=cms.double(0.0),
                             createMWC=cms.bool(False),
-                            MWCSmearingResolution=cms.double(50.)     #value is in microns! 
+                            modellingFilePath=cms.untracked.string("file:%s/modelling.root"%("/home/data/MC/September2016")) 
                             )
 
 
@@ -181,6 +181,7 @@ process.hgcaltbrechits.gainHigh = cms.string('')
 if not options.isData:
     process.imaging_tuple_writer.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
     process.LayerSumAnalyzer.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
+    process.imaging_tuple_writer.ADC_per_MIP = cms.vdouble([17. for i in range(16)])    #values for data in default config
     process.LayerSumAnalyzer.convertFromADCToMIP = cms.bool(False)
 
                               

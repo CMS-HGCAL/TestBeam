@@ -24,18 +24,19 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
+#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
+#include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"	//for the runData type definition
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
-
-
 #include "TFile.h"
 #include "TTree.h"
-  
-                     
+
+                       
 class Imaging_Tuple_Writer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	public:
 		explicit Imaging_Tuple_Writer(const edm::ParameterSet&);
@@ -52,6 +53,14 @@ class Imaging_Tuple_Writer : public edm::one::EDAnalyzer<edm::one::SharedResourc
 		edm::Service<TFileService> fs;
 		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;
 		edm::EDGetTokenT<RunData> RunDataToken;	
+		
+		struct {
+  			HGCalElectronicsMap emap_;
+		} essource_;
+		std::string _e_mapFile;
+
+
+		std::vector<double> ADC_per_MIP;
 
 		int eventCounter, run;
 
@@ -70,11 +79,17 @@ class Imaging_Tuple_Writer : public edm::one::EDAnalyzer<edm::one::SharedResourc
 Imaging_Tuple_Writer::Imaging_Tuple_Writer(const edm::ParameterSet& iConfig) {	
 	
 	// initialization
-
 	usesResource("TFileService");
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
+	ADC_per_MIP = iConfig.getParameter<std::vector<double> >("ADC_per_MIP");
 	
+	_e_mapFile = iConfig.getParameter<std::string>("e_mapFile_CERN");	
+	HGCalCondObjectTextIO io(0);
+	edm::FileInPath fip(_e_mapFile);
+  	if (!io.load(fip.fullPath(), essource_.emap_)) {
+	  throw cms::Exception("Unable to load electronics map");
+	};
 
 	eventCounter = 0;
 
@@ -122,7 +137,12 @@ void Imaging_Tuple_Writer::analyze(const edm::Event& event, const edm::EventSetu
 		ivs.push_back((Rechit.id()).iv());
 		xs.push_back(Rechit.getCellCenterCartesianCoordinate(0));
 		ys.push_back(Rechit.getCellCenterCartesianCoordinate(1));
-		energies.push_back(Rechit.energy());
+
+
+		uint32_t EID = essource_.emap_.detId2eid(Rechit.id());
+		HGCalTBElectronicsId eid(EID);	 
+		int skiRocIndex = (eid.iskiroc() - 1) > 0 ? eid.iskiroc() - 1 : 0;	
+		energies.push_back(Rechit.energy()/ADC_per_MIP[skiRocIndex]);
 	}
 
 	outTree->Fill();
