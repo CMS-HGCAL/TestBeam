@@ -16,7 +16,7 @@ options.register('repoFolder',
                 )
 
 options.register('dataFolder',
-                 '/home/data/Testbeam/September2016',        #use this for running on pclcd
+                 '/eos/user/t/tquast/data/Testbeam/September2016',        #use this for running on pclcd
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Main directory containing raw text input')
