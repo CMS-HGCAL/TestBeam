@@ -209,9 +209,10 @@ void ShowerShape::init(){
     int eCellType = (Rechit.id()).cellType();
     uint32_t EID = essource_.emap_.detId2eid(Rechit.id());
     HGCalTBElectronicsId eid(EID);
-    int eSkiroc = (eid.iskiroc() - 1);
+    int eSkiroc = (eid.iskiroc() - 1) < 0 ? 0 : (eid.iskiroc()-1);      //FIXME: temporary fix for simulation where the skiroc index can be zero
 
     if(eCellType != 0 && eCellType != 1 && eCellType != 4) continue;
+
 
     float energyCMsub = (Rechit.energy() - commonmode[eLayer]) / ADCtoMIP[eSkiroc];
     if(eCellType == 1) energyCMsub = (Rechit.energy()) / ADCtoMIP[eSkiroc];

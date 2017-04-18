@@ -127,18 +127,18 @@ private:
 	int sensorsize = 128;
 	std::vector<std::pair<double, double>> CellXY;
 	std::pair<double, double> CellCentreXY;
-        HGCalTBTopology IsCellValid;
+  HGCalTBTopology IsCellValid;
 	HGCalTBCellVertices TheCell;
-        double maxdist = (0.5 + sqrt(3) / 2.) * HGCAL_TB_CELL::FULL_CELL_SIDE;  // <<< FIXME maxdist > HGCAL_TB_CELL::FULL_CELL_SIDE !!
-        double maxdist_secNB = (0.5 + sqrt(3)) * HGCAL_TB_CELL::FULL_CELL_SIDE;
-        double maxdist_thirdNB = (0.5 + sqrt(3) * 2.) * HGCAL_TB_CELL::FULL_CELL_SIDE;
+  double maxdist = (0.5 + sqrt(3) / 2.) * HGCAL_TB_CELL::FULL_CELL_SIDE;  // <<< FIXME maxdist > HGCAL_TB_CELL::FULL_CELL_SIDE !!
+  double maxdist_secNB = (0.5 + sqrt(3)) * HGCAL_TB_CELL::FULL_CELL_SIDE;
+  double maxdist_thirdNB = (0.5 + sqrt(3) * 2.) * HGCAL_TB_CELL::FULL_CELL_SIDE;
 
-        double Weights_L[MAXLAYERS];
-        double X0_L[MAXLAYERS];
-        double ADCtoMIP[MAXSKIROCS];
-        double ADCtoMIPup[MAXSKIROCS];
-        double ADCtoMIPdw[MAXSKIROCS];
-        bool convertFromADCToMIP;
+  double Weights_L[MAXLAYERS];
+  double X0_L[MAXLAYERS];
+  double ADCtoMIP[MAXSKIROCS];
+  double ADCtoMIPup[MAXSKIROCS];
+  double ADCtoMIPdw[MAXSKIROCS];
+  bool convertFromADCToMIP;
 
 
         TH1F *h_CM_layer[MAXLAYERS];
@@ -233,7 +233,7 @@ private:
   double defaultADCPerMIP;
 
 
-        int EVENT = 0;
+  int EVENT = 0;
 
 	map<int, double> Time_Stamp;
 	map<int, double> Delta_Time_Stamp;
@@ -880,14 +880,14 @@ Layer_Sum_Analyzer::beginJob()
 	}
 
 	if(layers_config_ != 0){
-	  for(int iii = 0; iii < MAXSKIROCS; iii++){
+	  for(int iii = -1; iii < MAXSKIROCS; iii++){
 	    ADCtoMIP[iii] = convertFromADCToMIP ? ADCtoMIP[iii] * MIP2ParticleCalib : defaultADCPerMIP; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
 	    ADCtoMIPup[iii] = convertFromADCToMIP ? ADCtoMIPup[iii] * MIP2ParticleCalib : defaultADCPerMIP; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
 	    ADCtoMIPdw[iii] = convertFromADCToMIP ? ADCtoMIPdw[iii] * MIP2ParticleCalib : defaultADCPerMIP; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
 	  }
 	}
 	else{
-	  for(int iii = 0; iii < MAXLAYERS; iii++){
+	  for(int iii = -1; iii < MAXLAYERS; iii++){
 	    ADCtoMIP[iii] = convertFromADCToMIP ? ADCtoMIP[iii] * MIP2ParticleCalib : defaultADCPerMIP; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
 	    ADCtoMIPup[iii] = convertFromADCToMIP ? ADCtoMIPup[iii] * MIP2ParticleCalib : defaultADCPerMIP; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
 	    ADCtoMIPdw[iii] = convertFromADCToMIP ? ADCtoMIPdw[iii] * MIP2ParticleCalib : defaultADCPerMIP; // Converting response to 120 GeV protons to MIPs, or setting the factors to unity if no conversion is indicated
