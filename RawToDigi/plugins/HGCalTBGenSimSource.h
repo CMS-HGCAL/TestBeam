@@ -100,6 +100,7 @@ private:
 	double energyNoise;
 	double energyNoiseResolution;
 	bool createMWC;
+	bool applyMWCSmearing;
 
 	double defaultADCPerMIP;
 

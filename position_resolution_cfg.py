@@ -213,7 +213,8 @@ else:
                             energyNoise=cms.double(0.0),  
                             energyNoiseResolution=cms.double(0.0),
                             createMWC=cms.bool(True),
-                            modellingFilePath=cms.untracked.string("file:%s/modelling.root"%(options.dataFolder))
+                            applyMWCSmearing=cms.bool(False),
+                            modellingFilePath=cms.untracked.string("file:/afs/cern.ch/user/t/tquast/Desktop/positionResolutions/MWC_resolutions.root")
                             )
 
 

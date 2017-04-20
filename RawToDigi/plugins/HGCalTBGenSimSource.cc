@@ -17,6 +17,7 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	energyNoise = pset.getParameter<double>("energyNoise");
 	energyNoiseResolution = pset.getParameter<double>("energyNoiseResolution");
 	createMWC = pset.getParameter<bool>("createMWC");
+	applyMWCSmearing = pset.getParameter<bool>("applyMWCSmearing");
 	modellingFilePath = pset.getUntrackedParameter<std::string>("modellingFilePath");		//configuration value is in microns, convert to cm
 
 	produces <HGCalTBRecHitCollection>(outputCollectionName);
@@ -40,18 +41,19 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 		fillConfiguredRuns(map_file);
 		map_file.close();	
 	}
-	
-	try {
-		modellingFile = new TFile(modellingFilePath.c_str(), "READ");
-		resolutionsAvailable = (modellingFile->GetListOfKeys()->Contains("mwcResolutionX") && modellingFile->GetListOfKeys()->Contains("mwcResolutionY"));
-	  if (resolutionsAvailable) {
-	  	mwcResolutionX = (TF1*)modellingFile->Get("mwcResolutionX"); 
-	  	mwcResolutionY = (TF1*)modellingFile->Get("mwcResolutionY");
-	  } else {
-	  	std::cout<<"[WARNING] Resolution parameterization is not available!"<<std::endl;
-	  }
-	} catch(int e) {
-		resolutionsAvailable = false;
+	if (applyMWCSmearing) {
+		try {
+			modellingFile = new TFile(modellingFilePath.c_str(), "READ");
+			resolutionsAvailable = (modellingFile->GetListOfKeys()->Contains("mwcResolutionX") && modellingFile->GetListOfKeys()->Contains("mwcResolutionY"));
+		  if (resolutionsAvailable) {
+		  	mwcResolutionX = (TF1*)modellingFile->Get("mwcResolutionX"); 
+		  	mwcResolutionY = (TF1*)modellingFile->Get("mwcResolutionY");
+		  } else {
+		  	std::cout<<"[WARNING] Resolution parameterization is not available!"<<std::endl;
+		  }
+		} catch(int e) {
+			resolutionsAvailable = false;
+		}
 	}
 
 	_e_mapFile = pset.getParameter<std::string>("e_mapFile_CERN");	
@@ -235,14 +237,17 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	bool _hasValidMWCMeasurement = true;
 	//second: add fake multi-wire chambers from xBeam, yBeam
 	if (createMWC) {
-
+		double _smearRes = 0.;
+		
 		//apply the smearing of the wire chamber reference in x
-		double _smearRes = resolutionsAvailable ? mwcResolutionX->Eval(rd->energy) : 0;
+		if (applyMWCSmearing)
+			_smearRes = resolutionsAvailable ? mwcResolutionX->Eval(rd->energy)/10. : 0;	//resolutions are in mm-->conversion into cm
 		double x1_mc = MWC_x1 + randgen->Gaus(0, _smearRes);
 		double x2_mc = MWC_x2 + randgen->Gaus(0, _smearRes);
 		
 		//apply the smearing of the wire chamber reference in y
-		_smearRes = resolutionsAvailable ? mwcResolutionY->Eval(rd->energy) : 0;
+		if (applyMWCSmearing)
+			_smearRes = resolutionsAvailable ? mwcResolutionY->Eval(rd->energy)/10. : 0;	//resolutions are in mm-->conversion into cm
 		double y1_mc = MWC_y1 + randgen->Gaus(0, _smearRes);
 		double y2_mc = MWC_y2 + randgen->Gaus(0, _smearRes);
 		

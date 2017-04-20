@@ -148,6 +148,7 @@ else:
                             energyNoise=cms.double(0.0),  
                             energyNoiseResolution=cms.double(0.0),
                             createMWC=cms.bool(False),
+                            applyMWCSmearing=cms.bool(False),
                             modellingFilePath=cms.untracked.string("file:%s/modelling.root"%("/home/data/MC/September2016")) 
                             )
 
