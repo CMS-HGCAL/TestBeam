@@ -213,8 +213,8 @@ else:
                             energyNoise=cms.double(0.0),  
                             energyNoiseResolution=cms.double(0.0),
                             createMWC=cms.bool(True),
-                            applyMWCSmearing=cms.bool(False),
-                            modellingFilePath=cms.untracked.string("file:/afs/cern.ch/user/t/tquast/Desktop/positionResolutions/MWC_resolutions.root")
+                            energyScale=cms.double(0.85),   #apply an overall scaling of the recorded intensities in the cells
+                            MWCSmearing=cms.double(0.)    #microns
                             )
 
 

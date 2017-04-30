@@ -14,11 +14,11 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	outputCollectionName = pset.getParameter<std::string>("OutputCollectionName");
 	runEnergyMapFile = pset.getUntrackedParameter<std::string>("runEnergyMapFile"); 
 	inputPathFormat = pset.getUntrackedParameter<std::string>("inputPathFormat");
+	energyScale = pset.getParameter<double>("energyScale");
 	energyNoise = pset.getParameter<double>("energyNoise");
 	energyNoiseResolution = pset.getParameter<double>("energyNoiseResolution");
 	createMWC = pset.getParameter<bool>("createMWC");
-	applyMWCSmearing = pset.getParameter<bool>("applyMWCSmearing");
-	modellingFilePath = pset.getUntrackedParameter<std::string>("modellingFilePath");		//configuration value is in microns, convert to cm
+	MWCSmearing = pset.getParameter<double>("MWCSmearing") * pow(10., -4);
 
 	produces <HGCalTBRecHitCollection>(outputCollectionName);
 	produces<RunData>("RunData");
@@ -40,20 +40,6 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 		map_file.open(runEnergyMapFile.c_str(), std::fstream::in);
 		fillConfiguredRuns(map_file);
 		map_file.close();	
-	}
-	if (applyMWCSmearing) {
-		try {
-			modellingFile = new TFile(modellingFilePath.c_str(), "READ");
-			resolutionsAvailable = (modellingFile->GetListOfKeys()->Contains("mwcResolutionX") && modellingFile->GetListOfKeys()->Contains("mwcResolutionY"));
-		  if (resolutionsAvailable) {
-		  	mwcResolutionX = (TF1*)modellingFile->Get("mwcResolutionX"); 
-		  	mwcResolutionY = (TF1*)modellingFile->Get("mwcResolutionY");
-		  } else {
-		  	std::cout<<"[WARNING] Resolution parameterization is not available!"<<std::endl;
-		  }
-		} catch(int e) {
-			resolutionsAvailable = false;
-		}
 	}
 
 	_e_mapFile = pset.getParameter<std::string>("e_mapFile_CERN");	
@@ -210,6 +196,7 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 		double energy = simHitCellEnE->at(icell); 
 		energy /= MIP2GeV_sim;
 		energy *= defaultADCPerMIP;
+		energy *= energyScale;
 
 		//additional noise to the energy in MIPs
 		energy += randgen->Gaus(energyNoise, energyNoiseResolution);
@@ -237,19 +224,16 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	bool _hasValidMWCMeasurement = true;
 	//second: add fake multi-wire chambers from xBeam, yBeam
 	if (createMWC) {
-		double _smearRes = 0.;
+		double _smearRes = MWCSmearing;
 		
-		//apply the smearing of the wire chamber reference in x
-		if (applyMWCSmearing)
-			_smearRes = resolutionsAvailable ? mwcResolutionX->Eval(rd->energy)/10. : 0;	//resolutions are in mm-->conversion into cm
 		double x1_mc = MWC_x1 + randgen->Gaus(0, _smearRes);
 		double x2_mc = MWC_x2 + randgen->Gaus(0, _smearRes);
 		
-		//apply the smearing of the wire chamber reference in y
-		if (applyMWCSmearing)
-			_smearRes = resolutionsAvailable ? mwcResolutionY->Eval(rd->energy)/10. : 0;	//resolutions are in mm-->conversion into cm
+		std::cout<<"x1-x2"<<x1_mc-x2_mc<<std::endl;
+
 		double y1_mc = MWC_y1 + randgen->Gaus(0, _smearRes);
 		double y2_mc = MWC_y2 + randgen->Gaus(0, _smearRes);
+		std::cout<<"y1-y2"<<y1_mc-y2_mc<<std::endl;
 		
 
 		std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	

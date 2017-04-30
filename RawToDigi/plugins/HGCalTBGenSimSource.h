@@ -81,7 +81,7 @@ private:
 	std::vector<float>        *simHitCellEnE;
 	double					  beamX;
 	double					  beamY;
-  double            beamP;
+  	double            beamP;
 	double					  MWC_x1, MWC_x2, MWC_y1, MWC_y2;
 	TBranch                   *b_simHitCellIdE;   
 	TBranch                   *b_simHitCellEnE;   
@@ -99,17 +99,12 @@ private:
 	TRandom* randgen;
 	double energyNoise;
 	double energyNoiseResolution;
+	double energyScale;
 	bool createMWC;
-	bool applyMWCSmearing;
+	double MWCSmearing;	//value is in microns
 
 	double defaultADCPerMIP;
 
-  std::string modellingFilePath;
-  TFile *modellingFile;
-
-  bool resolutionsAvailable;
-  TF1 *mwcResolutionX; 
-  TF1 *mwcResolutionY; 
 
 public:
 	explicit HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc);
