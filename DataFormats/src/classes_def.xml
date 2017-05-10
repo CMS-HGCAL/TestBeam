@@ -22,6 +22,10 @@
   <class name="reco::HGCalTBClusterCollection"/>
   <class name="edm::Wrapper<edm::EDCollection<reco::HGCalTBCluster> >"/>
 
+  <class name="HGCalTBSkiroc2CMS"/>
+  <class name="HGCalTBSkiroc2CMSCollection"/>
+  <class name="edm::Wrapper<edm::EDCollection<HGCalTBSkiroc2CMS> >"/>
+
   <class name="MultiWireChamberData"/>
   <class name="edm::Wrapper<MultiWireChamberData>"/>
   <class name="std::vector<MultiWireChamberData>"/>
