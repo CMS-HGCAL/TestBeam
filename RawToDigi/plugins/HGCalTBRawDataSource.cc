@@ -6,8 +6,8 @@
 
 HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :
   edm::ProducerSourceFromFiles(pset, desc, true),
-  m_filePath(pset.getUntrackedParameter<std::string>("FilePath", "./data/")),
-  m_fileName(pset.getUntrackedParameter<std::string>("FileName", "HexaData_Run0000.raw")),
+  //m_filePath(pset.getUntrackedParameter<std::string>("FilePath", "./data/")),
+  //m_fileName(pset.getUntrackedParameter<std::string>("FileName", "HexaData_Run0000.raw")),
   m_electronicMap(pset.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers.txt")),
   m_outputCollectionName(pset.getUntrackedParameter<std::string>("OutputCollectionName","SKIROC2CMSDATA")),
   m_nOrmBoards(pset.getUntrackedParameter<unsigned int>("NOrmBoards", 1)),
@@ -17,9 +17,9 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   m_nWords(pset.getUntrackedParameter<unsigned int> ("NumberOf32BitsWordsPerReadOut",30788))
 {
   std::cout << "Hey je commence" << std::endl;
-  sleep(10);
+  sleep(1);
 
-  produces<HGCalTBSkiroc2CMSCollection>();
+  produces<HGCalTBSkiroc2CMSCollection>(m_outputCollectionName);
   //produces<RunData>("RunData");
   
   m_event = 0;
@@ -49,7 +49,10 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
 
 bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType)
 {	
-
+  std::cout << "here i am" << std::endl;
+  if (fileNames()[0] != "file:DUMMY")
+    m_fileName = fileNames()[0];
+  if (m_fileName.find("file:") == 0) m_fileName = m_fileName.substr(5);
   if( m_event==0 ){
     m_input.open(m_fileName.c_str(), std::ios::in|std::ios::binary);
     if( !m_input.is_open() ){
@@ -76,7 +79,7 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
 std::vector< std::array<uint16_t,1924> > HGCalTBRawDataSource::decode_raw_32bit(std::vector<uint32_t> &raw){
   std::cout<<"In decoder"<<std::endl;
   std::cout<<"SkiMask = " << std::setw(8) << std::setfill('0') << std::hex << m_skiMask << "\t Length of Raw " << std::dec << raw.size() << std::endl;;
-    // Check that an external mask agrees with first 32-bit word in data
+  // Check that an external mask agrees with first 32-bit word in data
   if (m_skiMask!=raw[0])
     std::cout << "You extarnal mask (" << std::hex << raw[0] << ") does not agree with the one found in data (" << std::hex << m_skiMask << ")" << std::endl;
   
@@ -113,23 +116,26 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
   std::auto_ptr<HGCalTBSkiroc2CMSCollection> skirocs(new HGCalTBSkiroc2CMSCollection);
 
   for( size_t iski=0; iski<m_decodedData.size(); iski++){
-    std::array<HGCalTBDetId,64> detids;
+    std::vector<HGCalTBDetId> detids;
     for (size_t ichan = 0; ichan < m_nChannelsPerSkiroc; ichan++) {
       HGCalTBElectronicsId eid(iski, ichan);
       if (!essource_.emap_.existsEId(eid.rawId())) {
-	std::cout << eid.rawId() << " is not a correct id, or can not be found in electronics map" << std::endl;
+	std::cout << std::dec << "skiroc " << iski << "; channel " << ichan << "; electronic id " << eid.rawId() << " is not a correct id, or can not be found in electronics map" << std::endl;
 	//exit(1);
+	HGCalTBDetId did(0);
+	detids.push_back(did);
       }
       else{ 
 	HGCalTBDetId did = essource_.emap_.eid2detId(eid);
-	detids[ichan]=did;
+	detids.push_back(did);
       }
     }
-    HGCalTBSkiroc2CMS skiroc( m_decodedData.at(iski),detids);
+    std::vector<uint16_t> vdata;vdata.insert(vdata.end(),m_decodedData.at(iski).begin(),m_decodedData.at(iski).end());
+    HGCalTBSkiroc2CMS skiroc( vdata,detids);
     if(!skiroc.check())
       exit(1);
-    std::cout << skiroc << std::endl;
-    getchar();
+    //std::cout << skiroc << std::endl;
+    //std::cout <<"finish print info" << std::endl;
     skirocs->push_back(skiroc);
   }
   e.put(skirocs, m_outputCollectionName);
@@ -138,7 +144,26 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
   
 }
 
+void HGCalTBRawDataSource::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
+{
+  edm::ParameterSetDescription desc;
+  desc.setComment("TEST");
+  desc.addUntracked<int>("run", 101);
+  desc.addUntracked<std::vector<std::string> >("fileNames");
+  desc.addUntracked<std::string>("ElectronicMap");
+  desc.addUntracked<std::string>("OutputCollectionName");
+  desc.addUntracked<unsigned int>("NOrmBoards");
+  desc.addUntracked<unsigned int>("NHexaBoards");
+  desc.addUntracked<unsigned int>("NSkirocsPerHexa");
+  desc.addUntracked<unsigned int>("NChannelsPerSkiroc");
+  desc.addUntracked<unsigned int>("NumberOf32BitsWordsPerReadOut");
+  descriptions.add("source", desc);
+}
+
 void HGCalTBRawDataSource::endJob()
 {
   delete m_buffer;
 }
+
+#include "FWCore/Framework/interface/InputSourceMacros.h"
+DEFINE_FWK_INPUT_SOURCE(HGCalTBRawDataSource);

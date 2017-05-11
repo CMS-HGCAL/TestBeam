@@ -1,8 +1,7 @@
 #ifndef HGCALTBSKIROC2CMS_H_INCLUDED
 #define HGCALTBSKIROC2CMS_H_INCLUDED 1
 
-#include <stdint.h>
-#include <array>
+#include <vector>
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 
 static const int MASK_ADC = 0x0FFF;
@@ -23,20 +22,20 @@ class HGCalTBSkiroc2CMS
 {
  public:
 
- HGCalTBSkiroc2CMS( const std::array<uint16_t,SKIROC_DATA_SIZE>& data, const std::array<HGCalTBDetId,NUMBER_OF_CHANNELS> &ids ) :
+ HGCalTBSkiroc2CMS( const std::vector<uint16_t> data, const std::vector<HGCalTBDetId> &ids ) :
   m_data(data),
   m_id(ids)
   {;}
   uint16_t gray_to_brady(const uint16_t gray) const;
     
-  uint16_t ADCLow( int chan, int sca ) const { return (sca>0 && sca<14) ? gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*sca) & MASK_ADC ) : 10000 ; }
-  uint16_t ADCHigh( int chan, int sca ) const {return (sca>0 && sca<14) ? gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*sca) & MASK_ADC ) : 10000;}
-  uint16_t TOTSlow( int chan ) const {return gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*15) & MASK_ADC );}
-  uint16_t TOTFast( int chan ) const {return gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*15) & MASK_ADC );}
-  uint16_t TOAFall( int chan ) const {return gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*14) & MASK_ADC );}
-  uint16_t TOARise( int chan ) const {return gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*14) & MASK_ADC );}
-  bool TOAHitFall(int chan) const { return ((m_data.at(chan+ADCLOW_SHIFT)&~MASK_ADC)>>4*3) ;}
-  bool TOAHitRise(int chan) const { return ((m_data.at(chan+ADCHIGH_SHIFT)&~MASK_ADC)>>4*3) ;}
+  uint16_t ADCLow( int chan, int sca ) const { return (sca>=0 && sca<14) ? gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*sca) & MASK_ADC ) : 10000;}
+  uint16_t ADCHigh( int chan, int sca ) const {return (sca>=0 && sca<14) ? gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*sca) & MASK_ADC ) : 10000;}
+  uint16_t TOTSlow( int chan ) const {return gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*14) & MASK_ADC );}
+  uint16_t TOTFast( int chan ) const {return gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*14) & MASK_ADC );}
+  uint16_t TOAFall( int chan ) const {return gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*13) & MASK_ADC );}
+  uint16_t TOARise( int chan ) const {return gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*13) & MASK_ADC );}
+  bool TOAHitFall(int chan) const { return ((m_data.at(chan+ADCLOW_SHIFT)&~MASK_ADC)>>4*3)&0x1 ;}
+  bool TOAHitRise(int chan) const { return ((m_data.at(chan+ADCHIGH_SHIFT)&~MASK_ADC)>>4*3)&0x1 ;}
   uint16_t rollMask() const { return (m_data.at(SKIROC_DATA_SIZE-4)&MASK_ROLL); }
     
  private:
@@ -54,10 +53,10 @@ class HGCalTBSkiroc2CMS
   }
 
  private:
-  std::array<uint16_t,SKIROC_DATA_SIZE> m_data;
-  std::array<HGCalTBDetId,NUMBER_OF_CHANNELS> m_id;
+  std::vector<uint16_t> m_data;
+  std::vector<HGCalTBDetId> m_id;
 };
 
 std::ostream& operator<<(std::ostream&, const HGCalTBSkiroc2CMS&);
 
-#endif // SKIROC2DATAFRAME_H_INCLUDED
+#endif

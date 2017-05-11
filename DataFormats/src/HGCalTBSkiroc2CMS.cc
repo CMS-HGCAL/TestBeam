@@ -51,18 +51,18 @@ bool HGCalTBSkiroc2CMS::check()
 std::ostream& operator<<(std::ostream& s, const HGCalTBSkiroc2CMS& ski)
 {
   for (size_t i = 0; i < NUMBER_OF_CHANNELS; i++){
-    s << "Channel det id : " << ski.detid(i) << "\t High gain ADC => " << ski.TOAHitRise(i) ;
+    s << "\n Channel det id : " << ski.detid(i) << "\n High gain ADC => " << ski.TOAHitRise(i) ;
     for( size_t j=0; j<NUMBER_OF_SCA-2; j++)
       s << " " << ski.ADCHigh(i,j) ;
     s << " " << ski.TOARise(i) ;
     s << " " << ski.TOTFast(i) ;
-    s << "\t Low gain ADC => " << ski.TOAHitFall(i) ;
+    s << "\n Low gain ADC => " << ski.TOAHitFall(i) ;
     for( size_t j=0; j<NUMBER_OF_SCA-2; j++)
       s << " " << ski.ADCLow(i,j) ;
     s << " " << ski.TOAFall(i) ;
     s << " " << ski.TOTSlow(i) ;
   }
-  //s << std::endl;
+  s << std::endl;
   return s;
 }
 
