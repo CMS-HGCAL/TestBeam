@@ -1,5 +1,6 @@
 #include "HGCal/DataFormats/interface/HGCalTBSkiroc2CMS.h"
-
+#include <bitset>
+#include <cstring>
 uint16_t HGCalTBSkiroc2CMS::gray_to_brady(const uint16_t gray) const
 {
   uint16_t result = gray & (1 << 11);
@@ -48,8 +49,38 @@ bool HGCalTBSkiroc2CMS::check()
   return true;
 }
 
-std::ostream& operator<<(std::ostream& s, const HGCalTBSkiroc2CMS& ski)
+std::vector<int> HGCalTBSkiroc2CMS::rollPositions() const
 {
+  std::bitset<NUMBER_OF_SCA-2> bits=rollMask();
+  std::vector<int> rollpositions(NUMBER_OF_SCA-2);
+  if(bits.test(0)&&bits.test(12)){
+    rollpositions[0]=12;
+    for(size_t i=1; i<NUMBER_OF_SCA-2; i++)
+      rollpositions[i]=(i-1);
+  }
+  else{
+    int pos_trk1 = -1;
+    for(size_t i=0; i<NUMBER_OF_SCA-2; i++)
+      if(bits.test(i)){
+	pos_trk1 = i;
+	break;
+      }
+    for(size_t i=0; i<NUMBER_OF_SCA-2; i++)
+      if( (int)i <= pos_trk1 + 1 )
+	rollpositions[i]=i + 12 - (pos_trk1 + 1);
+      else
+	rollpositions[i]=i - 1 - (pos_trk1 + 1);
+  }
+  return rollpositions;
+}
+
+std::ostream& operator<<(std::ostream& s, HGCalTBSkiroc2CMS& ski)
+{
+  std::vector<int> rollpositions=ski.rollPositions();
+  std::cout << "rollMask = " << ski.rollMask() << "\t";
+  for(size_t i=0; i<13; i++)
+    std::cout << rollpositions[i] << " ";
+  std::cout << "\n";
   for (size_t i = 0; i < NUMBER_OF_CHANNELS; i++){
     s << "\n Channel det id : " << ski.detid(i) << "\n High gain ADC => " << ski.TOAHitRise(i) ;
     for( size_t j=0; j<NUMBER_OF_SCA-2; j++)
@@ -65,6 +96,3 @@ std::ostream& operator<<(std::ostream& s, const HGCalTBSkiroc2CMS& ski)
   s << std::endl;
   return s;
 }
-
-
-  

@@ -134,7 +134,7 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
     HGCalTBSkiroc2CMS skiroc( vdata,detids);
     if(!skiroc.check())
       exit(1);
-    //std::cout << skiroc << std::endl;
+    std::cout << skiroc << std::endl;
     //std::cout <<"finish print info" << std::endl;
     skirocs->push_back(skiroc);
   }
