@@ -229,11 +229,11 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 		double x1_mc = MWC_x1 + randgen->Gaus(0, _smearRes);
 		double x2_mc = MWC_x2 + randgen->Gaus(0, _smearRes);
 		
-		std::cout<<"x1-x2"<<x1_mc-x2_mc<<std::endl;
+		//std::cout<<"x1-x2"<<x1_mc-x2_mc<<std::endl;
 
 		double y1_mc = MWC_y1 + randgen->Gaus(0, _smearRes);
 		double y2_mc = MWC_y2 + randgen->Gaus(0, _smearRes);
-		std::cout<<"y1-y2"<<y1_mc-y2_mc<<std::endl;
+		//std::cout<<"y1-y2"<<y1_mc-y2_mc<<std::endl;
 		
 
 		std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
