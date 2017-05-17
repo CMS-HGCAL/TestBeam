@@ -6,7 +6,8 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 #Change the data folder appropriately to where you wish to access the files from:
 options.register('dataFolder',
-                 '/afs/cern.ch/work/a/asteen/public/data/may2017/raw',
+                 #'/afs/cern.ch/work/a/asteen/public/data/may2017/raw',
+                 '/afs/cern.ch/work/b/barneyd/public/data_May_2017/disk2_2TB/eudaq_data',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw input')
@@ -38,11 +39,13 @@ process.maxEvents = cms.untracked.PSet(
 )
 
 ####################################
+#process.load('HGCal.StandardSequences.RawToDigi_cff')
+
 process.source = cms.Source("HGCalTBRawDataSource",
                             #FilePath=cms.untracked.string(options.dataFolder),
                             #FileName=cms.untracked.string("file:HexaData_Run00%d.raw"%(options.runNumber)),
                             ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers.txt"),
-                            fileNames=cms.untracked.vstring("file:%s/HexaData_Run00%d.raw"%(options.dataFolder,options.runNumber)),
+                            fileNames=cms.untracked.vstring("file:%s/HexaData_Run%04d.raw"%(options.dataFolder,options.runNumber)),
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
                             NOrmBoards=cms.untracked.uint32(1),
                             NHexaBoards=cms.untracked.uint32(1),
@@ -51,9 +54,19 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             NumberOf32BitsWordsPerReadOut=cms.untracked.uint32(30788)
 )
 
+process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/toto_%d.root"%(options.outputFolder,options.runNumber)))
+
 process.output = cms.OutputModule("PoolOutputModule",
                                   fileName = cms.untracked.string(options.output)
                                   )
+
+
+process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
+                                        SensorSize=cms.untracked.int32(128),
+                                        InputCollection=cms.InputTag("source","skiroc2cmsdata")
+                                        )
+process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in cms.Path if you want to check which collections are in the event
+process.p = cms.Path( process.rawdataplotter )
 
 process.end = cms.EndPath(process.output)
 
