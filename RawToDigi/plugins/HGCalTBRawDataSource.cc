@@ -39,6 +39,8 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
     throw cms::Exception("Unable to load electronics map");
   }
 
+  std::cout << pset << std::endl;
+
 }
 
 bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType)
@@ -96,11 +98,21 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
   for( size_t iski=0; iski<m_decodedData.size(); iski++){
     std::vector<HGCalTBDetId> detids;
     for (size_t ichan = 0; ichan < m_nChannelsPerSkiroc; ichan++) {
-      HGCalTBElectronicsId eid(iski, ichan);
+      
+      
+      HGCalTBElectronicsId eid;
+      switch( iski ){
+      case 0 : eid=HGCalTBElectronicsId( 1, ichan);break;
+      case 1 : eid=HGCalTBElectronicsId( 4, ichan);break;
+      case 2 : eid=HGCalTBElectronicsId( 3, ichan);break;
+      case 3 : eid=HGCalTBElectronicsId( 2, ichan);break;
+      }
+      // if( iski%2 ) eid=HGCalTBElectronicsId
+      // else eid=HGCalTBElectronicsId(iski, ichan);
       if (!essource_.emap_.existsEId(eid.rawId())) {
 	//std::cout << std::dec << "skiroc " << iski << "; channel " << ichan << "; electronic id " << eid.rawId() << " is not a correct id, or can not be found in electronics map" << std::endl;
 	//exit(1);
-	HGCalTBDetId did(0);
+	HGCalTBDetId did(-1);
 	detids.push_back(did);
       }
       else{ 
