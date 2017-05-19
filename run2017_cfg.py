@@ -19,7 +19,7 @@ options.register('runNumber',
                  'Input file to process')
 
 options.register('outputFolder',
-                 '/tmp/asteen',
+                 '/afs/cern.ch/work/a/asteen/public/data/may2017/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Result of processing')
@@ -44,7 +44,7 @@ process.maxEvents = cms.untracked.PSet(
 process.source = cms.Source("HGCalTBRawDataSource",
                             #FilePath=cms.untracked.string(options.dataFolder),
                             #FileName=cms.untracked.string("file:HexaData_Run00%d.raw"%(options.runNumber)),
-                            ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers.txt"),
+                            ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
                             fileNames=cms.untracked.vstring("file:%s/HexaData_Run%04d.raw"%(options.dataFolder,options.runNumber)),
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
                             NOrmBoards=cms.untracked.uint32(1),
@@ -63,6 +63,7 @@ process.output = cms.OutputModule("PoolOutputModule",
 
 process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         SensorSize=cms.untracked.int32(128),
+                                        EventPlotter=cms.untracked.bool(False),
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata")
                                         )
 process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in cms.Path if you want to check which collections are in the event

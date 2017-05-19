@@ -51,7 +51,10 @@ bool HGCalTBSkiroc2CMS::check()
 
 std::vector<int> HGCalTBSkiroc2CMS::rollPositions() const
 {
-  std::bitset<NUMBER_OF_SCA> bits=rollMask();
+  std::bitset<NUMBER_OF_SCA> bitstmp=rollMask();
+  std::bitset<NUMBER_OF_SCA> bits;
+  for( size_t i=0; i<NUMBER_OF_SCA; i++ )
+    bits[i]=bitstmp[12-i];
   std::vector<int> rollpositions(NUMBER_OF_SCA);
   if(bits.test(0)&&bits.test(12)){
     rollpositions[0]=12;
