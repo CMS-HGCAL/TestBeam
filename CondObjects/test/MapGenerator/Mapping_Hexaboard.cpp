@@ -16,20 +16,20 @@ int Map_Calib_Pad_SK1[number_of_calib_pads] = {22};
 int Map_Calib_Pad_SK2[number_of_calib_pads] = {22}; 
 */
 ///////////////Hardcoded Map entries for mouse bites/////////////////////
-const int number_of_mouse_bites_SK1 = 2;
-const int number_of_mouse_bites_SK2 = 1;
-const int number_of_mouse_bites_SK3 = 2;
-const int number_of_mouse_bites_SK4 = 1;
-int Map_Mouse_Bites_SK1[number_of_mouse_bites_SK1] = {20, 60};
-int Map_Mouse_Bites_SK2[number_of_mouse_bites_SK2] = {12};
-int Map_Mouse_Bites_SK3[number_of_mouse_bites_SK3] = {34, 16};
-int Map_Mouse_Bites_SK4[number_of_mouse_bites_SK4] = {46};
+const int number_of_mouse_bites_SK1 = 1;
+const int number_of_mouse_bites_SK2 = 2;
+const int number_of_mouse_bites_SK3 = 1;
+const int number_of_mouse_bites_SK4 = 2;
+int Map_Mouse_Bites_SK1[number_of_mouse_bites_SK1] = {46};
+int Map_Mouse_Bites_SK2[number_of_mouse_bites_SK2] = {20, 60};
+int Map_Mouse_Bites_SK3[number_of_mouse_bites_SK3] = {12};
+int Map_Mouse_Bites_SK4[number_of_mouse_bites_SK4] = {34, 16};
 /////////////////Hardcoded Map entries for half hex////////////////////
 const int number_of_half_hex = 3;
-int Map_Half_Hex_SK1[number_of_half_hex] = {12, 10, 48};
-int Map_Half_Hex_SK2[number_of_half_hex] = {16, 62, 52};
-int Map_Half_Hex_SK3[number_of_half_hex] = {26, 22, 60};
-int Map_Half_Hex_SK4[number_of_half_hex] = {10, 56, 50};
+int Map_Half_Hex_SK1[number_of_half_hex] = {10, 56, 50};
+int Map_Half_Hex_SK2[number_of_half_hex] = {12, 10, 48};
+int Map_Half_Hex_SK3[number_of_half_hex] = {16, 62, 52};
+int Map_Half_Hex_SK4[number_of_half_hex] = {26, 22, 60};
 //////////////////Hardcoded entry for merged cell//////////////////////
 /*
 const int number_of_merged_cells = 2;
@@ -39,8 +39,8 @@ int Map_Merged_Cells_SKI2[number_of_merged_cells] = {0,60};
 */
 /////////////////Hardcoded entries Outer Calib Pad////////////////////////////
 const int number_of_outer_calib_pads = 1;
-int Map_Merged_Outer_Calib_Pad_SK2[number_of_outer_calib_pads] = {40};
-int Map_Merged_Outer_Calib_Pad_SK4[number_of_outer_calib_pads] = {30};
+int Map_Merged_Outer_Calib_Pad_SK1[number_of_outer_calib_pads] = {2};
+int Map_Merged_Outer_Calib_Pad_SK3[number_of_outer_calib_pads] = {26};
 ///////////////////////////////////////////////////////////
 
 
@@ -61,10 +61,10 @@ main(){
 */
 
   const int size = 69;
-  ifstream Channel_SKIROC1("Channel_Numbers_SKIROC1_Hexaboard.txt");// Mapping of the first SKIROC(upper half in the u,v system)
-  ifstream Channel_SKIROC2("Channel_Numbers_SKIROC2_Hexaboard.txt");// Mapping of the first SKIROC(lower half in the u,v system)
-  ifstream Channel_SKIROC3("Channel_Numbers_SKIROC3_Hexaboard.txt");// Mapping of the first SKIROC(lower half in the u,v system)
-  ifstream Channel_SKIROC4("Channel_Numbers_SKIROC4_Hexaboard.txt");// Mapping of the first SKIROC(lower half in the u,v system)
+  ifstream Channel_SKIROC1("Channel_Numbers_SKIROC1_Hexaboard_Updated.txt");// Mapping of the first SKIROC(upper half in the u,v system)
+  ifstream Channel_SKIROC2("Channel_Numbers_SKIROC2_Hexaboard_Updated.txt");// Mapping of the first SKIROC(lower half in the u,v system)
+  ifstream Channel_SKIROC3("Channel_Numbers_SKIROC3_Hexaboard_Updated.txt");// Mapping of the first SKIROC(lower half in the u,v system)
+  ifstream Channel_SKIROC4("Channel_Numbers_SKIROC4_Hexaboard_Updated.txt");// Mapping of the first SKIROC(lower half in the u,v system)
 //  fs.open("/afs/cern.ch/work/r/rchatter/May_Test_Beam_Test/CMSSW_8_0_1/src/HGCal/CondObjects/data/map_FNAL_SB1.txt");
   fs.open("map_CERN_Hexaboard_28Layers.txt");
 
@@ -103,18 +103,18 @@ main(){
 
 //Print the heading
   fs<<"# "<<"SKIROC"<<" "<<"CHANNEL"<<" | "<<"LAYER"<<" "<<"SENSOR_IX"<<" "<<"SENSOR_IV"<<" "<<"IX"<<" "<<"IV"<<" "<<"TYPE"<<endl;
-  for(int vvv = -7; vvv <= 0; vvv++){
+  for(int vvv = -7; vvv <= 7; vvv++){
      for(int uuu = -7; uuu < 8; uuu++){
         if(!ix_iv_valid(uuu, vvv, sensorsize)) continue;
 
-        if(vvv == -7 && uuu >  4) continue;
-        if(vvv == -6 && uuu >  2) continue;
-        if(vvv == -5 && uuu >  2) continue;
-        if(vvv == -4 && uuu >  1) continue;
-        if(vvv == -3 && uuu >  1) continue;
-        if(vvv == -2 && uuu >  0) continue;
-        if(vvv == -1 && uuu >  0) continue;
-        if( vvv ==  0 && ( (uuu >= 0) || (uuu == -2) ) ) continue;
+        if(vvv == -7 && uuu !=  4) continue;
+        if(vvv == -6 && uuu >  5) continue;
+        if(vvv == -5 && uuu >  4) continue;
+        if(vvv == -4 && (uuu == -3 || uuu >  3)) continue;
+        if(vvv == -3 && (uuu == -4 || uuu >  3)) continue;
+        if(vvv == -2 && (uuu < -2 || uuu >  2)) continue;
+        if(vvv == -1 && (uuu < -1 || uuu >  0)) continue;
+	if(vvv >= 0) continue;
         Channel_SKIROC1>>Channel_1[iterator];
         IU_1[iterator] = uuu;
         IV_1[iterator++] = vvv;
@@ -126,17 +126,20 @@ main(){
 	
   iterator = 0;
 
-  for(int vvv = 0; vvv < 8; vvv++){ 
+  for(int vvv = -7; vvv < 8; vvv++){ 
      for(int uuu = -7; uuu < 8; uuu++){
         if(!ix_iv_valid(uuu, vvv, sensorsize)) continue;
-        if((vvv ==  0) && ( (uuu != 0) && (uuu != -2) ) ) continue;
+	if(vvv < -3) continue;
+        if(vvv ==  -3 && uuu != -4 ) continue;
+	if(vvv ==  -2 && uuu > -3 ) continue;
+	if(vvv ==  -1 && uuu > -2 ) continue;
+	if(vvv ==  0 && uuu > -1 ) continue;
         if(vvv ==  1 && uuu > -1) continue;
-        if(vvv ==  2 && uuu > -1) continue;
-        if(vvv ==  3 && uuu > -2) continue;
-        if(vvv ==  4 && uuu > -2) continue;
-        if(vvv ==  5 && uuu > -3) continue;
-        if(vvv ==  6 && uuu > -4) continue;
-        if(vvv ==  7) continue;
+        if(vvv ==  2 && uuu > -3) continue;
+        if(vvv ==  3 && (uuu == -7 || uuu > -3)) continue;
+        if(vvv ==  4 && uuu > -4) continue;
+        if(vvv ==  5 && uuu > -5) continue;
+        if(vvv >  5) continue;
         Channel_SKIROC2>>Channel_2[iterator];
         IU_2[iterator] = uuu;
         IV_2[iterator++] = vvv;
@@ -147,17 +150,18 @@ main(){
 
   iterator = 0;
 
-  for(int vvv = 0; vvv < 8; vvv++){
+  for(int vvv = -7; vvv < 8; vvv++){
      for(int uuu = -7; uuu < 8; uuu++){
         if(!ix_iv_valid(uuu, vvv, sensorsize)) continue;
-        if(vvv ==  0 && ( (uuu != 1) && (uuu != 4) && (uuu != 5) ) ) continue;
-        if(vvv ==  1 && uuu <  0) continue;
-        if(vvv ==  2 && uuu < 0) continue;
-        if(vvv ==  3 && uuu < -1) continue;
-        if(vvv ==  4 && uuu < -1) continue;
-        if(vvv ==  5 && uuu < -2) continue;
-        if(vvv ==  6 && uuu < -3) continue;
-        if(vvv ==  7 && uuu < -4) continue;
+	if(vvv < 0) continue;
+        if(vvv ==  0 &&  uuu != 0 ) continue;
+        if(vvv ==  1 && (uuu < 0 || uuu >  1)) continue;
+        if(vvv ==  2 && (uuu < -2 || uuu >  2)) continue;
+        if(vvv ==  3 && (uuu < -2 || uuu >  2)) continue;
+        if(vvv ==  4 && (uuu < -3 || uuu >  2)) continue;
+        if(vvv ==  5 && (uuu < -4 || uuu >  1)) continue;
+        if(vvv ==  6 && uuu < -5) continue;
+        if(vvv ==  7 && uuu != -3) continue;
         Channel_SKIROC3>>Channel_3[iterator];
         IU_3[iterator] = uuu;
         IV_3[iterator++] = vvv;
@@ -168,17 +172,21 @@ main(){
 
   iterator = 0;
 
-  for(int vvv = -7; vvv <= 0; vvv++){
+  for(int vvv = -7; vvv <= 8; vvv++){
      for(int uuu = -7; uuu < 8; uuu++){
         if(!ix_iv_valid(uuu, vvv, sensorsize)) continue;
-	if(vvv == -7) continue;
-        if(vvv == -6 && uuu <  3) continue;
-        if(vvv == -5 && uuu <  3) continue;
-        if(vvv == -4 && uuu <  2) continue;
-        if(vvv == -3 && uuu <  2) continue;
-        if(vvv == -2 && uuu <  1) continue;
+	if(vvv < -5) continue;
+        if(vvv == -5 && uuu <  5) continue;
+        if(vvv == -4 && uuu <  4) continue;
+        if(vvv == -3 && (uuu == 7 || uuu <  4)) continue;
+        if(vvv == -2 && uuu <  3) continue;
         if(vvv == -1 && uuu <  1) continue;
-        if(vvv ==  0 && ( (uuu != 2) && (uuu != 3) )) continue;
+        if(vvv ==  0 && uuu <  1) continue;
+	if(vvv ==  1 && uuu < 2) continue;
+	if(vvv ==  2 && uuu < 3) continue;
+	if(vvv ==  3 && uuu != 3) continue;
+	if(vvv ==  4 && uuu != 3) continue;
+	if(vvv > 4) continue;
         Channel_SKIROC4>>Channel_4[iterator];
         IU_4[iterator] = uuu;
         IV_4[iterator++] = vvv;
