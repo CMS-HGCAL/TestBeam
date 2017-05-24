@@ -64,6 +64,7 @@ process.output = cms.OutputModule("PoolOutputModule",
 
 pedestalHighGain="pedestalHG_"+str(options.runNumber)+".txt"
 pedestalLowGain="pedestalLG_"+str(options.runNumber)+".txt"
+
 process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         SensorSize=cms.untracked.int32(128),
                                         EventPlotter=cms.untracked.bool(False),
@@ -72,7 +73,20 @@ process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         LowGainPedestalFileName=cms.string(pedestalLowGain)
                                         )
 process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in cms.Path if you want to check which collections are in the event
-process.p = cms.Path( process.rawdataplotter )
+
+process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
+                                        OutputCollectionName=cms.string("HGCALTBRAWHITS"),
+                                        ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
+                                        pedestalLow=cms.string(pedestalLowGain),
+                                        pedestalHigh=cms.string(pedestalHighGain),
+                                        InputCollection=cms.InputTag("source","skiroc2cmsdata")
+                                        )
+
+
+
+
+#process.p = cms.Path( process.rawdataplotter )
+process.p = cms.Path( process.rawhitproducer )
 
 process.end = cms.EndPath(process.output)
 
