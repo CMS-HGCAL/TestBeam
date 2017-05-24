@@ -6,7 +6,8 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 #Change the data folder appropriately to where you wish to access the files from:
 options.register('dataFolder',
-                 #'/afs/cern.ch/work/a/asteen/public/data/may2017/raw',
+                 #'./',
+								 #'/afs/cern.ch/work/a/asteen/public/data/may2017/raw',
                  '/afs/cern.ch/work/b/barneyd/public/data_May_2017/disk2_2TB/eudaq_data',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
@@ -61,10 +62,14 @@ process.output = cms.OutputModule("PoolOutputModule",
                                   )
 
 
+pedestalHighGain="pedestalHG_"+str(options.runNumber)+".txt"
+pedestalLowGain="pedestalLG_"+str(options.runNumber)+".txt"
 process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         SensorSize=cms.untracked.int32(128),
                                         EventPlotter=cms.untracked.bool(False),
-                                        InputCollection=cms.InputTag("source","skiroc2cmsdata")
+                                        InputCollection=cms.InputTag("source","skiroc2cmsdata"),
+                                        HighGainPedestalFileName=cms.string(pedestalHighGain),
+                                        LowGainPedestalFileName=cms.string(pedestalLowGain)
                                         )
 process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in cms.Path if you want to check which collections are in the event
 process.p = cms.Path( process.rawdataplotter )
