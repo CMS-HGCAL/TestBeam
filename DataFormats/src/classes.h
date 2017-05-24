@@ -4,6 +4,9 @@
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBSkiroc2CMS.h"
 #include "HGCal/DataFormats/interface/HGCalTBSkiroc2CMSCollection.h"
+#include "HGCal/DataFormats/interface/HGCalTBRawHit.h"
+#include "HGCal/DataFormats/interface/HGCalTBRawHitCollection.h"
+#include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
 #include "HGCal/DataFormats/interface/HGCalTBTrackCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"
@@ -29,6 +32,9 @@ struct dictionary {
 	HGCalTBSkiroc2CMS _aSki;
 	std::vector<HGCalTBSkiroc2CMS> _skiVect;
 	
+	HGCalTBRawHit _aRawHit;
+	std::vector<HGCalTBRawHit> _rawHitVec;
+
 	SKIROC2DigiCollection _SR2DC;
 	edm::Wrapper<SKIROC2DigiCollection> _theSR2DC;
 

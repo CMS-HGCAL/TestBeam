@@ -281,12 +281,12 @@ void RawDataPlotter::endJob()
   for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
     for( size_t iski=0; iski<N_SKIROC_PER_HEXA; iski++ ){
       for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
-	pedestalHG << ib << " " << iski << " " << ichan << " " ;
-	pedestalLG << ib << " " << iski << " " << ichan << " " ;
+	pedestalHG << ib << " " << iski << " " << ichan ;
+	pedestalLG << ib << " " << iski << " " << ichan ;
 	for( size_t it=0; it<N_TIME_SAMPLES; it++ ){
 	  int key=ib*100000+iski*10000+ichan*100+it;
-	  pedestalHG << m_h_adcHigh[key]->GetMean() << " " << m_h_adcHigh[key]->GetRMS() << " ";
-	  pedestalLG << m_h_adcLow[key]->GetMean() << " " << m_h_adcLow[key]->GetRMS() << " ";
+	  pedestalHG << " " << m_h_adcHigh[key]->GetMean() << " " << m_h_adcHigh[key]->GetRMS();
+	  pedestalLG << " " << m_h_adcLow[key]->GetMean() << " " << m_h_adcLow[key]->GetRMS();
 	}
 	pedestalHG << "\n" ;
 	pedestalLG << "\n" ;	
