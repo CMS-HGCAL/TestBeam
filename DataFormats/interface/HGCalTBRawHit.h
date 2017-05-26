@@ -11,13 +11,17 @@ class HGCalTBRawHit
  public:
 
   HGCalTBRawHit( ){;}
- HGCalTBRawHit( unsigned int rawid, std::vector<float> &adcHigh, std::vector<float> &adcLow) :
+ HGCalTBRawHit( unsigned int rawid, unsigned int skiroc, unsigned int channel, std::vector<float> &adcHigh, std::vector<float> &adcLow) :
   m_rawid(rawid),
+    m_skiroc(skiroc),
+    m_channel(channel),
     m_adcHigh(adcHigh),
     m_adcLow(adcLow)
     {;}
 
   HGCalTBDetId detid() const {return HGCalTBDetId(m_rawid);}
+  unsigned int skiroc() const{return m_skiroc;}
+  unsigned int channel() const{return m_channel;}
   void setRawId(unsigned int rawid){m_rawid=rawid;}
   void setHighGainADCs(std::vector<float> vec){m_adcHigh=vec;}
   void setLowGainADCs(std::vector<float> vec){m_adcLow=vec;}
@@ -26,6 +30,9 @@ class HGCalTBRawHit
 
  private:
   unsigned int m_rawid; //for some reasons (I don't know) root does not allow saving HGCalTBDetId because of some dictionary issue. 
+  // because of non-connected channels for which we assign dummy det id, we must keep skiroc and channel here
+  unsigned int m_skiroc;
+  unsigned int m_channel;
   std::vector<float> m_adcHigh;
   std::vector<float> m_adcLow;
 };
