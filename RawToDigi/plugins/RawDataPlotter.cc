@@ -23,7 +23,6 @@
 #include <set>
 
 const static size_t N_HEXABOARDS = 1;
-const static size_t N_TIME_SAMPLES = 13;
 const static size_t N_SKIROC_PER_HEXA = 4;
 const static size_t N_CHANNELS_PER_SKIROC = 64;
 
@@ -89,24 +88,24 @@ RawDataPlotter::RawDataPlotter(const edm::ParameterSet& iConfig) :
       os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
       TFileDirectory dir = fs->mkdir( os.str().c_str() );
       for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
-	for( size_t it=0; it<N_TIME_SAMPLES; it++ ){
+	for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
 	  os.str("");
-	  os << "HighGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan << "_Sample" << it ;
+	  os << "HighGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan << "_SCA" << it ;
 	  htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,0,4096);
 	  m_h_adcHigh.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+ichan*100+it, htmp1) );
 	  os.str("");
-	  os << "LowGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan << "_Sample" << it ;
+	  os << "LowGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan << "_SCA" << it ;
 	  htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,0,4096);
 	  m_h_adcLow.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+ichan*100+it, htmp1) );
 	}
 	if( ichan%2==0 ){
 	  os.str("");
 	  os << "PulseHighGain_Hexa" << ib << "_Chip" << iski << "_Channel" << ichan;
-	  htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),N_TIME_SAMPLES-2,0, (N_TIME_SAMPLES-2)*25,1000,0,4096);
+	  htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_SCA-2,0, (NUMBER_OF_SCA-2)*25,1000,0,4096);
 	  m_h_pulseHigh.insert( std::pair<int,TH2F*>(ib*1000+iski*100+ichan, htmp2) );
 	  os.str("");
 	  os << "PulseLowGain_Hexa" << ib << "_Chip" << iski << "_Channel" << ichan;
-	  htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),N_TIME_SAMPLES-2,0, (N_TIME_SAMPLES-2)*25,1000,0,4096);
+	  htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_SCA-2,0, (NUMBER_OF_SCA-2)*25,1000,0,4096);
 	  m_h_pulseLow.insert( std::pair<int,TH2F*>(ib*1000+iski*100+ichan, htmp2) );
 	}
       }
@@ -135,7 +134,7 @@ void RawDataPlotter::analyze(const edm::Event& event, const edm::EventSetup& set
     os << "Event" << event.id().event();
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
     for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
-      for( size_t it=0; it<N_TIME_SAMPLES-2; it++ ){
+      for( size_t it=0; it<NUMBER_OF_SCA-2; it++ ){
 	TH2Poly *h=dir.make<TH2Poly>();
 	os.str("");
 	os<<"HexaBoard"<<ib<<"_TimeSample"<<it;
@@ -152,8 +151,8 @@ void RawDataPlotter::analyze(const edm::Event& event, const edm::EventSetup& set
     std::vector<int> rollpositions=skiroc.rollPositions();
     int iboard=iski/N_SKIROC_PER_HEXA;
     for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
-      for( size_t it=0; it<N_TIME_SAMPLES; it++ ){
-	if( rollpositions[it]!=11 && rollpositions[it]!=12 ){ //rm on track samples
+      for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
+	if( rollpositions[it]>8 ){ //rm on track samples+2 last time sample which show weird behaviour
 	  m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->Fill(skiroc.ADCHigh(ichan,it));
 	  m_h_adcLow[iboard*100000+iski*10000+ichan*100+it]->Fill(skiroc.ADCLow(ichan,it));
 	  if( ichan%2==0 ){
@@ -202,10 +201,6 @@ void RawDataPlotter::beginJob()
 {
 }
 
-// const static size_t N_HEXABOARDS = 1;
-// const static size_t N_TIME_SAMPLES = 13;
-// const static size_t N_SKIROC_PER_HEXA = 4;
-// const static size_t N_CHANNELS_PER_SKIROC = 64;
 void RawDataPlotter::endJob()
 {
   usesResource("TFileService");
@@ -219,7 +214,7 @@ void RawDataPlotter::endJob()
   std::ostringstream os( std::ostringstream::ate );
   TH2Poly *h;
   for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
-    for( size_t it=0; it<N_TIME_SAMPLES; it++ ){
+    for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
       h=dir.make<TH2Poly>();
       os.str("");
       os<<"HighGain_HexaBoard"<<ib<<"_SCA"<<it;
@@ -267,7 +262,7 @@ void RawDataPlotter::endJob()
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
     double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
     double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-    for( size_t it=0; it<N_TIME_SAMPLES; it++ ){
+    for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
       pedPolyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->GetMean() );
       pedPolyMapNC[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichanNC*100+it]->GetMean() );
       noisePolyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->GetRMS() );
@@ -283,7 +278,7 @@ void RawDataPlotter::endJob()
       for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
 	pedestalHG << ib << " " << iski << " " << ichan ;
 	pedestalLG << ib << " " << iski << " " << ichan ;
-	for( size_t it=0; it<N_TIME_SAMPLES; it++ ){
+	for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
 	  int key=ib*100000+iski*10000+ichan*100+it;
 	  pedestalHG << " " << m_h_adcHigh[key]->GetMean() << " " << m_h_adcHigh[key]->GetRMS();
 	  pedestalLG << " " << m_h_adcLow[key]->GetMean() << " " << m_h_adcLow[key]->GetRMS();
