@@ -62,8 +62,8 @@ process.output = cms.OutputModule("PoolOutputModule",
                                   )
 
 
-pedestalHighGain="pedestalHG_"+str(options.runNumber)+".txt"
-pedestalLowGain="pedestalLG_"+str(options.runNumber)+".txt"
+pedestalHighGain="pedestalHG_125.txt"
+pedestalLowGain="pedestalLG_125.txt"
 
 process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         SensorSize=cms.untracked.int32(128),
@@ -76,17 +76,25 @@ process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in
 
 process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
-                                        ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
-                                        pedestalLow=cms.string(pedestalLowGain),
-                                        pedestalHigh=cms.string(pedestalHighGain),
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata")
                                         )
+
+process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
+                                       InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
+                                       ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
+                                       SensorSize=cms.untracked.int32(128),
+                                       EventPlotter=cms.untracked.bool(False),
+                                       SubtractPedestal=cms.untracked.bool(True),
+                                       SubtractCommonMode=cms.untracked.bool(True),
+                                       HighGainPedestalFileName=cms.string(pedestalHighGain),
+                                       LowGainPedestalFileName=cms.string(pedestalLowGain)
+                                       )
 
 
 
 
 #process.p = cms.Path( process.rawdataplotter )
-process.p = cms.Path( process.rawhitproducer )
+process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
 
 process.end = cms.EndPath(process.output)
 
