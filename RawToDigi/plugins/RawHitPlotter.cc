@@ -52,6 +52,7 @@ private:
   bool m_eventPlotter;
   bool m_subtractPedestal;
   bool m_subtractCommonMode;
+  double m_commonModeThreshold; //number of sigmas from ped mean
 
   int m_evtID;
   std::map<int,TH1F*> m_h_adcHigh;
@@ -71,10 +72,10 @@ private:
 
   struct pedestalChannel{
     HGCalTBDetId id;
-    float pedHGMean[NUMBER_OF_TIME_SAMPLES-2];
-    float pedLGMean[NUMBER_OF_TIME_SAMPLES-2];
-    float pedHGRMS[NUMBER_OF_TIME_SAMPLES-2];
-    float pedLGRMS[NUMBER_OF_TIME_SAMPLES-2];
+    float pedHGMean[NUMBER_OF_TIME_SAMPLES-0];
+    float pedLGMean[NUMBER_OF_TIME_SAMPLES-0];
+    float pedHGRMS[NUMBER_OF_TIME_SAMPLES-0];
+    float pedLGRMS[NUMBER_OF_TIME_SAMPLES-0];
   };
   std::map<int,pedestalChannel> m_pedMap; //key=10000*hexa+100*chip+chan
 
@@ -93,6 +94,7 @@ RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
   m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
   m_subtractPedestal(iConfig.getUntrackedParameter<bool>("SubtractPedestal",false)),
   m_subtractCommonMode(iConfig.getUntrackedParameter<bool>("SubtractCommonMode",false)),
+  m_commonModeThreshold(iConfig.getUntrackedParameter<double>("CommonModeThreshold",3)),
   m_pedestalHigh_filename(iConfig.getParameter<std::string>("HighGainPedestalFileName")),
   m_pedestalLow_filename(iConfig.getParameter<std::string>("LowGainPedestalFileName"))
 {
@@ -111,7 +113,7 @@ RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
       os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
       TFileDirectory dir = fs->mkdir( os.str().c_str() );
       for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
-	for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-2; it++ ){
+	for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-0; it++ ){
 	  os.str("");
 	  os << "HighGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan << "_Sample" << it ;
 	  htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,-500,3500);
@@ -123,11 +125,11 @@ RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
 	}
 	os.str("");
 	os << "PulseHighGain_Hexa" << ib << "_Chip" << iski << "_Channel" << ichan;
-	htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES-2,0,(NUMBER_OF_TIME_SAMPLES-2)*25,1000,-500,3500);
+	htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES-0,0,(NUMBER_OF_TIME_SAMPLES-0)*25,1000,-500,3500);
 	m_h_pulseHigh.insert( std::pair<int,TH2F*>(ib*1000+iski*100+ichan, htmp2) );
 	os.str("");
 	os << "PulseLowGain_Hexa" << ib << "_Chip" << iski << "_Channel" << ichan;
-	htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES-2,0,(NUMBER_OF_TIME_SAMPLES-2)*25,1000,-500,3500);
+	htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES-0,0,(NUMBER_OF_TIME_SAMPLES-0)*25,1000,-500,3500);
 	m_h_pulseLow.insert( std::pair<int,TH2F*>(ib*1000+iski*100+ichan, htmp2) );
       }
     }
@@ -169,7 +171,7 @@ void RawHitPlotter::beginJob()
 	    ped.id = essource_.emap_.eid2detId(eid);
 	  index+=ptr;
 	}else continue;
-	for( unsigned int ii=0; ii<NUMBER_OF_TIME_SAMPLES-2; ii++ ){
+	for( unsigned int ii=0; ii<NUMBER_OF_TIME_SAMPLES-0; ii++ ){
 	  float mean,rms;
 	  nval = sscanf( index, "%f %f %n",&mean,&rms,&ptr );
 	  if( nval==2 ){
@@ -196,7 +198,7 @@ void RawHitPlotter::beginJob()
 	  key=10000*hexaboard+100*skiroc+channel;
 	  index+=ptr;
 	}else continue;
-	for( unsigned int ii=0; ii<NUMBER_OF_TIME_SAMPLES-2; ii++ ){
+	for( unsigned int ii=0; ii<NUMBER_OF_TIME_SAMPLES-0; ii++ ){
 	  float mean,rms;
 	  nval = sscanf( index, "%f %f %n",&mean,&rms,&ptr );
 	  if( nval==2 ){
@@ -210,10 +212,10 @@ void RawHitPlotter::beginJob()
     }
     // for( std::map<int,pedestalChannel>::iterator it=m_pedMap.begin(); it!=m_pedMap.end(); ++it ){
     //   std::cout << it->first/10000 << " " << (it->first%10000)/100 << " " << it->first%100 ;
-    //   for( unsigned int ii=0; ii<NUMBER_OF_TIME_SAMPLES-2; ii++ )
+    //   for( unsigned int ii=0; ii<NUMBER_OF_TIME_SAMPLES-0; ii++ )
     // 	std::cout << " " << it->second.pedHGMean[ii] << " " << it->second.pedHGRMS[ii] ;
     //   std::cout << std::endl;
-    //   for( unsigned int ii=0; ii<NUMBER_OF_TIME_SAMPLES-2; ii++ )
+    //   for( unsigned int ii=0; ii<NUMBER_OF_TIME_SAMPLES-0; ii++ )
     // 	std::cout << " " << it->second.pedLGMean[ii] << " " << it->second.pedLGRMS[ii] ;
     //   std::cout << std::endl;
     // }
@@ -234,7 +236,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     os << "Event" << event.id().event();
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
     for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
-      for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-2; it++ ){
+      for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-0; it++ ){
 	TH2Poly *h=dir.make<TH2Poly>();
 	os.str("");
 	os<<"HexaBoard"<<ib<<"_TimeSample"<<it;
@@ -246,14 +248,15 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     }
   }
   
-  commonModeNoise cm[NUMBER_OF_TIME_SAMPLES-2][4];
+  commonModeNoise cm[NUMBER_OF_TIME_SAMPLES-0][4];
   if( m_subtractPedestal && m_subtractCommonMode ){
     for( auto hit : *hits ){
       int iboard=hit.skiroc()/N_SKIROC_PER_HEXA;
       int iski=hit.skiroc();
       int ichan=hit.channel();
       if( !essource_.emap_.existsDetId(hit.detid()) ) continue;
-      for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-2; it++ ){
+      for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-0; it++ ){
+	if( fabs(hit.highGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[it])>m_commonModeThreshold*m_pedMap[10000*iboard+100*iski+ichan].pedHGRMS[it] ) continue;
 	float highGain = hit.highGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[it];
 	float lowGain = hit.lowGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[it];
 	switch ( hit.detid().cellType() ){
@@ -269,7 +272,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     int iboard=hit.skiroc()/N_SKIROC_PER_HEXA;
     int iski=hit.skiroc();
     int ichan=hit.channel();
-    for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-2; it++ ){
+    for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-0; it++ ){
       float highGain,lowGain;
       if( m_subtractCommonMode && m_subtractPedestal && essource_.emap_.existsDetId(hit.detid()) ){
 	float subHG(0),subLG(0);
@@ -343,7 +346,7 @@ void RawHitPlotter::endJob()
   std::ostringstream os( std::ostringstream::ate );
   TH2Poly *h;
   for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
-    for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-2; it++ ){
+    for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-0; it++ ){
       h=dir.make<TH2Poly>();
       os.str("");
       os<<"HighGain_HexaBoard"<<ib<<"_TimeSample"<<it;
@@ -384,7 +387,7 @@ void RawHitPlotter::endJob()
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
     double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
     double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-    for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-2; it++ ){
+    for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-0; it++ ){
       pedPolyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->GetMean() );
       pedPolyMapNC[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichanNC*100+it]->GetMean() );
       noisePolyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->GetRMS() );
@@ -400,7 +403,7 @@ void RawHitPlotter::endJob()
 	for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
 	  pedestalHG << ib << " " << iski << " " << ichan ;
 	  pedestalLG << ib << " " << iski << " " << ichan ;
-	  for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-2; it++ ){
+	  for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-0; it++ ){
 	    int key=ib*100000+iski*10000+ichan*100+it;
 	    pedestalHG << " " << m_h_adcHigh[key]->GetMean() << " " << m_h_adcHigh[key]->GetRMS();
 	    pedestalLG << " " << m_h_adcLow[key]->GetMean() << " " << m_h_adcLow[key]->GetRMS();

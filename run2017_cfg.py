@@ -67,10 +67,8 @@ pedestalLowGain="pedestalLG_125.txt"
 
 process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         SensorSize=cms.untracked.int32(128),
-                                        EventPlotter=cms.untracked.bool(False),
+                                        EventPlotter=cms.untracked.bool(True),
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata"),
-                                        HighGainPedestalFileName=cms.string(pedestalHighGain),
-                                        LowGainPedestalFileName=cms.string(pedestalLowGain)
                                         )
 process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in cms.Path if you want to check which collections are in the event
 
