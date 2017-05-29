@@ -44,7 +44,7 @@ class HGCalTBSkiroc2CMS
   uint32_t globalTS_LSB() const { return ( (m_data.at(SKIROC_DATA_SIZE-2) & MASK_GTS_LSB)>>1 ); }
   
  public:
-  uint32_t globalTS()const{ return gray_to_brady( globalTS_MSB() | globalTS_LSB()); }
+  uint32_t globalTS()const{ return gray_to_brady( globalTS_MSB()<<12 | globalTS_LSB()); }
   int skirocId()const{ return (m_data.at(SKIROC_DATA_SIZE-1) & MASK_ID); }
   bool check();
 
