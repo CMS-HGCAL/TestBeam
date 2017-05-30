@@ -120,7 +120,7 @@ RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
 	  m_h_adcHigh.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+ichan*100+it, htmp1) );
 	  os.str("");
 	  os << "LowGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan << "_Sample" << it ;
-	  htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),-500,0,3500);
+	  htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,-500,3500);
 	  m_h_adcLow.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+ichan*100+it, htmp1) );
 	}
 	os.str("");
@@ -164,7 +164,13 @@ void RawHitPlotter::beginJob()
 	int hexaboard,skiroc,channel,ptr,nval;
 	nval=sscanf( index, "%d %d %d %n",&hexaboard,&skiroc,&channel,&ptr );
 	if( nval==3 ){
-	  HGCalTBElectronicsId eid(4-skiroc+1,channel);
+	  HGCalTBElectronicsId eid;
+	  switch( skiroc ){
+	  case 0 : eid=HGCalTBElectronicsId( 1, channel);break;
+	  case 1 : eid=HGCalTBElectronicsId( 4, channel);break;
+	  case 2 : eid=HGCalTBElectronicsId( 3, channel);break;
+	  case 3 : eid=HGCalTBElectronicsId( 2, channel);break;
+	  }
 	  if (!essource_.emap_.existsEId(eid.rawId()))
 	    ped.id = HGCalTBDetId(-1);
 	  else
