@@ -62,16 +62,11 @@ private:
   std::vector<std::pair<double, double>> CellXY;
   std::pair<double, double> CellCentreXY;
   std::set< std::pair<int,HGCalTBDetId> > setOfConnectedDetId;
-  std::string m_pedHighGainFileName;
-  std::string m_pedLowGainFileName;
-
 };
 
 RawDataPlotter::RawDataPlotter(const edm::ParameterSet& iConfig) :
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
-  m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
-  m_pedHighGainFileName(iConfig.getParameter<std::string>("HighGainPedestalFileName")),
-  m_pedLowGainFileName(iConfig.getParameter<std::string>("LowGainPedestalFileName"))
+  m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false))
 {
   usesResource("TFileService");
   edm::Service<TFileService> fs;
@@ -152,13 +147,16 @@ void RawDataPlotter::analyze(const edm::Event& event, const edm::EventSetup& set
     int iboard=iski/N_SKIROC_PER_HEXA;
     for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-	if( rollpositions[it]>8 ){ //rm on track samples+2 last time sample which show weird behaviour
+	if( rollpositions[it]<9 ){ //rm on track samples+2 last time sample which show weird behaviour
 	  m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->Fill(skiroc.ADCHigh(ichan,it));
 	  m_h_adcLow[iboard*100000+iski*10000+ichan*100+it]->Fill(skiroc.ADCLow(ichan,it));
 	  if( ichan%2==0 ){
 	    m_h_pulseHigh[iboard*1000+iski*100+ichan]->Fill( rollpositions[it]*25,skiroc.ADCHigh(ichan,it) ); 
 	    m_h_pulseLow[iboard*1000+iski*100+ichan]->Fill( rollpositions[it]*25,skiroc.ADCLow(ichan,it) );
-	    
+	  }
+	}
+	if( rollpositions[it]<NUMBER_OF_SCA-2 ){ //rm on track samples
+	  if( ichan%2==0 ){
 	    HGCalTBDetId detid=skiroc.detid( ichan );
 	    if(!IsCellValid.iu_iv_valid( detid.layer(),detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize ) )  continue;
 	    if(m_eventPlotter){
@@ -271,25 +269,6 @@ void RawDataPlotter::endJob()
     chanMap[ iboard ]->Fill(iux/2 , iuy, iski*1000+ichan );
   }
 
-  std::fstream pedestalHG;pedestalHG.open(m_pedHighGainFileName,std::ios::out);
-  std::fstream pedestalLG;pedestalLG.open(m_pedLowGainFileName,std::ios::out);
-  for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
-    for( size_t iski=0; iski<N_SKIROC_PER_HEXA; iski++ ){
-      for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
-	pedestalHG << ib << " " << iski << " " << ichan ;
-	pedestalLG << ib << " " << iski << " " << ichan ;
-	for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-	  int key=ib*100000+iski*10000+ichan*100+it;
-	  pedestalHG << " " << m_h_adcHigh[key]->GetMean() << " " << m_h_adcHigh[key]->GetRMS();
-	  pedestalLG << " " << m_h_adcLow[key]->GetMean() << " " << m_h_adcLow[key]->GetRMS();
-	}
-	pedestalHG << "\n" ;
-	pedestalLG << "\n" ;	
-      }
-    }
-  }
-  pedestalHG.close();
-  pedestalLG.close();
 }
 
 void RawDataPlotter::fillDescriptions(edm::ConfigurationDescriptions& descriptions)

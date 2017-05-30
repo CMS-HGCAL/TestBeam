@@ -26,7 +26,7 @@ class HGCalTBRawHit
   void setHighGainADCs(std::vector<float> vec){m_adcHigh=vec;}
   void setLowGainADCs(std::vector<float> vec){m_adcLow=vec;}
   float highGainADC(int timeSample){return m_adcHigh.at(timeSample);}
-  float lowGainADC(int timeSample){return m_adcHigh.at(timeSample);}
+  float lowGainADC(int timeSample){return m_adcLow.at(timeSample);}
 
  private:
   unsigned int m_rawid; //for some reasons (I don't know) root does not allow saving HGCalTBDetId because of some dictionary issue. 

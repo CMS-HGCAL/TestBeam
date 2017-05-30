@@ -25,12 +25,16 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     for( int ichan=0; ichan<NUMBER_OF_CHANNELS; ichan++ ){
       HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
       unsigned int rawid=skiroc.detid(ichan).rawId();
-      std::vector<float> adchigh;
-      std::vector<float> adclow;
+      std::vector<float> adchigh(NUMBER_OF_SCA,0);
+      std::vector<float> adclow(NUMBER_OF_SCA,0);
       std::vector<int> rollpositions=skiroc.rollPositions();
-      for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	adchigh.push_back( skiroc.ADCHigh(ichan,rollpositions[it]) );
-      	adclow.push_back( skiroc.ADCLow(ichan,rollpositions[it]) );
+      for( int it=0; it<NUMBER_OF_SCA; it++ ){
+      	adchigh.at( rollpositions[it] ) = skiroc.ADCHigh(ichan,it) ;
+	adclow.at( rollpositions[it] ) = skiroc.ADCLow(ichan,it) ;
+      }
+      for( int it=0; it<NUMBER_OF_SCA-NUMBER_OF_TIME_SAMPLES; it++ ){
+      	adchigh.pop_back();
+	adclow.pop_back();
       }
       HGCalTBRawHit hit( rawid, iski, ichan, adchigh, adclow);
       hits->push_back(hit);
