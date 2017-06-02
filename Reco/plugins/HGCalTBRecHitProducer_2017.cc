@@ -39,11 +39,6 @@ void HGCalTBRecHitProducer_2017::produce(edm::Event& event, const edm::EventSetu
 	event.getByToken(_rawHitsToken, rawHitsHandle);
 
 
-	int runId = event.id().run();
-	int spillId = event.luminosityBlock();
-	std::cout<<std::endl<<" Run= "<<runId<<" Spill= "<<spillId<<std::endl;
-
-
 	HGCalCondGains adcToGeV_low, adcToGeV_high;
 	HGCalCondPedestals pedestals_low, pedestals_high;
 	HGCalCondObjectTextIO condIO(HGCalTBNumberingScheme::scheme());
@@ -57,6 +52,7 @@ void HGCalTBRecHitProducer_2017::produce(edm::Event& event, const edm::EventSetu
 
 	//Core Assumptions (01. June 2017):
 	//only one layer exsits
+	//common mode is given as baseline from all other disconnected channels
 
 	//Step 1: compute the baseline of high- and low-gain ADC counts
 	double ave_lowADC_nonConnected = 0.;
@@ -65,9 +61,9 @@ void HGCalTBRecHitProducer_2017::produce(edm::Event& event, const edm::EventSetu
 
 	for( auto hit : *rawHitsHandle ) {
   		if (hit.detid().layer() != 127) continue;		//hits with layer index 127 are not connected
-		//if (DEBUG) std::cout << "[RECHIT PRODUCER (2017): raw hit] " << hit.detid()<<"   skiroc: "<< hit.skiroc() << "   channel: " << hit.channel() << std::endl;
+		if (DEBUG) std::cout << "[RECHIT PRODUCER (2017): raw hit] " << hit.detid()<<"   skiroc: "<< hit.skiroc() << "   channel: " << hit.channel() << std::endl;
   		for (int t_stamp=0; t_stamp<11; t_stamp++) {
-  			//if (DEBUG) std::cout<<"Time stamp: "<<t_stamp<<"   low: "<<hit.lowGainADC(t_stamp)<<"  high: "<<hit.highGainADC(t_stamp)<<std::endl;
+  			if (DEBUG) std::cout<<"Time stamp: "<<t_stamp<<"   low: "<<hit.lowGainADC(t_stamp)<<"  high: "<<hit.highGainADC(t_stamp)<<std::endl;
   			ave_highADC_nonConnected += hit.highGainADC(t_stamp);
   			ave_lowADC_nonConnected += hit.lowGainADC(t_stamp);
 			sum_nonConnected++;  			
@@ -76,7 +72,7 @@ void HGCalTBRecHitProducer_2017::produce(edm::Event& event, const edm::EventSetu
 	ave_lowADC_nonConnected/=sum_nonConnected;
 	ave_highADC_nonConnected/=sum_nonConnected;
 
-	std::cout<<"Baseline for low gain: "<<ave_lowADC_nonConnected<<"    high gain: "<<ave_highADC_nonConnected<<std::endl;
+	if (DEBUG) std::cout<<"Baseline for low gain: "<<ave_lowADC_nonConnected<<"    high gain: "<<ave_highADC_nonConnected<<std::endl;
 
 	
 	//Step 2: reconstruction algorithm

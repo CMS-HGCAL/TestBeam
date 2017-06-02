@@ -12,10 +12,16 @@ options.register('dataFolder',
                  'folder containing raw input')
 
 options.register('runNumber',
-                 45,
+                 151,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Input run to process')
+
+options.register('beamMomentum',
+                 250.,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.float,
+                 'Momentum of the electron beam.')
 
 options.register('outputFolder',
                  '/eos/user/t/tquast/outputs/Testbeam/May2017',
@@ -23,8 +29,7 @@ options.register('outputFolder',
                  VarParsing.VarParsing.varType.string,
                  'Output folder where analysis output are stored')
 
-options.maxEvents = 1
-options.output = "cmsswEvents.root"
+options.maxEvents = -1
 
 options.parseArguments()
 print options
@@ -52,15 +57,8 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             NumberOf32BitsWordsPerReadOut=cms.untracked.uint32(30788)
 )
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/HexaOutput_%d.root"%(options.outputFolder,options.runNumber)))
+process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/EnergySums_%04d.root"%(options.outputFolder,options.runNumber)))
 
-process.output = cms.OutputModule("PoolOutputModule",
-                                  fileName = cms.untracked.string(options.output)
-                                  )
-
-
-pedestalHighGain="pedestalHG_125.txt"
-pedestalLowGain="pedestalLG_125.txt"
 
 
 process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in cms.Path if you want to check which collections are in the event
@@ -71,9 +69,14 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         )
 
 
+process.LayerSumAnalyzer2017 = cms.EDAnalyzer("Layer_Sum_Analyzer_2017",
+                                  HGCALTBRECHITS = cms.InputTag("hgcaltbrechits2017","","unpack" ),
+                                  layers_config = cms.int32(1),
+                                  mapFile_CERN = cms.string('HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt'),
+                                  run = cms.int32(options.runNumber),
+                                  beamMomentum = cms.double(options.beamMomentum)
+                              )
 
-process.p = cms.Path( process.rawhitproducer * process.hgcaltbrechits2017)
 
-
-process.end = cms.EndPath(process.output)
+process.p = cms.Path( process.rawhitproducer * process.hgcaltbrechits2017 * process.LayerSumAnalyzer2017)
 
