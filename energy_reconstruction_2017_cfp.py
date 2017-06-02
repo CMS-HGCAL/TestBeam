@@ -9,13 +9,13 @@ options.register('dataFolder',
                  '/eos/user/t/tquast/data/Testbeam/May2017',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'folder containing raw input')
+                 'folder containing raw input.')
 
 options.register('runNumber',
                  151,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
-                 'Input run to process')
+                 'Input run to process.')
 
 options.register('beamMomentum',
                  250.,
@@ -23,11 +23,18 @@ options.register('beamMomentum',
                  VarParsing.VarParsing.varType.float,
                  'Momentum of the electron beam.')
 
-options.register('outputFolder',
-                 '/eos/user/t/tquast/outputs/Testbeam/May2017',
+options.register('outputPath',
+                 '/eos/user/t/tquast/outputs/Testbeam/May2017/LayerSumAnalyzer/run_xx.root',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'Output folder where analysis output are stored')
+                 'Output folder where analysis output are stored.')
+
+options.register('reportEvery',
+                100,
+                VarParsing.VarParsing.multiplicity.singleton,
+                VarParsing.VarParsing.varType.int,
+                'Frequency of event count printouts on the console.')
+
 
 options.maxEvents = -1
 
@@ -45,6 +52,11 @@ process.maxEvents = cms.untracked.PSet(
 process.load('HGCal.StandardSequences.LocalReco_cff')
 
 ####################################
+# Reduces the frequency of event count couts
+process.load("FWCore.MessageLogger.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
+
+####################################
 
 process.source = cms.Source("HGCalTBRawDataSource",
                             ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
@@ -57,11 +69,8 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             NumberOf32BitsWordsPerReadOut=cms.untracked.uint32(30788)
 )
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/EnergySums_%04d.root"%(options.outputFolder,options.runNumber)))
+process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputPath))
 
-
-
-process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in cms.Path if you want to check which collections are in the event
 
 process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
