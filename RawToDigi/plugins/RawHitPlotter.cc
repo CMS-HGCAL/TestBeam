@@ -116,20 +116,20 @@ RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
 	for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-0; it++ ){
 	  os.str("");
 	  os << "HighGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan << "_Sample" << it ;
-	  htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,-500,3500);
+	  htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
 	  m_h_adcHigh.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+ichan*100+it, htmp1) );
 	  os.str("");
 	  os << "LowGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan << "_Sample" << it ;
-	  htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,-500,3500);
+	  htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
 	  m_h_adcLow.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+ichan*100+it, htmp1) );
 	}
 	os.str("");
 	os << "PulseHighGain_Hexa" << ib << "_Chip" << iski << "_Channel" << ichan;
-	htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES-0,0,(NUMBER_OF_TIME_SAMPLES-0)*25,1000,-500,3500);
+	htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES-0,0,(NUMBER_OF_TIME_SAMPLES-0)*25,4000,-500,3500);
 	m_h_pulseHigh.insert( std::pair<int,TH2F*>(ib*1000+iski*100+ichan, htmp2) );
 	os.str("");
 	os << "PulseLowGain_Hexa" << ib << "_Chip" << iski << "_Channel" << ichan;
-	htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES-0,0,(NUMBER_OF_TIME_SAMPLES-0)*25,1000,-500,3500);
+	htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES-0,0,(NUMBER_OF_TIME_SAMPLES-0)*25,4000,-500,3500);
 	m_h_pulseLow.insert( std::pair<int,TH2F*>(ib*1000+iski*100+ichan, htmp2) );
       }
     }
@@ -216,15 +216,6 @@ void RawHitPlotter::beginJob()
       }
       fclose (file);
     }
-    // for( std::map<int,pedestalChannel>::iterator it=m_pedMap.begin(); it!=m_pedMap.end(); ++it ){
-    //   std::cout << it->first/10000 << " " << (it->first%10000)/100 << " " << it->first%100 ;
-    //   for( unsigned int ii=0; ii<NUMBER_OF_TIME_SAMPLES-0; ii++ )
-    // 	std::cout << " " << it->second.pedHGMean[ii] << " " << it->second.pedHGRMS[ii] ;
-    //   std::cout << std::endl;
-    //   for( unsigned int ii=0; ii<NUMBER_OF_TIME_SAMPLES-0; ii++ )
-    // 	std::cout << " " << it->second.pedLGMean[ii] << " " << it->second.pedLGRMS[ii] ;
-    //   std::cout << std::endl;
-    // }
   }
 }
 
@@ -270,6 +261,10 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
 	case 2 : cm[it][iski].halfHG += highGain; cm[it][iski].halfLG += lowGain; cm[it][iski].halfCounter++; break;
 	case 3 : cm[it][iski].mouseBiteHG += highGain; cm[it][iski].mouseBiteLG += lowGain; cm[it][iski].mouseBiteCounter++; break;
 	case 4 : cm[it][iski].outerHG += highGain; cm[it][iski].outerLG += lowGain; cm[it][iski].outerCounter++; break;
+	// case 0 : cm[it].fullHG += highGain; cm[it].fullLG += lowGain; cm[it].fullCounter++; break;
+	// case 2 : cm[it].halfHG += highGain; cm[it].halfLG += lowGain; cm[it].halfCounter++; break;
+	// case 3 : cm[it].mouseBiteHG += highGain; cm[it].mouseBiteLG += lowGain; cm[it].mouseBiteCounter++; break;
+	// case 4 : cm[it].outerHG += highGain; cm[it].outerLG += lowGain; cm[it].outerCounter++; break;
 	}
       }
     }
@@ -287,6 +282,10 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
 	case 2 : subHG=cm[it][iski].halfHG/cm[it][iski].halfCounter; subLG=cm[it][iski].halfLG/cm[it][iski].halfCounter; break;
 	case 3 : subHG=cm[it][iski].mouseBiteHG/cm[it][iski].mouseBiteCounter; subLG=cm[it][iski].mouseBiteLG/cm[it][iski].mouseBiteCounter; break;
 	case 4 : subHG=cm[it][iski].outerHG/cm[it][iski].outerCounter; subLG=cm[it][iski].outerLG/cm[it][iski].outerCounter; break;
+	// case 0 : subHG=cm[it].fullHG/cm[it].fullCounter; subLG=cm[it].fullLG/cm[it].fullCounter; break;
+	// case 2 : subHG=cm[it].halfHG/cm[it].halfCounter; subLG=cm[it].halfLG/cm[it].halfCounter; break;
+	// case 3 : subHG=cm[it].mouseBiteHG/cm[it].mouseBiteCounter; subLG=cm[it].mouseBiteLG/cm[it].mouseBiteCounter; break;
+	// case 4 : subHG=cm[it].outerHG/cm[it].outerCounter; subLG=cm[it].outerLG/cm[it].outerCounter; break;
 	}
 	highGain=hit.highGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[it]-subHG;
 	lowGain=hit.lowGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[it]-subLG;
