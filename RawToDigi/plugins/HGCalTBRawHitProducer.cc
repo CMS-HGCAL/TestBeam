@@ -36,7 +36,9 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       	adchigh.pop_back();
 	adclow.pop_back();
       }
-      HGCalTBRawHit hit( rawid, iski, ichan, adchigh, adclow);
+      HGCalTBRawHit hit(rawid, iski, ichan, adchigh, adclow,
+			skiroc.TOARise(ichan), skiroc.TOAFall(ichan),
+			skiroc.TOTSlow(ichan), skiroc.TOTFast(ichan));
       hits->push_back(hit);
     }
   }
