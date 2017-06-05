@@ -1,9 +1,8 @@
 #ifndef HGCALTBRECHITPRODUCER_2017_H
 #define HGCALTBRECHITPRODUCER_2017_H
 /** \class Reco/plugins/HGCalTBRecHitProducer_2017.h HGCalTBRecHitProducer_2017 HGCalTBRecHitProducer_2017
-	\brief
-
-	\author Thorben Quast
+  \brief
+  \author Thorben Quast
  */
 
 #include "FWCore/Framework/interface/EDProducer.h"
@@ -36,25 +35,24 @@ class HGCalTBRecHitProducer_2017 : public edm::EDProducer
 {
 
 public:
-	HGCalTBRecHitProducer_2017(const edm::ParameterSet&);
-	virtual void produce(edm::Event&, const edm::EventSetup&);
+  HGCalTBRecHitProducer_2017(const edm::ParameterSet&);
+  virtual void produce(edm::Event&, const edm::EventSetup&);
 private:
-	std::string outputCollectionName;     ///<label name of collection made by this producer
-	edm::EDGetTokenT<HGCalTBRawHitCollection> _rawHitsToken;
-	std::string _pedestalLow_filename, _pedestalHigh_filename;
-	std::string _gainsLow_filename, _gainsHigh_filename;
-	int _adcSaturation;
-	std::vector<double> _LG2HG_value;
-	std::string _mapFile;
-	int _layers_config;
-	int _N_timestamps;
-	struct {
-	  HGCalElectronicsMap emap_;
+  std::string outputCollectionName;     ///<label name of collection made by this producer
+  edm::EDGetTokenT<HGCalTBRawHitCollection> _rawHitsToken;
+  std::string _pedestalLow_filename, _pedestalHigh_filename;
+  std::string _gainsLow_filename, _gainsHigh_filename;
+  int _adcSaturation;
+  std::vector<double> _LG2HG_value;
+  std::string _mapFile;
+  int _layers_config;
+  int _N_timestamps;
+  struct {
+    HGCalElectronicsMap emap_;
         } essource_;
   HGCalTBCellVertices TheCell;
   std::pair<double, double> CellCenterXY;
 };
-
 
 
 #endif

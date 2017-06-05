@@ -78,6 +78,21 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         )
 
 
+process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
+                                        OutputCollectionName = cms.string('HGCALTBRECHITS'),
+                                        InputCollection = cms.InputTag('rawhitproducer','HGCALTBRAWHITS'),
+                                        LowGainPedestalFileName = cms.string('pedestalLG_125.txt'),
+                                        HighGainPedestalFileName = cms.string('pedestalHG_125.txt'),
+                                        LG2HG = cms.untracked.vdouble(10.0),
+                                        TOT2LG = cms.untracked.vdouble(10.0),
+                                        HighGainADCSaturation = cms.untracked.double(1800),
+                                        LowGainADCSaturation = cms.untracked.double(1800),
+                                        ElectronicsMap = cms.untracked.string('HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt'),
+                                        CommonModeThreshold = cms.untracked.double(3.),
+                                        KeepOnlyTimeSample3 = cms.untracked.bool(True)
+                                        )
+
+
 process.LayerSumAnalyzer2017 = cms.EDAnalyzer("Layer_Sum_Analyzer_2017",
                                   HGCALTBRECHITS = cms.InputTag("hgcaltbrechits2017","","unpack" ),
                                   layers_config = cms.int32(1),
@@ -87,5 +102,6 @@ process.LayerSumAnalyzer2017 = cms.EDAnalyzer("Layer_Sum_Analyzer_2017",
                               )
 
 
-process.p = cms.Path( process.rawhitproducer * process.hgcaltbrechits2017 * process.LayerSumAnalyzer2017)
+#process.p = cms.Path( process.rawhitproducer * process.rechitproducer * process.LayerSumAnalyzer2017)
 
+process.p = cms.Path( process.rawhitproducer * process.hgcaltbrechits2017 * process.LayerSumAnalyzer2017)
