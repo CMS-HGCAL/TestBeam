@@ -143,6 +143,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       lowGain=rawhit.lowGainADC(3)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[3]-subLG;
 
       float energy = (highGain<m_highGainADCSaturation) ? highGain : lowGain*m_LG2HG_value.at(iboard);
+      energy = (energy > 0.) ? energy : 0.;
       float time = rawhit.toaRise();
 
       HGCalTBRecHit recHit(rawhit.detid(), energy, lowGain, highGain, time);
@@ -152,7 +153,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
       rechits->push_back( recHit );
     }
-    else{
+    else{   //todo: perform parabolic fit to determine the maximum
       std::cout << "Should run with m_keepOnlyTimeSample3 sets to true, other method not yet implemented -> exit" << std::endl;
       exit(1);
     }
