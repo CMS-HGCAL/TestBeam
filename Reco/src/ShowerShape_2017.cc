@@ -47,10 +47,9 @@
 using namespace std;
 
 enum ENERGY_TYPE {
-  ADC_BASELINE_SUBTRACTED = 0,
+  ADC_NORMAL = 0,
   ADC_HIGH,
   ADC_LOW,
-  ADC_HIGH_CMSubtracted,
   MIP
 };
 
@@ -165,7 +164,7 @@ void ShowerShape2017::init(){
     if(eCellType != 0 && eCellType != 1 && eCellType != 4) continue;
 
     double energyCMsub;
-    if (energytype == ADC_BASELINE_SUBTRACTED) {
+    if (energytype == ADC_NORMAL) {
       energyCMsub = (Rechit.energy()) / ADCtoMIP[nSkiroc];    
     } else if (energytype == ADC_HIGH) {
       energyCMsub = (Rechit.energyHigh()) / ADCtoMIP[nSkiroc];    

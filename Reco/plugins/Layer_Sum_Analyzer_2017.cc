@@ -201,7 +201,7 @@ void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventS
   if (DEBUG) std::cout<<"max energy: "<<max[0]<<"   max_x: "<<max_x[0]<<"  max_y: "<<max_y[0]<<std::endl;
   
   //initialisation of the shower shapes
-  ShowerShape2017 shosha_default(mapfile_, sensorsize, Rechits, ADC_BASELINE_SUBTRACTED, ADCtoMIP, max_x, max_y);  
+  ShowerShape2017 shosha_default(mapfile_, sensorsize, Rechits, ADC_NORMAL, ADCtoMIP, max_x, max_y);  
   ShowerShape2017 shosha_high(mapfile_, sensorsize, Rechits, ADC_HIGH, ADCtoMIP, max_x, max_y);  
   ShowerShape2017 shosha_low(mapfile_, sensorsize, Rechits, ADC_LOW, ADCtoMIP, max_x, max_y);  
 
