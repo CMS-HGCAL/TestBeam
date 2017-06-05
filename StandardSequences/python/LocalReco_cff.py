@@ -1,6 +1,5 @@
 import FWCore.ParameterSet.Config as cms
 
-from HGCal.Reco.hgcaltbrechitproducer_2017_cfi import *
 from HGCal.Reco.millepede_binarywriter_cfi import *
 from HGCal.Reco.position_resolution_cfi import *
 from HGCal.Reco.hgcaltbclusterproducer_cfi import *

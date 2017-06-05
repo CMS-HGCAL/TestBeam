@@ -6,24 +6,24 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 #Change the data folder appropriately to where you wish to access the files from:
 options.register('dataFolder',
-                 '/afs/cern.ch/work/b/barneyd/public/data_May_2017/disk2_2TB/eudaq_data',
+                 '/eos/user/t/tquast/data/Testbeam/May2017',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw input')
 
 options.register('runNumber',
-                 850,
+                 207,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Input run to process')
 
 options.register('outputFolder',
-                 '/afs/cern.ch/work/a/asteen/public/data/may2017/',
+                 '/eos/user/t/tquast/outputs/Testbeam/May2017',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output folder where analysis output are stored')
 
-options.maxEvents = -1
+options.maxEvents = 2
 options.output = "cmsswEvents.root"
 
 options.parseArguments()
@@ -77,8 +77,8 @@ process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
                                        SensorSize=cms.untracked.int32(128),
                                        EventPlotter=cms.untracked.bool(False),
-                                       SubtractPedestal=cms.untracked.bool(False),
-                                       SubtractCommonMode=cms.untracked.bool(False),
+                                       SubtractPedestal=cms.untracked.bool(True),
+                                       SubtractCommonMode=cms.untracked.bool(True),
                                        CommonModeThreshold=cms.untracked.double(3),
                                        HighGainPedestalFileName=cms.string(pedestalHighGain),
                                        LowGainPedestalFileName=cms.string(pedestalLowGain)
@@ -116,8 +116,8 @@ process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",
 
 #process.p = cms.Path( process.rawdataplotter )
 #process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
-#process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.pulseshapeplotter )
-process.p = cms.Path( process.rawhitproducer*process.rechitproducer*process.rechitplotter )
+process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.pulseshapeplotter )
+#process.p = cms.Path( process.rawhitproducer*process.rechitproducer*process.rechitplotter )
 
 process.end = cms.EndPath(process.output)
 

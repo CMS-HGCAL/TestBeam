@@ -144,7 +144,13 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
       float energy = (highGain<m_highGainADCSaturation) ? highGain : lowGain*m_LG2HG_value.at(iboard);
       float time = rawhit.toaRise();
-      rechits->push_back( HGCalTBRecHit(rawhit.detid(), energy, lowGain, highGain, time) );
+
+      HGCalTBRecHit recHit(rawhit.detid(), energy, lowGain, highGain, time);
+      
+      CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((recHit.id()).layer(), (recHit.id()).sensorIU(), (recHit.id()).sensorIV(), (recHit.id()).iu(), (recHit.id()).iv(), 128); 
+      recHit.setCellCenterCoordinate(CellCenterXY.first, CellCenterXY.second);
+
+      rechits->push_back( recHit );
     }
     else{
       std::cout << "Should run with m_keepOnlyTimeSample3 sets to true, other method not yet implemented -> exit" << std::endl;

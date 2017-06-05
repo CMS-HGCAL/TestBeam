@@ -81,8 +81,8 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
 process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         OutputCollectionName = cms.string('HGCALTBRECHITS'),
                                         InputCollection = cms.InputTag('rawhitproducer','HGCALTBRAWHITS'),
-                                        LowGainPedestalFileName = cms.string('pedestalLG_125.txt'),
-                                        HighGainPedestalFileName = cms.string('pedestalHG_125.txt'),
+                                        LowGainPedestalFileName = cms.string("/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/CondObjects/data/pedestal_LG_OneLayer2017.txt"),
+                                        HighGainPedestalFileName = cms.string('/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/CondObjects/data/pedestal_HG_OneLayer2017.txt'),
                                         LG2HG = cms.untracked.vdouble(10.0),
                                         TOT2LG = cms.untracked.vdouble(10.0),
                                         HighGainADCSaturation = cms.untracked.double(1800),
@@ -94,7 +94,7 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
 
 
 process.LayerSumAnalyzer2017 = cms.EDAnalyzer("Layer_Sum_Analyzer_2017",
-                                  HGCALTBRECHITS = cms.InputTag("hgcaltbrechits2017","","unpack" ),
+                                  HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS"),
                                   layers_config = cms.int32(1),
                                   mapFile_CERN = cms.string('HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt'),
                                   run = cms.int32(options.runNumber),
@@ -102,6 +102,6 @@ process.LayerSumAnalyzer2017 = cms.EDAnalyzer("Layer_Sum_Analyzer_2017",
                               )
 
 
-#process.p = cms.Path( process.rawhitproducer * process.rechitproducer * process.LayerSumAnalyzer2017)
+process.p = cms.Path( process.rawhitproducer * process.rechitproducer * process.LayerSumAnalyzer2017)
 
-process.p = cms.Path( process.rawhitproducer * process.hgcaltbrechits2017 * process.LayerSumAnalyzer2017)
+#process.p = cms.Path( process.rawhitproducer * process.hgcaltbrechits2017 * process.LayerSumAnalyzer2017)

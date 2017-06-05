@@ -14,6 +14,7 @@
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
+#include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
 class HGCalTBRecHitProducer : public edm::EDProducer
 {
@@ -46,6 +47,9 @@ class HGCalTBRecHitProducer : public edm::EDProducer
     float pedLGRMS[NUMBER_OF_TIME_SAMPLES];
   };
   std::map<int,pedestalChannel> m_pedMap; //key=10000*hexa+100*chip+chan
+
+  HGCalTBCellVertices TheCell;
+  std::pair<double, double> CellCenterXY;
   
   struct commonModeNoise{
   commonModeNoise():fullHG(0),halfHG(0),mouseBiteHG(0),outerHG(0),fullLG(0),halfLG(0),mouseBiteLG(0),outerLG(0),fullCounter(0),halfCounter(0),mouseBiteCounter(0),outerCounter(0){;}

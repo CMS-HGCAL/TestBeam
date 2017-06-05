@@ -68,7 +68,6 @@ class Layer_Sum_Analyzer_2017 : public edm::one::EDAnalyzer<edm::one::SharedReso
     string mapfile_;
     int sensorsize = 128;
     
-    std::pair<double, double> CellCentreXY;
     HGCalTBTopology IsCellValid;
     HGCalTBCellVertices TheCell;
 
@@ -189,13 +188,11 @@ void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventS
     int n_skiroc = (eid.iskiroc() - 1);
     if(n_cell_type != 0 && n_cell_type != 4) continue;
 
-    //getting X and Y coordinates
-    CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), sensorsize);
-
+  
     if(Rechit.energy() > max[n_layer]) {      
       max[n_layer] = Rechit.energy();
-      max_x[n_layer] = CellCentreXY.first;
-      max_y[n_layer] = CellCentreXY.second;
+      max_x[n_layer] = Rechit.getCellCenterCartesianCoordinate(0);
+      max_y[n_layer] = Rechit.getCellCenterCartesianCoordinate(1);
     }
 
     if (DEBUG) std::cout<<"event: "<<event_nr<<"   n_layer: "<<n_layer<<"  n_cell_type: "<<n_cell_type<<"   n_skiroc: "<<n_skiroc<<std::endl;

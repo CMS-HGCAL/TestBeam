@@ -151,7 +151,10 @@ void ShowerShape2017::init(){
 
   for(auto Rechit : *Rechits){
     // looping over each rechit to fill histogram
-    CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), sensorsize);
+    CellCentreXY.first = Rechit.getCellCenterCartesianCoordinate(0);
+    CellCentreXY.second = Rechit.getCellCenterCartesianCoordinate(1);
+
+
     
     int eLayer = (Rechit.id()).layer()-1;
     int eCellType = (Rechit.id()).cellType();
