@@ -101,6 +101,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   edm::Handle<HGCalTBRawHitCollection> rawhits;
   event.getByToken(m_HGCalTBRawHitCollection, rawhits);
   commonModeNoise cm[NUMBER_OF_TIME_SAMPLES][4];
+  
   for( auto rawhit : *rawhits ){
     if( !essource_.emap_.existsDetId(rawhit.detid()) ) continue;
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid()) );
@@ -108,41 +109,21 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     int iski=eid.iskiroc()-1;
     int ichan=eid.ichan();
     
-    for (int time_stamp = 0; time_stamp < 11; time_stamp++) {
-      if( fabs(rawhit.highGainADC(time_stamp)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[time_stamp])>m_commonModeThreshold*m_pedMap[10000*iboard+100*iski+ichan].pedHGRMS[time_stamp] ) continue;
-      float highGain = rawhit.highGainADC(time_stamp)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[time_stamp];
-      float lowGain = rawhit.lowGainADC(time_stamp)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[time_stamp];
-      switch ( rawhit.detid().cellType() ){
-      case 0 : cm[time_stamp][iski].fullHG += highGain; cm[time_stamp][iski].fullLG += lowGain; cm[time_stamp][iski].fullCounter++; break;
-      case 2 : cm[time_stamp][iski].fullHG += highGain; cm[time_stamp][iski].fullLG += lowGain; cm[time_stamp][iski].fullCounter++; break;
-      //case 2 : cm[time_stamp][iski].halfHG += highGain; cm[time_stamp][iski].halfLG += lowGain; cm[time_stamp][iski].halfCounter++; break;
-      case 3 : cm[time_stamp][iski].mouseBiteHG += highGain; cm[time_stamp][iski].mouseBiteLG += lowGain; cm[time_stamp][iski].mouseBiteCounter++; break;
-      case 4 : cm[time_stamp][iski].outerHG += highGain; cm[time_stamp][iski].outerLG += lowGain; cm[time_stamp][iski].outerCounter++; break;
+      for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+        if( fabs(rawhit.highGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[it])>m_commonModeThreshold*m_pedMap[10000*iboard+100*iski+ichan].pedHGRMS[it] ) continue;
+        float highGain = rawhit.highGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[it];
+        float lowGain = rawhit.lowGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[it];
+        switch ( rawhit.detid().cellType() ){
+        case 0 : cm[it][iski].fullHG += highGain; cm[it][iski].fullLG += lowGain; cm[it][iski].fullCounter++; break;
+        case 2 : cm[it][iski].halfHG += highGain; cm[it][iski].halfLG += lowGain; cm[it][iski].halfCounter++; break;
+        case 3 : cm[it][iski].mouseBiteHG += highGain; cm[it][iski].mouseBiteLG += lowGain; cm[it][iski].mouseBiteCounter++; break;
+        case 4 : cm[it][iski].outerHG += highGain; cm[it][iski].outerLG += lowGain; cm[it][iski].outerCounter++; break;
+        }
       }
-    }
-
-    /*
-    if(m_keepOnlyTimeSample3){
-      if( fabs(rawhit.highGainADC(3)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[3])>m_commonModeThreshold*m_pedMap[10000*iboard+100*iski+ichan].pedHGRMS[3] ) continue;
-      float highGain = rawhit.highGainADC(3)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[3];
-      float lowGain = rawhit.lowGainADC(3)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[3];
-      switch ( rawhit.detid().cellType() ){
-      case 0 : cm[3][iski].fullHG += highGain; cm[3][iski].fullLG += lowGain; cm[3][iski].fullCounter++; break;
-      case 2 : cm[3][iski].fullHG += highGain; cm[3][iski].fullLG += lowGain; cm[3][iski].fullCounter++; break;
-      //case 2 : cm[3][iski].halfHG += highGain; cm[3][iski].halfLG += lowGain; cm[3][iski].halfCounter++; break;
-      case 3 : cm[3][iski].mouseBiteHG += highGain; cm[3][iski].mouseBiteLG += lowGain; cm[3][iski].mouseBiteCounter++; break;
-      case 4 : cm[3][iski].outerHG += highGain; cm[3][iski].outerLG += lowGain; cm[3][iski].outerCounter++; break;
-      }
-    }
-    //todo: common mode subtraction also here or generalize for all time samples
-    else{
-      std::cout << "Should run with m_keepOnlyTimeSample3 sets to true, other method not yet implemented -> exit" << std::endl;
-      exit(1);
-    }
-    */
   }
 
   for( auto rawhit : *rawhits ){
+
     if( !essource_.emap_.existsDetId(rawhit.detid()) ) continue;
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid()) );
     int iboard=(eid.iskiroc()-1)/N_SKIROC_PER_HEXA;
@@ -154,8 +135,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       float subHG(0),subLG(0);
       switch ( rawhit.detid().cellType() ){
       case 0 : subHG=cm[3][iski].fullHG/cm[3][iski].fullCounter; subLG=cm[3][iski].fullLG/cm[3][iski].fullCounter; break;
-      case 2 : subHG=cm[3][iski].fullHG/cm[3][iski].fullCounter; subLG=cm[3][iski].fullLG/cm[3][iski].fullCounter; break;
-      //case 2 : subHG=cm[3][iski].halfHG/cm[3][iski].halfCounter; subLG=cm[3][iski].halfLG/cm[3][iski].halfCounter; break;
+      //case 2 : subHG=cm[3][iski].fullHG/cm[3][iski].fullCounter; subLG=cm[3][iski].fullLG/cm[3][iski].fullCounter; break;
+      case 2 : subHG=cm[3][iski].halfHG/cm[3][iski].halfCounter; subLG=cm[3][iski].halfLG/cm[3][iski].halfCounter; break;
       case 3 : subHG=cm[3][iski].mouseBiteHG/cm[3][iski].mouseBiteCounter; subLG=cm[3][iski].mouseBiteLG/cm[3][iski].mouseBiteCounter; break;
       case 4 : subHG=cm[3][iski].outerHG/cm[3][iski].outerCounter; subLG=cm[3][iski].outerLG/cm[3][iski].outerCounter; break;
       }
@@ -183,13 +164,15 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       for (int i=0; i<N_entries; i++) {
         int time_stamp = index_of_first+i;
         _x[i] = time_stamp;
+      
         switch ( rawhit.detid().cellType() ){
           case 0 : subHG[i]=cm[time_stamp][iski].fullHG/cm[time_stamp][iski].fullCounter; subLG[i]=cm[time_stamp][iski].fullLG/cm[time_stamp][iski].fullCounter; break;
-          case 2 : subHG[i]=cm[time_stamp][iski].fullHG/cm[time_stamp][iski].fullCounter; subLG[i]=cm[time_stamp][iski].fullLG/cm[time_stamp][iski].fullCounter; break;
-          //case 2 : subHG[i]=cm[time_stamp][iski].halfHG/cm[time_stamp][iski].halfCounter; subLG[i]=cm[time_stamp][iski].halfLG/cm[time_stamp][iski].halfCounter; break;
+          //case 2 : subHG[i]=cm[time_stamp][iski].fullHG/cm[time_stamp][iski].fullCounter; subLG[i]=cm[time_stamp][iski].fullLG/cm[time_stamp][iski].fullCounter; break;
+          case 2 : subHG[i]=cm[time_stamp][iski].halfHG/cm[time_stamp][iski].halfCounter; subLG[i]=cm[time_stamp][iski].halfLG/cm[time_stamp][iski].halfCounter; break;
           case 3 : subHG[i]=cm[time_stamp][iski].mouseBiteHG/cm[time_stamp][iski].mouseBiteCounter; subLG[i]=cm[time_stamp][iski].mouseBiteLG/cm[time_stamp][iski].mouseBiteCounter; break;
           case 4 : subHG[i]=cm[time_stamp][iski].outerHG/cm[time_stamp][iski].outerCounter; subLG[i]=cm[time_stamp][iski].outerLG/cm[time_stamp][iski].outerCounter; break;
         }
+      
         highGain[i] = rawhit.highGainADC(time_stamp)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[time_stamp]-subHG[i];
         lowGain[i] = rawhit.lowGainADC(time_stamp)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[time_stamp]-subLG[i];
 
@@ -203,18 +186,12 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       double _cHG = highGain[0]-_aHG*pow(_x[0],2)-_bHG*_x[0];
       double _cLG = lowGain[0]-_aLG*pow(_x[0],2)-_bLG*_x[0];
 
-      //std::cout<<"_aHG = "<<_aHG<<"   _bHG = "<<_bHG<<"   _cHG = "<<_cHG<<std::endl;
-      //std::cout<<"_aLG = "<<_aLG<<"   _bLG = "<<_bLG<<"   _cLG = "<<_cLG<<std::endl;
       
       double _x_max_HG = (_aHG < 0) ? -_bHG/(2*_aHG) : 0;   //require maximum <--> a<0
       double _x_max_LG = (_aLG < 0) ? -_bLG/(2*_aLG) : 0;
       
-
       double energyHG = (_x_max_HG<=4 && _x_max_HG>=2) ? _aHG*pow(_x_max_HG,2)+_bHG*_x_max_HG+_cHG : 0;
       double energyLG = (_x_max_LG<=4 && _x_max_LG>=2) ? _aLG*pow(_x_max_LG,2)+_bLG*_x_max_LG+_cLG : 0;
-      
-      //std::cout<<"energyHG vs. highGain[1] : "<<energyHG<<" vs. "<<highGain[1]<<std::endl;
-      //std::cout<<"energyLG vs. lowGain[1] : "<<energyLG<<" vs. "<<lowGain[1]<<std::endl<<std::endl;
       
       float energy = (energyHG<m_highGainADCSaturation) ? energyHG : energyLG*m_LG2HG_value.at(iboard);
       energy = (energy > 0.) ? energy : 0.;
