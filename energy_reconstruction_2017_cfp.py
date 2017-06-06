@@ -12,13 +12,13 @@ options.register('dataFolder',
                  'folder containing raw input.')
 
 options.register('runNumber',
-                 151,
+                 83,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Input run to process.')
 
 options.register('beamMomentum',
-                 250.,
+                 20.,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.float,
                  'Momentum of the electron beam.')
@@ -89,8 +89,8 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         LowGainADCSaturation = cms.untracked.double(1800),
                                         ElectronicsMap = cms.untracked.string('HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt'),
                                         CommonModeThreshold = cms.untracked.double(3.),
-                                        KeepOnlyTimeSample3 = cms.untracked.bool(True),
-                                        performParabolicFit = cms.untracked.bool(False)
+                                        KeepOnlyTimeSample3 = cms.untracked.bool(False),
+                                        performParabolicFit = cms.untracked.bool(True)
                                         )
 
 

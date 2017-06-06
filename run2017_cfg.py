@@ -12,7 +12,7 @@ options.register('dataFolder',
                  'folder containing raw input')
 
 options.register('runNumber',
-                 207,
+                 83,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Input run to process')
@@ -23,7 +23,7 @@ options.register('outputFolder',
                  VarParsing.VarParsing.varType.string,
                  'Output folder where analysis output are stored')
 
-options.maxEvents = 2
+options.maxEvents = 1
 options.output = "cmsswEvents.root"
 
 options.parseArguments()
@@ -77,9 +77,9 @@ process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
                                        SensorSize=cms.untracked.int32(128),
                                        EventPlotter=cms.untracked.bool(False),
-                                       SubtractPedestal=cms.untracked.bool(True),
-                                       SubtractCommonMode=cms.untracked.bool(True),
-                                       CommonModeThreshold=cms.untracked.double(3),
+                                       SubtractPedestal=cms.untracked.bool(False),
+                                       SubtractCommonMode=cms.untracked.bool(False),
+                                       CommonModeThreshold=cms.untracked.double(3.),
                                        HighGainPedestalFileName=cms.string(pedestalHighGain),
                                        LowGainPedestalFileName=cms.string(pedestalLowGain)
                                        )
@@ -87,8 +87,8 @@ process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
 process.pulseshapeplotter = cms.EDAnalyzer("PulseShapePlotter",
                                            InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
                                            ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
-                                           HighGainPedestalFileName=cms.string(pedestalHighGain),
-                                           LowGainPedestalFileName=cms.string(pedestalLowGain)
+                                           HighGainPedestalFileName=cms.string("/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/CondObjects/data/pedestal_HG_OneLayer2017.txt"),
+                                           LowGainPedestalFileName=cms.string("/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/CondObjects/data/pedestal_LG_OneLayer2017.txt")
                                            )
 
 
@@ -116,7 +116,7 @@ process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",
 
 #process.p = cms.Path( process.rawdataplotter )
 #process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
-process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.pulseshapeplotter )
+process.p = cms.Path( process.rawhitproducer*process.pulseshapeplotter )
 #process.p = cms.Path( process.rawhitproducer*process.rechitproducer*process.rechitplotter )
 
 process.end = cms.EndPath(process.output)
