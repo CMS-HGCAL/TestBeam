@@ -11,7 +11,8 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) :
   m_commonModeThreshold(cfg.getUntrackedParameter<double>("CommonModeThreshold",3)),
   m_highGainADCSaturation(cfg.getUntrackedParameter<double>("HighGainADCSaturation",1800)),
   m_lowGainADCSaturation(cfg.getUntrackedParameter<double>("LowGainADCSaturation",1800)),
-  m_keepOnlyTimeSample3(cfg.getUntrackedParameter<bool>("KeepOnlyTimeSample3",true))
+  m_keepOnlyTimeSample3(cfg.getUntrackedParameter<bool>("KeepOnlyTimeSample3",true)),   //checked first
+  m_performParabolicFit(cfg.getUntrackedParameter<bool>("performParabolicFit",true))   //checked secondly
 {
 
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
@@ -106,6 +107,21 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     int iboard=(eid.iskiroc()-1)/N_SKIROC_PER_HEXA;
     int iski=eid.iskiroc()-1;
     int ichan=eid.ichan();
+    
+    for (int time_stamp = 0; time_stamp < 11; time_stamp++) {
+      if( fabs(rawhit.highGainADC(time_stamp)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[time_stamp])>m_commonModeThreshold*m_pedMap[10000*iboard+100*iski+ichan].pedHGRMS[time_stamp] ) continue;
+      float highGain = rawhit.highGainADC(time_stamp)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[time_stamp];
+      float lowGain = rawhit.lowGainADC(time_stamp)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[time_stamp];
+      switch ( rawhit.detid().cellType() ){
+      case 0 : cm[time_stamp][iski].fullHG += highGain; cm[time_stamp][iski].fullLG += lowGain; cm[time_stamp][iski].fullCounter++; break;
+      case 2 : cm[time_stamp][iski].fullHG += highGain; cm[time_stamp][iski].fullLG += lowGain; cm[time_stamp][iski].fullCounter++; break;
+      //case 2 : cm[time_stamp][iski].halfHG += highGain; cm[time_stamp][iski].halfLG += lowGain; cm[time_stamp][iski].halfCounter++; break;
+      case 3 : cm[time_stamp][iski].mouseBiteHG += highGain; cm[time_stamp][iski].mouseBiteLG += lowGain; cm[time_stamp][iski].mouseBiteCounter++; break;
+      case 4 : cm[time_stamp][iski].outerHG += highGain; cm[time_stamp][iski].outerLG += lowGain; cm[time_stamp][iski].outerCounter++; break;
+      }
+    }
+
+    /*
     if(m_keepOnlyTimeSample3){
       if( fabs(rawhit.highGainADC(3)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[3])>m_commonModeThreshold*m_pedMap[10000*iboard+100*iski+ichan].pedHGRMS[3] ) continue;
       float highGain = rawhit.highGainADC(3)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[3];
@@ -118,17 +134,21 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       case 4 : cm[3][iski].outerHG += highGain; cm[3][iski].outerLG += lowGain; cm[3][iski].outerCounter++; break;
       }
     }
+    //todo: common mode subtraction also here or generalize for all time samples
     else{
       std::cout << "Should run with m_keepOnlyTimeSample3 sets to true, other method not yet implemented -> exit" << std::endl;
       exit(1);
     }
+    */
   }
+
   for( auto rawhit : *rawhits ){
     if( !essource_.emap_.existsDetId(rawhit.detid()) ) continue;
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid()) );
     int iboard=(eid.iskiroc()-1)/N_SKIROC_PER_HEXA;
     int iski=eid.iskiroc()-1;
     int ichan=eid.ichan();
+    
     if(m_keepOnlyTimeSample3){
       float highGain,lowGain;
       float subHG(0),subLG(0);
@@ -152,8 +172,64 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       recHit.setCellCenterCoordinate(CellCenterXY.first, CellCenterXY.second);
 
       rechits->push_back( recHit );
-    }
-    else{   //todo: perform parabolic fit to determine the maximum
+    } else if (m_performParabolicFit) {
+      int N_entries = 3;    //number of data points for the parabolic fit
+      int index_of_first = 2;
+
+      float highGain[N_entries]; float lowGain[N_entries];
+      float subHG[N_entries]; float subLG[N_entries];
+      float _x[N_entries];
+      
+      for (int i=0; i<N_entries; i++) {
+        int time_stamp = index_of_first+i;
+        _x[i] = time_stamp;
+        switch ( rawhit.detid().cellType() ){
+          case 0 : subHG[i]=cm[time_stamp][iski].fullHG/cm[time_stamp][iski].fullCounter; subLG[i]=cm[time_stamp][iski].fullLG/cm[time_stamp][iski].fullCounter; break;
+          case 2 : subHG[i]=cm[time_stamp][iski].fullHG/cm[time_stamp][iski].fullCounter; subLG[i]=cm[time_stamp][iski].fullLG/cm[time_stamp][iski].fullCounter; break;
+          //case 2 : subHG[i]=cm[time_stamp][iski].halfHG/cm[time_stamp][iski].halfCounter; subLG[i]=cm[time_stamp][iski].halfLG/cm[time_stamp][iski].halfCounter; break;
+          case 3 : subHG[i]=cm[time_stamp][iski].mouseBiteHG/cm[time_stamp][iski].mouseBiteCounter; subLG[i]=cm[time_stamp][iski].mouseBiteLG/cm[time_stamp][iski].mouseBiteCounter; break;
+          case 4 : subHG[i]=cm[time_stamp][iski].outerHG/cm[time_stamp][iski].outerCounter; subLG[i]=cm[time_stamp][iski].outerLG/cm[time_stamp][iski].outerCounter; break;
+        }
+        highGain[i] = rawhit.highGainADC(time_stamp)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[time_stamp]-subHG[i];
+        lowGain[i] = rawhit.lowGainADC(time_stamp)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[time_stamp]-subLG[i];
+
+      }
+
+      //energy reconstruction from parabolic function a*x^2 + b*x + c
+      double _aHG = ( (highGain[2]-highGain[1])/(_x[2]-_x[1]) - (highGain[1]-highGain[0])/(_x[1]-_x[0]) )/( (pow(_x[2],2)-pow(_x[1],2))/(_x[2]-_x[1]) - (pow(_x[1],2)-pow(_x[0],2))/(_x[1]-_x[0]) );
+      double _aLG = ( (lowGain[2]-lowGain[1])/(_x[2]-_x[1]) - (lowGain[1]-lowGain[0])/(_x[1]-_x[0]) )/( (pow(_x[2],2)-pow(_x[1],2))/(_x[2]-_x[1]) - (pow(_x[1],2)-pow(_x[0],2))/(_x[1]-_x[0]) );
+      double _bHG = (highGain[2]-highGain[1]+_aHG*(pow(_x[1],2)-pow(_x[2],2)))/(_x[2]-_x[1]);
+      double _bLG = (lowGain[2]-lowGain[1]+_aLG*(pow(_x[1],2)-pow(_x[2],2)))/(_x[2]-_x[1]);
+      double _cHG = highGain[0]-_aHG*pow(_x[0],2)-_bHG*_x[0];
+      double _cLG = lowGain[0]-_aLG*pow(_x[0],2)-_bLG*_x[0];
+
+      //std::cout<<"_aHG = "<<_aHG<<"   _bHG = "<<_bHG<<"   _cHG = "<<_cHG<<std::endl;
+      //std::cout<<"_aLG = "<<_aLG<<"   _bLG = "<<_bLG<<"   _cLG = "<<_cLG<<std::endl;
+      
+      double _x_max_HG = (_aHG < 0) ? -_bHG/(2*_aHG) : 0;   //require maximum <--> a<0
+      double _x_max_LG = (_aLG < 0) ? -_bLG/(2*_aLG) : 0;
+      
+
+      double energyHG = (_x_max_HG<=4 && _x_max_HG>=2) ? _aHG*pow(_x_max_HG,2)+_bHG*_x_max_HG+_cHG : 0;
+      double energyLG = (_x_max_LG<=4 && _x_max_LG>=2) ? _aLG*pow(_x_max_LG,2)+_bLG*_x_max_LG+_cLG : 0;
+      
+      //std::cout<<"energyHG vs. highGain[1] : "<<energyHG<<" vs. "<<highGain[1]<<std::endl;
+      //std::cout<<"energyLG vs. lowGain[1] : "<<energyLG<<" vs. "<<lowGain[1]<<std::endl<<std::endl;
+      
+      float energy = (energyHG<m_highGainADCSaturation) ? energyHG : energyLG*m_LG2HG_value.at(iboard);
+      energy = (energy > 0.) ? energy : 0.;
+      
+      float time = rawhit.toaRise();
+
+      HGCalTBRecHit recHit(rawhit.detid(), energy, energyLG, energyHG, time);
+      
+      CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((recHit.id()).layer(), (recHit.id()).sensorIU(), (recHit.id()).sensorIV(), (recHit.id()).iu(), (recHit.id()).iv(), 128); 
+      recHit.setCellCenterCoordinate(CellCenterXY.first, CellCenterXY.second);
+
+      rechits->push_back( recHit );
+      
+
+    } else{   //todo: perform parabolic fit to determine the maximum
       std::cout << "Should run with m_keepOnlyTimeSample3 sets to true, other method not yet implemented -> exit" << std::endl;
       exit(1);
     }

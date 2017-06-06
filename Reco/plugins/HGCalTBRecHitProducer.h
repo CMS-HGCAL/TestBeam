@@ -31,6 +31,7 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   int m_highGainADCSaturation;
   int m_lowGainADCSaturation;
   bool m_keepOnlyTimeSample3;
+  bool m_performParabolicFit;
 
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
   std::vector<double> m_LG2HG_value;
