@@ -3,7 +3,11 @@
 
 
 HGCalTBRawHitProducer::HGCalTBRawHitProducer(const edm::ParameterSet& cfg) : 
-  m_outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName"))
+  m_electronicMap(cfg.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
+  m_outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
+  m_subtractPedestal(cfg.getUntrackedParameter<bool>("SubtractPedestal",false)),
+  m_pedestalHigh_filename(cfg.getParameter<std::string>("HighGainPedestalFileName")),
+  m_pedestalLow_filename(cfg.getParameter<std::string>("LowGainPedestalFileName"))
 {
   m_HGCalTBSkiroc2CMSCollection = consumes<HGCalTBSkiroc2CMSCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
   produces <HGCalTBRawHitCollection>(m_outputCollectionName);
@@ -12,6 +16,78 @@ HGCalTBRawHitProducer::HGCalTBRawHitProducer(const edm::ParameterSet& cfg) :
 
 void HGCalTBRawHitProducer::beginJob()
 {
+  HGCalCondObjectTextIO io(0);
+  edm::FileInPath fip(m_electronicMap);
+  if (!io.load(fip.fullPath(), essource_.emap_)) {
+    throw cms::Exception("Unable to load electronics map");
+  };
+  
+  if( m_subtractPedestal ){
+    FILE* file;
+    char buffer[300];
+    file = fopen (m_pedestalHigh_filename.c_str() , "r");
+    if (file == NULL){ perror ("Error opening pedestal high gain"); exit(1); }
+    else{
+      while ( ! feof (file) ){
+	if ( fgets (buffer , 300 , file) == NULL ) break;
+	pedestalChannel ped;
+	const char* index = buffer;
+	int hexaboard,skiroc,channel,ptr,nval;
+	nval=sscanf( index, "%d %d %d %n",&hexaboard,&skiroc,&channel,&ptr );
+	if( nval==3 ){
+	  HGCalTBElectronicsId eid;
+	  switch( skiroc ){
+	  case 0 : eid=HGCalTBElectronicsId( 1, channel);break;
+	  case 1 : eid=HGCalTBElectronicsId( 4, channel);break;
+	  case 2 : eid=HGCalTBElectronicsId( 3, channel);break;
+	  case 3 : eid=HGCalTBElectronicsId( 2, channel);break;
+	  }
+	  if (!essource_.emap_.existsEId(eid.rawId()))
+	    ped.id = HGCalTBDetId(-1);
+	  else
+	    ped.id = essource_.emap_.eid2detId(eid);
+	  index+=ptr;
+	}else continue;
+	for( unsigned int ii=0; ii<NUMBER_OF_SCA; ii++ ){
+	  float mean,rms;
+	  nval = sscanf( index, "%f %f %n",&mean,&rms,&ptr );
+	  if( nval==2 ){
+	    ped.pedHGMean[ii]=mean;
+	    ped.pedHGRMS[ii]=rms;
+	    index+=ptr;
+	  }else continue;
+	}
+	m_pedMap.insert( std::pair<int,pedestalChannel>(10000*hexaboard+100*skiroc+channel,ped) );
+      }
+      fclose (file);
+    }
+  
+    file = fopen (m_pedestalLow_filename.c_str() , "r");
+    if (file == NULL){ perror ("Error opening pedestal low gain"); exit(1); }
+    else{
+      while ( ! feof (file) ){
+	if ( fgets (buffer , 300 , file) == NULL ) break;
+	pedestalChannel ped;
+	const char* index = buffer;
+	int hexaboard,skiroc,channel,ptr,nval,key;
+	nval=sscanf( index, "%d %d %d %n",&hexaboard,&skiroc,&channel,&ptr );
+	if( nval==3 ){
+	  key=10000*hexaboard+100*skiroc+channel;
+	  index+=ptr;
+	}else continue;
+	for( unsigned int ii=0; ii<NUMBER_OF_SCA; ii++ ){
+	  float mean,rms;
+	  nval = sscanf( index, "%f %f %n",&mean,&rms,&ptr );
+	  if( nval==2 ){
+	    m_pedMap[key].pedLGMean[ii]=mean;
+	    m_pedMap[key].pedLGRMS[ii]=rms;
+	    index+=ptr;
+	  }else continue;
+	}
+      }
+      fclose (file);
+    }
+  }
 }
 
 void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iSetup)
@@ -24,13 +100,20 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   for( size_t iski=0; iski<skirocs->size(); iski++ ){
     for( int ichan=0; ichan<NUMBER_OF_CHANNELS; ichan++ ){
       HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
+      int iboard=iski/4;//Arnaud, please modify this
       unsigned int rawid=skiroc.detid(ichan).rawId();
       std::vector<float> adchigh(NUMBER_OF_SCA,0);
       std::vector<float> adclow(NUMBER_OF_SCA,0);
       std::vector<int> rollpositions=skiroc.rollPositions();
       for( int it=0; it<NUMBER_OF_SCA; it++ ){
-      	adchigh.at( rollpositions[it] ) = skiroc.ADCHigh(ichan,it) ;
-	adclow.at( rollpositions[it] ) = skiroc.ADCLow(ichan,it) ;
+	if( m_subtractPedestal ){
+	  adchigh.at( rollpositions[it] ) = skiroc.ADCHigh(ichan,it)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[it] ;
+	  adclow.at( rollpositions[it] ) = skiroc.ADCLow(ichan,it)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[it] ;
+	}
+	else{
+	  adchigh.at( rollpositions[it] ) = skiroc.ADCHigh(ichan,it) ;
+	  adclow.at( rollpositions[it] ) = skiroc.ADCLow(ichan,it) ;
+	}
       }
       for( int it=0; it<NUMBER_OF_SCA-NUMBER_OF_TIME_SAMPLES; it++ ){
       	adchigh.pop_back();
