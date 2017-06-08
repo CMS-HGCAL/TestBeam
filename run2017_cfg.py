@@ -41,7 +41,7 @@ process.maxEvents = cms.untracked.PSet(
 
 process.source = cms.Source("HGCalTBRawDataSource",
                             ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
-                            fileNames=cms.untracked.vstring("file:%s/HexaData_Run%04d.raw"%(options.dataFolder,options.runNumber)),#the current version can handle only one file
+                            fileNames=cms.untracked.vstring("file:%s/HexaData_Run%04d.raw"%(options.dataFolder,options.runNumber)),
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
                             NOrmBoards=cms.untracked.uint32(1),
                             NHexaBoards=cms.untracked.uint32(1),
@@ -64,7 +64,10 @@ process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         SensorSize=cms.untracked.int32(128),
                                         EventPlotter=cms.untracked.bool(False),
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata"),
+                                        HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
+                                        LowGainPedestalFileName=cms.untracked.string(pedestalLowGain)
                                         )
+
 process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in cms.Path if you want to check which collections are in the event
 
 process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
@@ -95,8 +98,8 @@ process.pulseshapeplotter = cms.EDAnalyzer("PulseShapePlotter",
 process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         OutputCollectionName = cms.string('HGCALTBRECHITS'),
                                         InputCollection = cms.InputTag('rawhitproducer','HGCALTBRAWHITS'),
-                                        LowGainPedestalFileName = cms.string('pedestalLG_125.txt'),
-                                        HighGainPedestalFileName = cms.string('pedestalHG_125.txt'),
+                                        LowGainPedestalFileName = cms.string(pedestalLowGain),
+                                        HighGainPedestalFileName = cms.string(pedestalHighGain),
                                         LG2HG = cms.untracked.vdouble(10.0),
                                         TOT2LG = cms.untracked.vdouble(10.0),
                                         HighGainADCSaturation = cms.untracked.double(1800),
