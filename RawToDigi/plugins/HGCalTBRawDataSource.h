@@ -51,7 +51,7 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   unsigned int m_time;
   unsigned int m_event, m_run, m_spill;
   int m_eventSize,m_nevents;
-  int m_fileId;
+  unsigned int m_fileId;
   
   uint32_t m_skiMask;
   char* m_buffer;
