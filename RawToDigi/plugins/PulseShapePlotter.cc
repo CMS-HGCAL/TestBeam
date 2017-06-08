@@ -104,7 +104,13 @@ void PulseShapePlotter::beginJob()
       int hexaboard,skiroc,channel,ptr,nval;
       nval=sscanf( index, "%d %d %d %n",&hexaboard,&skiroc,&channel,&ptr );
       if( nval==3 ){
-	HGCalTBElectronicsId eid(4-skiroc+1,channel);
+	HGCalTBElectronicsId eid;
+	switch( skiroc ){
+	case 0 : eid=HGCalTBElectronicsId( 1, channel);break;
+	case 1 : eid=HGCalTBElectronicsId( 4, channel);break;
+	case 2 : eid=HGCalTBElectronicsId( 3, channel);break;
+	case 3 : eid=HGCalTBElectronicsId( 2, channel);break;
+	}
 	if (!essource_.emap_.existsEId(eid.rawId()))
 	  ped.id = HGCalTBDetId(-1);
 	else

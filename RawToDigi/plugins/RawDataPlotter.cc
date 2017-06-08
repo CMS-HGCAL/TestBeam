@@ -48,6 +48,8 @@ private:
   } essource_;
   int m_sensorsize;
   bool m_eventPlotter;
+  std::string m_pedestalHigh_filename;
+  std::string m_pedestalLow_filename;
 
   int m_evtID;
   std::map<int,TH1F*> m_h_adcHigh;
@@ -66,7 +68,9 @@ private:
 
 RawDataPlotter::RawDataPlotter(const edm::ParameterSet& iConfig) :
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
-  m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false))
+  m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
+  m_pedestalHigh_filename( iConfig.getUntrackedParameter<std::string>("HighGainPedestalFileName",std::string("pedestalHG.txt")) ),
+  m_pedestalLow_filename( iConfig.getUntrackedParameter<std::string>("LowGainPedestalFileName",std::string("pedestalLG.txt")) )
 {
   usesResource("TFileService");
   edm::Service<TFileService> fs;
@@ -95,12 +99,12 @@ RawDataPlotter::RawDataPlotter(const edm::ParameterSet& iConfig) :
 	}
 	if( ichan%2==0 ){
 	  os.str("");
-	  os << "PulseHighGain_Hexa" << ib << "_Chip" << iski << "_Channel" << ichan;
-	  htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_SCA-2,0, (NUMBER_OF_SCA-2)*25,1000,0,4096);
+	  os << "HighGainVsSCA_Hexa" << ib << "_Chip" << iski << "_Channel" << ichan;
+	  htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_SCA,0, NUMBER_OF_SCA,1000,0,4096);
 	  m_h_pulseHigh.insert( std::pair<int,TH2F*>(ib*1000+iski*100+ichan, htmp2) );
 	  os.str("");
-	  os << "PulseLowGain_Hexa" << ib << "_Chip" << iski << "_Channel" << ichan;
-	  htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_SCA-2,0, (NUMBER_OF_SCA-2)*25,1000,0,4096);
+	  os << "LowGainVsSCA_Hexa" << ib << "_Chip" << iski << "_Channel" << ichan;
+	  htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_SCA,0, NUMBER_OF_SCA,1000,0,4096);
 	  m_h_pulseLow.insert( std::pair<int,TH2F*>(ib*1000+iski*100+ichan, htmp2) );
 	}
       }
@@ -129,10 +133,10 @@ void RawDataPlotter::analyze(const edm::Event& event, const edm::EventSetup& set
     os << "Event" << event.id().event();
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
     for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
-      for( size_t it=0; it<NUMBER_OF_SCA-2; it++ ){
+      for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
 	TH2Poly *h=dir.make<TH2Poly>();
 	os.str("");
-	os<<"HexaBoard"<<ib<<"_TimeSample"<<it;
+	os<<"HexaBoard"<<ib<<"_SCA"<<it;
 	h->SetName(os.str().c_str());
 	h->SetTitle(os.str().c_str());
 	InitTH2Poly(*h, (int)ib, 0, 0);
@@ -146,28 +150,26 @@ void RawDataPlotter::analyze(const edm::Event& event, const edm::EventSetup& set
     std::vector<int> rollpositions=skiroc.rollPositions();
     int iboard=iski/N_SKIROC_PER_HEXA;
     for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
+      if( ichan%2==0 ){
+	std::pair<int,HGCalTBDetId> p( iboard*1000+iski*100+ichan,skiroc.detid(ichan) );
+	setOfConnectedDetId.insert(p);
+      }
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
 	if( rollpositions[it]<9 ){ //rm on track samples+2 last time sample which show weird behaviour
 	  m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->Fill(skiroc.ADCHigh(ichan,it));
 	  m_h_adcLow[iboard*100000+iski*10000+ichan*100+it]->Fill(skiroc.ADCLow(ichan,it));
 	  if( ichan%2==0 ){
-	    m_h_pulseHigh[iboard*1000+iski*100+ichan]->Fill( rollpositions[it]*25,skiroc.ADCHigh(ichan,it) ); 
-	    m_h_pulseLow[iboard*1000+iski*100+ichan]->Fill( rollpositions[it]*25,skiroc.ADCLow(ichan,it) );
+	    m_h_pulseHigh[iboard*1000+iski*100+ichan]->Fill( it,skiroc.ADCHigh(ichan,it) ); 
+	    m_h_pulseLow[iboard*1000+iski*100+ichan]->Fill( it,skiroc.ADCLow(ichan,it) );
 	  }
 	}
-	if( rollpositions[it]<NUMBER_OF_SCA-2 ){ //rm on track samples
-	  if( ichan%2==0 ){
-	    HGCalTBDetId detid=skiroc.detid( ichan );
-	    if(!IsCellValid.iu_iv_valid( detid.layer(),detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize ) )  continue;
-	    if(m_eventPlotter){
-	      CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
-	      double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
-	      double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-	      polyMap[ 100*iboard+rollpositions[it] ]->Fill(iux/2 , iuy, skiroc.ADCHigh(ichan,it) );
-	    }
-	    std::pair<int,HGCalTBDetId> p( iboard*1000+iski*100+ichan,detid );
-	    setOfConnectedDetId.insert(p);
-	  }
+	if(m_eventPlotter && ichan%2==0 ){
+	  HGCalTBDetId detid=skiroc.detid( ichan );
+	  if(!IsCellValid.iu_iv_valid( detid.layer(),detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize ) )  continue;
+	  CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
+	  double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
+	  double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
+	  polyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, skiroc.ADCHigh(ichan,it) );
 	}
       }
     }
@@ -268,6 +270,26 @@ void RawDataPlotter::endJob()
     }
     chanMap[ iboard ]->Fill(iux/2 , iuy, iski*1000+ichan );
   }
+
+  std::fstream pedestalHG;pedestalHG.open(m_pedestalHigh_filename,std::ios::out);
+  std::fstream pedestalLG;pedestalLG.open(m_pedestalLow_filename,std::ios::out);
+  for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
+    for( size_t iski=0; iski<N_SKIROC_PER_HEXA; iski++ ){
+      for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
+	pedestalHG << ib << " " << iski << " " << ichan ;
+	pedestalLG << ib << " " << iski << " " << ichan ;
+	for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
+	  int key=ib*100000+iski*10000+ichan*100+it;
+	  pedestalHG << " " << m_h_adcHigh[key]->GetMean() << " " << m_h_adcHigh[key]->GetRMS();
+	  pedestalLG << " " << m_h_adcLow[key]->GetMean() << " " << m_h_adcLow[key]->GetRMS();
+	}
+	pedestalHG << "\n" ;
+	pedestalLG << "\n" ;	
+      }
+    }
+  }
+  pedestalHG.close();
+  pedestalLG.close();
 
 }
 

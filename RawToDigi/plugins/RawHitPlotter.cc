@@ -399,28 +399,6 @@ void RawHitPlotter::endJob()
       noisePolyMapNC[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichanNC*100+it]->GetRMS() );
     }
   }
-
-  if( !m_subtractPedestal ){
-    std::fstream pedestalHG;pedestalHG.open(m_pedestalHigh_filename,std::ios::out);
-    std::fstream pedestalLG;pedestalLG.open(m_pedestalLow_filename,std::ios::out);
-    for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
-      for( size_t iski=0; iski<N_SKIROC_PER_HEXA; iski++ ){
-	for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
-	  pedestalHG << ib << " " << iski << " " << ichan ;
-	  pedestalLG << ib << " " << iski << " " << ichan ;
-	  for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-0; it++ ){
-	    int key=ib*100000+iski*10000+ichan*100+it;
-	    pedestalHG << " " << m_h_adcHigh[key]->GetMean() << " " << m_h_adcHigh[key]->GetRMS();
-	    pedestalLG << " " << m_h_adcLow[key]->GetMean() << " " << m_h_adcLow[key]->GetRMS();
-	  }
-	  pedestalHG << "\n" ;
-	  pedestalLG << "\n" ;	
-	}
-      }
-    }
-    pedestalHG.close();
-    pedestalLG.close();
-  }
 }
 
 void RawHitPlotter::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
