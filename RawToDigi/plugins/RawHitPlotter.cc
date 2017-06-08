@@ -50,7 +50,6 @@ private:
   } essource_;
   int m_sensorsize;
   bool m_eventPlotter;
-  bool m_subtractPedestal;
   bool m_subtractCommonMode;
   double m_commonModeThreshold; //number of sigmas from ped mean
 
@@ -67,17 +66,6 @@ private:
   std::vector<std::pair<double, double>> CellXY;
   std::pair<double, double> CellCentreXY;
   std::set< std::pair<int,HGCalTBDetId> > setOfConnectedDetId;
-  std::string m_pedestalHigh_filename;
-  std::string m_pedestalLow_filename;
-
-  struct pedestalChannel{
-    HGCalTBDetId id;
-    float pedHGMean[NUMBER_OF_TIME_SAMPLES-0];
-    float pedLGMean[NUMBER_OF_TIME_SAMPLES-0];
-    float pedHGRMS[NUMBER_OF_TIME_SAMPLES-0];
-    float pedLGRMS[NUMBER_OF_TIME_SAMPLES-0];
-  };
-  std::map<int,pedestalChannel> m_pedMap; //key=10000*hexa+100*chip+chan
 
   struct commonModeNoise{
     commonModeNoise():fullHG(0),halfHG(0),mouseBiteHG(0),outerHG(0),fullLG(0),halfLG(0),mouseBiteLG(0),outerLG(0),fullCounter(0),halfCounter(0),mouseBiteCounter(0),outerCounter(0){;}
@@ -92,11 +80,8 @@ RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
   m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
   m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
-  m_subtractPedestal(iConfig.getUntrackedParameter<bool>("SubtractPedestal",false)),
   m_subtractCommonMode(iConfig.getUntrackedParameter<bool>("SubtractCommonMode",false)),
-  m_commonModeThreshold(iConfig.getUntrackedParameter<double>("CommonModeThreshold",3)),
-  m_pedestalHigh_filename(iConfig.getParameter<std::string>("HighGainPedestalFileName")),
-  m_pedestalLow_filename(iConfig.getParameter<std::string>("LowGainPedestalFileName"))
+  m_commonModeThreshold(iConfig.getUntrackedParameter<double>("CommonModeThreshold",100))
 {
   usesResource("TFileService");
   edm::Service<TFileService> fs;
@@ -149,74 +134,7 @@ void RawHitPlotter::beginJob()
   edm::FileInPath fip(m_electronicMap);
   if (!io.load(fip.fullPath(), essource_.emap_)) {
     throw cms::Exception("Unable to load electronics map");
-  };
-  
-  if( m_subtractPedestal ){
-    FILE* file;
-    char buffer[300];
-    file = fopen (m_pedestalHigh_filename.c_str() , "r");
-    if (file == NULL){ perror ("Error opening pedestal high gain"); exit(1); }
-    else{
-      while ( ! feof (file) ){
-	if ( fgets (buffer , 300 , file) == NULL ) break;
-	pedestalChannel ped;
-	const char* index = buffer;
-	int hexaboard,skiroc,channel,ptr,nval;
-	nval=sscanf( index, "%d %d %d %n",&hexaboard,&skiroc,&channel,&ptr );
-	if( nval==3 ){
-	  HGCalTBElectronicsId eid;
-	  switch( skiroc ){
-	  case 0 : eid=HGCalTBElectronicsId( 1, channel);break;
-	  case 1 : eid=HGCalTBElectronicsId( 4, channel);break;
-	  case 2 : eid=HGCalTBElectronicsId( 3, channel);break;
-	  case 3 : eid=HGCalTBElectronicsId( 2, channel);break;
-	  }
-	  if (!essource_.emap_.existsEId(eid.rawId()))
-	    ped.id = HGCalTBDetId(-1);
-	  else
-	    ped.id = essource_.emap_.eid2detId(eid);
-	  index+=ptr;
-	}else continue;
-	for( unsigned int ii=0; ii<NUMBER_OF_TIME_SAMPLES-0; ii++ ){
-	  float mean,rms;
-	  nval = sscanf( index, "%f %f %n",&mean,&rms,&ptr );
-	  if( nval==2 ){
-	    ped.pedHGMean[ii]=mean;
-	    ped.pedHGRMS[ii]=rms;
-	    index+=ptr;
-	  }else continue;
-	}
-	m_pedMap.insert( std::pair<int,pedestalChannel>(10000*hexaboard+100*skiroc+channel,ped) );
-      }
-      fclose (file);
-    }
-  
-    file = fopen (m_pedestalLow_filename.c_str() , "r");
-    if (file == NULL){ perror ("Error opening pedestal low gain"); exit(1); }
-    else{
-      while ( ! feof (file) ){
-	if ( fgets (buffer , 300 , file) == NULL ) break;
-	pedestalChannel ped;
-	const char* index = buffer;
-	int hexaboard,skiroc,channel,ptr,nval,key;
-	nval=sscanf( index, "%d %d %d %n",&hexaboard,&skiroc,&channel,&ptr );
-	if( nval==3 ){
-	  key=10000*hexaboard+100*skiroc+channel;
-	  index+=ptr;
-	}else continue;
-	for( unsigned int ii=0; ii<NUMBER_OF_TIME_SAMPLES-0; ii++ ){
-	  float mean,rms;
-	  nval = sscanf( index, "%f %f %n",&mean,&rms,&ptr );
-	  if( nval==2 ){
-	    m_pedMap[key].pedLGMean[ii]=mean;
-	    m_pedMap[key].pedLGRMS[ii]=rms;
-	    index+=ptr;
-	  }else continue;
-	}
-      }
-      fclose (file);
-    }
-  }
+  };  
 }
 
 void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
@@ -246,16 +164,16 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   }
   
   commonModeNoise cm[NUMBER_OF_TIME_SAMPLES-0][4];
-  if( m_subtractPedestal && m_subtractCommonMode ){
+  if( m_subtractCommonMode ){
     for( auto hit : *hits ){
-      int iboard=hit.skiroc()/N_SKIROC_PER_HEXA;
+      //      int iboard=hit.skiroc()/N_SKIROC_PER_HEXA;
       int iski=hit.skiroc();
-      int ichan=hit.channel();
+      //int ichan=hit.channel();
       if( !essource_.emap_.existsDetId(hit.detid()) ) continue;
       for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-0; it++ ){
-	if( fabs(hit.highGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[it])>m_commonModeThreshold*m_pedMap[10000*iboard+100*iski+ichan].pedHGRMS[it] ) continue;
-	float highGain = hit.highGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[it];
-	float lowGain = hit.lowGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[it];
+	if( hit.highGainADC(it)>m_commonModeThreshold ) continue;
+	float highGain = hit.highGainADC(it);
+	float lowGain = hit.lowGainADC(it);
 	switch ( hit.detid().cellType() ){
 	case 0 : cm[it][iski].fullHG += highGain; cm[it][iski].fullLG += lowGain; cm[it][iski].fullCounter++; break;
 	case 2 : cm[it][iski].halfHG += highGain; cm[it][iski].halfLG += lowGain; cm[it][iski].halfCounter++; break;
@@ -275,7 +193,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     int ichan=hit.channel();
     for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES-0; it++ ){
       float highGain,lowGain;
-      if( m_subtractCommonMode && m_subtractPedestal && essource_.emap_.existsDetId(hit.detid()) ){
+      if( m_subtractCommonMode && essource_.emap_.existsDetId(hit.detid()) ){
 	float subHG(0),subLG(0);
 	switch ( hit.detid().cellType() ){
 	case 0 : subHG=cm[it][iski].fullHG/cm[it][iski].fullCounter; subLG=cm[it][iski].fullLG/cm[it][iski].fullCounter; break;
@@ -287,12 +205,8 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
 	// case 3 : subHG=cm[it].mouseBiteHG/cm[it].mouseBiteCounter; subLG=cm[it].mouseBiteLG/cm[it].mouseBiteCounter; break;
 	// case 4 : subHG=cm[it].outerHG/cm[it].outerCounter; subLG=cm[it].outerLG/cm[it].outerCounter; break;
 	}
-	highGain=hit.highGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[it]-subHG;
-	lowGain=hit.lowGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[it]-subLG;
-      }
-      else if(m_subtractPedestal){
-      	highGain=hit.highGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[it];
-	lowGain=hit.lowGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[it];
+	highGain=hit.highGainADC(it)-subHG;
+	lowGain=hit.lowGainADC(it)-subLG;
       }
       else{
 	highGain=hit.highGainADC(it);

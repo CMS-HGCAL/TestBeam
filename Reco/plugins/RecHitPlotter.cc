@@ -40,6 +40,7 @@ public:
   static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 private:
   virtual void beginJob() override;
+  virtual void endJob() override;
   void analyze(const edm::Event& , const edm::EventSetup&) override;
   void InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV);
 
@@ -52,11 +53,13 @@ private:
   int m_sensorsize;
   bool m_eventPlotter;
   int m_evtID;
+  double m_mipThreshold;
   double m_noiseThreshold;
 
   std::map<uint32_t,TH1F*> m_h_adcHigh;
   std::map<uint32_t,TH1F*> m_h_adcLow;
   std::map<uint32_t,TH2F*> m_h_high_vs_low;
+  TH1F* m_h_mip[4];
   TH1F* m_h_hgSum;
   TH1F* m_h_lgSum;
   TH1F* m_h_enSum;
@@ -73,6 +76,7 @@ RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig) :
   m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
   m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
+  m_mipThreshold(iConfig.getUntrackedParameter<double>("MipThreshold",200.)),
   m_noiseThreshold(iConfig.getUntrackedParameter<double>("NoiseThreshold",10.))
 {
   m_HGCalTBRecHitCollection = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
@@ -98,7 +102,11 @@ void RecHitPlotter::beginJob()
   
   usesResource("TFileService");
   edm::Service<TFileService> fs;
-
+  
+  m_h_mip[0]=fs->make<TH1F>("Mip_Ski0","Mip_Ski0",180,20,200);
+  m_h_mip[1]=fs->make<TH1F>("Mip_Ski1","Mip_Ski1",180,20,200);
+  m_h_mip[2]=fs->make<TH1F>("Mip_Ski2","Mip_Ski2",180,20,200);
+  m_h_mip[3]=fs->make<TH1F>("Mip_Ski3","Mip_Ski3",180,20,200);
   m_h_hgSum=fs->make<TH1F>("HighGainSum","HighGainSum",5000,0,50000);
   m_h_lgSum=fs->make<TH1F>("LowGainSum","LowGainSum",5000,0,50000);
   m_h_enSum=fs->make<TH1F>("EnergySum","EnergySum",5000,0,50000);
@@ -111,19 +119,19 @@ void RecHitPlotter::beginJob()
       os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
       TFileDirectory dir = fs->mkdir( os.str().c_str() );
       for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
-	HGCalTBElectronicsId eid(iski+1,ichan);
+	HGCalTBElectronicsId eid((4-iski)%4+1,ichan);
 	if( !essource_.emap_.existsEId(eid.rawId()) ) continue;
 	os.str("");
 	os << "HighGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan  ;
-	htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
+	htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),3600,-100,3500);
 	m_h_adcHigh.insert( std::pair<uint32_t,TH1F*>(eid.rawId(), htmp1) );
 	os.str("");
 	os << "LowGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan ;
-	htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
+	htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),3600,-100,3500);
 	m_h_adcLow.insert( std::pair<uint32_t,TH1F*>(eid.rawId(), htmp1) );
 	os.str("");
 	os << "HighGainVsLowGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan;
-	htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),4000,-500,3500,4000,-500,3500);
+	htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),3600,-100,3500,4000,-500,3500);
 	m_h_high_vs_low.insert( std::pair<uint32_t,TH2F*>(eid.rawId(), htmp2) );
       }
     }
@@ -167,11 +175,13 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid( hit.id() ) );
     m_h_adcHigh[ eid.rawId() ]->Fill( hit.energyHigh() );
     m_h_adcLow[ eid.rawId() ]->Fill( hit.energyLow() );
-    if( m_noiseThreshold ){
+    if( hit.energyHigh()>m_noiseThreshold ){
       m_h_high_vs_low[ eid.rawId() ]->Fill( hit.energyLow(), hit.energyHigh() );
       energyHighSum+=hit.energyHigh();
       energyLowSum+=hit.energyLow();
       energySum+=hit.energy();
+      if( hit.energyHigh()<m_mipThreshold )
+	m_h_mip[(4-(eid.iskiroc()-1))%4]->Fill(hit.energyHigh());
     }
     if(m_eventPlotter){
       if(!IsCellValid.iu_iv_valid(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize))  continue;
@@ -206,6 +216,10 @@ void RecHitPlotter::InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int se
       poly.AddBin(CellXY.size(), HexX, HexY);
     }//loop over iu
   }//loop over iv
+}
+
+void RecHitPlotter::endJob()
+{
 }
 
 void RecHitPlotter::fillDescriptions(edm::ConfigurationDescriptions& descriptions)

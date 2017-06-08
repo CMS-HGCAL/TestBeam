@@ -47,18 +47,6 @@ private:
   int m_evtID;
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
 
-  std::string m_pedestalHigh_filename;
-  std::string m_pedestalLow_filename;
-
-  struct pedestalChannel{
-    HGCalTBDetId id;
-    float pedHGMean[NUMBER_OF_TIME_SAMPLES];
-    float pedLGMean[NUMBER_OF_TIME_SAMPLES];
-    float pedHGRMS[NUMBER_OF_TIME_SAMPLES];
-    float pedLGRMS[NUMBER_OF_TIME_SAMPLES];
-  };
-  std::map<int,pedestalChannel> m_pedMap; //key=10000*hexa+100*chip+chan
-
   struct commonModeNoise{
     commonModeNoise():fullHG(0),halfHG(0),mouseBiteHG(0),outerHG(0),fullLG(0),halfLG(0),mouseBiteLG(0),outerLG(0),fullCounter(0),halfCounter(0),mouseBiteCounter(0),outerCounter(0){;}
     float fullHG,halfHG,mouseBiteHG,outerHG;
@@ -70,9 +58,7 @@ private:
 
 PulseShapePlotter::PulseShapePlotter(const edm::ParameterSet& iConfig) :
   m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
-  m_commonModeThreshold(iConfig.getUntrackedParameter<double>("CommonModeThreshold",3)),
-  m_pedestalHigh_filename(iConfig.getParameter<std::string>("HighGainPedestalFileName")),
-  m_pedestalLow_filename(iConfig.getParameter<std::string>("LowGainPedestalFileName"))
+  m_commonModeThreshold(iConfig.getUntrackedParameter<double>("CommonModeThreshold",100))
 {
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
   m_evtID=0;
@@ -92,70 +78,6 @@ void PulseShapePlotter::beginJob()
   if (!io.load(fip.fullPath(), essource_.emap_)) {
     throw cms::Exception("Unable to load electronics map");
   };
-  FILE* file;
-  char buffer[300];
-  file = fopen (m_pedestalHigh_filename.c_str() , "r");
-  if (file == NULL){ perror ("Error opening pedestal high gain"); exit(1); }
-  else{
-    while ( ! feof (file) ){
-      if ( fgets (buffer , 300 , file) == NULL ) break;
-      pedestalChannel ped;
-      const char* index = buffer;
-      int hexaboard,skiroc,channel,ptr,nval;
-      nval=sscanf( index, "%d %d %d %n",&hexaboard,&skiroc,&channel,&ptr );
-      if( nval==3 ){
-	HGCalTBElectronicsId eid;
-	switch( skiroc ){
-	case 0 : eid=HGCalTBElectronicsId( 1, channel);break;
-	case 1 : eid=HGCalTBElectronicsId( 4, channel);break;
-	case 2 : eid=HGCalTBElectronicsId( 3, channel);break;
-	case 3 : eid=HGCalTBElectronicsId( 2, channel);break;
-	}
-	if (!essource_.emap_.existsEId(eid.rawId()))
-	  ped.id = HGCalTBDetId(-1);
-	else
-	  ped.id = essource_.emap_.eid2detId(eid);
-	index+=ptr;
-      }else continue;
-      for( unsigned int ii=0; ii<NUMBER_OF_TIME_SAMPLES-0; ii++ ){
-	float mean,rms;
-	nval = sscanf( index, "%f %f %n",&mean,&rms,&ptr );
-	if( nval==2 ){
-	  ped.pedHGMean[ii]=mean;
-	  ped.pedHGRMS[ii]=rms;
-	  index+=ptr;
-	}else continue;
-      }
-      m_pedMap.insert( std::pair<int,pedestalChannel>(10000*hexaboard+100*skiroc+channel,ped) );
-    }
-    fclose (file);
-  }
-  
-  file = fopen (m_pedestalLow_filename.c_str() , "r");
-  if (file == NULL){ perror ("Error opening pedestal low gain"); exit(1); }
-  else{
-    while ( ! feof (file) ){
-      if ( fgets (buffer , 300 , file) == NULL ) break;
-      pedestalChannel ped;
-      const char* index = buffer;
-      int hexaboard,skiroc,channel,ptr,nval,key;
-      nval=sscanf( index, "%d %d %d %n",&hexaboard,&skiroc,&channel,&ptr );
-      if( nval==3 ){
-	key=10000*hexaboard+100*skiroc+channel;
-	index+=ptr;
-      }else continue;
-      for( unsigned int ii=0; ii<NUMBER_OF_TIME_SAMPLES-0; ii++ ){
-	float mean,rms;
-	nval = sscanf( index, "%f %f %n",&mean,&rms,&ptr );
-	if( nval==2 ){
-	  m_pedMap[key].pedLGMean[ii]=mean;
-	  m_pedMap[key].pedLGRMS[ii]=rms;
-	  index+=ptr;
-	}else continue;
-      }
-    }
-    fclose (file);
-  }
 }
 
 void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
@@ -194,14 +116,12 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
   
   commonModeNoise cm[NUMBER_OF_TIME_SAMPLES-0][4];
   for( auto hit : *hits ){
-    int iboard=hit.skiroc()/N_SKIROC_PER_HEXA;
     int iski=hit.skiroc();
-    int ichan=hit.channel();
     if( !essource_.emap_.existsDetId(hit.detid()) ) continue;
     for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      if( fabs(hit.highGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[it])>m_commonModeThreshold*m_pedMap[10000*iboard+100*iski+ichan].pedHGRMS[it] ) continue;
-      float highGain = hit.highGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[it];
-      float lowGain = hit.lowGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[it];
+      if( hit.highGainADC(it)>m_commonModeThreshold ) continue;
+      float highGain = hit.highGainADC(it);
+      float lowGain = hit.lowGainADC(it);
       switch ( hit.detid().cellType() ){
       case 0 : cm[it][iski].fullHG += highGain; cm[it][iski].fullLG += lowGain; cm[it][iski].fullCounter++; break;
       case 2 : cm[it][iski].halfHG += highGain; cm[it][iski].halfLG += lowGain; cm[it][iski].halfCounter++; break;
@@ -216,17 +136,40 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
     int iski=hit.skiroc();
     int ichan=hit.channel();
     if( essource_.emap_.existsDetId(hit.detid()) ){
-      for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-	float highGain,lowGain;
-	float subHG(0),subLG(0);
-	switch ( hit.detid().cellType() ){
-	case 0 : subHG=cm[it][iski].fullHG/cm[it][iski].fullCounter; subLG=cm[it][iski].fullLG/cm[it][iski].fullCounter; break;
-	case 2 : subHG=cm[it][iski].halfHG/cm[it][iski].halfCounter; subLG=cm[it][iski].halfLG/cm[it][iski].halfCounter; break;
-	case 3 : subHG=cm[it][iski].mouseBiteHG/cm[it][iski].mouseBiteCounter; subLG=cm[it][iski].mouseBiteLG/cm[it][iski].mouseBiteCounter; break;
-	case 4 : subHG=cm[it][iski].outerHG/cm[it][iski].outerCounter; subLG=cm[it][iski].outerLG/cm[it][iski].outerCounter; break;
-	}
-	highGain=hit.highGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[it]-subHG;
-	lowGain=hit.lowGainADC(it)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[it]-subLG;
+      float highGain,lowGain;
+      float subHG[NUMBER_OF_TIME_SAMPLES],subLG[NUMBER_OF_TIME_SAMPLES];
+      for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+      	subHG[it]=0;
+      	subLG[it]=0;
+      }
+      switch ( hit.detid().cellType() ){
+      case 0 : 
+      	for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+      	  subHG[it]=cm[it][iski].fullCounter>0 ? cm[it][iski].fullHG/cm[it][iski].fullCounter : 0; 
+      	  subLG[it]=cm[it][iski].fullCounter>0 ? cm[it][iski].fullLG/cm[it][iski].fullCounter : 0; 
+      	}
+      	break;
+      case 2 : 
+      	for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+      	  subHG[it]=cm[it][iski].halfCounter>0 ? cm[it][iski].halfHG/cm[it][iski].halfCounter : 0; 
+      	  subLG[it]=cm[it][iski].halfCounter>0 ? cm[it][iski].halfLG/cm[it][iski].halfCounter : 0; 
+      	}
+      	break;
+      case 3 : 
+      	for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+      	  subHG[it]=cm[it][iski].mouseBiteCounter>0 ? cm[it][iski].mouseBiteHG/cm[it][iski].mouseBiteCounter : 0; 
+      	  subLG[it]=cm[it][iski].mouseBiteCounter>0 ? cm[it][iski].mouseBiteLG/cm[it][iski].mouseBiteCounter : 0; 
+      	}
+      	break;
+      case 4 : for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+       	  subHG[it]=cm[it][iski].outerCounter>0 ? cm[it][iski].outerHG/cm[it][iski].outerCounter : 0; 
+       	  subLG[it]=cm[it][iski].outerCounter>0 ? cm[it][iski].outerLG/cm[it][iski].outerCounter : 0; 
+       	}
+       	break;
+      }
+      for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+	highGain=hit.highGainADC(it)-subHG[it];
+	lowGain=hit.lowGainADC(it)-subLG[it];
 	hMapHG[1000*iboard+100*iski+ichan]->Fill(25*it,highGain);
 	hMapLG[1000*iboard+100*iski+ichan]->Fill(25*it,lowGain);
       }
