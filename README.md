@@ -48,7 +48,7 @@ scram b -j16
 * The EDAnalyzer **`RawToDigi/plugins/PulseShapePlotter`** reads the collection of HGCalTBRawHit, perform the common mode subtraction. It creates for each event, for each channel two histograms (high/low gain) of ADC counts as a function of the time. When signals are high enough, one should be able to see pulse shapes.
 * To run the 2 previous analyzers (RawHitPlotter and PulseShapePlotter) with the common mode option, the pedestal subtraction option in the raw hit producer should be set.
 * The rechit producer in **`Reco/plugins/HGCalTBRecHitProducer.cc(.h)`** transforms the raw hit into the HGCalTBRecHit format and save collection of rechits. It assumes the pedestal subtraction is already done and it performs the common mode subtraction (one common mode per chip). A first version of this producer use only the time sample 3 for the energy.
-* The EDAnalyzer **`Reco/plugins/RecHitPlotter.cc`** reads the rechit collection and again produce basic plots.
+* The EDAnalyzer **`Reco/plugins/RecHitPlotter.cc`** reads the rechit collection and again produces basic plots.
 ## Running the code
 * **`run2017_cfg.py`** is the script to run to start the analysis. This script is less complex (and less convenient) than the **`test_cfg.py`** in other branches. The chain sequence tool is absent, and will be re-implemented later. 
 * All the EDProducer and EDAnalyzer (described above) are loaded with default parameters. Some paths might need modification depending on the user.
