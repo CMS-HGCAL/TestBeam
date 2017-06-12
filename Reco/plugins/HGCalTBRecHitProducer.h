@@ -23,8 +23,6 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   virtual void produce(edm::Event&, const edm::EventSetup&);
  private:
   virtual void beginJob() override;
-  std::string m_pedestalHigh_filename;
-  std::string m_pedestalLow_filename;
   std::string m_outputCollectionName;
   std::string m_electronicMap;
   double m_commonModeThreshold;
@@ -40,14 +38,6 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   struct {
     HGCalElectronicsMap emap_;
   } essource_;
-  struct pedestalChannel{
-    HGCalTBDetId id;
-    float pedHGMean[NUMBER_OF_TIME_SAMPLES];
-    float pedLGMean[NUMBER_OF_TIME_SAMPLES];
-    float pedHGRMS[NUMBER_OF_TIME_SAMPLES];
-    float pedLGRMS[NUMBER_OF_TIME_SAMPLES];
-  };
-  std::map<int,pedestalChannel> m_pedMap; //key=10000*hexa+100*chip+chan
 
   HGCalTBCellVertices TheCell;
   std::pair<double, double> CellCenterXY;

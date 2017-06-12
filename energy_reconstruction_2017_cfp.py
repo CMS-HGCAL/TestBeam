@@ -73,22 +73,24 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(options
 
 
 process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
+                                        InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
-                                        InputCollection=cms.InputTag("source","skiroc2cmsdata")
+                                        ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
+                                        SubtractPedestal=cms.untracked.bool(True),
+                                        LowGainPedestalFileName = cms.string("/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/CondObjects/data/pedestal_LG_OneLayer2017.txt"),
+                                        HighGainPedestalFileName = cms.string('/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/CondObjects/data/pedestal_HG_OneLayer2017.txt'),
                                         )
 
 
 process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         OutputCollectionName = cms.string('HGCALTBRECHITS'),
                                         InputCollection = cms.InputTag('rawhitproducer','HGCALTBRAWHITS'),
-                                        LowGainPedestalFileName = cms.string("/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/CondObjects/data/pedestal_LG_OneLayer2017.txt"),
-                                        HighGainPedestalFileName = cms.string('/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/CondObjects/data/pedestal_HG_OneLayer2017.txt'),
                                         LG2HG = cms.untracked.vdouble(10.0),
                                         TOT2LG = cms.untracked.vdouble(10.0),
                                         HighGainADCSaturation = cms.untracked.double(1800),
                                         LowGainADCSaturation = cms.untracked.double(1800),
                                         ElectronicsMap = cms.untracked.string('HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt'),
-                                        CommonModeThreshold = cms.untracked.double(3.),
+                                        CommonModeThreshold = cms.untracked.double(100.),
                                         KeepOnlyTimeSample3 = cms.untracked.bool(False),
                                         performParabolicFit = cms.untracked.bool(True)
                                         )

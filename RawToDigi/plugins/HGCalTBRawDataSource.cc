@@ -45,8 +45,9 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
 
 bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType)
 {	
-  if (fileNames()[0] != "file:DUMMY")
-    m_fileName = fileNames()[0];
+  if( m_fileId == fileNames().size() ) return false;
+  if (fileNames()[m_fileId] != "file:DUMMY")
+    m_fileName = fileNames()[m_fileId];
   if (m_fileName.find("file:") == 0) m_fileName = m_fileName.substr(5);
   if( m_event==0 ){
     m_input.open(m_fileName.c_str(), std::ios::in|std::ios::binary);
@@ -55,9 +56,9 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
       return false;
     }
   }
-  if( !m_input.good() ) return false;
+  m_input.seekg( m_event*m_nWords*4, std::ios::beg );
   m_input.read ( m_buffer, m_nWords*4 );
-  m_input.seekg( (m_event+1)*m_nWords*4, std::ios::beg );
+  if( !m_input.good() ){ m_input.close(); m_fileId++; m_event=0; return setRunAndEventInfo(id, time, evType);}
   std::vector<uint32_t> rawData;
   for( size_t i=0; i<m_nWords; i++ ){
     uint32_t aint;
