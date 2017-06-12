@@ -82,17 +82,31 @@ class Layer_Sum_Analyzer_2017 : public edm::one::EDAnalyzer<edm::one::SharedReso
     double E7SumL_R;
     double E19SumL_R;
     double EAllSumL_R;
+    double I_Highest_R;
+    double I_SecondHighest_R;
+    double I_ThirdHighest_R;
 
     double E1SumL_R_high;
     double E7SumL_R_high;
     double E19SumL_R_high;
     double EAllSumL_R_high;
+    double I_Highest_R_high;
+    double I_SecondHighest_R_high;
+    double I_ThirdHighest_R_high;
 
     double E1SumL_R_low;
     double E7SumL_R_low;
     double E19SumL_R_low;
     double EAllSumL_R_low;
+    double I_Highest_R_low;
+    double I_SecondHighest_R_low;
+    double I_ThirdHighest_R_low;
 
+    std::vector<double> RecHits_TOT;
+    std::vector<double> RecHits_HG;
+    std::vector<double> RecHits_LG;
+
+    int MIP_Veto;
 
     //fixed parameters specific for the Layer_Sum_Analyzer
     double ADCtoMIP_CERN[MAXSKIROCS] =  {1., 1., 1., 1.};
@@ -142,16 +156,32 @@ Layer_Sum_Analyzer_2017::Layer_Sum_Analyzer_2017(const edm::ParameterSet& iConfi
   outTree->Branch("E7SumL_R", &E7SumL_R, "E7SumL_R/D") ;
   outTree->Branch("E19SumL_R", &E19SumL_R, "E19SumL_R/D") ;
   outTree->Branch("EAllSumL_R", &EAllSumL_R, "EAllSumL_R/D") ;
-  
+  outTree->Branch("I_Highest_R", &I_Highest_R, "I_Highest_R/D");
+  outTree->Branch("I_SecondHighest_R", &I_SecondHighest_R, "I_SecondHighest_R/D");
+  outTree->Branch("I_ThirdHighest_R", &I_ThirdHighest_R, "I_ThirdHighest_R/D");
+
   outTree->Branch("E1SumL_R_high", &E1SumL_R_high, "E1SumL_R_high/D") ;
   outTree->Branch("E7SumL_R_high", &E7SumL_R_high, "E7SumL_R_high/D") ;
   outTree->Branch("E19SumL_R_high", &E19SumL_R_high, "E19SumL_R_high/D") ;
   outTree->Branch("EAllSumL_R_high", &EAllSumL_R_high, "EAllSumL_R_high/D") ;
+  outTree->Branch("I_Highest_R_high", &I_Highest_R_high, "I_Highest_R_high/D");
+  outTree->Branch("I_SecondHighest_R_high", &I_SecondHighest_R_high, "I_SecondHighest_R_high/D");
+  outTree->Branch("I_ThirdHighest_R_high", &I_ThirdHighest_R_high, "I_ThirdHighest_R_high/D");
 
   outTree->Branch("E1SumL_R_low", &E1SumL_R_low, "E1SumL_R_low/D") ;
   outTree->Branch("E7SumL_R_low", &E7SumL_R_low, "E7SumL_R_low/D") ;
   outTree->Branch("E19SumL_R_low", &E19SumL_R_low, "E19SumL_R_low/D") ;
   outTree->Branch("EAllSumL_R_low", &EAllSumL_R_low, "EAllSumL_R_low/D") ;
+  outTree->Branch("I_Highest_R_low", &I_Highest_R_low, "I_Highest_R_low/D");
+  outTree->Branch("I_SecondHighest_R_low", &I_SecondHighest_R_low, "I_SecondHighest_R_low/D");
+  outTree->Branch("I_ThirdHighest_R_low", &I_ThirdHighest_R_low, "I_ThirdHighest_R_low/D");
+
+  outTree->Branch("RecHits_TOT", &RecHits_TOT);
+  outTree->Branch("RecHits_HG", &RecHits_HG);
+  outTree->Branch("RecHits_LG", &RecHits_LG);
+
+
+  outTree->Branch("MIP_Veto", &MIP_Veto, "MIP_Veto/I");
 
 }//constructor ends here
 
@@ -166,7 +196,6 @@ void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventS
   if (DEBUG)  std::cout << " >>> Layer_Sum_Analyzer_2017::analyze " << std::endl;
   int event_nr = (event.id()).event();
 
-
   //opening Rechits
   edm::Handle<HGCalTBRecHitCollection> Rechits;
   event.getByToken(HGCalTBRecHitCollection_, Rechits);
@@ -176,6 +205,10 @@ void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventS
   for(int iL=0; iL<MAXLAYERS; ++iL){
     max[iL] = max_x[iL] = max_y[iL] = 0.;
   }
+
+  RecHits_TOT.clear();
+  RecHits_HG.clear();
+  RecHits_LG.clear();
 
   for(auto Rechit : *Rechits){
     if(!IsCellValid.iu_iv_valid((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), sensorsize))  continue;
@@ -188,12 +221,16 @@ void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventS
     int n_skiroc = (eid.iskiroc() - 1);
     if(n_cell_type != 0 && n_cell_type != 4) continue;
 
-  
-    if(Rechit.energy() > max[n_layer]) {      
-      max[n_layer] = Rechit.energy();
+    //temporarily: trust low gain
+    if(Rechit.energyLow() > max[n_layer]) {      
+      max[n_layer] = Rechit.energyLow();
       max_x[n_layer] = Rechit.getCellCenterCartesianCoordinate(0);
       max_y[n_layer] = Rechit.getCellCenterCartesianCoordinate(1);
     }
+
+    RecHits_TOT.push_back(Rechit.energy());
+    RecHits_HG.push_back(Rechit.energyHigh());
+    RecHits_LG.push_back(Rechit.energyLow());
 
     if (DEBUG) std::cout<<"event: "<<event_nr<<"   n_layer: "<<n_layer<<"  n_cell_type: "<<n_cell_type<<"   n_skiroc: "<<n_skiroc<<std::endl;
   }//Rechit loop ends here
@@ -201,7 +238,7 @@ void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventS
   if (DEBUG) std::cout<<"max energy: "<<max[0]<<"   max_x: "<<max_x[0]<<"  max_y: "<<max_y[0]<<std::endl;
   
   //initialisation of the shower shapes
-  ShowerShape2017 shosha_default(mapfile_, sensorsize, Rechits, ADC_NORMAL, ADCtoMIP, max_x, max_y);  
+  ShowerShape2017 shosha_tot(mapfile_, sensorsize, Rechits, TOT, ADCtoMIP, max_x, max_y);  
   ShowerShape2017 shosha_high(mapfile_, sensorsize, Rechits, ADC_HIGH, ADCtoMIP, max_x, max_y);  
   ShowerShape2017 shosha_low(mapfile_, sensorsize, Rechits, ADC_LOW, ADCtoMIP, max_x, max_y);  
 
@@ -223,7 +260,7 @@ void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventS
   for(int iL=0; iL<MAXLAYERS; ++iL){
     //baseline subtracted ADC counts
     double e1, e7, e19, eAll;
-    shosha_default.getAllEnergy(iL, e1, e7, e19, eAll);
+    shosha_tot.getAllEnergy(iL, e1, e7, e19, eAll);
     E1SumL_R += e1;
     E7SumL_R += e7;
     E19SumL_R += e19;
@@ -246,8 +283,25 @@ void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventS
     EAllSumL_R_low += eAll_low;
   }
 
-  outTree->Fill();
+  //assumes: only one layer to be analysed.
+  I_Highest_R = shosha_tot.getCellIntensity(0);
+  I_SecondHighest_R = shosha_tot.getCellIntensity(1);
+  I_ThirdHighest_R = shosha_tot.getCellIntensity(2);
 
+  I_Highest_R_high = shosha_high.getCellIntensity(0);
+  I_SecondHighest_R_high = shosha_high.getCellIntensity(1);
+  I_ThirdHighest_R_high = shosha_high.getCellIntensity(2);
+  
+  I_Highest_R_low = shosha_low.getCellIntensity(0);
+  I_SecondHighest_R_low = shosha_low.getCellIntensity(1);
+  I_ThirdHighest_R_low = shosha_low.getCellIntensity(2);
+
+
+  //check the MIP veto:
+  MIP_Veto = 0;
+
+
+  outTree->Fill();
   
 }// analyze ends here
 

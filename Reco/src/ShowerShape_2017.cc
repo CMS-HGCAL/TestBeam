@@ -10,20 +10,10 @@
 
 
 // system include files
-#include <memory>
 #include <iostream>
-#include "TH2Poly.h"
-#include "TH1F.h"
-#include "TF1.h"
-#include <sstream>
 #include <fstream>
 #include <math.h>
 // user include files
-#include "FWCore/Framework/interface/Frameworkfwd.h"
-#include "FWCore/Framework/interface/one/EDAnalyzer.h"
-#include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/MakerMacros.h"
-#include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
@@ -31,23 +21,20 @@
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
-#include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
-#include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
-#include "HGCal/Geometry/interface/HGCalTBSpillParameters.h"
 
-
-#include "TMatrixDSym.h"
-#include "TMatrixDSymEigen.h"
 
 using namespace std;
 
+bool reverse_sort (double a, double b) { return (a>b); }
+
+
 enum ENERGY_TYPE {
-  ADC_NORMAL = 0,
+  TOT = 0,
   ADC_HIGH,
   ADC_LOW,
   MIP
@@ -68,6 +55,9 @@ class ShowerShape2017 {
       enAll = eAll[layer]; 
       return;
     }
+
+    double getCellIntensity(size_t index);
+
     ShowerShape2017(std::string _mapFile, int _sensorsize, edm::Handle<HGCalTBRecHitCollection> Rechits_, ENERGY_TYPE _energytype, double ADCtoMIP_[MAXSKIROCS], double maxX[MAXLAYERS], double maxY[MAXLAYERS]);
     ~ShowerShape2017();
 
@@ -102,6 +92,7 @@ class ShowerShape2017 {
     double e19[MAXLAYERS];
     double eAll[MAXLAYERS];
 
+    std::vector<double> cell_intensities;
 
   };
 
@@ -153,7 +144,6 @@ void ShowerShape2017::init(){
     CellCentreXY.first = Rechit.getCellCenterCartesianCoordinate(0);
     CellCentreXY.second = Rechit.getCellCenterCartesianCoordinate(1);
 
-
     
     int eLayer = (Rechit.id()).layer()-1;
     int eCellType = (Rechit.id()).cellType();
@@ -168,7 +158,7 @@ void ShowerShape2017::init(){
       geometricScaleFactor = 9./8.;
 
     double energyCMsub;
-    if (energytype == ADC_NORMAL) {
+    if (energytype == TOT) {
       energyCMsub = geometricScaleFactor * (Rechit.energy()) / ADCtoMIP[nSkiroc];    
     } else if (energytype == ADC_HIGH) {
       energyCMsub = geometricScaleFactor * (Rechit.energyHigh()) / ADCtoMIP[nSkiroc];    
@@ -197,7 +187,15 @@ void ShowerShape2017::init(){
     }    
   
     if(energyCMsub > 0) eAll[eLayer] += energyCMsub;
+  
+    cell_intensities.push_back(energyCMsub);
   }
 
+  //sort the cell intensities
+  std::sort(cell_intensities.begin(), cell_intensities.end()+cell_intensities.size(), reverse_sort);
 
+}
+
+double ShowerShape2017::getCellIntensity(size_t index) {
+  return cell_intensities[index];
 }
