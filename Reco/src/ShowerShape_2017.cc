@@ -161,15 +161,19 @@ void ShowerShape2017::init(){
     HGCalTBElectronicsId eid(EID);
     int nSkiroc = (eid.iskiroc() - 1);
 
-    if(eCellType != 0 && eCellType != 1 && eCellType != 4) continue;
+    if(eCellType != 0 && eCellType != 4) continue;
+
+    double geometricScaleFactor = 1.;
+    if (eCellType == 4) //outer calibration pad cell
+      geometricScaleFactor = 9./8.;
 
     double energyCMsub;
     if (energytype == ADC_NORMAL) {
-      energyCMsub = (Rechit.energy()) / ADCtoMIP[nSkiroc];    
+      energyCMsub = geometricScaleFactor * (Rechit.energy()) / ADCtoMIP[nSkiroc];    
     } else if (energytype == ADC_HIGH) {
-      energyCMsub = (Rechit.energyHigh()) / ADCtoMIP[nSkiroc];    
+      energyCMsub = geometricScaleFactor * (Rechit.energyHigh()) / ADCtoMIP[nSkiroc];    
     } else if (energytype == ADC_LOW) {
-      energyCMsub = (Rechit.energyLow()) / ADCtoMIP[nSkiroc];    
+      energyCMsub = geometricScaleFactor * (Rechit.energyLow()) / ADCtoMIP[nSkiroc];    
     } else {
       throw cms::Exception("Not-implemented energy type.");
     }
