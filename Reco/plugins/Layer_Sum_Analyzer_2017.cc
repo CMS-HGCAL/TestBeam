@@ -297,10 +297,19 @@ void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventS
   I_ThirdHighest_R_low = shosha_low.getCellIntensity(2);
 
 
-  //check the MIP veto:
-  MIP_Veto = 0;
+  //implement a simple veto against MIP events based on the low-gain channel:
+  double ADC_threshold = 100.;
 
-
+  int nThreshold = 0;
+  double e23_over_e1 = (I_SecondHighest_R_low+I_ThirdHighest_R_low)/I_Highest_R_low;
+  
+  if (I_Highest_R_low > ADC_threshold) nThreshold += 1;
+  if (I_SecondHighest_R_low > ADC_threshold) nThreshold += 1;
+  if (I_ThirdHighest_R_low > ADC_threshold) nThreshold += 1;
+  
+    
+  MIP_Veto = (nThreshold<=2 || e23_over_e1 < 0.5) ? 1 : 0;
+  
   outTree->Fill();
   
 }// analyze ends here
