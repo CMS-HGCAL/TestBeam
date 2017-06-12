@@ -169,12 +169,11 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       double energyHG = (_x_max_HG<=4 && _x_max_HG>=2) ? _aHG*pow(_x_max_HG,2)+_bHG*_x_max_HG+_cHG : 0;
       double energyLG = (_x_max_LG<=4 && _x_max_LG>=2) ? _aLG*pow(_x_max_LG,2)+_bLG*_x_max_LG+_cLG : 0;
       
-      float energy = (energyHG<m_highGainADCSaturation) ? energyHG : energyLG*m_LG2HG_value.at(iboard);
-      energy = (energy > 0.) ? energy : 0.;
+      float energyTOT = rawhit.totFast();
       
       float time = rawhit.toaRise();
 
-      HGCalTBRecHit recHit(rawhit.detid(), energy, energyLG, energyHG, time);
+      HGCalTBRecHit recHit(rawhit.detid(), energyTOT, energyLG, energyHG, time);
       
       CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((recHit.id()).layer(), (recHit.id()).sensorIU(), (recHit.id()).sensorIV(), (recHit.id()).iu(), (recHit.id()).iv(), 128); 
       recHit.setCellCenterCoordinate(CellCenterXY.first, CellCenterXY.second);
