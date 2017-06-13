@@ -239,16 +239,19 @@ void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventS
     int n_skiroc = (eid.iskiroc() - 1);
     if(n_cell_type != 0 && n_cell_type != 4) continue;
 
+    double scaleFactor = 1.0;     //scale factor to account for the partial coverage by the calibration pads
+    if (n_cell_type == 4) scaleFactor = 9./8.;
+
     //temporarily: trust low gain
     if(Rechit.energyLow() > max[n_layer]) {      
-      max[n_layer] = Rechit.energyLow();
+      max[n_layer] = scaleFactor * Rechit.energyLow();
       max_x[n_layer] = Rechit.getCellCenterCartesianCoordinate(0);
       max_y[n_layer] = Rechit.getCellCenterCartesianCoordinate(1);
     }
 
-    RecHits_TOT.push_back(Rechit.energy());
-    RecHits_HG.push_back(Rechit.energyHigh());
-    RecHits_LG.push_back(Rechit.energyLow());
+    RecHits_TOT.push_back(scaleFactor * Rechit.energy());
+    RecHits_HG.push_back(scaleFactor * Rechit.energyHigh());
+    RecHits_LG.push_back(scaleFactor * Rechit.energyLow());
 
     if (DEBUG) std::cout<<"event: "<<event_nr<<"   n_layer: "<<n_layer<<"  n_cell_type: "<<n_cell_type<<"   n_skiroc: "<<n_skiroc<<std::endl;
   }//Rechit loop ends here
@@ -326,7 +329,7 @@ void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventS
     
   e123_in_e19 = (I_Highest_R_low + I_SecondHighest_R_low + I_ThirdHighest_R_low) < E19SumL_R_low;
   
-  
+
   outTree->Fill();
   
 }// analyze ends here
