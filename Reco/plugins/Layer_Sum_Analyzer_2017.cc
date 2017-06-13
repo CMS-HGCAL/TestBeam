@@ -109,7 +109,6 @@ class Layer_Sum_Analyzer_2017 : public edm::one::EDAnalyzer<edm::one::SharedReso
     std::vector<double> RecHits_HG;
     std::vector<double> RecHits_LG;
 
-    int MIP_Veto;
     int skirocVeto;
 
     //fixed parameters specific for the Layer_Sum_Analyzer
@@ -123,7 +122,12 @@ class Layer_Sum_Analyzer_2017 : public edm::one::EDAnalyzer<edm::one::SharedReso
     double LayerWeight_1L_conf1[1] = {1.};
     double X0depth_1L_conf1[1] = {0.};
     
-      
+
+    //MIP indicator flags
+    int nThreshold;
+    double e23_over_e1;
+    int e123_in_e19;
+
 };
 
 
@@ -185,7 +189,10 @@ Layer_Sum_Analyzer_2017::Layer_Sum_Analyzer_2017(const edm::ParameterSet& iConfi
 
 
   outTree->Branch("skirocVeto", &skirocVeto, "skirocVeto/I");
-  outTree->Branch("MIP_Veto", &MIP_Veto, "MIP_Veto/I");
+  outTree->Branch("nThreshold", &nThreshold, "nThreshold/I");
+  outTree->Branch("e23_over_e1", &e23_over_e1, "e23_over_e1/D");
+  outTree->Branch("e123_in_e19", &e123_in_e19, "e123_in_e19/I");
+
 
 }//constructor ends here
 
@@ -308,18 +315,17 @@ void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventS
   I_ThirdHighest_R_low = shosha_low.getCellIntensity(2);
 
 
-  //implement a simple veto against MIP events based on the low-gain channel:
+  //implemtation of some MIP indicator flags
   double ADC_threshold = 100.;
-
-  int nThreshold = 0;
-  double e23_over_e1 = (I_SecondHighest_R_low+I_ThirdHighest_R_low)/I_Highest_R_low;
-  
+  nThreshold = 0;
   if (I_Highest_R_low > ADC_threshold) nThreshold += 1;
   if (I_SecondHighest_R_low > ADC_threshold) nThreshold += 1;
   if (I_ThirdHighest_R_low > ADC_threshold) nThreshold += 1;
   
+  e23_over_e1 = (I_SecondHighest_R_low+I_ThirdHighest_R_low)/I_Highest_R_low;
     
-  MIP_Veto = (nThreshold<2 || e23_over_e1 < 0.5) ? 1 : 0;
+  e123_in_e19 = (I_Highest_R_low + I_SecondHighest_R_low + I_ThirdHighest_R_low) < E19SumL_R_low;
+  
   
   outTree->Fill();
   
