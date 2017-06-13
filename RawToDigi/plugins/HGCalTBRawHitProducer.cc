@@ -11,7 +11,9 @@ HGCalTBRawHitProducer::HGCalTBRawHitProducer(const edm::ParameterSet& cfg) :
 {
   m_HGCalTBSkiroc2CMSCollection = consumes<HGCalTBSkiroc2CMSCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
   produces <HGCalTBRawHitCollection>(m_outputCollectionName);
+  produces<RunData>("RunData");
   std::cout << cfg.dump() << std::endl;
+
 }
 
 void HGCalTBRawHitProducer::beginJob()
@@ -97,10 +99,14 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
   edm::Handle<HGCalTBSkiroc2CMSCollection> skirocs;
   event.getByToken(m_HGCalTBSkiroc2CMSCollection, skirocs);
+
+  bool uncorruptSkirocs = true;
+
   for( size_t iski=0; iski<skirocs->size(); iski++ ){
+    HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
+    uncorruptSkirocs = skiroc.check();
+    int iboard=iski/4;//Arnaud, please modify this
     for( int ichan=0; ichan<NUMBER_OF_CHANNELS; ichan++ ){
-      HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
-      int iboard=iski/4;//Arnaud, please modify this
       unsigned int rawid=skiroc.detid(ichan).rawId();
       std::vector<float> adchigh(NUMBER_OF_SCA,0);
       std::vector<float> adclow(NUMBER_OF_SCA,0);
@@ -125,7 +131,18 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       hits->push_back(hit);
     }
   }
+  
   event.put(hits, m_outputCollectionName);
+
+
+  std::auto_ptr<RunData> rd(new RunData);
+	rd->hasDanger = !uncorruptSkirocs;
+
+
+	rd->hasValidMWCMeasurement = false;
+
+	event.put(std::move(rd), "RunData");
+
 }
 
 DEFINE_FWK_MODULE(HGCalTBRawHitProducer);

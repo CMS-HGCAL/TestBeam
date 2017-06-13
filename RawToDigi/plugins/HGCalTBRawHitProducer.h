@@ -15,6 +15,8 @@
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 
+#include "HGCal/DataFormats/interface/HGCalTBRunData.h"
+
 class HGCalTBRawHitProducer : public edm::EDProducer
 {
 

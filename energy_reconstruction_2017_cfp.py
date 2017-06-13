@@ -12,13 +12,13 @@ options.register('dataFolder',
                  'folder containing raw input.')
 
 options.register('runNumber',
-                 83,
+                 171,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Input run to process.')
 
 options.register('beamMomentum',
-                 20.,
+                 150.,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.float,
                  'Momentum of the electron beam.')
@@ -98,6 +98,7 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
 
 process.LayerSumAnalyzer2017 = cms.EDAnalyzer("Layer_Sum_Analyzer_2017",
                                   HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS"),
+                                  RUNDATA = cms.InputTag("rawhitproducer","RunData","unpack" ), 
                                   layers_config = cms.int32(1),
                                   mapFile_CERN = cms.string('HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt'),
                                   run = cms.int32(options.runNumber),

@@ -123,8 +123,9 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
     }
     std::vector<uint16_t> vdata;vdata.insert(vdata.end(),m_decodedData.at(iski).begin(),m_decodedData.at(iski).end());
     HGCalTBSkiroc2CMS skiroc( vdata,detids );
-    if(!skiroc.check())
-      exit(1);
+    //if(!skiroc.check()) {
+      //exit(1);
+    //}
     //std::cout << skiroc << std::endl;
     skirocs->push_back(skiroc);
   }

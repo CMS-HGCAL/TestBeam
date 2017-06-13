@@ -27,6 +27,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
+#include "HGCal/DataFormats/interface/HGCalTBRunData.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
@@ -59,6 +60,8 @@ class Layer_Sum_Analyzer_2017 : public edm::one::EDAnalyzer<edm::one::SharedReso
     double beamMomentum;
 
     edm::EDGetToken HGCalTBRecHitCollection_;
+    edm::EDGetTokenT<RunData> RunDataToken; 
+
     int layers_config_;
 
     struct {
@@ -107,6 +110,7 @@ class Layer_Sum_Analyzer_2017 : public edm::one::EDAnalyzer<edm::one::SharedReso
     std::vector<double> RecHits_LG;
 
     int MIP_Veto;
+    int skirocVeto;
 
     //fixed parameters specific for the Layer_Sum_Analyzer
     double ADCtoMIP_CERN[MAXSKIROCS] =  {1., 1., 1., 1.};
@@ -133,6 +137,7 @@ Layer_Sum_Analyzer_2017::Layer_Sum_Analyzer_2017(const edm::ParameterSet& iConfi
   usesResource("TFileService");
   edm::Service<TFileService> fs;
   HGCalTBRecHitCollection_ = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
+  RunDataToken = consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
   layers_config_ = iConfig.getParameter<int>("layers_config");
 
   if(layers_config_ == 1){
@@ -181,6 +186,7 @@ Layer_Sum_Analyzer_2017::Layer_Sum_Analyzer_2017(const edm::ParameterSet& iConfi
   outTree->Branch("RecHits_LG", &RecHits_LG);
 
 
+  outTree->Branch("skirocVeto", &skirocVeto, "skirocVeto/I");
   outTree->Branch("MIP_Veto", &MIP_Veto, "MIP_Veto/I");
 
 }//constructor ends here
@@ -199,6 +205,12 @@ void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventS
   //opening Rechits
   edm::Handle<HGCalTBRecHitCollection> Rechits;
   event.getByToken(HGCalTBRecHitCollection_, Rechits);
+
+  edm::Handle<RunData> rd;
+  //get the relevant event information
+  event.getByToken(RunDataToken, rd);  
+  skirocVeto = (int) rd->hasDanger;
+
 
   // looping over each rechit to fill histogram
   double max[MAXLAYERS], max_x[MAXLAYERS], max_y[MAXLAYERS];
@@ -308,7 +320,7 @@ void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventS
   if (I_ThirdHighest_R_low > ADC_threshold) nThreshold += 1;
   
     
-  MIP_Veto = (nThreshold<=2 || e23_over_e1 < 0.5) ? 1 : 0;
+  MIP_Veto = (nThreshold<2 || e23_over_e1 < 0.5) ? 1 : 0;
   
   outTree->Fill();
   
