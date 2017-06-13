@@ -56,7 +56,7 @@ class Layer_Sum_Analyzer_2017 : public edm::one::EDAnalyzer<edm::one::SharedReso
     virtual void endJob() override;
 
     // ----------member data ---------------------------
-    int run;
+    int run, event_nr;
     double beamMomentum;
 
     edm::EDGetToken HGCalTBRecHitCollection_;
@@ -130,9 +130,6 @@ class Layer_Sum_Analyzer_2017 : public edm::one::EDAnalyzer<edm::one::SharedReso
 
 Layer_Sum_Analyzer_2017::Layer_Sum_Analyzer_2017(const edm::ParameterSet& iConfig) {
   
-  run = iConfig.getParameter<int>("run");
-  beamMomentum = iConfig.getParameter<double>("beamMomentum");
-
   // initialization
   usesResource("TFileService");
   edm::Service<TFileService> fs;
@@ -154,6 +151,7 @@ Layer_Sum_Analyzer_2017::Layer_Sum_Analyzer_2017(const edm::ParameterSet& iConfi
   }
 
   outTree = fs->make<TTree>("energySums", "energySums");
+  outTree->Branch("event_nr", &event_nr, "event_nr/I");
   outTree->Branch("run", &run, "run/I");
   outTree->Branch("beamMomentum", &beamMomentum, "beamMomentum/D");
 
@@ -200,7 +198,6 @@ Layer_Sum_Analyzer_2017::~Layer_Sum_Analyzer_2017() {
 // ------------ method called for each event  ------------
 void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventSetup& setup) {
   if (DEBUG)  std::cout << " >>> Layer_Sum_Analyzer_2017::analyze " << std::endl;
-  int event_nr = (event.id()).event();
 
   //opening Rechits
   edm::Handle<HGCalTBRecHitCollection> Rechits;
@@ -210,7 +207,9 @@ void Layer_Sum_Analyzer_2017::analyze(const edm::Event& event, const edm::EventS
   //get the relevant event information
   event.getByToken(RunDataToken, rd);  
   skirocVeto = (int) rd->hasDanger;
-
+  beamMomentum = rd->energy;
+  run = rd->run;
+  event_nr = rd->event;
 
   // looping over each rechit to fill histogram
   double max[MAXLAYERS], max_x[MAXLAYERS], max_y[MAXLAYERS];

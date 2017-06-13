@@ -79,6 +79,8 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         SubtractPedestal=cms.untracked.bool(True),
                                         LowGainPedestalFileName = cms.string("/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/CondObjects/data/pedestal_LG_OneLayer2017.txt"),
                                         HighGainPedestalFileName = cms.string('/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/CondObjects/data/pedestal_HG_OneLayer2017.txt'),
+                                        run = cms.int32(options.runNumber),
+                                        beamMomentum = cms.double(options.beamMomentum)
                                         )
 
 
@@ -100,9 +102,7 @@ process.LayerSumAnalyzer2017 = cms.EDAnalyzer("Layer_Sum_Analyzer_2017",
                                   HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS"),
                                   RUNDATA = cms.InputTag("rawhitproducer","RunData","unpack" ), 
                                   layers_config = cms.int32(1),
-                                  mapFile_CERN = cms.string('HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt'),
-                                  run = cms.int32(options.runNumber),
-                                  beamMomentum = cms.double(options.beamMomentum)
+                                  mapFile_CERN = cms.string('HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt')
                               )
 
 

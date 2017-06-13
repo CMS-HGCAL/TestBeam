@@ -25,13 +25,20 @@ class HGCalTBRawHitProducer : public edm::EDProducer
   virtual void produce(edm::Event&, const edm::EventSetup&);
   virtual void beginJob();
  private:
+
+
   std::string m_electronicMap;
   std::string m_outputCollectionName;
   bool m_subtractPedestal;
   std::string m_pedestalHigh_filename;
   std::string m_pedestalLow_filename;
 
+  int run;
+  double beamMomentum;
+  int eventCounter;
+  
   edm::EDGetTokenT<HGCalTBSkiroc2CMSCollection> m_HGCalTBSkiroc2CMSCollection;
+
 
   struct {
     HGCalElectronicsMap emap_;

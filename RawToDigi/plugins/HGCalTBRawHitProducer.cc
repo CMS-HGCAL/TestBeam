@@ -7,7 +7,9 @@ HGCalTBRawHitProducer::HGCalTBRawHitProducer(const edm::ParameterSet& cfg) :
   m_outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
   m_subtractPedestal(cfg.getUntrackedParameter<bool>("SubtractPedestal",false)),
   m_pedestalHigh_filename(cfg.getParameter<std::string>("HighGainPedestalFileName")),
-  m_pedestalLow_filename(cfg.getParameter<std::string>("LowGainPedestalFileName"))
+  m_pedestalLow_filename(cfg.getParameter<std::string>("LowGainPedestalFileName")),
+  run(cfg.getParameter<int>("run")),
+  beamMomentum(cfg.getParameter<double>("beamMomentum"))
 {
   m_HGCalTBSkiroc2CMSCollection = consumes<HGCalTBSkiroc2CMSCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
   produces <HGCalTBRawHitCollection>(m_outputCollectionName);
@@ -18,6 +20,8 @@ HGCalTBRawHitProducer::HGCalTBRawHitProducer(const edm::ParameterSet& cfg) :
 
 void HGCalTBRawHitProducer::beginJob()
 {
+  eventCounter = 0;
+
   HGCalCondObjectTextIO io(0);
   edm::FileInPath fip(m_electronicMap);
   if (!io.load(fip.fullPath(), essource_.emap_)) {
@@ -92,8 +96,8 @@ void HGCalTBRawHitProducer::beginJob()
   }
 }
 
-void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iSetup)
-{
+void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iSetup) {
+  eventCounter++;
 
   std::auto_ptr<HGCalTBRawHitCollection> hits(new HGCalTBRawHitCollection);
 
@@ -137,7 +141,9 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
   std::auto_ptr<RunData> rd(new RunData);
 	rd->hasDanger = !uncorruptSkirocs;
-
+	rd->energy = beamMomentum;
+	rd->run = run;
+	rd->event = eventCounter;
 
 	rd->hasValidMWCMeasurement = false;
 
