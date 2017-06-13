@@ -7,8 +7,8 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) :
   m_outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
   m_electronicMap(cfg.getUntrackedParameter<std::string>("ElectronicsMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
   m_commonModeThreshold(cfg.getUntrackedParameter<double>("CommonModeThreshold",100)),
-  m_highGainADCSaturation(cfg.getUntrackedParameter<double>("HighGainADCSaturation",1800)),
-  m_lowGainADCSaturation(cfg.getUntrackedParameter<double>("LowGainADCSaturation",1800)),
+  m_highGainADCSaturation(cfg.getUntrackedParameter<double>("HighGainADCSaturation", 2400)),
+  m_lowGainADCSaturation(cfg.getUntrackedParameter<double>("LowGainADCSaturation", 1800)),
   m_keepOnlyTimeSample3(cfg.getUntrackedParameter<bool>("KeepOnlyTimeSample3",true)),   //checked first
   m_performParabolicFit(cfg.getUntrackedParameter<bool>("performParabolicFit",true))   //checked secondly
 {
@@ -169,11 +169,15 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       double energyHG = (_x_max_HG<=4 && _x_max_HG>=2) ? _aHG*pow(_x_max_HG,2)+_bHG*_x_max_HG+_cHG : 0;
       double energyLG = (_x_max_LG<=4 && _x_max_LG>=2) ? _aLG*pow(_x_max_LG,2)+_bLG*_x_max_LG+_cLG : 0;
       
-      float energyTOT = rawhit.totFast();
-      
+      float energyTOT = rawhit.totSlow();
       float time = rawhit.toaRise();
 
-      HGCalTBRecHit recHit(rawhit.detid(), energyTOT, energyLG, energyHG, time);
+      float energy;
+      if (energyHG <= 2400) energy = energyHG/60.;
+      else if (energyLG <= 1800) energy = energyLG/8.;
+      else energy = energyTOT/0.85;
+
+      HGCalTBRecHit recHit(rawhit.detid(), energy, energyLG, energyHG, time);
       
       CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((recHit.id()).layer(), (recHit.id()).sensorIU(), (recHit.id()).sensorIV(), (recHit.id()).iu(), (recHit.id()).iv(), 128); 
       recHit.setCellCenterCoordinate(CellCenterXY.first, CellCenterXY.second);
