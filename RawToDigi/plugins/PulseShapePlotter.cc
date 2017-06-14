@@ -19,6 +19,7 @@
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
+#include "HGCal/Reco/interface/CommonMode.h"
 
 #include <iomanip>
 #include <set>
@@ -42,17 +43,10 @@ private:
   struct {
     HGCalElectronicsMap emap_;
   } essource_;
-  double m_commonModeThreshold; //number of sigmas from ped mean
+  double m_commonModeThreshold; //currently not use (need to implement the "average" option in CommonMode.cc)
 
   int m_evtID;
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
-
-  struct commonModeNoise{
-    commonModeNoise():fullHG(0),halfHG(0),mouseBiteHG(0),outerHG(0),fullLG(0),halfLG(0),mouseBiteLG(0),outerLG(0),fullCounter(0),halfCounter(0),mouseBiteCounter(0),outerCounter(0){;}
-    float fullHG,halfHG,mouseBiteHG,outerHG;
-    float fullLG,halfLG,mouseBiteLG,outerLG;
-    int fullCounter,halfCounter,mouseBiteCounter,outerCounter;
-  };
 
 };
 
@@ -114,28 +108,13 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
   edm::Handle<HGCalTBRawHitCollection> hits;
   event.getByToken(m_HGCalTBRawHitCollection, hits);
   
-  commonModeNoise cm[NUMBER_OF_TIME_SAMPLES-0][4];
+  CommonMode cm(essource_.emap_); //default is common mode per chip using the median
+  cm.Evaluate( hits );
+  std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
   for( auto hit : *hits ){
-    int iski=hit.skiroc();
-    if( !essource_.emap_.existsDetId(hit.detid()) ) continue;
-    for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      if( hit.highGainADC(it)>m_commonModeThreshold ) continue;
-      float highGain = hit.highGainADC(it);
-      float lowGain = hit.lowGainADC(it);
-      switch ( hit.detid().cellType() ){
-      case 0 : cm[it][iski].fullHG += highGain; cm[it][iski].fullLG += lowGain; cm[it][iski].fullCounter++; break;
-      case 2 : cm[it][iski].halfHG += highGain; cm[it][iski].halfLG += lowGain; cm[it][iski].halfCounter++; break;
-      case 3 : cm[it][iski].mouseBiteHG += highGain; cm[it][iski].mouseBiteLG += lowGain; cm[it][iski].mouseBiteCounter++; break;
-      case 4 : cm[it][iski].outerHG += highGain; cm[it][iski].outerLG += lowGain; cm[it][iski].outerCounter++; break;
-      }
-    }
-  }
-
-  for( auto hit : *hits ){
-    int iboard=hit.skiroc()/N_SKIROC_PER_HEXA;
-    int iski=hit.skiroc();
-    int ichan=hit.channel();
-    if( essource_.emap_.existsDetId(hit.detid()) ){
+    HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
+    if( essource_.emap_.existsEId(eid) ){
+      int iski=eid.iskiroc();
       float highGain,lowGain;
       float subHG[NUMBER_OF_TIME_SAMPLES],subLG[NUMBER_OF_TIME_SAMPLES];
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
@@ -145,28 +124,31 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
       switch ( hit.detid().cellType() ){
       case 0 : 
       	for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	  subHG[it]=cm[it][iski].fullCounter>0 ? cm[it][iski].fullHG/cm[it][iski].fullCounter : 0; 
-      	  subLG[it]=cm[it][iski].fullCounter>0 ? cm[it][iski].fullLG/cm[it][iski].fullCounter : 0; 
+      	  subHG[it]=cmMap[iski].fullHG[it]; 
+      	  subLG[it]=cmMap[iski].fullLG[it]; 
       	}
       	break;
       case 2 : 
       	for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	  subHG[it]=cm[it][iski].halfCounter>0 ? cm[it][iski].halfHG/cm[it][iski].halfCounter : 0; 
-      	  subLG[it]=cm[it][iski].halfCounter>0 ? cm[it][iski].halfLG/cm[it][iski].halfCounter : 0; 
+      	  subHG[it]=cmMap[iski].halfHG[it]; 
+      	  subLG[it]=cmMap[iski].halfLG[it]; 
       	}
       	break;
       case 3 : 
       	for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	  subHG[it]=cm[it][iski].mouseBiteCounter>0 ? cm[it][iski].mouseBiteHG/cm[it][iski].mouseBiteCounter : 0; 
-      	  subLG[it]=cm[it][iski].mouseBiteCounter>0 ? cm[it][iski].mouseBiteLG/cm[it][iski].mouseBiteCounter : 0; 
+      	  subHG[it]=cmMap[iski].mouseBiteHG[it]; 
+      	  subLG[it]=cmMap[iski].mouseBiteLG[it]; 
       	}
       	break;
       case 4 : for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-       	  subHG[it]=cm[it][iski].outerCounter>0 ? cm[it][iski].outerHG/cm[it][iski].outerCounter : 0; 
-       	  subLG[it]=cm[it][iski].outerCounter>0 ? cm[it][iski].outerLG/cm[it][iski].outerCounter : 0; 
+       	  subHG[it]=cmMap[iski].outerHG[it]; 
+       	  subLG[it]=cmMap[iski].outerLG[it]; 
        	}
        	break;
       }
+      int iboard=hit.skiroc()/N_SKIROC_PER_HEXA;
+      int ichan=hit.channel();
+      iski=hit.skiroc();
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
 	highGain=hit.highGainADC(it)-subHG[it];
 	lowGain=hit.lowGainADC(it)-subLG[it];
