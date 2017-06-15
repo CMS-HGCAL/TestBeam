@@ -61,6 +61,9 @@ private:
   std::map<int,TH2F*> m_h_pulseHigh;
   std::map<int,TH2F*> m_h_pulseLow;
 
+  std::map<int,TH1F*> m_h_cmHigh;
+  std::map<int,TH1F*> m_h_cmLow;
+
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
 
   HGCalTBTopology IsCellValid;
@@ -92,6 +95,16 @@ RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
     for( size_t iski=0; iski<N_SKIROC_PER_HEXA; iski++ ){
       os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
       TFileDirectory dir = fs->mkdir( os.str().c_str() );
+      for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+	os.str("");
+	os << "CommonModeHigh_HexaBoard" << ib << "_Chip" << iski << "_Sample" << it ;
+	htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
+	m_h_cmHigh.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+it, htmp1) );
+	os.str("");
+	os << "CommonModeLow_HexaBoard" << ib << "_Chip" << iski << "_Sample" << it ;
+	htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
+	m_h_cmLow.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+it, htmp1) );
+      }
       for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
 	for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
 	  os.str("");
@@ -161,6 +174,15 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   CommonMode cm(essource_.emap_); //default is common mode per chip using the median
   cm.Evaluate( hits );
   std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
+  for( std::map<int,commonModeNoise>::iterator it=cmMap.begin(); it!=cmMap.end(); ++it ){
+    int iboard=(it->first-1)/N_SKIROC_PER_HEXA;
+    int iski=(N_SKIROC_PER_HEXA-(it->first-1))%N_SKIROC_PER_HEXA;
+    for( size_t ts=0; ts<NUMBER_OF_TIME_SAMPLES; ts++ ){
+      m_h_cmHigh[iboard*100000+iski*10000+ts]->Fill( it->second.fullHG[ts] );
+      m_h_cmLow[iboard*100000+iski*10000+ts]->Fill( it->second.fullLG[ts] );
+    }
+  }
+
   for( auto hit : *hits ){
     for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       float highGain,lowGain;
