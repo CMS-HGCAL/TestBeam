@@ -24,7 +24,6 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   virtual void beginJob() override;
   std::string m_outputCollectionName;
   std::string m_electronicMap;
-  double m_commonModeThreshold;
   int m_highGainADCSaturation;
   int m_lowGainADCSaturation;
   bool m_keepOnlyTimeSample3;
@@ -37,13 +36,6 @@ class HGCalTBRecHitProducer : public edm::EDProducer
     HGCalElectronicsMap emap_;
   } essource_;
   
-  struct commonModeNoise{
-  commonModeNoise():fullHG(0),halfHG(0),mouseBiteHG(0),outerHG(0),fullLG(0),halfLG(0),mouseBiteLG(0),outerLG(0),fullCounter(0),halfCounter(0),mouseBiteCounter(0),outerCounter(0){;}
-    float fullHG,halfHG,mouseBiteHG,outerHG;
-    float fullLG,halfLG,mouseBiteLG,outerLG;
-    int fullCounter,halfCounter,mouseBiteCounter,outerCounter;
-  };
-
 };
 
 #endif
