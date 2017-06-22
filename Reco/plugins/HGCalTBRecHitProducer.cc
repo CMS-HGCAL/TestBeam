@@ -1,8 +1,12 @@
 #include "HGCal/Reco/plugins/HGCalTBRecHitProducer.h"
+#include "HGCal/Reco/interface/PulseFitter.h"
 #include "HGCal/Reco/interface/CommonMode.h"
 #include <iostream>
 
 const static size_t N_SKIROC_PER_HEXA = 4;
+static const double deltaCellBoundary = 0.00001;
+const static int SENSORSIZE = 128;
+
 
 HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) : 
   m_outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
@@ -11,7 +15,6 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) :
   m_lowGainADCSaturation(cfg.getUntrackedParameter<double>("LowGainADCSaturation",1800)),
   m_keepOnlyTimeSample3(cfg.getUntrackedParameter<bool>("KeepOnlyTimeSample3",true))
 {
-
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
 
   produces <HGCalTBRecHitCollection>(m_outputCollectionName);
@@ -42,64 +45,117 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   CommonMode cm(essource_.emap_); //default is common mode per chip using the median
   cm.Evaluate( rawhits );
   std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
+
+  std::vector<std::pair<double, double> > CellXY;
+
   for( auto rawhit : *rawhits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid) ) continue;
     int iboard=(eid.iskiroc()-1)/N_SKIROC_PER_HEXA;
     int iski=eid.iskiroc();
-    if(m_keepOnlyTimeSample3){
-      float highGain,lowGain;
-      float subHG[NUMBER_OF_TIME_SAMPLES],subLG[NUMBER_OF_TIME_SAMPLES];
+
+    std::vector<double> sampleHG, sampleLG, sampleT;
+
+    float highGain, lowGain, totGain;
+    float timeHG = 0.;
+    float timeLG = 0.;
+    float subHG[NUMBER_OF_TIME_SAMPLES],subLG[NUMBER_OF_TIME_SAMPLES];
+
+    totGain = rawhit.totSlow();
+
+    for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+      subHG[it]=0;
+      subLG[it]=0;
+    }
+    switch ( rawhit.detid().cellType() ){
+    case 0 : 
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	subHG[it]=0;
-      	subLG[it]=0;
+	subHG[it]=cmMap[iski].fullHG[it]; 
+	subLG[it]=cmMap[iski].fullLG[it]; 
       }
-      switch ( rawhit.detid().cellType() ){
-      case 0 : 
-      	for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	  subHG[it]=cmMap[iski].fullHG[it]; 
-      	  subLG[it]=cmMap[iski].fullLG[it]; 
-      	}
-      	break;
-      case 2 : 
+      break;
+    case 2 : 
       	for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       	  subHG[it]=cmMap[iski].halfHG[it]; 
       	  subLG[it]=cmMap[iski].halfLG[it]; 
       	}
       	break;
-      case 3 : 
-      	for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	  subHG[it]=cmMap[iski].mouseBiteHG[it]; 
-      	  subLG[it]=cmMap[iski].mouseBiteLG[it]; 
-      	}
-      	break;
+    case 3 : 
+      for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+	subHG[it]=cmMap[iski].mouseBiteHG[it]; 
+	subLG[it]=cmMap[iski].mouseBiteLG[it]; 
+      }
+      break;
       case 4 : for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	  subHG[it]=cmMap[iski].outerHG[it]; 
-      	  subLG[it]=cmMap[iski].outerLG[it]; 
-       	}
+	subHG[it]=cmMap[iski].outerHG[it]; 
+	subLG[it]=cmMap[iski].outerLG[it]; 
+      }
        	break;
-      }
-      //this is a just try to isolate hits with signal
-      float en2=rawhit.highGainADC(2)-subHG[2];
-      float en3=rawhit.highGainADC(3)-subHG[3];
-      float en4=rawhit.highGainADC(4)-subHG[4];
-      float en6=rawhit.highGainADC(6)-subHG[6];
-      if( en2<en3 && en3>en6 && en4>en6 ){
-	highGain=rawhit.highGainADC(3)-subHG[3];
-	lowGain=rawhit.lowGainADC(3)-subLG[3];
-      }
-      else{
-       	highGain=-500;
-       	lowGain=-500;
-      }
-      float energy = (highGain<m_highGainADCSaturation) ? highGain : lowGain*m_LG2HG_value.at(iboard);
-      float time = rawhit.toaRise();
-      rechits->push_back( HGCalTBRecHit(rawhit.detid(), energy, lowGain, highGain, time) );
+    }
+    for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+      sampleHG.push_back(rawhit.highGainADC(it)-subHG[it]);
+      sampleLG.push_back(rawhit.lowGainADC(it)-subLG[it]);
+      sampleT.push_back(25*it);
+    }
+    //this is a just try to isolate hits with signal
+    float en2=rawhit.highGainADC(2)-subHG[2];
+    float en3=rawhit.highGainADC(3)-subHG[3];
+    float en4=rawhit.highGainADC(4)-subHG[4];
+    float en6=rawhit.highGainADC(6)-subHG[6];
+    
+    
+    if(!m_keepOnlyTimeSample3 && 
+       (en2<en3 && en3>en6 && en4>en6 && en3>20)){
+      PulseFitter fitter(0,150);
+      PulseFitterResult fithg;
+      fitter.run(sampleT, sampleHG, fithg);
+      PulseFitterResult fitlg;
+      fitter.run(sampleT, sampleLG, fitlg);
+      
+      highGain = fithg.amplitude;
+      lowGain = fitlg.amplitude;
+      timeHG = fithg.tmax - fithg.trise;
+      timeLG = fitlg.tmax - fitlg.trise;
+    }
+    else if(m_keepOnlyTimeSample3 && 
+	    (en2<en3 && en3>en6 && en4>en6)){
+      highGain=rawhit.highGainADC(3)-subHG[3];
+      lowGain=rawhit.lowGainADC(3)-subLG[3];
     }
     else{
-      std::cout << "Should run with m_keepOnlyTimeSample3 sets to true, other method not yet implemented -> exit" << std::endl;
-      exit(1);
+      highGain=-500;
+      lowGain=-500;
     }
+
+    float energy = -1;
+    float time = -1.;
+    HGCalTBRecHit recHit(rawhit.detid(), energy, lowGain, highGain, totGain, time);
+    if(highGain < m_highGainADCSaturation){
+      energy = highGain;
+      time = timeHG;
+      recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
+    }     
+    else if(lowGain < m_lowGainADCSaturation){
+      energy = lowGain * m_LG2HG_value.at(iboard);
+      time = timeLG;
+      recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
+    }
+    else{
+      energy = totGain * m_TOT2LG_value.at(iboard) * m_LG2HG_value.at(iboard);
+      recHit.setFlag(HGCalTBRecHit::kTotGainSaturated);
+    }
+    if(m_keepOnlyTimeSample3) recHit.setFlag(HGCalTBRecHit::kThirdSample);
+
+    recHit.setEnergy(energy);
+    recHit.setTime(time);
+
+    HGCalTBDetId detid = rawhit.detid();
+    CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), SENSORSIZE );
+    double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + deltaCellBoundary) : (CellCentreXY.first - deltaCellBoundary);
+    double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + deltaCellBoundary) : (CellCentreXY.second - deltaCellBoundary);
+    recHit.setCellCenterCoordinate(iux, iuy);
+
+    rechits->push_back(recHit);
   }
   event.put(rechits, m_outputCollectionName);
 }
