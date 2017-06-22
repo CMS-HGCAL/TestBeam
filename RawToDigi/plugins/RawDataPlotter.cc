@@ -41,8 +41,6 @@ private:
   virtual void endJob() override;
   void InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV);
 
-  std::string m_electronicMap;
-
   struct {
     HGCalElectronicsMap emap_;
   } essource_;
@@ -50,6 +48,7 @@ private:
   bool m_eventPlotter;
   std::string m_pedestalHigh_filename;
   std::string m_pedestalLow_filename;
+  std::string m_electronicMap;
 
   int m_evtID;
   std::map<int,TH1F*> m_h_adcHigh;
@@ -70,7 +69,8 @@ RawDataPlotter::RawDataPlotter(const edm::ParameterSet& iConfig) :
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
   m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
   m_pedestalHigh_filename( iConfig.getUntrackedParameter<std::string>("HighGainPedestalFileName",std::string("pedestalHG.txt")) ),
-  m_pedestalLow_filename( iConfig.getUntrackedParameter<std::string>("LowGainPedestalFileName",std::string("pedestalLG.txt")) )
+  m_pedestalLow_filename( iConfig.getUntrackedParameter<std::string>("LowGainPedestalFileName",std::string("pedestalLG.txt")) ),
+  m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"))
 {
   usesResource("TFileService");
   edm::Service<TFileService> fs;
@@ -110,6 +110,12 @@ RawDataPlotter::RawDataPlotter(const edm::ParameterSet& iConfig) :
       }
     }
   }
+
+  HGCalCondObjectTextIO io(0);
+  edm::FileInPath fip(m_electronicMap);
+  if (!io.load(fip.fullPath(), essource_.emap_)) {
+    throw cms::Exception("Unable to load electronics map");
+  };
   std::cout << iConfig.dump() << std::endl;
 }
 
@@ -126,6 +132,7 @@ void RawDataPlotter::analyze(const edm::Event& event, const edm::EventSetup& set
 
   edm::Handle<HGCalTBSkiroc2CMSCollection> skirocs;
   event.getByToken(m_HGCalTBSkiroc2CMSCollection, skirocs);
+
   
   std::map<int,TH2Poly*>  polyMap;
   if( m_eventPlotter ){
@@ -150,21 +157,22 @@ void RawDataPlotter::analyze(const edm::Event& event, const edm::EventSetup& set
     std::vector<int> rollpositions=skiroc.rollPositions();
     int iboard=iski/N_SKIROC_PER_HEXA;
     for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
-      if( ichan%2==0 ){
-	std::pair<int,HGCalTBDetId> p( iboard*1000+iski*100+ichan,skiroc.detid(ichan) );
+      HGCalTBDetId detid=skiroc.detid( ichan );
+      HGCalTBElectronicsId eid( essource_.emap_.detId2eid(detid.rawId()) );
+      if( essource_.emap_.existsEId(eid) ){
+	std::pair<int,HGCalTBDetId> p( iboard*1000+(iski%N_SKIROC_PER_HEXA)*100+ichan,skiroc.detid(ichan) );
 	setOfConnectedDetId.insert(p);
       }
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
 	if( rollpositions[it]<9 ){ //rm on track samples+2 last time sample which show weird behaviour
-	  m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->Fill(skiroc.ADCHigh(ichan,it));
-	  m_h_adcLow[iboard*100000+iski*10000+ichan*100+it]->Fill(skiroc.ADCLow(ichan,it));
+	  m_h_adcHigh[iboard*100000+(iski%N_SKIROC_PER_HEXA)*10000+ichan*100+it]->Fill(skiroc.ADCHigh(ichan,it));
+	  m_h_adcLow[iboard*100000+(iski%N_SKIROC_PER_HEXA)*10000+ichan*100+it]->Fill(skiroc.ADCLow(ichan,it));
 	  if( ichan%2==0 ){
-	    m_h_pulseHigh[iboard*1000+iski*100+ichan]->Fill( it,skiroc.ADCHigh(ichan,it) ); 
-	    m_h_pulseLow[iboard*1000+iski*100+ichan]->Fill( it,skiroc.ADCLow(ichan,it) );
+	    m_h_pulseHigh[iboard*1000+(iski%N_SKIROC_PER_HEXA)*100+ichan]->Fill( it,skiroc.ADCHigh(ichan,it) ); 
+	    m_h_pulseLow[iboard*1000+(iski%N_SKIROC_PER_HEXA)*100+ichan]->Fill( it,skiroc.ADCLow(ichan,it) );
 	  }
 	}
-	if(m_eventPlotter && ichan%2==0 ){
-	  HGCalTBDetId detid=skiroc.detid( ichan );
+	if(m_eventPlotter&&essource_.emap_.existsEId(eid) ){
 	  if(!IsCellValid.iu_iv_valid( detid.layer(),detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize ) )  continue;
 	  CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
 	  double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;

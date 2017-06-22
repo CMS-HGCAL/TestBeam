@@ -20,7 +20,7 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   m_fileId=0;
  
   m_skiMask = 0xffffffff;
-  switch( m_nOrmBoards ){
+  switch( m_nHexaboards ){
   case 1 : m_skiMask = 0x0f000000;break;
   case 2 : m_skiMask = 0xff000000;break;
   case 3 : m_skiMask = 0xff0f0000;break;
@@ -29,7 +29,7 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   case 6 : m_skiMask = 0xffffff00;break;
   case 7 : m_skiMask = 0xffffff0f;break;
   case 8 : m_skiMask = 0xffffffff;break;
-  default : { std::cout << "wrong skiroc number: " << m_nOrmBoards << std::endl; exit(1); }
+  default : { std::cout << "wrong skiroc number: " << m_nHexaboards << std::endl; exit(1); }
   }
 
   m_buffer=new char[m_nWords*4];
@@ -99,20 +99,19 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
   for( size_t iski=0; iski<m_decodedData.size(); iski++){
     std::vector<HGCalTBDetId> detids;
     for (size_t ichan = 0; ichan < m_nChannelsPerSkiroc; ichan++) {
-      
-      
-      HGCalTBElectronicsId eid;
-      switch( iski ){
-      case 0 : eid=HGCalTBElectronicsId( 1, ichan);break;
-      case 1 : eid=HGCalTBElectronicsId( 4, ichan);break;
-      case 2 : eid=HGCalTBElectronicsId( 3, ichan);break;
-      case 3 : eid=HGCalTBElectronicsId( 2, ichan);break;
-      }
-      // if( iski%2 ) eid=HGCalTBElectronicsId
-      // else eid=HGCalTBElectronicsId(iski, ichan);
+      int skiId;
+      if( iski/m_nSkirocsPerHexa%2==0 )//not flipped
+	skiId=m_nSkirocsPerHexa*(iski/m_nSkirocsPerHexa)+(m_nSkirocsPerHexa-iski)%4+1;
+      else
+	skiId = m_nSkirocsPerHexa*(iski/m_nSkirocsPerHexa)+(m_nSkirocsPerHexa-iski%4);
+      HGCalTBElectronicsId eid(skiId,ichan);      
+      // switch( iski ){
+      // case 0 : eid=HGCalTBElectronicsId( 4, ichan);break;
+      // case 1 : eid=HGCalTBElectronicsId( 3, ichan);break;
+      // case 2 : eid=HGCalTBElectronicsId( 2, ichan);break;
+      // case 3 : eid=HGCalTBElectronicsId( 1, ichan);break;
+      // }
       if (!essource_.emap_.existsEId(eid.rawId())) {
-	//std::cout << std::dec << "skiroc " << iski << "; channel " << ichan << "; electronic id " << eid.rawId() << " is not a correct id, or can not be found in electronics map" << std::endl;
-	//exit(1);
 	HGCalTBDetId did(-1);
 	detids.push_back(did);
       }
@@ -125,7 +124,6 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
     HGCalTBSkiroc2CMS skiroc( vdata,detids );
     if(!skiroc.check())
       exit(1);
-    //std::cout << skiroc << std::endl;
     skirocs->push_back(skiroc);
   }
   e.put(skirocs, m_outputCollectionName);
