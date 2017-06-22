@@ -30,8 +30,8 @@ class HGCalTBSkiroc2CMS
     
   uint16_t ADCLow( int chan, int sca ) const {chan=NUMBER_OF_CHANNELS-1-chan; sca=NUMBER_OF_SCA-1-sca; return (sca>=0 && sca<NUMBER_OF_SCA) ? gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*sca) & MASK_ADC ) : 10000;}
   uint16_t ADCHigh( int chan, int sca ) const {chan=NUMBER_OF_CHANNELS-1-chan; sca=NUMBER_OF_SCA-1-sca; return (sca>=0 && sca<NUMBER_OF_SCA) ? gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*sca) & MASK_ADC ) : 10000;}
-  uint16_t TOTSlow( int chan ) const {chan=NUMBER_OF_CHANNELS-1-chan; return gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*(NUMBER_OF_SCA+1)) & MASK_ADC );}
-  uint16_t TOTFast( int chan ) const {chan=NUMBER_OF_CHANNELS-1-chan; return gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*(NUMBER_OF_SCA+1)) & MASK_ADC );}
+  uint16_t TOTFast( int chan ) const {chan=NUMBER_OF_CHANNELS-1-chan; return gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*(NUMBER_OF_SCA+1)) & MASK_ADC );}
+  uint16_t TOTSlow( int chan ) const {chan=NUMBER_OF_CHANNELS-1-chan; return gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*(NUMBER_OF_SCA+1)) & MASK_ADC );}
   uint16_t TOAFall( int chan ) const {chan=NUMBER_OF_CHANNELS-1-chan; return gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*NUMBER_OF_SCA) & MASK_ADC );}
   uint16_t TOARise( int chan ) const {chan=NUMBER_OF_CHANNELS-1-chan; return gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*NUMBER_OF_SCA) & MASK_ADC );}
   bool TOAHitFall(int chan) const {chan=NUMBER_OF_CHANNELS-1-chan; return ((m_data.at(chan+ADCLOW_SHIFT)&~MASK_ADC)>>4*3)&0x1 ;}

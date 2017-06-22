@@ -64,6 +64,9 @@ private:
   std::map<int,TH1F*> m_h_cmHigh;
   std::map<int,TH1F*> m_h_cmLow;
 
+  TH2F* m_h_tot_vs_low[N_HEXABOARDS][N_SKIROC_PER_HEXA];
+  TH2F* m_h_low_vs_high[N_HEXABOARDS][N_SKIROC_PER_HEXA];
+
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
 
   HGCalTBTopology IsCellValid;
@@ -105,6 +108,14 @@ RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
 	htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
 	m_h_cmLow.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+it, htmp1) );
       }
+      os.str("");
+      os << "ToTVsLowGain_Hexa" << ib << "_Chip" << iski ;
+      htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),2600,-100,2500,1000,0,1000);
+      m_h_tot_vs_low[ib][iski]=htmp2;
+      os.str("");
+      os << "LowGainVsHighGain_Hexa" << ib << "_Chip" << iski ;
+      htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),2600,-100,2500,3500,-500,3000);
+      m_h_low_vs_high[ib][iski]=htmp2;
       for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
 	for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
 	  os.str("");
@@ -124,6 +135,7 @@ RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
 	os << "PulseLowGain_Hexa" << ib << "_Chip" << iski << "_Channel" << ichan;
 	htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES,0,(NUMBER_OF_TIME_SAMPLES)*25,4000,-500,3500);
 	m_h_pulseLow.insert( std::pair<int,TH2F*>(ib*1000+iski*100+ichan, htmp2) );
+	os.str("");
       }
     }
   }
@@ -205,22 +217,21 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   	lowGain=hit.lowGainADC(it);
       }
       int iboard=hit.skiroc()/N_SKIROC_PER_HEXA;
-      int iski=hit.skiroc();
+      int iski=hit.skiroc()%N_SKIROC_PER_HEXA;
       int ichan=hit.channel();
       m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->Fill(highGain);
       m_h_adcLow[iboard*100000+iski*10000+ichan*100+it]->Fill(lowGain);
       m_h_pulseHigh[iboard*1000+iski*100+ichan]->Fill(it*25,highGain);
       m_h_pulseLow[iboard*1000+iski*100+ichan]->Fill(it*25,lowGain);
-      if( !essource_.emap_.existsDetId(hit.detid()) ) continue;
+      HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
+      if( !essource_.emap_.existsEId(eid) ) continue;
       std::pair<int,HGCalTBDetId> p( iboard*1000+iski*100+ichan,hit.detid() );
       setOfConnectedDetId.insert(p);
-      if(!IsCellValid.iu_iv_valid(hit.detid().layer(),hit.detid().sensorIU(),hit.detid().sensorIV(),hit.detid().iu(),hit.detid().iv(),m_sensorsize))  continue;
-      if(m_eventPlotter){
-      	CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.detid().layer(),hit.detid().sensorIU(),hit.detid().sensorIV(),hit.detid().iu(),hit.detid().iv(),m_sensorsize);
-      	double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
-      	double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-      	polyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, highGain);
-      }
+      if(!m_eventPlotter||!IsCellValid.iu_iv_valid(hit.detid().layer(),hit.detid().sensorIU(),hit.detid().sensorIV(),hit.detid().iu(),hit.detid().iv(),m_sensorsize))  continue;
+      CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.detid().layer(),hit.detid().sensorIU(),hit.detid().sensorIV(),hit.detid().iu(),hit.detid().iv(),m_sensorsize);
+      double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
+      double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
+      polyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, highGain);
     }
   }
 }
@@ -253,9 +264,9 @@ void RawHitPlotter::endJob()
   edm::Service<TFileService> fs;
   TFileDirectory dir = fs->mkdir( "HexagonalPlotter" );
   std::map<int,TH2Poly*>  pedPolyMap;
-  std::map<int,TH2Poly*>  pedPolyMapNC;
+  std::map<int,TH2Poly*>  pedPolyMapLG;
   std::map<int,TH2Poly*>  noisePolyMap;
-  std::map<int,TH2Poly*>  noisePolyMapNC;
+  std::map<int,TH2Poly*>  noisePolyMapLG;
   std::map<int,TH2Poly*>  chanMap;
   std::ostringstream os( std::ostringstream::ate );
   TH2Poly *h;
@@ -270,11 +281,11 @@ void RawHitPlotter::endJob()
       pedPolyMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
       h=dir.make<TH2Poly>();
       os.str("");
-      os<<"NC_HighGain_HexaBoard"<<ib<<"_TimeSample"<<it;
+      os<<"LowGain_HexaBoard"<<ib<<"_TimeSample"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
       InitTH2Poly(*h, (int)ib, 0, 0);
-      pedPolyMapNC.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
+      pedPolyMapLG.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
       h=dir.make<TH2Poly>();
       os.str("");
       os<<"Noise_HighGain_HexaBoard"<<ib<<"_TimeSample"<<it;
@@ -284,11 +295,11 @@ void RawHitPlotter::endJob()
       noisePolyMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
       h=dir.make<TH2Poly>();
       os.str("");
-      os<<"NC_Noise_HighGain_HexaBoard"<<ib<<"_TimeSample"<<it;
+      os<<"Noise_LowGain_HexaBoard"<<ib<<"_TimeSample"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
       InitTH2Poly(*h, (int)ib, 0, 0);
-      noisePolyMapNC.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
+      noisePolyMapLG.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
     }
   }
 
@@ -296,16 +307,15 @@ void RawHitPlotter::endJob()
     int iboard=(*it).first/1000;
     int iski=((*it).first%1000)/100;
     int ichan=(*it).first%100;
-    int ichanNC=(*it).first%100+1;
     HGCalTBDetId detid=(*it).second;
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
     double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
     double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
     for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       pedPolyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->GetMean() );
-      pedPolyMapNC[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichanNC*100+it]->GetMean() );
+      pedPolyMapLG[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcLow[iboard*100000+iski*10000+ichan*100+it]->GetMean() );
       noisePolyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->GetRMS() );
-      noisePolyMapNC[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichanNC*100+it]->GetRMS() );
+      noisePolyMapLG[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcLow[iboard*100000+iski*10000+ichan*100+it]->GetRMS() );
     }
   }
 }
