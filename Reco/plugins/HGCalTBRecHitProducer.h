@@ -8,12 +8,16 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 
+#include "DataFormats/CaloRecHit/interface/CaloRecHit.h"
+#include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRawHitCollection.h"
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
+
+#include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
 class HGCalTBRecHitProducer : public edm::EDProducer
 {
@@ -31,6 +35,10 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
   std::vector<double> m_LG2HG_value;
   std::vector<double> m_TOT2LG_value;
+
+
+  std::pair<double, double> CellCentreXY;
+  HGCalTBCellVertices TheCell;
 
   struct {
     HGCalElectronicsMap emap_;
