@@ -24,7 +24,7 @@ double pulseShape_chi2(const double *x)
 PulseFitter::PulseFitter( int printLevel, double maxTime ) : _printLevel(printLevel)
 {							     
   _maxTime=maxTime;
-  m = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
+  m = ROOT::Math::Factory::CreateMinimizer("Minuit", "Migrad");
 }
 
 PulseFitter::~PulseFitter() {
