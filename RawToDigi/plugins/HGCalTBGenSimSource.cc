@@ -178,7 +178,7 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 		std::pair<int, int> iuiv = TheCell.GetCellIUIVCoordinates(x, y);
 
 
-		HGCalTBRecHit recHit(HGCalTBDetId(layer, 0, 0, iuiv.first, iuiv.second, cellType), 0., 0., 0., 0); 
+		HGCalTBRecHit recHit(HGCalTBDetId(layer, 0, 0, iuiv.first, iuiv.second, cellType), 0., 0., 0., 0., 0); 
 			
 		/* Back and forth computation, if correct: Numbers should be identical!
 		std::pair<double, double> CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((recHit.id()).layer(), (recHit.id()).sensorIU(), (recHit.id()).sensorIV(), (recHit.id()).iu(), (recHit.id()).iv(), 128); 	//TODO: Hard Coded Number!
@@ -206,6 +206,7 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	 	recHit.setEnergy(energy);
 	 	recHit._energyLow = energy;
 	 	recHit._energyHigh = energy;
+	 	recHit._energyTot = energy;
 
 		rechits->push_back(recHit);
 	}	

@@ -97,6 +97,14 @@ process.pulseshapeplotter = cms.EDAnalyzer("PulseShapePlotter",
                                            )
 
 
+
+process.recHitNtuplizer = cms.EDAnalyzer("RecHitsNtuplizer",
+                                         InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
+                                         ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
+                                         CommonModeThreshold=cms.untracked.double(100)
+                                         )
+
+
 process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         OutputCollectionName = cms.string('HGCALTBRECHITS'),
                                         InputCollection = cms.InputTag('rawhitproducer','HGCALTBRAWHITS'),
@@ -106,7 +114,7 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         LowGainADCSaturation = cms.untracked.double(1800),
                                         ElectronicsMap = cms.untracked.string('HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt'),
                                         CommonModeThreshold = cms.untracked.double(100.),
-                                        KeepOnlyTimeSample3 = cms.untracked.bool(True)
+                                        KeepOnlyTimeSample3 = cms.untracked.bool(False)
                                         )
 
 process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",
@@ -121,10 +129,11 @@ process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",
 #process.p = cms.Path( process.rawdataplotter )
 
 #process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
-process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.rawdataplotter )
+#process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.rawdataplotter )
 #process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.pulseshapeplotter )
-#process.p = cms.Path( process.rawhitproducer*process.rechitproducer*process.rechitplotter )
-#process.p = cms.Path( process.rawhitproducer*process.rechitproducer*process.rechitplotter*process.rawhitplotter )
+#process.p = cms.Path( process.rawhitproducer*process.recHitNtuplizer )
+#process.p = cms.Path( process.rawhitproducer*process.rechitproducer)
+process.p = cms.Path( process.rawhitproducer*process.rechitproducer*process.rechitplotter*process.rawhitplotter )
 
 
 process.end = cms.EndPath(process.output)

@@ -8,12 +8,16 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 
+#include "DataFormats/CaloRecHit/interface/CaloRecHit.h"
+#include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRawHitCollection.h"
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
+#include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
+
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
 class HGCalTBRecHitProducer : public edm::EDProducer
@@ -25,7 +29,6 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   virtual void beginJob() override;
   std::string m_outputCollectionName;
   std::string m_electronicMap;
-  double m_commonModeThreshold;
   int m_highGainADCSaturation;
   int m_lowGainADCSaturation;
   bool m_keepOnlyTimeSample3;
@@ -40,15 +43,8 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   } essource_;
 
   HGCalTBCellVertices TheCell;
-  std::pair<double, double> CellCenterXY;
+  std::pair<double, double> CellCentreXY;
   
-  struct commonModeNoise{
-  commonModeNoise():fullHG(0),halfHG(0),mouseBiteHG(0),outerHG(0),fullLG(0),halfLG(0),mouseBiteLG(0),outerLG(0),fullCounter(0),halfCounter(0),mouseBiteCounter(0),outerCounter(0){;}
-    float fullHG,halfHG,mouseBiteHG,outerHG;
-    float fullLG,halfLG,mouseBiteLG,outerLG;
-    int fullCounter,halfCounter,mouseBiteCounter,outerCounter;
-  };
-
 };
 
 #endif

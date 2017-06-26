@@ -92,7 +92,7 @@ void HGCalTBGenSimSource_Only::produce(edm::Event & event)
 		int cellType = geomc->cellType(cellno);
 		std::pair<int, int> iuiv = TheCell.GetCellIUIVCoordinates(x, y);
 
-		HGCalTBRecHit recHit(HGCalTBDetId(layer, 0, 0, iuiv.first, iuiv.second, cellType), 0., 0., 0., 0); 
+		HGCalTBRecHit recHit(HGCalTBDetId(layer, 0, 0, iuiv.first, iuiv.second, cellType), 0., 0., 0., 0., 0); 
 			
 		recHit.setCellCenterCoordinate(x, y);
 	
@@ -104,6 +104,7 @@ void HGCalTBGenSimSource_Only::produce(edm::Event & event)
 	 	recHit.setEnergy(energy);
 	 	recHit._energyLow = energy;
 	 	recHit._energyHigh = energy;
+	 	recHit._energyTot = energy;
 
 		rechits->push_back(recHit);
 	}	

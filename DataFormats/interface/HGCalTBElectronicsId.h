@@ -19,7 +19,7 @@ public:
 	static const int kIChanOffset   = 0;
 	static const int kIChanMask     = 0x7F;
 	static const int kISkiRocOffset = 7;
-	static const int kISkiRocMask   = 0x3F;
+	static const int kISkiRocMask   = 0x1FF;
 
 	HGCalTBElectronicsId(int iskiroc, int ichan);
 	HGCalTBElectronicsId() : m_id(0) { }

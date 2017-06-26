@@ -12,7 +12,7 @@ options.register('dataFolder',
                  'folder containing raw input.')
 
 options.register('runNumber',
-                 171,
+                 65,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Input run to process.')
@@ -92,7 +92,6 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         HighGainADCSaturation = cms.untracked.double(2400),
                                         LowGainADCSaturation = cms.untracked.double(1800),
                                         ElectronicsMap = cms.untracked.string('HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt'),
-                                        CommonModeThreshold = cms.untracked.double(100.),
                                         KeepOnlyTimeSample3 = cms.untracked.bool(False),
                                         performParabolicFit = cms.untracked.bool(True)
                                         )
@@ -107,5 +106,4 @@ process.LayerSumAnalyzer2017 = cms.EDAnalyzer("Layer_Sum_Analyzer_2017",
 
 
 process.p = cms.Path( process.rawhitproducer * process.rechitproducer * process.LayerSumAnalyzer2017)
-
-#process.p = cms.Path( process.rawhitproducer * process.hgcaltbrechits2017 * process.LayerSumAnalyzer2017)
+#process.p = cms.Path( process.rawhitproducer * process.rechitproducer)

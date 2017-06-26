@@ -22,14 +22,17 @@ public:
 	enum Flags {
 		kGood = 0,
 		kHighGainSaturated,
-		kLowGainSaturated
+		kLowGainSaturated,
+		kTotGainSaturated,
+		kThirdSample,
+		kParabolic
 	};
 
 
 	HGCalTBRecHit();
 	// by default a recHit is greated with no flag
 	//	HGCalTBRecHit(const DetId& id, float energyLow, float energyHigh, float time, uint32_t flags = 0); // when constructing from digis using 2 gains for the ADC
-	HGCalTBRecHit(const DetId& id, float energy, float energyLow, float energyHigh, float time, uint32_t flags = 0); // when constructing from digis using 2 gains for the ADC
+	HGCalTBRecHit(const DetId& id, float energy, float energyLow, float energyHigh, float energyToT, float time, uint32_t flags = 0); // when constructing from digis using 2 gains for the ADC
 	
 	/// get the id
 	HGCalTBDetId id() const
@@ -37,9 +40,11 @@ public:
 		return HGCalTBDetId(detid());
 	};
 	/////  bool isRecovered() const;
-	float _energyLow, _energyHigh;
+	float _energyLow, _energyHigh, _energyTot;
 	float cellCenter_x;
 	float cellCenter_y;
+	float _time;
+
 
 	float energyLow() const
 	{
@@ -50,6 +55,17 @@ public:
 	{
 		return _energyHigh;
 	};
+
+	float energyTot() const
+	{
+		return _energyTot;
+	};
+
+	void setTime(float time);
+
+	float time(){ 
+	  return _time; 
+	} 
 
 	// set the flags
 	void setFlag(int flag)
