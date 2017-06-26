@@ -1,8 +1,6 @@
 #include <HGCal/Reco/interface/PulseFitter.h>
 
-#include <Math/Minimizer.h>
-#include <Math/Factory.h>
-#include <Math/Functor.h>
+
 
 double _time[13],_energy[13];double _maxTime=225.; //seems to be mandatory since we need static function
 double pulseShape_fcn(double t, double tmax, double trise, double alpha, double amp)
@@ -26,6 +24,13 @@ double pulseShape_chi2(const double *x)
 PulseFitter::PulseFitter( int printLevel, double maxTime ) : _printLevel(printLevel)
 {							     
   _maxTime=maxTime;
+  m = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
+}
+
+PulseFitter::~PulseFitter() {
+  delete m;
+  //delete xm;
+  //delete errors;
 }
 
 void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, PulseFitterResult &fit)
@@ -45,7 +50,6 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   for( uint16_t i=time.size(); i<13; i++ )
     _time[i] = _maxTime+1;
 
-  ROOT::Math::Minimizer* m = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
   m->SetMaxFunctionCalls(1000);
   m->SetMaxIterations(1000);
   m->SetTolerance(0.001);
@@ -68,8 +72,8 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
 
   m->Minimize();
 
-  const double *xm = m->X();
-  const double *errors = m->Errors();
+  xm = m->X();
+  errors = m->Errors();
   fit.tmax=xm[0];
   fit.trise=xm[1];
   fit.alpha=xm[2];
@@ -81,4 +85,5 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   fit.chi2=m->MinValue();
   fit.status=m->Status();
   fit.ncalls=m->NCalls();
+
 }

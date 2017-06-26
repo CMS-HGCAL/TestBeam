@@ -119,6 +119,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       lowGain = fitlg.amplitude;
       timeHG = fithg.tmax - fithg.trise;
       timeLG = fitlg.tmax - fitlg.trise;
+
     }
     else if(m_keepOnlyTimeSample3 && 
       (en2<en3 && en3>en6 && en4>en6)){
@@ -198,10 +199,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + deltaCellBoundary) : (CellCentreXY.second - deltaCellBoundary);
     recHit.setCellCenterCoordinate(iux, iuy);
 
-    //std::cout<<energy<<"   "<<time<<std::endl;
     rechits->push_back(recHit);
   }
-  //std::cout<<std::endl;
   event.put(rechits, m_outputCollectionName);
 }
 
