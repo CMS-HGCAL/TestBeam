@@ -56,9 +56,9 @@ class ShowerShape2017 {
       return;
     }
 
-    double getCellIntensity(size_t index);
+    double getCellIntensity(int layer, size_t index);
 
-    ShowerShape2017(std::string _mapFile, int _sensorsize, edm::Handle<HGCalTBRecHitCollection> Rechits_, ENERGY_TYPE _energytype, double ADCtoMIP_[MAXSKIROCS], double maxX[MAXLAYERS], double maxY[MAXLAYERS]);
+    ShowerShape2017(std::string _mapFile, edm::Handle<HGCalTBRecHitCollection> Rechits_, ENERGY_TYPE _energytype, int _n_layers, int _n_skirocs, double ADCtoMIP_[], double maxX_[], double maxY_[]);
     ~ShowerShape2017();
 
   private:
@@ -71,7 +71,6 @@ class ShowerShape2017 {
 
     edm::Handle<HGCalTBRecHitCollection> Rechits;
 
-    int sensorsize;
     std::vector<std::pair<double, double>> CellXY;
     std::pair<double, double> CellCentreXY;
     HGCalTBCellVertices TheCell;
@@ -83,37 +82,51 @@ class ShowerShape2017 {
 
     ENERGY_TYPE energytype;
 
-    double ADCtoMIP[MAXSKIROCS];
+    int n_layers;
+    int n_skirocs;
 
-    double maxX[MAXLAYERS], maxY[MAXLAYERS];
+    double* ADCtoMIP;
 
-    double e1[MAXLAYERS];
-    double e7[MAXLAYERS];
-    double e19[MAXLAYERS];
-    double eAll[MAXLAYERS];
+    double* maxX;
+    double* maxY;
 
-    std::vector<double> cell_intensities;
+    double* e1;
+    double* e7;
+    double* e19;
+    double* eAll;
+
+    std::map<int, std::vector<double> > cell_intensities;
 
   };
 
 
 
-ShowerShape2017::ShowerShape2017(std::string _mapFile, int _sensorsize, edm::Handle<HGCalTBRecHitCollection> Rechits_, ENERGY_TYPE _energytype, double ADCtoMIP_[MAXSKIROCS], double maxX_[MAXLAYERS], double maxY_[MAXLAYERS]) {
+ShowerShape2017::ShowerShape2017(std::string _mapFile, edm::Handle<HGCalTBRecHitCollection> Rechits_, ENERGY_TYPE _energytype, int _n_layers, int _n_skirocs, double ADCtoMIP_[], double maxX_[], double maxY_[]) {
   HGCalCondObjectTextIO io(0);
   edm::FileInPath fip(_mapFile);
   if (!io.load(fip.fullPath(), essource_.emap_)) {
     throw cms::Exception("Unable to load electronics map");
   };
   
-  sensorsize = _sensorsize;
-
   Rechits =  Rechits_;
-
   energytype = _energytype;
 
-  for(int i=0; i<MAXSKIROCS; ++i)
+  n_layers = _n_layers;
+  n_skirocs = _n_skirocs;
+
+  ADCtoMIP = new double[n_skirocs];
+
+  maxX = new double[n_layers];
+  maxY = new double[n_layers];
+
+  e1 = new double[n_layers];
+  e7 = new double[n_layers];
+  e19 = new double[n_layers];
+  eAll = new double[n_layers];
+
+  for(int i=0; i<n_skirocs; ++i)
     ADCtoMIP[i] = ADCtoMIP_[i];
-  for(int i=0; i<MAXLAYERS; ++i){
+  for(int i=0; i<n_layers; ++i){
     maxX[i] = maxX_[i];
     maxY[i] = maxY_[i];
   }
@@ -124,15 +137,22 @@ ShowerShape2017::ShowerShape2017(std::string _mapFile, int _sensorsize, edm::Han
 
 
 ShowerShape2017::~ShowerShape2017() {
+  delete ADCtoMIP;
 
+  delete maxX;
+  delete maxY;
+
+  delete e1;
+  delete e7;
+  delete e19;
+  delete eAll;
 }
 
 
 void ShowerShape2017::init(){
-  double ncell1[MAXLAYERS], ncell7[MAXLAYERS], ncell19[MAXLAYERS];
+  double ncell1[n_layers], ncell7[n_layers], ncell19[n_layers];
   
-
-  for(int iL=0; iL<MAXLAYERS; ++iL){
+  for(int iL=0; iL<n_layers; ++iL){
     e1[iL] = e7[iL] = e19[iL] = eAll[iL] = 0.;
     ncell1[iL] = ncell7[iL] = ncell19[iL] = 0;
   } 
@@ -157,45 +177,45 @@ void ShowerShape2017::init(){
     if (eCellType == 4) //outer calibration pad cell
       geometricScaleFactor = 9./8.;
 
-    double energyCMsub;
+    double energyScaled;
     if (energytype == TOT) {
-      energyCMsub = geometricScaleFactor * (Rechit.energy()) / ADCtoMIP[nSkiroc];    
+      energyScaled = geometricScaleFactor * (Rechit.energy()) / ADCtoMIP[nSkiroc];    
     } else if (energytype == ADC_HIGH) {
-      energyCMsub = geometricScaleFactor * (Rechit.energyHigh()) / ADCtoMIP[nSkiroc];    
+      energyScaled = geometricScaleFactor * (Rechit.energyHigh()) / ADCtoMIP[nSkiroc];    
     } else if (energytype == ADC_LOW) {
-      energyCMsub = geometricScaleFactor * (Rechit.energyLow()) / ADCtoMIP[nSkiroc];    
+      energyScaled = geometricScaleFactor * (Rechit.energyLow()) / ADCtoMIP[nSkiroc];    
     } else {
       throw cms::Exception("Not-implemented energy type.");
     }
     
     radius = sqrt( pow(CellCentreXY.first - maxX[eLayer], 2) + pow(CellCentreXY.second - maxY[eLayer], 2) );
 
-    if((radius < maxdist) && (energyCMsub > 0)){
-      e1[eLayer] += energyCMsub;
+    if((radius < maxdist) && (energyScaled > 0)){
+      e1[eLayer] += energyScaled;
       if(eCellType != 1 && eCellType != 2) ncell1[eLayer] += 1;
     }    
 
  
-    if((radius < maxdist_secNB) && (energyCMsub > 0)){
-      e7[eLayer] += energyCMsub;
+    if((radius < maxdist_secNB) && (energyScaled > 0)){
+      e7[eLayer] += energyScaled;
       if(eCellType != 1 && eCellType != 2) ncell7[eLayer] += 1.;
     }    
 
-    if((radius < maxdist_thirdNB) && (energyCMsub > 0)){
-      e19[eLayer] += energyCMsub;
+    if((radius < maxdist_thirdNB) && (energyScaled > 0)){
+      e19[eLayer] += energyScaled;
       if(eCellType != 1 && eCellType != 2) ncell19[eLayer] += 1.;
     }    
   
-    if(energyCMsub > 0) eAll[eLayer] += energyCMsub;
+    if(energyScaled > 0) eAll[eLayer] += energyScaled;
   
-    cell_intensities.push_back(energyCMsub);
+    cell_intensities[eLayer].push_back(energyScaled);
   }
 
   //sort the cell intensities
-  std::sort(cell_intensities.begin(), cell_intensities.end()+cell_intensities.size(), reverse_sort);
+  for(int iL=0; iL<n_layers; ++iL) std::sort(cell_intensities[iL].begin(), cell_intensities[iL].end()+cell_intensities[iL].size(), reverse_sort);
 
 }
 
-double ShowerShape2017::getCellIntensity(size_t index) {
-  return cell_intensities[index];
+double ShowerShape2017::getCellIntensity(int layer, size_t index) {
+  return cell_intensities[layer][index];
 }
