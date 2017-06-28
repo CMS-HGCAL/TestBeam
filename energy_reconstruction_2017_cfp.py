@@ -93,7 +93,7 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         LowGainADCSaturation = cms.untracked.double(1500),
                                         ElectronicsMap = cms.untracked.string('HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt'),
                                         KeepOnlyTimeSample3 = cms.untracked.bool(False),
-                                        performParabolicFit = cms.untracked.bool(True)
+                                        performParabolicFit = cms.untracked.bool(False)
                                         )
 
 
