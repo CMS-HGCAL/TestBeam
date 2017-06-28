@@ -61,7 +61,11 @@ private:
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;
 
+  std::vector<double> m_LG2HG_value;
+  std::vector<double> m_TOT2LG_value;
 
+  int m_highGainADCSaturation;
+  int m_lowGainADCSaturation;
   int m_evtID;
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
 
@@ -78,6 +82,7 @@ private:
   std::vector<double> tsLG;
   Float_t posX;
   Float_t posY;
+  Float_t amp;
   Float_t ampHG;
   Float_t ampLG;
   Float_t ampTOT;
@@ -94,9 +99,17 @@ private:
 
 RecHitsNtuplizer::RecHitsNtuplizer(const edm::ParameterSet& iConfig) :
   m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
-  m_commonModeThreshold(iConfig.getUntrackedParameter<double>("CommonModeThreshold",100))
+  m_commonModeThreshold(iConfig.getUntrackedParameter<double>("CommonModeThreshold",100)),
+  m_highGainADCSaturation(iConfig.getUntrackedParameter<double>("HighGainADCSaturation",1800)),
+  m_lowGainADCSaturation(iConfig.getUntrackedParameter<double>("LowGainADCSaturation",1800))
 {
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
+
+  std::vector<double> v0(1,10.);
+  m_LG2HG_value = iConfig.getUntrackedParameter<std::vector<double> >("LG2HG",v0);
+  std::vector<double> v1(1,10.);
+  m_TOT2LG_value = iConfig.getUntrackedParameter<std::vector<double> >("TOT2LG",v1);
+
   m_evtID=0;
   std::cout << iConfig.dump() << std::endl;
 
@@ -107,6 +120,7 @@ RecHitsNtuplizer::RecHitsNtuplizer(const edm::ParameterSet& iConfig) :
   tree->Branch("tsLG",&tsLG);
   tree->Branch("posX",&posX,"posX/F");
   tree->Branch("posY",&posY,"posY/F");
+  tree->Branch("amp",&amp,"amp/F");
   tree->Branch("ampHG",&ampHG,"ampHG/F");
   tree->Branch("ampLG",&ampLG,"ampLG/F");
   tree->Branch("ampTOT",&ampLG,"ampTOT/F");
@@ -143,6 +157,7 @@ void RecHitsNtuplizer::initTree()
   tsLG.clear();
   posX = -1.;
   posY = -1.;
+  amp = -1.;
   ampHG = -1.;
   ampLG = -1.;
   ampTOT = -1.;
@@ -266,6 +281,16 @@ void RecHitsNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& s
 	ampLG = fitlg.amplitude;
 	startTHG = fithg.tmax - fithg.trise;
 	startTLG = fitlg.tmax - fitlg.trise;	
+
+	if(ampHG < m_highGainADCSaturation){
+	  amp = ampHG;
+	}
+	else if(ampLG < m_lowGainADCSaturation){
+	  amp = ampLG * m_LG2HG_value.at(iboard);
+	}
+	else{
+	  amp = ampTOT * m_TOT2LG_value.at(iboard) * m_LG2HG_value.at(iboard);
+	}
       }
 
       HGCalTBDetId detid = hit.detid();

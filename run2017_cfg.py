@@ -101,7 +101,11 @@ process.pulseshapeplotter = cms.EDAnalyzer("PulseShapePlotter",
 process.recHitNtuplizer = cms.EDAnalyzer("RecHitsNtuplizer",
                                          InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
                                          ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
-                                         CommonModeThreshold=cms.untracked.double(100)
+                                         CommonModeThreshold=cms.untracked.double(100),
+                                         LG2HG = cms.untracked.vdouble(10.0),
+                                         TOT2LG = cms.untracked.vdouble(10.0),
+                                         HighGainADCSaturation = cms.untracked.double(2000),
+                                         LowGainADCSaturation = cms.untracked.double(1500)
                                          )
 
 
@@ -110,8 +114,8 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         InputCollection = cms.InputTag('rawhitproducer','HGCALTBRAWHITS'),
                                         LG2HG = cms.untracked.vdouble(10.0),
                                         TOT2LG = cms.untracked.vdouble(10.0),
-                                        HighGainADCSaturation = cms.untracked.double(1800),
-                                        LowGainADCSaturation = cms.untracked.double(1800),
+                                        HighGainADCSaturation = cms.untracked.double(2000),
+                                        LowGainADCSaturation = cms.untracked.double(1500),
                                         ElectronicsMap = cms.untracked.string('HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt'),
                                         CommonModeThreshold = cms.untracked.double(100.),
                                         KeepOnlyTimeSample3 = cms.untracked.bool(False)
