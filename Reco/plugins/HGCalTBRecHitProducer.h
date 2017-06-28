@@ -29,12 +29,12 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   virtual void beginJob() override;
   std::string m_outputCollectionName;
   std::string m_electronicMap;
-  int m_highGainADCSaturation;
-  int m_lowGainADCSaturation;
   bool m_keepOnlyTimeSample3;
   bool m_performParabolicFit;
 
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
+  std::vector<double> m_highGainADCSaturation;
+  std::vector<double> m_lowGainADCSaturation;
   std::vector<double> m_LG2HG_value;
   std::vector<double> m_TOT2LG_value;
 

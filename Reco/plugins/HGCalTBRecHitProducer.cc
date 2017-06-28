@@ -4,6 +4,7 @@
 #include <iostream>
 
 const static size_t N_SKIROC_PER_HEXA = 4;
+const static size_t N_HEXAs = 1;
 static const double deltaCellBoundary = 0.00001;
 const static int SENSORSIZE = 128;
 
@@ -11,18 +12,19 @@ const static int SENSORSIZE = 128;
 HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) : 
   m_outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
   m_electronicMap(cfg.getUntrackedParameter<std::string>("ElectronicsMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
-  m_highGainADCSaturation(cfg.getUntrackedParameter<double>("HighGainADCSaturation",1800)),
-  m_lowGainADCSaturation(cfg.getUntrackedParameter<double>("LowGainADCSaturation",1800)),
   m_keepOnlyTimeSample3(cfg.getUntrackedParameter<bool>("KeepOnlyTimeSample3",true)),
   m_performParabolicFit(cfg.getUntrackedParameter<bool>("performParabolicFit",true))   //checked secondly
 {
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
 
   produces <HGCalTBRecHitCollection>(m_outputCollectionName);
-  std::vector<double> v0(1,10.);
+  
+  std::vector<double> v0(N_SKIROC_PER_HEXA*N_HEXAs, 10.);
+  m_highGainADCSaturation = cfg.getUntrackedParameter<std::vector<double> >("HighGainADCSaturation",v0);
+  m_lowGainADCSaturation = cfg.getUntrackedParameter<std::vector<double> >("LowGainADCSaturation",v0);
+
   m_LG2HG_value = cfg.getUntrackedParameter<std::vector<double> >("LG2HG",v0);
-  std::vector<double> v1(1,10.);
-  m_TOT2LG_value = cfg.getUntrackedParameter<std::vector<double> >("TOT2LG",v1);
+  m_TOT2LG_value = cfg.getUntrackedParameter<std::vector<double> >("TOT2LG",v0);
 
   std::cout << cfg.dump() << std::endl;
 }
@@ -52,7 +54,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   for( auto rawhit : *rawhits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid) ) continue;
-    int iboard=(eid.iskiroc()-1)/N_SKIROC_PER_HEXA;
+    //int iboard=(eid.iskiroc()-1)/N_SKIROC_PER_HEXA;
     int iski=eid.iskiroc();
 
     std::vector<double> sampleHG, sampleLG, sampleT;
@@ -170,18 +172,18 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     float time = -1.;
     
     HGCalTBRecHit recHit(rawhit.detid(), energy, lowGain, highGain, totGain, time);
-    if(highGain < m_highGainADCSaturation && highGain!=-1.){
+    if(highGain < m_highGainADCSaturation.at(iski-1) && highGain!=-1.){
       energy = highGain;
       time = timeHG;
       recHit.setFlag(HGCalTBRecHit::kHighGainSaturated); //std::cout<<"High gain saturated   ";
     }     
-    else if(lowGain < m_lowGainADCSaturation && lowGain!=-1.){
-      energy = lowGain * m_LG2HG_value.at(iboard);
+    else if(lowGain < m_lowGainADCSaturation.at(iski-1) && lowGain!=-1.){
+      energy = lowGain * m_LG2HG_value.at(iski-1);
       time = timeLG;
       recHit.setFlag(HGCalTBRecHit::kLowGainSaturated); //std::cout<<"Low gain saturated   ";
     }
     else{
-      energy = totGain * m_TOT2LG_value.at(iboard) * m_LG2HG_value.at(iboard);
+      energy = totGain * m_TOT2LG_value.at(iski-1) * m_LG2HG_value.at(iski-1);
       recHit.setFlag(HGCalTBRecHit::kTotGainSaturated); //std::cout<<"Tot gain saturated   ";
     }
 
