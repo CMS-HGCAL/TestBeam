@@ -141,13 +141,12 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
   for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
     for(size_t is = 0; is<N_SKIROC_PER_HEXA; is++) {
       for( size_t ic=0; ic<N_CHANNELS_PER_SKIROC; ic++ ){
-	HGCalTBElectronicsId eid;
-	switch( is ){
-	case 0 : eid=HGCalTBElectronicsId( 1, ic);break;
-	case 1 : eid=HGCalTBElectronicsId( 4, ic);break;
-	case 2 : eid=HGCalTBElectronicsId( 3, ic);break;
-	case 3 : eid=HGCalTBElectronicsId( 2, ic);break;
-	}
+	int skiId;
+	if( ib%2==0 )//not flipped
+	  skiId=N_SKIROC_PER_HEXA*ib+(N_SKIROC_PER_HEXA-is)%N_SKIROC_PER_HEXA+1;
+	else
+	  skiId = N_SKIROC_PER_HEXA*ib+(N_SKIROC_PER_HEXA-is%N_SKIROC_PER_HEXA);
+	HGCalTBElectronicsId eid(skiId,ic);      
 	if (!essource_.emap_.existsEId(eid.rawId())) continue;
 	os.str("");
 	os<<"HexaBoard"<<ib<<"_Skiroc"<<is<<"_Channel"<<ic<<"_HG";
@@ -213,8 +212,8 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
 	hg.push_back(highGain);
 	lg.push_back(lowGain);
 	time.push_back(25*it);
-	hMapHG[1000*iboard+100*iski+ichan]->Fill(25*it,highGain);
-	hMapLG[1000*iboard+100*iski+ichan]->Fill(25*it,lowGain);
+	hMapHG[1000*iboard+100*(iski%N_SKIROC_PER_HEXA)+ichan]->Fill(25*it,highGain);
+	hMapLG[1000*iboard+100*(iski%N_SKIROC_PER_HEXA)+ichan]->Fill(25*it,lowGain);
       }
       float en2=hit.highGainADC(2)-subHG[2];
       float en3=hit.highGainADC(3)-subHG[3];

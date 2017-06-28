@@ -1,6 +1,7 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBRawHitProducer.h"
 #include <iostream>
 
+const static size_t N_SKIROC_PER_HEXA = 4;
 
 HGCalTBRawHitProducer::HGCalTBRawHitProducer(const edm::ParameterSet& cfg) : 
   m_electronicMap(cfg.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
@@ -35,13 +36,12 @@ void HGCalTBRawHitProducer::beginJob()
 	int hexaboard,skiroc,channel,ptr,nval;
 	nval=sscanf( index, "%d %d %d %n",&hexaboard,&skiroc,&channel,&ptr );
 	if( nval==3 ){
-	  HGCalTBElectronicsId eid;
-	  switch( skiroc ){
-	  case 0 : eid=HGCalTBElectronicsId( 1, channel);break;
-	  case 1 : eid=HGCalTBElectronicsId( 4, channel);break;
-	  case 2 : eid=HGCalTBElectronicsId( 3, channel);break;
-	  case 3 : eid=HGCalTBElectronicsId( 2, channel);break;
-	  }
+	  int skiId;
+	  if( hexaboard%2==0 )//not flipped
+	    skiId=N_SKIROC_PER_HEXA*hexaboard+(N_SKIROC_PER_HEXA-skiroc)%N_SKIROC_PER_HEXA+1;
+	  else
+	    skiId = N_SKIROC_PER_HEXA*hexaboard+(N_SKIROC_PER_HEXA-skiroc%N_SKIROC_PER_HEXA);
+	  HGCalTBElectronicsId eid(skiId,channel);      
 	  if (!essource_.emap_.existsEId(eid.rawId()))
 	    ped.id = HGCalTBDetId(-1);
 	  else
@@ -100,15 +100,18 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   for( size_t iski=0; iski<skirocs->size(); iski++ ){
     for( int ichan=0; ichan<NUMBER_OF_CHANNELS; ichan++ ){
       HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
-      int iboard=iski/4;//Arnaud, please modify this
+      int iboard=iski/N_SKIROC_PER_HEXA;
+      int iskiroc=iski%N_SKIROC_PER_HEXA;
       unsigned int rawid=skiroc.detid(ichan).rawId();
       std::vector<float> adchigh(NUMBER_OF_SCA,0);
       std::vector<float> adclow(NUMBER_OF_SCA,0);
       std::vector<int> rollpositions=skiroc.rollPositions();
+      if( m_pedMap[10000*iboard+100*iskiroc+ichan].id!=HGCalTBDetId(rawid) )
+	std::cout << "Problem : in " << iboard << "\t" << iskiroc << "\t" << ichan << "\t" << m_pedMap[10000*iboard+100*iskiroc+ichan].id << std::endl;
       for( int it=0; it<NUMBER_OF_SCA; it++ ){
 	if( m_subtractPedestal ){
-	  adchigh.at( rollpositions[it] ) = skiroc.ADCHigh(ichan,it)-m_pedMap[10000*iboard+100*iski+ichan].pedHGMean[it] ;
-	  adclow.at( rollpositions[it] ) = skiroc.ADCLow(ichan,it)-m_pedMap[10000*iboard+100*iski+ichan].pedLGMean[it] ;
+	  adchigh.at( rollpositions[it] ) = skiroc.ADCHigh(ichan,it)-m_pedMap[10000*iboard+100*iskiroc+ichan].pedHGMean[it] ;
+	  adclow.at( rollpositions[it] ) = skiroc.ADCLow(ichan,it)-m_pedMap[10000*iboard+100*iskiroc+ichan].pedLGMean[it] ;
 	}
 	else{
 	  adchigh.at( rollpositions[it] ) = skiroc.ADCHigh(ichan,it) ;
