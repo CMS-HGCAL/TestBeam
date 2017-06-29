@@ -44,8 +44,6 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   //std::vector<FileInfo>::iterator fileIterator;
   unsigned int m_nOrmBoards;
   unsigned int m_nHexaboards;
-  unsigned int m_nSkirocsPerHexa;
-  unsigned int m_nChannelsPerSkiroc;
   unsigned int m_nWords;
 
   unsigned int m_time;

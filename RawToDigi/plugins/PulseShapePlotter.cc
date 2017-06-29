@@ -17,18 +17,15 @@
 
 #include "HGCal/DataFormats/interface/HGCalTBRawHitCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
+#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
-#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include "HGCal/Reco/interface/CommonMode.h"
 #include "HGCal/Reco/interface/PulseFitter.h"
 
 #include <iomanip>
 #include <set>
-
-const static size_t N_HEXABOARDS = 1;
-const static size_t N_SKIROC_PER_HEXA = 4;
-const static size_t N_CHANNELS_PER_SKIROC = 64;
 
 class PulseShapePlotter : public edm::one::EDAnalyzer<edm::one::SharedResources>
 {
@@ -138,14 +135,14 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
   std::ostringstream os( std::ostringstream::ate );
   os << "Event" << event.id().event();
   TFileDirectory dir = fs->mkdir( os.str().c_str() );
-  for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
-    for(size_t is = 0; is<N_SKIROC_PER_HEXA; is++) {
-      for( size_t ic=0; ic<N_CHANNELS_PER_SKIROC; ic++ ){
+  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+    for(size_t is = 0; is<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; is++) {
+      for( size_t ic=0; ic<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ic++ ){
 	int skiId;
 	if( ib%2==0 )//not flipped
-	  skiId=N_SKIROC_PER_HEXA*ib+(N_SKIROC_PER_HEXA-is)%N_SKIROC_PER_HEXA+1;
+	  skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*ib+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-is)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
 	else
-	  skiId = N_SKIROC_PER_HEXA*ib+(N_SKIROC_PER_HEXA-is%N_SKIROC_PER_HEXA);
+	  skiId = HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*ib+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-is%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA);
 	HGCalTBElectronicsId eid(skiId,ic);      
 	if (!essource_.emap_.existsEId(eid.rawId())) continue;
 	os.str("");
@@ -202,7 +199,7 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
        	}
        	break;
       }
-      int iboard=hit.skiroc()/N_SKIROC_PER_HEXA;
+      int iboard=hit.skiroc()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
       int ichan=hit.channel();
       iski=hit.skiroc();
       std::vector<double> hg,lg,time;
@@ -212,8 +209,8 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
 	hg.push_back(highGain);
 	lg.push_back(lowGain);
 	time.push_back(25*it);
-	hMapHG[1000*iboard+100*(iski%N_SKIROC_PER_HEXA)+ichan]->Fill(25*it,highGain);
-	hMapLG[1000*iboard+100*(iski%N_SKIROC_PER_HEXA)+ichan]->Fill(25*it,lowGain);
+	hMapHG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->Fill(25*it,highGain);
+	hMapLG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->Fill(25*it,lowGain);
       }
       float en2=hit.highGainADC(2)-subHG[2];
       float en3=hit.highGainADC(3)-subHG[3];

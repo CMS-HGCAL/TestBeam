@@ -1,7 +1,6 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBRawHitProducer.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include <iostream>
-
-const static size_t N_SKIROC_PER_HEXA = 4;
 
 HGCalTBRawHitProducer::HGCalTBRawHitProducer(const edm::ParameterSet& cfg) : 
   m_electronicMap(cfg.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
@@ -38,9 +37,9 @@ void HGCalTBRawHitProducer::beginJob()
 	if( nval==3 ){
 	  int skiId;
 	  if( hexaboard%2==0 )//not flipped
-	    skiId=N_SKIROC_PER_HEXA*hexaboard+(N_SKIROC_PER_HEXA-skiroc)%N_SKIROC_PER_HEXA+1;
+	    skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*hexaboard+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-skiroc)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
 	  else
-	    skiId = N_SKIROC_PER_HEXA*hexaboard+(N_SKIROC_PER_HEXA-skiroc%N_SKIROC_PER_HEXA);
+	    skiId = HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*hexaboard+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-skiroc%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA);
 	  HGCalTBElectronicsId eid(skiId,channel);      
 	  if (!essource_.emap_.existsEId(eid.rawId()))
 	    ped.id = HGCalTBDetId(-1);
@@ -98,10 +97,10 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   edm::Handle<HGCalTBSkiroc2CMSCollection> skirocs;
   event.getByToken(m_HGCalTBSkiroc2CMSCollection, skirocs);
   for( size_t iski=0; iski<skirocs->size(); iski++ ){
-    for( int ichan=0; ichan<NUMBER_OF_CHANNELS; ichan++ ){
+    for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
       HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
-      int iboard=iski/N_SKIROC_PER_HEXA;
-      int iskiroc=iski%N_SKIROC_PER_HEXA;
+      int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+      int iskiroc=iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
       unsigned int rawid=skiroc.detid(ichan).rawId();
       std::vector<float> adchigh(NUMBER_OF_SCA,0);
       std::vector<float> adclow(NUMBER_OF_SCA,0);
