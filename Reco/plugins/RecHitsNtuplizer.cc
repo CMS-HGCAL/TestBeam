@@ -90,6 +90,9 @@ private:
   Float_t startTLG;
   Float_t toaR;
   Float_t toaF;
+  Int_t hgSat;
+  Int_t lgSat;
+  Int_t evtGOOD;
   Int_t nHexB;
   Int_t nSki;
   Int_t nCha;
@@ -128,11 +131,15 @@ RecHitsNtuplizer::RecHitsNtuplizer(const edm::ParameterSet& iConfig) :
   tree->Branch("startTLG",&startTLG,"startTLG/F");
   tree->Branch("toaR",&toaR,"toaR/F");
   tree->Branch("toaF",&toaF,"toaF/F");
+  tree->Branch("hgSat",&hgSat,"hgSat/I");
+  tree->Branch("lgSat",&lgSat,"lgSat/I");
+  tree->Branch("evtGOOD",&evtGOOD,"evtGOOD/I");
   tree->Branch("nHexB",&nHexB,"nHexB/I");
   tree->Branch("nSki",&nSki,"nSki/I");
   tree->Branch("nCha",&nCha,"nCha/I");
   tree->Branch("nEvt",&nEvt,"nEvt/I");
   tree->Branch("nRun",&nRun,"nRun/I");
+
 
 }
 
@@ -165,6 +172,9 @@ void RecHitsNtuplizer::initTree()
   startTLG = -1.;
   toaR = -1.;
   toaF = -1.;
+  hgSat = -1.;
+  lgSat = -1.;
+  evtGOOD = -1.;
   nHexB = -1.;
   nSki = -1.;
   nCha = -1.;
@@ -219,6 +229,8 @@ void RecHitsNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& s
 
     if( essource_.emap_.existsDetId(hit.detid()) ){
       float highGain, lowGain;
+      int hgStatus = -1;
+      int lgStatus = -1;
       std::vector<double> sampleT;
       sampleT.clear();
       tsHG.clear();
@@ -282,14 +294,29 @@ void RecHitsNtuplizer::analyze(const edm::Event& event, const edm::EventSetup& s
 	startTHG = fithg.tmax - fithg.trise;
 	startTLG = fitlg.tmax - fitlg.trise;	
 
-	if(ampHG < m_highGainADCSaturation){
+	hgStatus = fithg.status;
+	lgStatus = fitlg.status;
+
+	if(ampHG < m_highGainADCSaturation && hgStatus == 0){
 	  amp = ampHG;
+	  hgSat = 0;
+	  evtGOOD = 1;
 	}
-	else if(ampLG < m_lowGainADCSaturation){
+	else if(ampLG < m_lowGainADCSaturation && hgStatus == 0 && lgStatus == 0){
 	  amp = ampLG * m_LG2HG_value.at(iboard);
+	  hgSat = 1;
+	  lgSat = 0;
+	  evtGOOD = 1;
+	}
+	else if(hgStatus == 0 && lgStatus == 0 && ampTOT > 50){
+	  amp = ampTOT * m_TOT2LG_value.at(iboard) * m_LG2HG_value.at(iboard);
+	  hgSat = 1;
+	  lgSat = 1;
+	  evtGOOD = 1;
 	}
 	else{
-	  amp = ampTOT * m_TOT2LG_value.at(iboard) * m_LG2HG_value.at(iboard);
+	  amp = -1;
+	  evtGOOD = 0;
 	}
       }
 

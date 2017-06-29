@@ -72,7 +72,7 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
                                         ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
-                                        SubtractPedestal=cms.untracked.bool(False),
+                                        SubtractPedestal=cms.untracked.bool(True),
                                         HighGainPedestalFileName=cms.string(pedestalHighGain),
                                         LowGainPedestalFileName=cms.string(pedestalLowGain)
                                         )
@@ -130,8 +130,8 @@ process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",
 #process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.rawdataplotter )
 #process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.pulseshapeplotter )
 #process.p = cms.Path( process.rawhitproducer*process.recHitNtuplizer )
-#process.p = cms.Path( process.rawhitproducer*process.rechitproducer)
-process.p = cms.Path( process.rawhitproducer*process.rechitproducer*process.rechitplotter*process.rawhitplotter )
+process.p = cms.Path( process.rawhitproducer*process.rechitproducer)
+#process.p = cms.Path( process.rawhitproducer*process.rechitproducer*process.rechitplotter*process.rawhitplotter )
 
 process.end = cms.EndPath(process.output)
 
