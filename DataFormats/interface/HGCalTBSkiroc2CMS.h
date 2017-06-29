@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 
 static const int MASK_ADC = 0x0FFF;
 static const int MASK_ROLL = 0x1FFF;
@@ -12,7 +13,6 @@ static const int MASK_ID = 0xFF;
 static const int MASK_HEAD = 0xF000;
 
 static const int NUMBER_OF_SCA = 13;
-static const int NUMBER_OF_CHANNELS = 64;
 static const int ADCLOW_SHIFT = 0;
 static const int ADCHIGH_SHIFT = 64;
 static const int SCA_SHIFT = 128;
@@ -28,14 +28,14 @@ class HGCalTBSkiroc2CMS
   {;}
   uint16_t gray_to_brady(const uint16_t gray) const;
     
-  uint16_t ADCLow( int chan, int sca ) const {chan=NUMBER_OF_CHANNELS-1-chan; sca=NUMBER_OF_SCA-1-sca; return (sca>=0 && sca<NUMBER_OF_SCA) ? gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*sca) & MASK_ADC ) : 10000;}
-  uint16_t ADCHigh( int chan, int sca ) const {chan=NUMBER_OF_CHANNELS-1-chan; sca=NUMBER_OF_SCA-1-sca; return (sca>=0 && sca<NUMBER_OF_SCA) ? gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*sca) & MASK_ADC ) : 10000;}
-  uint16_t TOTFast( int chan ) const {chan=NUMBER_OF_CHANNELS-1-chan; return gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*(NUMBER_OF_SCA+1)) & MASK_ADC );}
-  uint16_t TOTSlow( int chan ) const {chan=NUMBER_OF_CHANNELS-1-chan; return gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*(NUMBER_OF_SCA+1)) & MASK_ADC );}
-  uint16_t TOAFall( int chan ) const {chan=NUMBER_OF_CHANNELS-1-chan; return gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*NUMBER_OF_SCA) & MASK_ADC );}
-  uint16_t TOARise( int chan ) const {chan=NUMBER_OF_CHANNELS-1-chan; return gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*NUMBER_OF_SCA) & MASK_ADC );}
-  bool TOAHitFall(int chan) const {chan=NUMBER_OF_CHANNELS-1-chan; return ((m_data.at(chan+ADCLOW_SHIFT)&~MASK_ADC)>>4*3)&0x1 ;}
-  bool TOAHitRise(int chan) const {chan=NUMBER_OF_CHANNELS-1-chan; return ((m_data.at(chan+ADCHIGH_SHIFT)&~MASK_ADC)>>4*3)&0x1 ;}
+  uint16_t ADCLow( int chan, int sca ) const {chan=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC-1-chan; sca=NUMBER_OF_SCA-1-sca; return (sca>=0 && sca<NUMBER_OF_SCA) ? gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*sca) & MASK_ADC ) : 10000;}
+  uint16_t ADCHigh( int chan, int sca ) const {chan=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC-1-chan; sca=NUMBER_OF_SCA-1-sca; return (sca>=0 && sca<NUMBER_OF_SCA) ? gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*sca) & MASK_ADC ) : 10000;}
+  uint16_t TOTFast( int chan ) const {chan=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC-1-chan; return gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*(NUMBER_OF_SCA+1)) & MASK_ADC );}
+  uint16_t TOTSlow( int chan ) const {chan=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC-1-chan; return gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*(NUMBER_OF_SCA+1)) & MASK_ADC );}
+  uint16_t TOAFall( int chan ) const {chan=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC-1-chan; return gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*NUMBER_OF_SCA) & MASK_ADC );}
+  uint16_t TOARise( int chan ) const {chan=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC-1-chan; return gray_to_brady( m_data.at(chan+ADCHIGH_SHIFT+SCA_SHIFT*NUMBER_OF_SCA) & MASK_ADC );}
+  bool TOAHitFall(int chan) const {chan=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC-1-chan; return ((m_data.at(chan+ADCLOW_SHIFT)&~MASK_ADC)>>4*3)&0x1 ;}
+  bool TOAHitRise(int chan) const {chan=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC-1-chan; return ((m_data.at(chan+ADCHIGH_SHIFT)&~MASK_ADC)>>4*3)&0x1 ;}
   uint16_t rollMask() const { return (m_data.at(SKIROC_DATA_SIZE-4)&MASK_ROLL); }
   std::vector<int> rollPositions() const ;
 

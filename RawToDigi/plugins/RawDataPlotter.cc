@@ -19,15 +19,9 @@
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include <iomanip>
 #include <set>
-
-const static size_t N_HEXABOARDS = 1;
-const static size_t N_SKIROC_PER_HEXA = 4;
-const static size_t N_CHANNELS_PER_SKIROC = 64;
-
-#define MAXVERTICES 6
-static const double delta = 0.00001;//Add/subtract delta = 0.00001 to x,y of a cell centre so the TH2Poly::Fill doesnt have a problem at the edges where the centre of a half-hex cell passes through the sennsor boundary line.
 
 class RawDataPlotter : public edm::one::EDAnalyzer<edm::one::SharedResources>
 {
@@ -82,11 +76,11 @@ RawDataPlotter::RawDataPlotter(const edm::ParameterSet& iConfig) :
   std::ostringstream os( std::ostringstream::ate );
   TH2F* htmp2;
   TH1F* htmp1;
-  for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
-    for( size_t iski=0; iski<N_SKIROC_PER_HEXA; iski++ ){
+  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+    for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
       os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
       TFileDirectory dir = fs->mkdir( os.str().c_str() );
-      for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
+      for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
 	for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
 	  os.str("");
 	  os << "HighGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan << "_SCA" << it ;
@@ -139,7 +133,7 @@ void RawDataPlotter::analyze(const edm::Event& event, const edm::EventSetup& set
     std::ostringstream os( std::ostringstream::ate );
     os << "Event" << event.id().event();
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
-    for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
+    for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
 	TH2Poly *h=dir.make<TH2Poly>();
 	os.str("");
@@ -155,28 +149,28 @@ void RawDataPlotter::analyze(const edm::Event& event, const edm::EventSetup& set
   for( size_t iski=0;iski<skirocs->size(); iski++ ){
     HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
     std::vector<int> rollpositions=skiroc.rollPositions();
-    int iboard=iski/N_SKIROC_PER_HEXA;
-    for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
+    int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
       HGCalTBDetId detid=skiroc.detid( ichan );
       HGCalTBElectronicsId eid( essource_.emap_.detId2eid(detid.rawId()) );
       if( essource_.emap_.existsEId(eid) ){
-	std::pair<int,HGCalTBDetId> p( iboard*1000+(iski%N_SKIROC_PER_HEXA)*100+ichan,skiroc.detid(ichan) );
+	std::pair<int,HGCalTBDetId> p( iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan,skiroc.detid(ichan) );
 	setOfConnectedDetId.insert(p);
       }
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
 	if( rollpositions[it]<9 ){ //rm on track samples+2 last time sample which show weird behaviour
-	  m_h_adcHigh[iboard*100000+(iski%N_SKIROC_PER_HEXA)*10000+ichan*100+it]->Fill(skiroc.ADCHigh(ichan,it));
-	  m_h_adcLow[iboard*100000+(iski%N_SKIROC_PER_HEXA)*10000+ichan*100+it]->Fill(skiroc.ADCLow(ichan,it));
+	  m_h_adcHigh[iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it]->Fill(skiroc.ADCHigh(ichan,it));
+	  m_h_adcLow[iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it]->Fill(skiroc.ADCLow(ichan,it));
 	  if( ichan%2==0 ){
-	    m_h_pulseHigh[iboard*1000+(iski%N_SKIROC_PER_HEXA)*100+ichan]->Fill( it,skiroc.ADCHigh(ichan,it) ); 
-	    m_h_pulseLow[iboard*1000+(iski%N_SKIROC_PER_HEXA)*100+ichan]->Fill( it,skiroc.ADCLow(ichan,it) );
+	    m_h_pulseHigh[iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan]->Fill( it,skiroc.ADCHigh(ichan,it) ); 
+	    m_h_pulseLow[iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan]->Fill( it,skiroc.ADCLow(ichan,it) );
 	  }
 	}
 	if(m_eventPlotter&&essource_.emap_.existsEId(eid) ){
 	  if(!IsCellValid.iu_iv_valid( detid.layer(),detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize ) )  continue;
 	  CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
-	  double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
-	  double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
+	  double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
+	  double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
 	  polyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, skiroc.ADCHigh(ichan,it) );
 	}
       }
@@ -186,8 +180,8 @@ void RawDataPlotter::analyze(const edm::Event& event, const edm::EventSetup& set
 
 void RawDataPlotter::InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV)
 {
-  double HexX[MAXVERTICES] = {0.};
-  double HexY[MAXVERTICES] = {0.};
+  double HexX[HGCAL_TB_GEOMETRY::MAXVERTICES] = {0.};
+  double HexY[HGCAL_TB_GEOMETRY::MAXVERTICES] = {0.};
   for(int iv = -7; iv < 8; iv++) {
     for(int iu = -7; iu < 8; iu++) {
       if(!IsCellValid.iu_iv_valid(layerID, sensorIU, sensorIV, iu, iv, m_sensorsize)) continue;
@@ -221,7 +215,7 @@ void RawDataPlotter::endJob()
   std::map<int,TH2Poly*>  chanMap;
   std::ostringstream os( std::ostringstream::ate );
   TH2Poly *h;
-  for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
+  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
     for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
       h=dir.make<TH2Poly>();
       os.str("");
@@ -268,8 +262,8 @@ void RawDataPlotter::endJob()
     int ichanNC=(*it).first%100+1;
     HGCalTBDetId detid=(*it).second;
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
-    double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
-    double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
+    double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
+    double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
     for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
       pedPolyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->GetMean() );
       pedPolyMapNC[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichanNC*100+it]->GetMean() );
@@ -281,9 +275,9 @@ void RawDataPlotter::endJob()
 
   std::fstream pedestalHG;pedestalHG.open(m_pedestalHigh_filename,std::ios::out);
   std::fstream pedestalLG;pedestalLG.open(m_pedestalLow_filename,std::ios::out);
-  for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
-    for( size_t iski=0; iski<N_SKIROC_PER_HEXA; iski++ ){
-      for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
+  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+    for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
+      for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
 	pedestalHG << ib << " " << iski << " " << ichan ;
 	pedestalLG << ib << " " << iski << " " << ichan ;
 	for( size_t it=0; it<NUMBER_OF_SCA; it++ ){

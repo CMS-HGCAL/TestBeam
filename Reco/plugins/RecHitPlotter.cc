@@ -21,16 +21,10 @@
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 
 #include <iomanip>
 #include <set>
-
-const static size_t N_HEXABOARDS = 1;
-const static size_t N_SKIROC_PER_HEXA = 4;
-const static size_t N_CHANNELS_PER_SKIROC = 64;
-
-#define MAXVERTICES 6
-static const double delta = 0.00001;//Add/subtract delta = 0.00001 to x,y of a cell centre so the TH2Poly::Fill doesnt have a problem at the edges where the centre of a half-hex cell passes through the sennsor boundary line.
 
 class RecHitPlotter : public edm::one::EDAnalyzer<edm::one::SharedResources>
 {
@@ -114,12 +108,17 @@ void RecHitPlotter::beginJob()
   std::ostringstream os( std::ostringstream::ate );
   TH2F* htmp2;
   TH1F* htmp1;
-  for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
-    for( size_t iski=0; iski<N_SKIROC_PER_HEXA; iski++ ){
+  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+    for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
       os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
       TFileDirectory dir = fs->mkdir( os.str().c_str() );
-      for( size_t ichan=0; ichan<N_CHANNELS_PER_SKIROC; ichan++ ){
-	HGCalTBElectronicsId eid((4-iski)%4+1,ichan);
+      for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
+	int skiId;
+	if( iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA%2==0 )//not flipped
+	  skiId=ib*HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+	else
+	  skiId = ib*HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA);
+	HGCalTBElectronicsId eid(skiId,ichan);      
 	if( !essource_.emap_.existsEId(eid.rawId()) ) continue;
 	os.str("");
 	os << "HighGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan  ;
@@ -152,7 +151,7 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     std::ostringstream os( std::ostringstream::ate );
     os << "Event" << event.id().event();
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
-    for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
+    for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
       TH2Poly *h=dir.make<TH2Poly>();
       os.str("");
       os<<"HexaBoard"<<ib<<"_HighGain";
@@ -172,7 +171,7 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   
   float energyHighSum(0),energyLowSum(0),energySum(0);
   for( auto hit : *hits ){
-    HGCalTBElectronicsId eid( essource_.emap_.detId2eid( hit.id() ) );
+    HGCalTBElectronicsId eid( essource_.emap_.detId2eid( hit.id().rawId() ) );
     m_h_adcHigh[ eid.rawId() ]->Fill( hit.energyHigh() );
     m_h_adcLow[ eid.rawId() ]->Fill( hit.energyLow() );
     if( hit.energyHigh()>m_noiseThreshold ){
@@ -180,16 +179,16 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       energyHighSum+=hit.energyHigh();
       energyLowSum+=hit.energyLow();
       energySum+=hit.energy();
-      if( hit.energyHigh()<m_mipThreshold )
-	m_h_mip[(4-(eid.iskiroc()-1))%4]->Fill(hit.energyHigh());
+      //if( hit.energyHigh()<m_mipThreshold )
+      //	m_h_mip[(4-(eid.iskiroc()-1))%4]->Fill(hit.energyHigh());
     }
     if(m_eventPlotter){
       if(!IsCellValid.iu_iv_valid(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize))  continue;
       CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize);
-      double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
-      double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-      polyMapHG[ (eid.iskiroc()-1)/N_SKIROC_PER_HEXA ]->Fill(iux/2 , iuy, hit.energyHigh());
-      polyMapLG[ (eid.iskiroc()-1)/N_SKIROC_PER_HEXA ]->Fill(iux/2 , iuy, hit.energyLow());
+      double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
+      double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
+      polyMapHG[ (eid.iskiroc()-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA ]->Fill(iux/2 , iuy, hit.energyHigh());
+      polyMapLG[ (eid.iskiroc()-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA ]->Fill(iux/2 , iuy, hit.energyLow());
     }
   }
   m_h_hgSum->Fill( energyHighSum );
@@ -199,8 +198,8 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
 
 void RecHitPlotter::InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV)
 {
-  double HexX[MAXVERTICES] = {0.};
-  double HexY[MAXVERTICES] = {0.};
+  double HexX[HGCAL_TB_GEOMETRY::MAXVERTICES] = {0.};
+  double HexY[HGCAL_TB_GEOMETRY::MAXVERTICES] = {0.};
   for(int iv = -7; iv < 8; iv++) {
     for(int iu = -7; iu < 8; iu++) {
       if(!IsCellValid.iu_iv_valid(layerID, sensorIU, sensorIV, iu, iv, m_sensorsize)) continue;
