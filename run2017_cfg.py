@@ -45,8 +45,6 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
                             NOrmBoards=cms.untracked.uint32(1),
                             NHexaBoards=cms.untracked.uint32(1),
-                            NSkirocsPerHexa=cms.untracked.uint32(4),
-                            NChannelsPerSkiroc=cms.untracked.uint32(64),
                             NumberOf32BitsWordsPerReadOut=cms.untracked.uint32(30788)
 )
 
