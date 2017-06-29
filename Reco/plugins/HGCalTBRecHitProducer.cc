@@ -57,6 +57,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     std::vector<double> sampleHG, sampleLG, sampleT;
 
     float highGain, lowGain, totGain;
+    int hgStatus = -1;
+    int lgStatus = -1;
     float timeHG = 0.;
     float timeLG = 0.;
     float subHG[NUMBER_OF_TIME_SAMPLES],subLG[NUMBER_OF_TIME_SAMPLES];
@@ -103,7 +105,6 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     float en4=rawhit.highGainADC(4)-subHG[4];
     float en6=rawhit.highGainADC(6)-subHG[6];
     
-    
     if(!m_keepOnlyTimeSample3 && 
        (en2<en3 && en3>en6 && en4>en6 && en3>20)){
       PulseFitter fitter(0,150);
@@ -116,35 +117,48 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       lowGain = fitlg.amplitude;
       timeHG = fithg.tmax - fithg.trise;
       timeLG = fitlg.tmax - fitlg.trise;
+      hgStatus = fithg.status;
+      lgStatus = fitlg.status;
     }
-    else if(m_keepOnlyTimeSample3 && 
-	    (en2<en3 && en3>en6 && en4>en6)){
+    if(m_keepOnlyTimeSample3 && 
+       (en2<en3 && en3>en6 && en4>en6)){
       highGain=rawhit.highGainADC(3)-subHG[3];
       lowGain=rawhit.lowGainADC(3)-subLG[3];
+      hgStatus = 3;
+      lgStatus = 3;
     }
-    else{
+    if(hgStatus == -1 && lgStatus == -1){
       highGain=-500;
       lowGain=-500;
     }
-
+    
     float energy = -1;
     float time = -1.;
     HGCalTBRecHit recHit(rawhit.detid(), energy, lowGain, highGain, totGain, time);
-    if(highGain < m_highGainADCSaturation){
+    if(highGain < m_highGainADCSaturation && hgStatus == 0){
       energy = highGain;
       time = timeHG;
-      recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
+      recHit.setFlag(HGCalTBRecHit::kGood);
     }     
-    else if(lowGain < m_lowGainADCSaturation){
+    else if(lowGain < m_lowGainADCSaturation && hgStatus == 0 && lgStatus == 0){
       energy = lowGain * m_LG2HG_value.at(iboard);
       time = timeLG;
-      recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
+      recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
+      recHit.setFlag(HGCalTBRecHit::kGood);
     }
-    else{
+    else if(hgStatus == 0 && lgStatus == 0 && totGain > 50){
       energy = totGain * m_TOT2LG_value.at(iboard) * m_LG2HG_value.at(iboard);
-      recHit.setFlag(HGCalTBRecHit::kTotGainSaturated);
+      recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
+      recHit.setFlag(HGCalTBRecHit::kGood);
     }
-    if(m_keepOnlyTimeSample3) recHit.setFlag(HGCalTBRecHit::kThirdSample);
+    else if(hgStatus == 3 && lgStatus == 3){
+      energy = (highGain<m_highGainADCSaturation) ? highGain : lowGain * m_LG2HG_value.at(iboard);
+      recHit.setFlag(HGCalTBRecHit::kThirdSample);
+    }
+    else {
+      energy = -500;
+    }
+
 
     recHit.setEnergy(energy);
     recHit.setTime(time);
