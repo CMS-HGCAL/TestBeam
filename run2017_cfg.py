@@ -18,7 +18,7 @@ options.register('runNumber',
                  'Input run to process')
 
 options.register('outputFolder',
-                 '/afs/cern.ch/work/a/asteen/public/data/may2017/',
+                 '/afs/cern.ch/work/a/asteen/public/data/may2017/'
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output folder where analysis output are stored')
@@ -45,8 +45,8 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
                             NOrmBoards=cms.untracked.uint32(1),
                             NHexaBoards=cms.untracked.uint32(1),
-                            NSkirocsPerHexa=cms.untracked.uint32(4),
-                            NChannelsPerSkiroc=cms.untracked.uint32(64),
+                            #NSkirocsPerHexa=cms.untracked.uint32(4),
+                            #NChannelsPerSkiroc=cms.untracked.uint32(64),
                             NumberOf32BitsWordsPerReadOut=cms.untracked.uint32(30788)
 )
 
@@ -74,7 +74,7 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
                                         ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
-                                        SubtractPedestal=cms.untracked.bool(False),
+                                        SubtractPedestal=cms.untracked.bool(True),
                                         HighGainPedestalFileName=cms.string(pedestalHighGain),
                                         LowGainPedestalFileName=cms.string(pedestalLowGain)
                                         )
@@ -132,8 +132,8 @@ process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",
 #process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.rawdataplotter )
 #process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.pulseshapeplotter )
 #process.p = cms.Path( process.rawhitproducer*process.recHitNtuplizer )
-#process.p = cms.Path( process.rawhitproducer*process.rechitproducer)
-process.p = cms.Path( process.rawhitproducer*process.rechitproducer*process.rechitplotter*process.rawhitplotter )
+process.p = cms.Path( process.rawhitproducer*process.rechitproducer)
+#process.p = cms.Path( process.rawhitproducer*process.rechitproducer*process.rechitplotter*process.rawhitplotter )
 
 process.end = cms.EndPath(process.output)
 
