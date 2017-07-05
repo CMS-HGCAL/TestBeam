@@ -45,7 +45,13 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   unsigned int m_nOrmBoards;
   unsigned int m_nHexaboards;
   unsigned int m_nWords;
+  unsigned int m_headerSize;
+  unsigned int m_trailerSize;
+  unsigned int m_eventTrailerSize;
 
+  unsigned int timeStartRun;
+  unsigned int timeStopRun;
+  
   unsigned int m_time;
   unsigned int m_event, m_run, m_spill;
   int m_eventSize,m_nevents;
@@ -53,10 +59,15 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   
   uint32_t m_skiMask;
   char* m_buffer;
+  char* m_header;
+  char* m_trailer;
   std::ifstream m_input;
   std::vector< std::array<uint16_t,1924> > m_decodedData;
   
   struct {
     HGCalElectronicsMap emap_;
   } essource_;
+
+  float m_meanReadingTime;
+  float m_rmsReadingTime;
 };
