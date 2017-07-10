@@ -2,4 +2,5 @@
    <lib name="1"/>
 </export>
 <use name="HGCal/DataFormats"/>
+<use name="HGCal/CondObjects"/>
 

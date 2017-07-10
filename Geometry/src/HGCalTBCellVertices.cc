@@ -34,6 +34,8 @@ std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(i
 			vertex_y_tmp = y_co_FullHex[iii] + iv * vy0;
 //The general strategy is to translate starting from the central hexagonal cell to the iu,iv desired. If any vertex goes out of the sensor boundary its cordinates are not filled into the vector of pairs.
 			if(fabs(vertex_x_tmp) <= Xmax(iv, fabs(vertex_y_tmp)) + delta) {
+				vertex_x_tmp += sensor_iu*X0 + sensor_iv*VX0;
+				vertex_y_tmp += sensor_iv*VY0;
 				auto point = RotateLayer(std::make_pair(vertex_x_tmp, vertex_y_tmp), TEST_BEAM_LAYER_ROTATION);
 //				if(flipX==true) point.first=-point.first;
 				Cell_co.push_back(point);
@@ -52,14 +54,27 @@ std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int laye
 {
 	double centre_x_tmp = 0., centre_y_tmp = 0.;
 	bool ValidFlag   = Top.iu_iv_valid(layer, sensor_iu, sensor_iv, iu, iv, sensorsize);
-	if(ValidFlag) {
-		centre_x_tmp = iu * x0 + iv * vx0;
-		centre_y_tmp = iv * vy0;
+	if(ValidFlag) {    
+		centre_x_tmp = iu * x0 + iv * vx0 + sensor_iu*X0 + sensor_iv*VX0;
+		centre_y_tmp = iv * vy0 + iv * vy0 + sensor_iv*VY0;
 		auto point = RotateLayer(std::make_pair(centre_x_tmp, centre_y_tmp), TEST_BEAM_LAYER_ROTATION);
 //		if(flipX==true) point.first = - point.first;
 		return point;
+    
 	} else return std::make_pair(-123456, -123456); //iu_iv_Valid() is sufficient to decide if a given iu,iv is a valid sensor index but this is done if some future need may arise.
 
+}
+
+std::pair<int, int> HGCalTBCellVertices::GetCellIUIVCoordinates(double x, double y) {
+  double alpha = 30./180. * PI;
+  double dx = HGCAL_TB_CELL::FULL_CELL_SIDE*cos(alpha);
+  double dy = dx*cos(alpha);
+  
+  double iv = -x/(dx*(1+sin(alpha)));
+  double iu = (-y/dy - iv)/2.;
+
+  return std::make_pair(iu, iv);
+  
 }
 
 double HGCalTBCellVertices::Xmax(int iv, double y)
@@ -71,7 +86,7 @@ double HGCalTBCellVertices::Xmax(int iv, double y)
 std::pair<double, double> HGCalTBCellVertices::RotateLayer(std::pair<double, double> Vertex, double Angle)
 {
 	double X_new = (Vertex.first) * cos(Angle) - (Vertex.second) * sin(Angle);
-	double Y_new = (Vertex.first) * sin(Angle) - (Vertex.second) * cos(Angle);
+	double Y_new = (Vertex.first) * sin(Angle) + (Vertex.second) * cos(Angle);
 	return std::make_pair(-X_new, Y_new);// The negative sign for the x coordinate is to account for the TB cartesian coordinate system.
 }
 
