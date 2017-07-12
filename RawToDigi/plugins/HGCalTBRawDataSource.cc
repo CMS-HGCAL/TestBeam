@@ -14,7 +14,8 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   m_nWords(pset.getUntrackedParameter<unsigned int> ("NumberOf32BitsWordsPerReadOut",30788)),
   m_headerSize(pset.getUntrackedParameter<unsigned int> ("NumberOfBytesForTheHeader",8)),
   m_trailerSize(pset.getUntrackedParameter<unsigned int> ("NumberOfBytesForTheTrailer",4)),
-  m_eventTrailerSize(pset.getUntrackedParameter<unsigned int> ("NumberOfBytesForTheEventTrailers",4))
+  m_eventTrailerSize(pset.getUntrackedParameter<unsigned int> ("NumberOfBytesForTheEventTrailers",4)),
+  m_nOrmBoards(pset.getUntrackedParameter<unsigned int> ("NumberOfOrmBoards",1))
 {
   produces<HGCalTBSkiroc2CMSCollection>(m_outputCollectionName);
   
@@ -23,7 +24,7 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   m_meanReadingTime=0;
   m_rmsReadingTime=0;
 
-  m_buffer=new char[m_nWords*4+m_eventTrailerSize];//4 bytes per 32 bits
+  m_buffer=new char[m_nWords*4];//4 bytes per 32 bits
   m_header=new char[m_headerSize];
   m_trailer=new char[m_trailerSize];
   HGCalCondObjectTextIO io(0);
@@ -50,22 +51,24 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
       std::cout << "PROBLEM : Not able to open " << m_fileName << "\t -> return false (so end of process I guess)" << std::endl;
       return false;
     }
-    m_input.seekg( 0, std::ios::beg );
-    m_input.read ( m_header, m_headerSize );
-    char buf0[] = {m_header[0],m_header[1],m_header[2],m_header[3]};
-    memcpy(&timeStartRun, &buf0, sizeof(timeStartRun));
-    char buf1[] = {m_header[4],m_header[5],m_header[6],m_header[7]};
-    uint32_t aint;
-    memcpy(&aint, &buf1, sizeof(aint));
-    m_nOrmBoards=aint & 0xff;
-    m_run=aint >> 8 ;
+    // m_input.seekg( 0, std::ios::beg );
+    // m_input.read ( m_header, m_headerSize );
+    // char buf0[] = {m_header[0],m_header[1],m_header[2],m_header[3]};
+    // memcpy(&timeStartRun, &buf0, sizeof(timeStartRun));
+    // char buf1[] = {m_header[4],m_header[5],m_header[6],m_header[7]};
+    // uint32_t aint;
+    // memcpy(&aint, &buf1, sizeof(aint));
+    // m_nOrmBoards=aint & 0xff;
+    // m_run=aint >> 8 ;
   }
 
   m_decodedData.clear();
   std::vector<uint32_t> rawData;
   for( uint16_t iorm=0; iorm<m_nOrmBoards; iorm++ ){
-    m_input.seekg( m_headerSize+m_nOrmBoards*m_event*(m_nWords*4+m_eventTrailerSize)+iorm*(m_nWords*4+m_eventTrailerSize), std::ios::beg );
-    m_input.read ( m_buffer, m_nWords*4+m_eventTrailerSize );
+    //m_input.seekg( m_headerSize+m_nOrmBoards*m_event*(m_nWords*4+m_eventTrailerSize)+iorm*(m_nWords*4+m_eventTrailerSize), std::ios::beg );
+    //m_input.read ( m_buffer, m_nWords*4+m_eventTrailerSize );
+    m_input.seekg( m_nOrmBoards*m_event*m_nWords*4+iorm*m_nWords*4, std::ios::beg );
+    m_input.read ( m_buffer, m_nWords*4 );
     if( !m_input.good() ){
       m_input.close();
       m_fileId++;
@@ -79,15 +82,15 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
       memcpy(&aint, &buf, sizeof(aint));
       rawData.push_back(aint);
     }
-    uint32_t evtTrailer;
-    char buf[] = {m_buffer[m_nWords*4],m_buffer[m_nWords*4+1],m_buffer[m_nWords*4+2],m_buffer[m_nWords*4+3]};
-    memcpy(&evtTrailer, &buf, sizeof(evtTrailer));
-    uint32_t ormId=evtTrailer&0xff;
-    uint32_t evtNumber=evtTrailer>>0x8;
-    if( ormId != iorm )
-      std::cout << "Problem in event trailer : wrong ORM id -> evtTrailer&0xff = " << std::dec << ormId << "\t iorm = " << iorm << std::endl;
-    if( evtNumber != m_event+1 )
-      std::cout << "Problem in event trailer : wrong event number -> evtTrailer>>8 = " << std::dec << evtNumber << "\t m_event+1 = " << m_event+1 << std::endl;
+    // uint32_t evtTrailer;
+    // char buf[] = {m_buffer[m_nWords*4],m_buffer[m_nWords*4+1],m_buffer[m_nWords*4+2],m_buffer[m_nWords*4+3]};
+    // memcpy(&evtTrailer, &buf, sizeof(evtTrailer));
+    // uint32_t ormId=evtTrailer&0xff;
+    // uint32_t evtNumber=evtTrailer>>0x8;
+    // if( ormId != iorm )
+    //   std::cout << "Problem in event trailer : wrong ORM id -> evtTrailer&0xff = " << std::dec << ormId << "\t iorm = " << iorm << std::endl;
+    // if( evtNumber != m_event+1 )
+    //   std::cout << "Problem in event trailer : wrong event number -> evtTrailer>>8 = " << std::dec << evtNumber << "\t m_event+1 = " << m_event+1 << std::endl;
     std::vector< std::array<uint16_t,1924> > decodedData=decode_raw_32bit(rawData);
     m_decodedData.insert(m_decodedData.end(),decodedData.begin(),decodedData.end());
   }
@@ -142,7 +145,8 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
     HGCalTBSkiroc2CMS skiroc( vdata,detids );
     if(!skiroc.check())
       exit(1);
-    //std::cout << skiroc << std::endl;
+  	//  std::cout << skiroc << std::endl;
+    //getchar();
     skirocs->push_back(skiroc);
   }
   //std::cout << "skirocs->size() = " << skirocs->size() << std::endl;
@@ -162,6 +166,7 @@ void HGCalTBRawDataSource::fillDescriptions(edm::ConfigurationDescriptions& desc
   desc.addUntracked<unsigned int> ("NumberOfBytesForTheHeader");
   desc.addUntracked<unsigned int> ("NumberOfBytesForTheTrailer");
   desc.addUntracked<unsigned int> ("NumberOfBytesForTheEventTrailers");
+  desc.addUntracked<unsigned int> ("NumberOfOrmBoards");
   descriptions.add("source", desc);
 }
 

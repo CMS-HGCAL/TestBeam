@@ -7,6 +7,7 @@ options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, file
 #Change the data folder appropriately to where you wish to access the files from:
 options.register('dataFolder',
                  '/afs/cern.ch/work/a/asteen/public/data/lab-July2017',
+                 #'/disk2_2TB',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw input')
@@ -40,13 +41,15 @@ process.maxEvents = cms.untracked.PSet(
 ####################################
 
 process.source = cms.Source("HGCalTBRawDataSource",
-                            ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers.txt"),
-                            fileNames=cms.untracked.vstring("file:%s/HexaData_Run%04d.raw"%(options.dataFolder,options.runNumber)),
+                            ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"),
+                            #fileNames=cms.untracked.vstring("file:%s/HexaData_Run%04d.raw"%(options.dataFolder,options.runNumber)),
+                            fileNames=cms.untracked.vstring("file:%s/%dmodule_for_arnaud.raw"%(options.dataFolder,options.runNumber)),
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
                             NumberOf32BitsWordsPerReadOut=cms.untracked.uint32(30788),
                             NumberOfBytesForTheHeader=cms.untracked.uint32(8),
                             NumberOfBytesForTheTrailer=cms.untracked.uint32(4),
-                            NumberOfBytesForTheEventTrailers=cms.untracked.uint32(4)
+                            NumberOfBytesForTheEventTrailers=cms.untracked.uint32(4),
+  													NumberOfOrmBoards=cms.untracked.uint32(1)
 )
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/HexaOutput_%d.root"%(options.outputFolder,options.runNumber)))
@@ -63,7 +66,7 @@ process.pedestalplotter = cms.EDAnalyzer("PedestalPlotter",
                                          SensorSize=cms.untracked.int32(128),
                                          WritePedestalFile=cms.untracked.bool(False),
                                          InputCollection=cms.InputTag("source","skiroc2cmsdata"),
-                                         ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers.txt"),
+                                         ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"),
                                          HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
                                          LowGainPedestalFileName=cms.untracked.string(pedestalLowGain)
 )
