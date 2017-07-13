@@ -35,11 +35,7 @@ void HGCalTBRawHitProducer::beginJob()
 	int hexaboard,skiroc,channel,ptr,nval;
 	nval=sscanf( index, "%d %d %d %n",&hexaboard,&skiroc,&channel,&ptr );
 	if( nval==3 ){
-	  int skiId;
-	  if( hexaboard%2==0 )//not flipped
-	    skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*hexaboard+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-skiroc)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
-	  else
-	    skiId = HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*hexaboard+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-skiroc%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA);
+	  int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*hexaboard+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-skiroc)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
 	  HGCalTBElectronicsId eid(skiId,channel);      
 	  if (!essource_.emap_.existsEId(eid.rawId()))
 	    ped.id = HGCalTBDetId(-1);
@@ -105,8 +101,8 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       std::vector<float> adchigh(NUMBER_OF_SCA,0);
       std::vector<float> adclow(NUMBER_OF_SCA,0);
       std::vector<int> rollpositions=skiroc.rollPositions();
-      if( m_pedMap[10000*iboard+100*iskiroc+ichan].id!=HGCalTBDetId(rawid) )
-	std::cout << "Problem : in " << iboard << "\t" << iskiroc << "\t" << ichan << "\t" << m_pedMap[10000*iboard+100*iskiroc+ichan].id << std::endl;
+      //if( m_pedMap[10000*iboard+100*iskiroc+ichan].id!=HGCalTBDetId(rawid) )
+      //std::cout << "Problem : in " << iboard << "\t" << iskiroc << "\t" << ichan << "\t" << m_pedMap[10000*iboard+100*iskiroc+ichan].id << std::endl;
       for( int it=0; it<NUMBER_OF_SCA; it++ ){
 	if( m_subtractPedestal ){
 	  adchigh.at( rollpositions[it] ) = skiroc.ADCHigh(ichan,it)-m_pedMap[10000*iboard+100*iskiroc+ichan].pedHGMean[it] ;

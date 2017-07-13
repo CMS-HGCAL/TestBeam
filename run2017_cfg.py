@@ -7,7 +7,6 @@ options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, file
 #Change the data folder appropriately to where you wish to access the files from:
 options.register('dataFolder',
                  '/afs/cern.ch/work/a/asteen/public/data/lab-July2017',
-                 #'/disk2_2TB',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw input')
@@ -36,21 +35,21 @@ if not os.path.isdir(options.dataFolder):
 process = cms.Process("unpack")
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)
-)
+    )
 
 ####################################
 
+electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"
 process.source = cms.Source("HGCalTBRawDataSource",
-                            ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"),
-                            #fileNames=cms.untracked.vstring("file:%s/HexaData_Run%04d.raw"%(options.dataFolder,options.runNumber)),
-                            fileNames=cms.untracked.vstring("file:%s/%dmodule_for_arnaud.raw"%(options.dataFolder,options.runNumber)),
+                            ElectronicMap=cms.untracked.string(electronicMap),
+                            fileNames=cms.untracked.vstring("file:%s/HexaData_Run%04d.raw"%(options.dataFolder,options.runNumber)),
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
                             NumberOf32BitsWordsPerReadOut=cms.untracked.uint32(30788),
                             NumberOfBytesForTheHeader=cms.untracked.uint32(8),
                             NumberOfBytesForTheTrailer=cms.untracked.uint32(4),
                             NumberOfBytesForTheEventTrailers=cms.untracked.uint32(4),
-  													NumberOfOrmBoards=cms.untracked.uint32(1)
-)
+                            NumberOfOrmBoards=cms.untracked.uint32(1)
+                            )
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/HexaOutput_%d.root"%(options.outputFolder,options.runNumber)))
 
@@ -59,17 +58,17 @@ process.output = cms.OutputModule("PoolOutputModule",
                                   )
 
 
-pedestalHighGain="pedestalHG_125.txt"
-pedestalLowGain="pedestalLG_125.txt"
+pedestalHighGain="pedestalHG_"+str(options.runNumber)+".txt"
+pedestalLowGain="pedestalLG_"+str(options.runNumber)+".txt"
 
 process.pedestalplotter = cms.EDAnalyzer("PedestalPlotter",
                                          SensorSize=cms.untracked.int32(128),
                                          WritePedestalFile=cms.untracked.bool(False),
                                          InputCollection=cms.InputTag("source","skiroc2cmsdata"),
-                                         ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"),
+                                         ElectronicMap=cms.untracked.string(electronicMap),
                                          HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
                                          LowGainPedestalFileName=cms.untracked.string(pedestalLowGain)
-)
+                                         )
 
 process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         SensorSize=cms.untracked.int32(128),
@@ -84,19 +83,18 @@ process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in
 process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
-                                        ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
-                                        SubtractPedestal=cms.untracked.bool(True),
+                                        ElectronicMap=cms.untracked.string(electronicMap),
+                                        SubtractPedestal=cms.untracked.bool(False),
                                         HighGainPedestalFileName=cms.string(pedestalHighGain),
                                         LowGainPedestalFileName=cms.string(pedestalLowGain)
                                         )
 
 process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
-                                       ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
+                                       ElectronicMap=cms.untracked.string(electronicMap),
                                        SensorSize=cms.untracked.int32(128),
                                        EventPlotter=cms.untracked.bool(False),
-                                       SubtractCommonMode=cms.untracked.bool(False),
-                                       CommonModeThreshold=cms.untracked.double(100)
+                                       SubtractCommonMode=cms.untracked.bool(True)
                                        )
 
 process.pulseshapeplotter = cms.EDAnalyzer("PulseShapePlotter",
@@ -139,8 +137,8 @@ process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",
                                        NoiseThreshold=cms.untracked.double(25)
                                        )
 
-process.p = cms.Path( process.pedestalplotter )
-#process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.rawdataplotter )
+#process.p = cms.Path( process.pedestalplotter )
+process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
 #process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.pulseshapeplotter )
 #process.p = cms.Path( process.rawhitproducer*process.recHitNtuplizer )
 #process.p = cms.Path( process.rawhitproducer*process.rechitproducer)

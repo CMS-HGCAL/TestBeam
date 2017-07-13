@@ -242,10 +242,14 @@ void PedestalPlotter::endJob()
     }
   }
 
+  std::fstream pedestalHG;pedestalHG.open(m_pedestalHigh_filename,std::ios::out);
+  std::fstream pedestalLG;pedestalLG.open(m_pedestalLow_filename,std::ios::out);
   for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
     int iboard=(*it).first/1000;
     int iski=((*it).first%1000)/100;
     int ichan=(*it).first%100;
+    pedestalHG << iboard << " " << iski << " " << ichan ;
+    pedestalLG << iboard << " " << iski << " " << ichan ;
     HGCalTBDetId detid=(*it).second;
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
     double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
@@ -260,8 +264,12 @@ void PedestalPlotter::endJob()
       lgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgMean );
       hgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgRMS );
       lgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgRMS );
+      pedestalHG << " " << hgMean << " " << hgRMS;
+      pedestalLG << " " << lgMean << " " << lgRMS;;
     }
   }
+  pedestalHG.close();
+  pedestalLG.close();
 }
 
 void PedestalPlotter::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
