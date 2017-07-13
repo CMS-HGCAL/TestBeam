@@ -247,14 +247,14 @@ process.position_resolution_analyzer.useMWCReference = cms.bool(options.useMWCRe
 
 ####################################
 # millepede_binarywriter options
-process.millepede_binarywriter.fittingMethod = cms.string(options.fittingMethod)
-process.millepede_binarywriter.considerationMethod = cms.string(options.considerationMethod)
-process.millepede_binarywriter.weightingMethod = cms.string(options.weightingMethod)
-process.millepede_binarywriter.pedestalThreshold = cms.double(options.pedestalThreshold)
-process.millepede_binarywriter.fitPointWeightingMethod = cms.string("none")
-process.millepede_binarywriter.totalEnergyThreshold = -1000.
-process.millepede_binarywriter.useMWCReference = cms.bool(options.useMWCReference)
-process.millepede_binarywriter.binaryFile = "%s/HGCRun_MillepedeBinary_%s.bin"%(options.outputFolder,options.outputPostfix)
+process.millepede_binarywriter_2016.fittingMethod = cms.string(options.fittingMethod)
+process.millepede_binarywriter_2016.considerationMethod = cms.string(options.considerationMethod)
+process.millepede_binarywriter_2016.weightingMethod = cms.string(options.weightingMethod)
+process.millepede_binarywriter_2016.pedestalThreshold = cms.double(options.pedestalThreshold)
+process.millepede_binarywriter_2016.fitPointWeightingMethod = cms.string("none")
+process.millepede_binarywriter_2016.totalEnergyThreshold = -1000.
+process.millepede_binarywriter_2016.useMWCReference = cms.bool(options.useMWCReference)
+process.millepede_binarywriter_2016.binaryFile = "%s/HGCRun_MillepedeBinary_%s.bin"%(options.outputFolder,options.outputPostfix)
 
 
 ####################################
@@ -262,7 +262,7 @@ process.millepede_binarywriter.binaryFile = "%s/HGCRun_MillepedeBinary_%s.bin"%(
 if not options.isData:
     process.hgcaltbclusters.rechitCollection = cms.InputTag("source","","unpack")
     process.position_resolution_analyzer.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
-    process.millepede_binarywriter.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
+    process.millepede_binarywriter_2016.HGCALTBRECHITS = cms.InputTag("source","","unpack" )
 
                               
 ####################################
@@ -293,7 +293,7 @@ if options.isData:
     if (options.chainSequence == 8):
         process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.position_resolution_analyzer)
     elif (options.chainSequence == 9):
-        process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.millepede_binarywriter)
+        process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbclusters*process.millepede_binarywriter_2016)
         
 else:
     if (options.chainSequence == 8):

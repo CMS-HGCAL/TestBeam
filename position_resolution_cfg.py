@@ -16,7 +16,7 @@ options.register('filePath',
                 )
 
 options.register('reportEvery',
-                1000,
+                50000,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Path to the file from which the DWCs are read.'
@@ -47,20 +47,28 @@ process.load('HGCal.StandardSequences.LocalReco_cff')
 
 ####################################
 # Initialize the data read-in plugins
-
 process.source = cms.Source("HGCalTBWireChamberSource",
     OutputCollectionName = cms.string("WireChambers"), 
     fileNames = cms.untracked.vstring(["file:%s"%options.filePath])
 )
 
-                        
+
+process.millepede_binarywriter.binaryFile = cms.string('/afs/cern.ch/user/t/tquast/millepede.bin')
+process.millepede_binarywriter.nLayers = cms.int32(3)
+process.millepede_binarywriter.MWCQualityCut = cms.bool(True)
+process.millepede_binarywriter.MWCHAMBERS = cms.InputTag("source","WireChambers","unpack" )
+process.millepede_binarywriter.fittingMethod = cms.string("lineAnalytical")
+process.millepede_binarywriter.binaryFile = cms.string("/tmp/millepede.bin")
+                              
+
+
 ####################################
 #add skip event exception which might occur for simulated samples because the last event is not properly passed forward
 process.options = cms.untracked.PSet(
     SkipEvent = cms.untracked.vstring('ProductNotFound')
 )
 
-process.p = cms.Path()
+process.p = cms.Path(process.millepede_binarywriter)
 
 
 

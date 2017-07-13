@@ -48,6 +48,7 @@ void ParticleTrack::addFitPoint(SensorHitMap* sensor){
   y_err.push_back(sensor->getHitPositionError().second);  
   z.push_back(sensor->getLabZ()+sensor->getIntrinsicHitZPosition());  
   z_err.push_back(0.0);
+
   preAbsorber.push_back(sensor->getX0()); 
   particleEnergy.push_back(sensor->getParticleEnergy());
 
