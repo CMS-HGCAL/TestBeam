@@ -20,7 +20,7 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 
 	produces <HGCalTBRecHitCollection>(outputCollectionName);
 	produces<RunData>("RunData");
-	produces<MultiWireChambers>("MultiWireChambers");
+	produces<WireChambers>("WireChambers");
 
 
 	if (fileNames()[0] != "file:DUMMY") {
@@ -219,11 +219,11 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	double x2_mc = beamX + randgen->Gaus(0, smearingResolution);
 	double y2_mc = beamY + randgen->Gaus(0, smearingResolution);
 	
-	std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
-	mwcs->push_back(MultiWireChamberData(1, x1_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y1_mc, -x1_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y1_mc, -126.-147.));
-	mwcs->push_back(MultiWireChamberData(2, x2_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y2_mc, -x2_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y2_mc, -147.));
+	std::auto_ptr<WireChambers> mwcs(new WireChambers);	
+	mwcs->push_back(WireChamberData(1, x1_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y1_mc, -x1_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y1_mc, -126.-147.));
+	mwcs->push_back(WireChamberData(2, x2_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y2_mc, -x2_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y2_mc, -147.));
 	
-	event.put(std::move(mwcs), "MultiWireChambers");		
+	event.put(std::move(mwcs), "WireChambers");		
 	
 
 	//third: fill the run data

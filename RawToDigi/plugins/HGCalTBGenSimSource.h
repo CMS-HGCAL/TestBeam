@@ -8,7 +8,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"
-#include "HGCal/DataFormats/interface/HGCalTBMultiWireChamberData.h"
+#include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalWaferGeometry.h"

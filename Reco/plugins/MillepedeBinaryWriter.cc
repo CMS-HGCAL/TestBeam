@@ -27,7 +27,7 @@
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"	//for the runData type definition
-#include "HGCal/DataFormats/interface/HGCalTBMultiWireChamberData.h"
+#include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
@@ -76,7 +76,7 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
   		edm::EDGetToken HGCalTBClusterCollection19_Token;
 
 		edm::EDGetTokenT<RunData> RunDataToken;	
-		edm::EDGetTokenT<MultiWireChambers> MWCToken;
+		edm::EDGetTokenT<WireChambers> MWCToken;
 
 		ConsiderationMethod considerationMethod;
 		WeightingMethod weightingMethod;
@@ -129,7 +129,7 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
-	MWCToken= consumes<MultiWireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
+	MWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
   	HGCalTBClusterCollection_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS"));
   	HGCalTBClusterCollection7_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS7"));
   	HGCalTBClusterCollection19_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS19"));
@@ -369,7 +369,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	}
 
 	//get the multi wire chambers
-	edm::Handle<MultiWireChambers> mwcs;
+	edm::Handle<WireChambers> mwcs;
 
 	if (useMWCReference) {
 		event.getByToken(MWCToken, mwcs);

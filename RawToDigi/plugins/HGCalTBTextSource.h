@@ -4,7 +4,7 @@
 #include "DataFormats/FEDRawData/interface/FEDRawDataCollection.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"
-#include "HGCal/DataFormats/interface/HGCalTBMultiWireChamberData.h"
+#include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 #include <fstream>
@@ -46,7 +46,7 @@ public:
 		m_sourceId = pset.getUntrackedParameter<int>("fed", 1000); /// \todo check and read from file?
 		produces<FEDRawDataCollection>();
 		produces<RunData>("RunData");
-		produces<MultiWireChambers>("MultiWireChambers");
+		produces<WireChambers>("WireChambers");
 
 		eventCounter = 0;
 
@@ -100,7 +100,7 @@ private:
 
 	std::array< std::vector < unsigned int> , MAXLAYERS> m_lines;
 	FILE* m_file;
-	std::vector<MultiWireChambers> EventMultiWireChambers;
+	std::vector<WireChambers> EventWireChambers;
 	unsigned int m_time;
 	unsigned int m_event, m_run, m_spill, max_boards;
 	bool _hasDanger;

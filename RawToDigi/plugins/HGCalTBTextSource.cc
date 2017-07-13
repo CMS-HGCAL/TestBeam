@@ -68,13 +68,13 @@ void HGCalTBTextSource::fillConfiguredRuns(std::fstream& map_file) {
 }
 
 void HGCalTBTextSource::readMWCDataFromFile(std::string filepath) {
-	EventMultiWireChambers.clear();
+	EventWireChambers.clear();
 	mwcCounter = 0;
 	std::fstream mwc_file;
 	 mwc_file.open(filepath.c_str(), std::fstream::in);	
 	char fragment[100];
 	while (mwc_file.is_open()) {
-		MultiWireChambers _mwcs;
+		WireChambers _mwcs;
 		mwc_file >> fragment;
 		double x1 = atof(fragment);
 		mwc_file >> fragment;
@@ -87,9 +87,9 @@ void HGCalTBTextSource::readMWCDataFromFile(std::string filepath) {
 		if (mwc_file.eof())
 			break;
 
-		_mwcs.push_back(MultiWireChamberData(1, x1, y1, -126.-147.));
-		_mwcs.push_back(MultiWireChamberData(2, x2, y2, -147.));
-		EventMultiWireChambers.push_back(_mwcs);
+		_mwcs.push_back(WireChamberData(1, x1, y1, -126.-147.));
+		_mwcs.push_back(WireChamberData(2, x2, y2, -147.));
+		EventWireChambers.push_back(_mwcs);
 		mwcCounter++;
 	}
 
@@ -214,31 +214,31 @@ void HGCalTBTextSource::produce(edm::Event & event){
 
 	//add the multi-wire chambers only if available
 	bool _hasValidMWCMeasurement = true;
-	std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
-	if (mwcCounter < (int)EventMultiWireChambers.size()) {
-		for (size_t _imwc=0; _imwc < (size_t)EventMultiWireChambers[mwcCounter].size(); _imwc++) {
-			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].x != -999) && _hasValidMWCMeasurement;
-			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].y != -999) && _hasValidMWCMeasurement;
+	std::auto_ptr<WireChambers> mwcs(new WireChambers);	
+	if (mwcCounter < (int)EventWireChambers.size()) {
+		for (size_t _imwc=0; _imwc < (size_t)EventWireChambers[mwcCounter].size(); _imwc++) {
+			_hasValidMWCMeasurement = (EventWireChambers[mwcCounter][_imwc].x != -999) && _hasValidMWCMeasurement;
+			_hasValidMWCMeasurement = (EventWireChambers[mwcCounter][_imwc].y != -999) && _hasValidMWCMeasurement;
 			double rotAngle = mwcRotation*M_PI/180.;
-			double x_preRot = EventMultiWireChambers[mwcCounter][_imwc].x/10.;		//conersion from mm to cm 
-			double y_preRot = EventMultiWireChambers[mwcCounter][_imwc].y/10.; 
-			EventMultiWireChambers[mwcCounter][_imwc].x = cos(rotAngle) * x_preRot + sin(rotAngle) * y_preRot; 	//apply the rotation just here because the filtering for -999 must occur first
-			EventMultiWireChambers[mwcCounter][_imwc].y = -sin(rotAngle) * x_preRot + cos(rotAngle) * y_preRot; 
+			double x_preRot = EventWireChambers[mwcCounter][_imwc].x/10.;		//conersion from mm to cm 
+			double y_preRot = EventWireChambers[mwcCounter][_imwc].y/10.; 
+			EventWireChambers[mwcCounter][_imwc].x = cos(rotAngle) * x_preRot + sin(rotAngle) * y_preRot; 	//apply the rotation just here because the filtering for -999 must occur first
+			EventWireChambers[mwcCounter][_imwc].y = -sin(rotAngle) * x_preRot + cos(rotAngle) * y_preRot; 
 			
 			if (_imwc==1) {//i.e. the second MWC
-				EventMultiWireChambers[mwcCounter][_imwc].x += mwc2DeltaX;
-				EventMultiWireChambers[mwcCounter][_imwc].y += mwc2DeltaY;
+				EventWireChambers[mwcCounter][_imwc].x += mwc2DeltaX;
+				EventWireChambers[mwcCounter][_imwc].y += mwc2DeltaY;
 			}
 
-			mwcs->push_back(EventMultiWireChambers[mwcCounter][_imwc]);
+			mwcs->push_back(EventWireChambers[mwcCounter][_imwc]);
 		}
 		mwcCounter++;
 	} else {
 		_hasValidMWCMeasurement = false;
 		//push some dummy value for the MWCs, subsequent plugins using this information should check the _hadValidMWCMeasurement flag
-		mwcs->push_back(MultiWireChamberData(1, -999, -999, 0));
+		mwcs->push_back(WireChamberData(1, -999, -999, 0));
 	}
-	event.put(std::move(mwcs), "MultiWireChambers");		
+	event.put(std::move(mwcs), "WireChambers");		
 
 
 	//add the DAQ data
@@ -281,7 +281,7 @@ void HGCalTBTextSource::produce(edm::Event & event){
 
 	if (eventsPerRun.find(m_run) == eventsPerRun.end()) {
 		eventsPerRun[m_run].first = 0;
-		eventsPerRun[m_run].second = EventMultiWireChambers.size();
+		eventsPerRun[m_run].second = EventWireChambers.size();
 	}
 	eventsPerRun[m_run].first++;
 	rd->hasDanger = _hasDanger;

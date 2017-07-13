@@ -27,7 +27,7 @@
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"	//for the runData type definition
-#include "HGCal/DataFormats/interface/HGCalTBMultiWireChamberData.h"
+#include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
@@ -71,7 +71,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
   		edm::EDGetToken HGCalTBClusterCollection19_Token;
 
 		edm::EDGetTokenT<RunData> RunDataToken;	
-		edm::EDGetTokenT<MultiWireChambers> MWCToken;
+		edm::EDGetTokenT<WireChambers> MWCToken;
 		
 		AlignmentParameters* alignmentParameters; //all entries are set to zero if no valid file is given 
 
@@ -133,7 +133,7 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	usesResource("TFileService");
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
-	MWCToken= consumes<MultiWireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
+	MWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
 	HGCalTBClusterCollection_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS"));
 	HGCalTBClusterCollection7_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS7"));
 	HGCalTBClusterCollection19_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS19"));
@@ -430,7 +430,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	}
 
 
-	edm::Handle<MultiWireChambers> mwcs;
+	edm::Handle<WireChambers> mwcs;
 	event.getByToken(MWCToken, mwcs);
 
 	//initialize new fit counters in case this is a new run:
