@@ -22,7 +22,7 @@ uint16_t HGCalTBSkiroc2CMS::gray_to_brady(const uint16_t gray) const
 
 bool HGCalTBSkiroc2CMS::check()
 {
-  for( size_t j=0; j<NUMBER_OF_CHANNELS; j++ ){
+  for( size_t j=0; j<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; j++ ){
     uint16_t head=(m_data.at(j)&MASK_HEAD)>>4*3;
     if(head!=8&&head!=9){
       std::cout << "ISSUE : we expected 8(1000) or 9(1001) for the adc header and I find " << head << std::endl;
@@ -34,14 +34,14 @@ bool HGCalTBSkiroc2CMS::check()
 	return false;
       }
     }
-    head=(m_data.at(j+NUMBER_OF_CHANNELS)&MASK_HEAD)>>4*3;
+    head=(m_data.at(j+HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC)&MASK_HEAD)>>4*3;
     if(head!=8&&head!=9){
       std::cout << "ISSUE : we expected 8(1000) or 9(1001) for the adc header and I find " << head << std::endl;
       return false;
     }
     for( size_t k=0; k<NUMBER_OF_SCA+1; k++){
-      if( ((m_data.at(j+SCA_SHIFT*k+NUMBER_OF_CHANNELS)&MASK_HEAD)>>4*3)!=head ){
-	std::cout << "\n We have a major issue (HG)-> " << head << " should be the same as " << ((m_data.at(j+SCA_SHIFT*k+NUMBER_OF_CHANNELS)&MASK_HEAD)>>4*3) << std::endl;
+      if( ((m_data.at(j+SCA_SHIFT*k+HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC)&MASK_HEAD)>>4*3)!=head ){
+	std::cout << "\n We have a major issue (HG)-> " << head << " should be the same as " << ((m_data.at(j+SCA_SHIFT*k+HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC)&MASK_HEAD)>>4*3) << std::endl;
 	return false;
       }
     }
@@ -84,7 +84,7 @@ std::ostream& operator<<(std::ostream& s, HGCalTBSkiroc2CMS& ski)
   for(size_t i=0; i<13; i++)
     std::cout << rollpositions[i] << " ";
   std::cout << "\n";
-  for (size_t i = 0; i < NUMBER_OF_CHANNELS; i++){
+  for (size_t i = 0; i < HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; i++){
     s << "\n Channel det id : " << ski.detid(i) << "\n High gain ADC => " << ski.TOAHitRise(i) ;
     for( size_t j=0; j<NUMBER_OF_SCA; j++)
       s << " " << ski.ADCHigh(i,j) ;

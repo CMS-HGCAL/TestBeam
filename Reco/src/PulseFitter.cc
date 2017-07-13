@@ -3,9 +3,12 @@
 
 
 double _time[13],_energy[13];double _maxTime=225.; //seems to be mandatory since we need static function
-double pulseShape_fcn(double t, double tmax, double trise, double alpha, double amp)
+double _alpha=10.;
+double _trise=50.;
+double _noise=8.;
+double pulseShape_fcn(double t, double tmax, double amp)
 {
-  if( t>tmax-trise ) return amp*std::pow( (t-(tmax-trise))/trise,alpha )*std::exp(-alpha*(t-tmax)/trise);
+  if( t>tmax-_trise ) return amp*std::pow( (t-(tmax-_trise))/_trise,_alpha )*std::exp(-_alpha*(t-tmax)/_trise);
   else return 0;
 }
 double pulseShape_chi2(const double *x)
@@ -14,26 +17,20 @@ double pulseShape_chi2(const double *x)
   for(size_t i=0; i<13; i++){
     if( _energy[i]<0 || _time[i]>_maxTime ) continue;
     double zero = _energy[i]-pulseShape_fcn( _time[i],
-					     x[0],x[1],
-					     x[2],x[3] );
-    sum += zero * zero;
+					     x[0],x[1] );
+    sum += zero * zero / _noise / _noise;
   }
   return sum;
 }
 
-PulseFitter::PulseFitter( int printLevel, double maxTime ) : _printLevel(printLevel)
+PulseFitter::PulseFitter( int printLevel, double maxTime , double alpha , double trise ) : _printLevel(printLevel)
 {							     
   _maxTime=maxTime;
-  m = ROOT::Math::Factory::CreateMinimizer("Minuit", "Migrad");
+  _alpha=alpha;
+  _trise=trise;
 }
 
-PulseFitter::~PulseFitter() {
-  delete m;
-  //delete xm;
-  //delete errors;
-}
-
-void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, PulseFitterResult &fit)
+void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, PulseFitterResult &fit, double noise)
 {
   if( time.size()!=energy.size() ){
     std::cout << "ERROR : we should have the same vector size in PulseFitter::run(std::vector<double> time, std::vector<double> energy, PulseFitterResult fit) -> return without fitting" << std::endl;
@@ -50,12 +47,18 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   for( uint16_t i=time.size(); i<13; i++ )
     _time[i] = _maxTime+1;
 
-  m->SetMaxFunctionCalls(1000);
-  m->SetMaxIterations(1000);
+
+  if( noise>0 )
+    _noise=noise;
+  
+  ROOT::Math::Minimizer* m = ROOT::Math::Factory::CreateMinimizer("Minuit", "Migrad");
+  m->SetMaxFunctionCalls(100);
+  m->SetMaxIterations(100);
+
   m->SetTolerance(0.001);
   //default parameters from tutorials
   m->SetPrintLevel(_printLevel);
-  ROOT::Math::Functor f(&pulseShape_chi2, 4);
+  ROOT::Math::Functor f(&pulseShape_chi2, 2);
 
   m->SetFunction(f);
 
@@ -63,25 +66,18 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
 
   m->SetVariable(0, "tmax", 100., 0.1);
   m->SetVariableLimits(0,50,150);
-  m->SetVariable(1, "trise", 50, 0.1);
-  m->SetVariableLimits(1,0,150);
-  m->SetVariable(2, "alpha", 10.0, 0.1);
-  m->SetVariableLimits(2,0,100);
-  m->SetVariable(3, "amp", _energy[3], 0.1);
-  m->SetVariableLimits(4,0,10000);
+  m->SetVariable(1, "amp", _energy[3], 0.1);
+  m->SetVariableLimits(1,0,10000);
 
   m->Minimize();
 
   xm = m->X();
   errors = m->Errors();
   fit.tmax=xm[0];
-  fit.trise=xm[1];
-  fit.alpha=xm[2];
-  fit.amplitude=xm[3];
+  fit.trise=_trise;
+  fit.amplitude=xm[1];
   fit.errortmax=errors[0];
-  fit.errortrise=errors[1];
-  fit.erroralpha=errors[2];
-  fit.erroramplitude=errors[3];
+  fit.erroramplitude=errors[1];
   fit.chi2=m->MinValue();
   fit.status=m->Status();
   fit.ncalls=m->NCalls();

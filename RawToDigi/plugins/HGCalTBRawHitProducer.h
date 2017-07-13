@@ -46,10 +46,10 @@ class HGCalTBRawHitProducer : public edm::EDProducer
 
   struct pedestalChannel{
     HGCalTBDetId id;
-    float pedHGMean[NUMBER_OF_TIME_SAMPLES-0];
-    float pedLGMean[NUMBER_OF_TIME_SAMPLES-0];
-    float pedHGRMS[NUMBER_OF_TIME_SAMPLES-0];
-    float pedLGRMS[NUMBER_OF_TIME_SAMPLES-0];
+    float pedHGMean[NUMBER_OF_SCA];
+    float pedLGMean[NUMBER_OF_SCA];
+    float pedHGRMS[NUMBER_OF_SCA];
+    float pedLGRMS[NUMBER_OF_SCA];
   };
   std::map<int,pedestalChannel> m_pedMap; //key=10000*hexa+100*chip+chan
 

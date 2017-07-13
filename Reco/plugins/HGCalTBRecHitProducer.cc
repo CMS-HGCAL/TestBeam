@@ -54,12 +54,14 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   for( auto rawhit : *rawhits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid) ) continue;
-    //int iboard=(eid.iskiroc()-1)/N_SKIROC_PER_HEXA;
+    int iboard=(eid.iskiroc()-1)/N_SKIROC_PER_HEXA;
     int iski=eid.iskiroc();
 
     std::vector<double> sampleHG, sampleLG, sampleT;
 
     float highGain, lowGain, totGain;
+    int hgStatus = -1;
+    int lgStatus = -1;
     float timeHG = 0.;
     float timeLG = 0.;
     float subHG[NUMBER_OF_TIME_SAMPLES],subLG[NUMBER_OF_TIME_SAMPLES];
@@ -105,9 +107,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     float en3=rawhit.highGainADC(3)-subHG[3];
     float en4=rawhit.highGainADC(4)-subHG[4];
     float en6=rawhit.highGainADC(6)-subHG[6];
-    
-
-    
+        
     if(!m_keepOnlyTimeSample3 && !m_performParabolicFit && 
        (en2<en3 && en3>en6 && en4>en6 && en3>20)){
       
@@ -167,29 +167,38 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       highGain=-1.;
       lowGain=-1.;
     }
-
+    
     float energy = -1;
     float time = -1.;
     
     HGCalTBRecHit recHit(rawhit.detid(), energy, lowGain, highGain, totGain, time);
-    if(highGain < m_highGainADCSaturation.at(iski-1) && highGain!=-1.){
-      energy = highGain;
-      time = timeHG;
-      recHit.setFlag(HGCalTBRecHit::kHighGainSaturated); //std::cout<<"High gain saturated   ";
-    }     
-    else if(lowGain < m_lowGainADCSaturation.at(iski-1) && lowGain!=-1.){
-      energy = lowGain * m_LG2HG_value.at(iski-1);
-      time = timeLG;
-      recHit.setFlag(HGCalTBRecHit::kLowGainSaturated); //std::cout<<"Low gain saturated   ";
-    }
-    else{
-      energy = totGain * m_TOT2LG_value.at(iski-1) * m_LG2HG_value.at(iski-1);
-      recHit.setFlag(HGCalTBRecHit::kTotGainSaturated); //std::cout<<"Tot gain saturated   ";
-    }
-
 
     if(m_keepOnlyTimeSample3) recHit.setFlag(HGCalTBRecHit::kThirdSample);
     else if(m_performParabolicFit) recHit.setFlag(HGCalTBRecHit::kParabolic);
+    
+    if(highGain < m_highGainADCSaturation.at(iski-1) && hgStatus == 0){
+      energy = highGain;
+      time = timeHG;
+      recHit.setFlag(HGCalTBRecHit::kGood);
+    }     
+    else if(lowGain < m_lowGainADCSaturation.at(iski-1) && hgStatus == 0 && lgStatus == 0){
+      energy = lowGain * m_LG2HG_value.at(iboard);
+      time = timeLG;
+      recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
+      recHit.setFlag(HGCalTBRecHit::kGood);
+    }
+    else if(hgStatus == 0 && lgStatus == 0 && totGain > 50){
+      energy = totGain * m_TOT2LG_value.at(iboard) * m_LG2HG_value.at(iboard);
+      recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
+      recHit.setFlag(HGCalTBRecHit::kGood);
+    }
+    else if(hgStatus == 3 && lgStatus == 3){
+      energy = (highGain<m_highGainADCSaturation.at(iski-1)) ? highGain : lowGain * m_LG2HG_value.at(iboard);
+      recHit.setFlag(HGCalTBRecHit::kThirdSample);
+    }
+    else {
+      energy = -500;
+    }
 
     recHit.setEnergy(energy);
     recHit.setTime(time);

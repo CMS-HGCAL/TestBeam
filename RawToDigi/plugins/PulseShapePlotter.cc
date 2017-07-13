@@ -17,18 +17,15 @@
 
 #include "HGCal/DataFormats/interface/HGCalTBRawHitCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
+#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
-#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include "HGCal/Reco/interface/CommonMode.h"
 #include "HGCal/Reco/interface/PulseFitter.h"
 
 #include <iomanip>
 #include <set>
-
-const static size_t N_HEXABOARDS = 1;
-const static size_t N_SKIROC_PER_HEXA = 4;
-const static size_t N_CHANNELS_PER_SKIROC = 64;
 
 class PulseShapePlotter : public edm::one::EDAnalyzer<edm::one::SharedResources>
 {
@@ -54,24 +51,16 @@ private:
   int m_skirocID;
   float m_hgADC;
   float m_hgTmax;
-  float m_hgTrise;
   float m_hgChi2;
-  float m_hgAlpha;
   float m_hgErrorADC;
   float m_hgErrorTmax;
-  float m_hgErrorTrise;
-  float m_hgErrorAlpha;
   int m_hgStatus;
   int m_hgNCalls;
   float m_lgADC;
   float m_lgTmax;
-  float m_lgTrise;
   float m_lgChi2;
-  float m_lgAlpha;
   float m_lgErrorADC;
   float m_lgErrorTmax;
-  float m_lgErrorTrise;
-  float m_lgErrorAlpha;
   int m_lgStatus;
   int m_lgNCalls;
 
@@ -91,25 +80,17 @@ PulseShapePlotter::PulseShapePlotter(const edm::ParameterSet& iConfig) :
   m_tree->Branch("channelID",&m_skirocID);
   m_tree->Branch("HighGainADC",&m_hgADC);
   m_tree->Branch("HighGainTmax",&m_hgTmax);
-  m_tree->Branch("HighGainTrise",&m_hgTrise);
-  m_tree->Branch("HighGainAlpha",&m_hgAlpha);
   m_tree->Branch("HighGainChi2",&m_hgChi2);
   m_tree->Branch("HighGainErrorADC",&m_hgErrorADC);
   m_tree->Branch("HighGainErrorTmax",&m_hgErrorTmax);
-  m_tree->Branch("HighGainErrorTrise",&m_hgErrorTrise);
-  m_tree->Branch("HighGainErrorAlpha",&m_hgErrorAlpha);
   m_tree->Branch("HighGainStatus",&m_hgStatus);
   m_tree->Branch("HighGainNCalls",&m_hgNCalls);
 
   m_tree->Branch("LowGainADC",&m_lgADC);
   m_tree->Branch("LowGainTmax",&m_lgTmax);
-  m_tree->Branch("LowGainTrise",&m_lgTrise);
-  m_tree->Branch("LowGainAlpha",&m_lgAlpha);
   m_tree->Branch("LowGainChi2",&m_lgChi2);
   m_tree->Branch("LowGainErrorADC",&m_lgErrorADC);
   m_tree->Branch("LowGainErrorTmax",&m_lgErrorTmax);
-  m_tree->Branch("LowGainErrorTrise",&m_lgErrorTrise);
-  m_tree->Branch("LowGainErrorAlpha",&m_lgErrorAlpha);
   m_tree->Branch("LowGainStatus",&m_lgStatus);
   m_tree->Branch("LowGainNCalls",&m_lgNCalls);
   std::cout << iConfig.dump() << std::endl;
@@ -138,16 +119,15 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
   std::ostringstream os( std::ostringstream::ate );
   os << "Event" << event.id().event();
   TFileDirectory dir = fs->mkdir( os.str().c_str() );
-  for(size_t ib = 0; ib<N_HEXABOARDS; ib++) {
-    for(size_t is = 0; is<N_SKIROC_PER_HEXA; is++) {
-      for( size_t ic=0; ic<N_CHANNELS_PER_SKIROC; ic++ ){
-	HGCalTBElectronicsId eid;
-	switch( is ){
-	case 0 : eid=HGCalTBElectronicsId( 1, ic);break;
-	case 1 : eid=HGCalTBElectronicsId( 4, ic);break;
-	case 2 : eid=HGCalTBElectronicsId( 3, ic);break;
-	case 3 : eid=HGCalTBElectronicsId( 2, ic);break;
-	}
+  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+    for(size_t is = 0; is<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; is++) {
+      for( size_t ic=0; ic<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ic++ ){
+	int skiId;
+	if( ib%2==0 )//not flipped
+	  skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*ib+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-is)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+	else
+	  skiId = HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*ib+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-is%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA);
+	HGCalTBElectronicsId eid(skiId,ic);      
 	if (!essource_.emap_.existsEId(eid.rawId())) continue;
 	os.str("");
 	os<<"HexaBoard"<<ib<<"_Skiroc"<<is<<"_Channel"<<ic<<"_HG";
@@ -167,7 +147,7 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
   CommonMode cm(essource_.emap_); //default is common mode per chip using the median
   cm.Evaluate( hits );
   std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
-  PulseFitter fitter(0,150);
+  PulseFitter fitter(1,150);
   for( auto hit : *hits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
     if( essource_.emap_.existsEId(eid) ){
@@ -203,7 +183,7 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
        	}
        	break;
       }
-      int iboard=hit.skiroc()/N_SKIROC_PER_HEXA;
+      int iboard=hit.skiroc()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
       int ichan=hit.channel();
       iski=hit.skiroc();
       std::vector<double> hg,lg,time;
@@ -213,46 +193,40 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
 	hg.push_back(highGain);
 	lg.push_back(lowGain);
 	time.push_back(25*it);
-	hMapHG[1000*iboard+100*iski+ichan]->Fill(25*it,highGain);
-	hMapLG[1000*iboard+100*iski+ichan]->Fill(25*it,lowGain);
+	hMapHG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->Fill(25*it,highGain);
+	hMapLG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->Fill(25*it,lowGain);
       }
       float en2=hit.highGainADC(2)-subHG[2];
       float en3=hit.highGainADC(3)-subHG[3];
       float en4=hit.highGainADC(4)-subHG[4];
       float en6=hit.highGainADC(6)-subHG[6];
       if( en2<en3 && en3>en6 && en4>en6 && en3>20 ){
+	std::cout << iboard << " " << hit.skiroc() << " " << ichan << "\t" << en2 << " " << en3 << " " << en4 << " " << en6 << std::endl;
 	PulseFitterResult fithg;
-	fitter.run( time,hg,fithg );
+	fitter.run( time,hg,fithg,8. );
 	PulseFitterResult fitlg;
-	fitter.run( time,lg,fitlg );
+	fitter.run( time,lg,fitlg,2. );
 	m_channelID=ichan;
 	m_skirocID=iski;
 	m_hgADC=fithg.amplitude;
 	m_hgTmax=fithg.tmax;
-	m_hgTrise=fithg.trise;
 	m_hgChi2=fithg.chi2;
-	m_hgAlpha=fithg.alpha;
 	m_hgErrorADC=fithg.erroramplitude;
 	m_hgErrorTmax=fithg.errortmax;
-	m_hgErrorTrise=fithg.errortrise;
-	m_hgErrorAlpha=fithg.erroralpha;
 	m_hgStatus=fithg.status;
 	m_hgNCalls=fithg.ncalls;
 	m_lgADC=fitlg.amplitude;
 	m_lgTmax=fitlg.tmax;
-	m_lgTrise=fitlg.trise;
 	m_lgChi2=fitlg.chi2;
-	m_lgAlpha=fitlg.alpha;
 	m_lgErrorADC=fitlg.erroramplitude;
 	m_lgErrorTmax=fitlg.errortmax;
-	m_lgErrorTrise=fitlg.errortrise;
-	m_lgErrorAlpha=fitlg.erroralpha;
 	m_lgStatus=fitlg.status;
 	m_lgNCalls=fitlg.ncalls;
 	m_tree->Fill();
       }
     }
   }
+  getchar();
   m_evtID++;
 }
 

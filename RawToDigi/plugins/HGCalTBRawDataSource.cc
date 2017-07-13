@@ -3,6 +3,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBSkiroc2CMSCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 
 HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :
   edm::ProducerSourceFromFiles(pset, desc, true),
@@ -10,8 +11,6 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   m_outputCollectionName(pset.getUntrackedParameter<std::string>("OutputCollectionName","SKIROC2CMSDATA")),
   m_nOrmBoards(pset.getUntrackedParameter<unsigned int>("NOrmBoards", 1)),
   m_nHexaboards(pset.getUntrackedParameter<unsigned int>("NHexaBoards", 1)),
-  m_nSkirocsPerHexa(pset.getUntrackedParameter<unsigned int>("NSkirocsPerHexa", 4)),
-  m_nChannelsPerSkiroc(pset.getUntrackedParameter<unsigned int>("NChannelsPerSkiroc", 64)),
   m_nWords(pset.getUntrackedParameter<unsigned int> ("NumberOf32BitsWordsPerReadOut",30788))
 {
   produces<HGCalTBSkiroc2CMSCollection>(m_outputCollectionName);
@@ -98,19 +97,13 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
 
   for( size_t iski=0; iski<m_decodedData.size(); iski++){
     std::vector<HGCalTBDetId> detids;
-    for (size_t ichan = 0; ichan < m_nChannelsPerSkiroc; ichan++) {
+    for (size_t ichan = 0; ichan < HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++) {
       int skiId;
-      if( iski/m_nSkirocsPerHexa%2==0 )//not flipped
-	skiId=m_nSkirocsPerHexa*(iski/m_nSkirocsPerHexa)+(m_nSkirocsPerHexa-iski)%4+1;
+      if( iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA%2==0 )//not flipped
+	skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*(iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
       else
-	skiId = m_nSkirocsPerHexa*(iski/m_nSkirocsPerHexa)+(m_nSkirocsPerHexa-iski%4);
+	skiId = HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*(iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA);
       HGCalTBElectronicsId eid(skiId,ichan);      
-      // switch( iski ){
-      // case 0 : eid=HGCalTBElectronicsId( 4, ichan);break;
-      // case 1 : eid=HGCalTBElectronicsId( 3, ichan);break;
-      // case 2 : eid=HGCalTBElectronicsId( 2, ichan);break;
-      // case 3 : eid=HGCalTBElectronicsId( 1, ichan);break;
-      // }
       if (!essource_.emap_.existsEId(eid.rawId())) {
 	HGCalTBDetId did(-1);
 	detids.push_back(did);
@@ -142,8 +135,6 @@ void HGCalTBRawDataSource::fillDescriptions(edm::ConfigurationDescriptions& desc
   desc.addUntracked<std::string>("OutputCollectionName");
   desc.addUntracked<unsigned int>("NOrmBoards");
   desc.addUntracked<unsigned int>("NHexaBoards");
-  desc.addUntracked<unsigned int>("NSkirocsPerHexa");
-  desc.addUntracked<unsigned int>("NChannelsPerSkiroc");
   desc.addUntracked<unsigned int>("NumberOf32BitsWordsPerReadOut");
   descriptions.add("source", desc);
 }
