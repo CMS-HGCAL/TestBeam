@@ -8,6 +8,9 @@ struct WireChamberData {
   double x;
   double y;
   double z;
+  bool goodMeasurement_X;
+  bool goodMeasurement_Y;
+  bool goodMeasurement;
 };
 
 typedef std::vector<WireChamberData> WireChambers;
