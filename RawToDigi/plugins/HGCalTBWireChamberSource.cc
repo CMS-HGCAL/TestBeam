@@ -9,7 +9,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	//find and fill the configured runs
 	outputCollectionName = pset.getParameter<std::string>("OutputCollectionName");
 
-  	std::vector<double> v0(4, 0.2);
+  	std::vector<double> v0(4, 0.2/40);		//0.2mm/ns and TDC binning is 25ps
 	slope_x = pset.getUntrackedParameter<std::vector<double> >("slope_x", v0);
 	slope_y = pset.getUntrackedParameter<std::vector<double> >("slope_y", v0);
 
