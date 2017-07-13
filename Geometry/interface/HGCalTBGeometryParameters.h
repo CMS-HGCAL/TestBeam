@@ -7,7 +7,7 @@
 
 namespace HGCAL_TB_GEOMETRY
 {
-  static const uint16_t NUMBER_OF_HEXABOARD = 1;
+  static const uint16_t NUMBER_OF_HEXABOARD = 3;
   static const uint16_t N_SKIROC_PER_HEXA = 4;
   static const uint16_t N_CHANNELS_PER_SKIROC = 64;
 

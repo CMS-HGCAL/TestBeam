@@ -27,9 +27,6 @@
 #include <iomanip>
 #include <set>
 
-const static size_t N_SKIROC_PER_HEXA = 4;
-//const static size_t HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC = 64;
-
 #define MAXVERTICES 6
 static const double delta = 0.00001;//Add/subtract delta = 0.00001 to x,y of a cell centre so the TH2Poly::Fill doesnt have a problem at the edges where the centre of a half-hex cell passes through the sennsor boundary line.
 
@@ -56,16 +53,12 @@ private:
   double m_commonModeThreshold; //currently not use (need to implement the "average" option in CommonMode.cc)
 
   int m_evtID;
-  std::map<int,TH1F*> m_h_adcHigh;
-  std::map<int,TH1F*> m_h_adcLow;
-  std::map<int,TH2F*> m_h_pulseHigh;
-  std::map<int,TH2F*> m_h_pulseLow;
-
-  std::map<int,TH1F*> m_h_cmHigh;
-  std::map<int,TH1F*> m_h_cmLow;
-
-  TH2F* m_h_tot_vs_low[HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD][HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA];
-  TH2F* m_h_low_vs_high[HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD][HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA];
+  uint16_t m_numberOfBoards;
+  std::map<int,float> m_meanHGMap;
+  std::map<int,float> m_meanLGMap;
+  std::map<int,float> m_rmsHGMap;
+  std::map<int,float> m_rmsLGMap;
+  std::map<int,int> m_counterMap;
 
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
 
@@ -81,8 +74,7 @@ RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
   m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
   m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
-  m_subtractCommonMode(iConfig.getUntrackedParameter<bool>("SubtractCommonMode",false)),
-  m_commonModeThreshold(iConfig.getUntrackedParameter<double>("CommonModeThreshold",100))
+  m_subtractCommonMode(iConfig.getUntrackedParameter<bool>("SubtractCommonMode",false))
 {
   usesResource("TFileService");
   edm::Service<TFileService> fs;
@@ -91,54 +83,6 @@ RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
 
   m_evtID=0;
   
-  std::ostringstream os( std::ostringstream::ate );
-  TH2F* htmp2;
-  TH1F* htmp1;
-  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
-    for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
-      os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
-      TFileDirectory dir = fs->mkdir( os.str().c_str() );
-      for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-	os.str("");
-	os << "CommonModeHigh_HexaBoard" << ib << "_Chip" << iski << "_Sample" << it ;
-	htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
-	m_h_cmHigh.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+it, htmp1) );
-	os.str("");
-	os << "CommonModeLow_HexaBoard" << ib << "_Chip" << iski << "_Sample" << it ;
-	htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
-	m_h_cmLow.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+it, htmp1) );
-      }
-      os.str("");
-      os << "ToTVsLowGain_Hexa" << ib << "_Chip" << iski ;
-      htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),2600,-100,2500,1000,0,1000);
-      m_h_tot_vs_low[ib][iski]=htmp2;
-      os.str("");
-      os << "LowGainVsHighGain_Hexa" << ib << "_Chip" << iski ;
-      htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),2600,-100,2500,3500,-500,3000);
-      m_h_low_vs_high[ib][iski]=htmp2;
-      for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
-	for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-	  os.str("");
-	  os << "HighGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan << "_Sample" << it ;
-	  htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
-	  m_h_adcHigh.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+ichan*100+it, htmp1) );
-	  os.str("");
-	  os << "LowGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan << "_Sample" << it ;
-	  htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
-	  m_h_adcLow.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+ichan*100+it, htmp1) );
-	}
-	os.str("");
-	os << "PulseHighGain_Hexa" << ib << "_Chip" << iski << "_Channel" << ichan;
-	htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES,0,(NUMBER_OF_TIME_SAMPLES)*25,4000,-500,3500);
-	m_h_pulseHigh.insert( std::pair<int,TH2F*>(ib*1000+iski*100+ichan, htmp2) );
-	os.str("");
-	os << "PulseLowGain_Hexa" << ib << "_Chip" << iski << "_Channel" << ichan;
-	htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES,0,(NUMBER_OF_TIME_SAMPLES)*25,4000,-500,3500);
-	m_h_pulseLow.insert( std::pair<int,TH2F*>(ib*1000+iski*100+ichan, htmp2) );
-	os.str("");
-      }
-    }
-  }
   std::cout << iConfig.dump() << std::endl;
 }
 
@@ -186,25 +130,13 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   CommonMode cm(essource_.emap_); //default is common mode per chip using the median
   cm.Evaluate( hits );
   std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
-  for( std::map<int,commonModeNoise>::iterator it=cmMap.begin(); it!=cmMap.end(); ++it ){
-    uint16_t iboard=(it->first-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-    uint16_t iski;
-    if(iboard%2==0)
-      iski=(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-(it->first-1))%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-    else
-      iski=(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-(it->first%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA))%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-    for( size_t ts=0; ts<NUMBER_OF_TIME_SAMPLES; ts++ ){
-      m_h_cmHigh[iboard*100000+iski*10000+ts]->Fill( it->second.fullHG[ts] );
-      m_h_cmLow[iboard*100000+iski*10000+ts]->Fill( it->second.fullLG[ts] );
-    }
-  }
 
   for( auto hit : *hits ){
     for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       float highGain,lowGain;
+      HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
+      if( !essource_.emap_.existsEId(eid) ) continue;
       if( m_subtractCommonMode ){
-	HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
-	if( !essource_.emap_.existsEId(eid) ) continue;
   	int iski = eid.iskiroc();
   	float subHG(0),subLG(0);
   	switch ( hit.detid().cellType() ){
@@ -220,17 +152,26 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   	highGain=hit.highGainADC(it);
   	lowGain=hit.lowGainADC(it);
       }
-      int iboard=hit.skiroc()/N_SKIROC_PER_HEXA;
-      int iski=hit.skiroc()%N_SKIROC_PER_HEXA;
+      int iboard=hit.skiroc()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+      int iski=hit.skiroc();
       int ichan=hit.channel();
-      m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->Fill(highGain);
-      m_h_adcLow[iboard*100000+iski*10000+ichan*100+it]->Fill(lowGain);
-      m_h_pulseHigh[iboard*1000+iski*100+ichan]->Fill(it*25,highGain);
-      m_h_pulseLow[iboard*1000+iski*100+ichan]->Fill(it*25,lowGain);
-      HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
-      if( !essource_.emap_.existsEId(eid) ) continue;
-      std::pair<int,HGCalTBDetId> p( iboard*1000+iski*100+ichan,hit.detid() );
+      std::pair<int,HGCalTBDetId> p( iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan,hit.detid() );
       setOfConnectedDetId.insert(p);
+      uint32_t key=iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it;
+      if( m_meanHGMap.find(key)==m_meanHGMap.end() ){
+	m_meanHGMap[key]=highGain;
+	m_meanLGMap[key]=lowGain;
+	m_rmsHGMap[key]=highGain*highGain;
+	m_rmsLGMap[key]=lowGain*lowGain;
+	m_counterMap[key]=1;
+      }
+      else{
+	m_meanHGMap[key]+=highGain;
+	m_meanLGMap[key]+=lowGain;
+	m_rmsHGMap[key]+=highGain*highGain;
+	m_rmsLGMap[key]+=lowGain*lowGain;
+	m_counterMap[key]+=1;
+      }
       if(!m_eventPlotter||!IsCellValid.iu_iv_valid(hit.detid().layer(),hit.detid().sensorIU(),hit.detid().sensorIV(),hit.detid().iu(),hit.detid().iv(),m_sensorsize))  continue;
       CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.detid().layer(),hit.detid().sensorIU(),hit.detid().sensorIV(),hit.detid().iu(),hit.detid().iv(),m_sensorsize);
       double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
@@ -266,60 +207,72 @@ void RawHitPlotter::endJob()
 {
   usesResource("TFileService");
   edm::Service<TFileService> fs;
-  TFileDirectory dir = fs->mkdir( "HexagonalPlotter" );
-  std::map<int,TH2Poly*>  pedPolyMap;
-  std::map<int,TH2Poly*>  pedPolyMapLG;
-  std::map<int,TH2Poly*>  noisePolyMap;
-  std::map<int,TH2Poly*>  noisePolyMapLG;
-  std::map<int,TH2Poly*>  chanMap;
+  std::map<int,TH2Poly*>  hgMeanMap;
+  std::map<int,TH2Poly*>  lgMeanMap;
+  std::map<int,TH2Poly*>  hgRMSMap;
+  std::map<int,TH2Poly*>  lgRMSMap;
   std::ostringstream os( std::ostringstream::ate );
   TH2Poly *h;
   for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+    os.str("");
+    os << "HexaBoard" << ib ;
+    TFileDirectory dir = fs->mkdir( os.str().c_str() );
+    TFileDirectory hgpdir = dir.mkdir( "HighGainPedestal" );
+    TFileDirectory lgpdir = dir.mkdir( "LowGainPedestal" );
+    TFileDirectory hgndir = dir.mkdir( "HighGainNoise" );
+    TFileDirectory lgndir = dir.mkdir( "LowGainNoise" );
     for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      h=dir.make<TH2Poly>();
+      h=hgpdir.make<TH2Poly>();
       os.str("");
-      os<<"HighGain_HexaBoard"<<ib<<"_TimeSample"<<it;
+      os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
       InitTH2Poly(*h, (int)ib, 0, 0);
-      pedPolyMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
-      h=dir.make<TH2Poly>();
+      hgMeanMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
+
+      h=lgpdir.make<TH2Poly>();
       os.str("");
-      os<<"LowGain_HexaBoard"<<ib<<"_TimeSample"<<it;
+      os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
       InitTH2Poly(*h, (int)ib, 0, 0);
-      pedPolyMapLG.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
-      h=dir.make<TH2Poly>();
+      lgMeanMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
+
+      h=hgndir.make<TH2Poly>();
       os.str("");
-      os<<"Noise_HighGain_HexaBoard"<<ib<<"_TimeSample"<<it;
+      os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
       InitTH2Poly(*h, (int)ib, 0, 0);
-      noisePolyMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
-      h=dir.make<TH2Poly>();
+      hgRMSMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
+
+      h=lgndir.make<TH2Poly>();
       os.str("");
-      os<<"Noise_LowGain_HexaBoard"<<ib<<"_TimeSample"<<it;
+      os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
       InitTH2Poly(*h, (int)ib, 0, 0);
-      noisePolyMapLG.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
+      lgRMSMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
     }
   }
-
   for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
     int iboard=(*it).first/1000;
     int iski=((*it).first%1000)/100;
     int ichan=(*it).first%100;
     HGCalTBDetId detid=(*it).second;
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
-    double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
-    double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
+    double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
+    double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
     for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      pedPolyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->GetMean() );
-      pedPolyMapLG[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcLow[iboard*100000+iski*10000+ichan*100+it]->GetMean() );
-      noisePolyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->GetRMS() );
-      noisePolyMapLG[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcLow[iboard*100000+iski*10000+ichan*100+it]->GetRMS() );
+      int key=iboard*100000+iski*10000+ichan*100+it;
+      float hgMean=m_meanHGMap[key]/m_counterMap[key];
+      float lgMean=m_meanLGMap[key]/m_counterMap[key];
+      float hgRMS=std::sqrt(m_rmsHGMap[key]/m_counterMap[key]-m_meanHGMap[key]/m_counterMap[key]*m_meanHGMap[key]/m_counterMap[key]);
+      float lgRMS=std::sqrt(m_rmsLGMap[key]/m_counterMap[key]-m_meanLGMap[key]/m_counterMap[key]*m_meanLGMap[key]/m_counterMap[key]);
+      hgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgMean );
+      lgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgMean );
+      hgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgRMS );
+      lgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgRMS );
     }
   }
 }
