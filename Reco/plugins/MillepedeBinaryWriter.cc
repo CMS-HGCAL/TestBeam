@@ -51,6 +51,7 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		edm::EDGetTokenT<WireChambers> MWCToken;
 
 		int eventCounter;
+		int acceptedCounter;
 
 		std::string methodString;
 		TrackFittingMethod fittingMethod;		
@@ -119,9 +120,10 @@ MillepedeBinaryWriter::~MillepedeBinaryWriter() {
 
 // ------------ method called for each event  ------------
 void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSetup& setup) {
+	eventCounter++;
+
 	//get the multi wire chambers
 	edm::Handle<WireChambers> mwcs;
-
 
 	event.getByToken(MWCToken, mwcs);
 	if (MWCQualityCut) {
@@ -182,7 +184,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			derLc[2] = 0.;
 			derLc[3] = 0.;
 			
-			std::cout<<"x_predicted: "<<x_predicted<<"   y_predicted: "<<y_predicted<<"     x_true: "<<x_true<<"   y_true: "<<y_true<<std::endl;
+			//std::cout<<"x_predicted: "<<x_predicted<<"   y_predicted: "<<y_predicted<<"     x_true: "<<x_true<<"   y_true: "<<y_true<<std::endl;
 
 			derGl[n_layer*NGLperLayer+0] = 1.;		
 			derGl[n_layer*NGLperLayer+1] = 0.;		
@@ -190,7 +192,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			derGl[n_layer*NGLperLayer+3] = 0.;		
 
 			rMeas = x_true - x_predicted;
-			std::cout<<" ---> delta x = "<<rMeas<<"  ";
+			//std::cout<<" ---> delta x = "<<rMeas<<"  ";
 			sigma = Sensors[n_layer]->getResidualResolution();
 			mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
 
@@ -207,7 +209,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			derGl[n_layer*NGLperLayer+3] = y_true;			
 
 			rMeas = y_true - y_predicted;
-			std::cout<<" ---> delta y = "<<rMeas<<std::endl;
+			//std::cout<<" ---> delta y = "<<rMeas<<std::endl;
 			sigma = Sensors[n_layer]->getResidualResolution();
 			mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
 		
@@ -243,9 +245,9 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		delete (*it).second;
 	};	Sensors.clear();
 	delete Track;
-	std::cout<<std::endl;
+	//std::cout<<std::endl;
 	
-	eventCounter++;
+	acceptedCounter++;
 }// analyze ends here
 
 
@@ -253,6 +255,7 @@ void MillepedeBinaryWriter::beginJob() {
 	wc_resolution=1.0;
 	energy=250;
 
+	acceptedCounter = 0;
 	eventCounter = 0;
 
 	if (fittingMethod==GBLTRACK) {
@@ -316,7 +319,7 @@ void MillepedeBinaryWriter::endJob() {
 		delete tree; delete outFile;
 	}
 
-	std::cout<<"Number of events for alignment with "<<nLayers<<" wire chambers: "<<eventCounter<<std::endl;
+	std::cout<<"Number of events for alignment with "<<nLayers<<" wire chambers: "<<acceptedCounter<<" / "<<eventCounter<<std::endl;
 }
 
 void MillepedeBinaryWriter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
