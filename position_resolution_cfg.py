@@ -24,7 +24,8 @@ options.register('reportEvery',
 
 options.parseArguments()
 
-files = ["dwc_run_15.root"]
+#files = ["dwc_run_10.root", "dwc_run_12.root", "dwc_run_13.root", "dwc_run_14.root", "dwc_run_15.root"]
+files = ["dwc_run_951.root", "dwc_run_952.root", "dwc_run_954.root", "dwc_run_955.root", "dwc_run_956.root"]
 
 
 ################################
@@ -50,13 +51,16 @@ process.load('HGCal.StandardSequences.LocalReco_cff')
 # Initialize the data read-in plugins
 process.source = cms.Source("HGCalTBWireChamberSource",
     OutputCollectionName = cms.string("WireChambers"), 
-    fileNames = cms.untracked.vstring(["file:%s/%s"%(options.fileDirectory, file) for file in files])
+    fileNames = cms.untracked.vstring(["file:%s/%s"%(options.fileDirectory, file) for file in files]),
+    performAlignment = cms.untracked.bool(True),
+    alignmentParamaterFile = cms.untracked.string("/tmp/millepede.res") 
+
 )
 
 
 process.millepede_binarywriter.binaryFile = cms.string('/afs/cern.ch/user/t/tquast/millepede.bin')
 process.millepede_binarywriter.nLayers = cms.int32(4)
-process.millepede_binarywriter.MWCQualityCut = cms.bool(False)
+process.millepede_binarywriter.MWCQualityCut = cms.bool(True)
 process.millepede_binarywriter.makeTree = cms.untracked.bool(True)
 process.millepede_binarywriter.MWCHAMBERS = cms.InputTag("source","WireChambers","unpack" )
 process.millepede_binarywriter.fittingMethod = cms.string("lineAnalytical")

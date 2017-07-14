@@ -74,6 +74,13 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 	  	std::vector<int> *channels;
 	  	std::vector<int> *dwc_timestamps;
 	 
+	  	bool makeTree;
+	  	TTree* outTree;
+	  	double time_DWC1;
+	  	double time_DWC2;
+	  	double time_DWC3;
+	  	double time_DWC4;
+
 	  	TBranch                   *b_run;   
 	  	TBranch                   *b_trigger;   
 	  	TBranch                   *b_channels;   
