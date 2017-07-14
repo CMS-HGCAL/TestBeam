@@ -53,10 +53,15 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		virtual void produce(edm::Event & e);
 	  	virtual void beginJob() override;
 	  	virtual void endJob() override;
+	  	void ReadAlignmentParameters();
 		
 		std::string outputCollectionName;
 		std::vector<double> slope_x;
 		std::vector<double> slope_y;
+
+		bool performAlignment;
+	  	std::string alignmentParamaterFile;
+		std::map<int, double> alignmentParameters;
 
 		int eventCounter;
 		int fileCounter;
@@ -73,6 +78,7 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 	  	TBranch                   *b_trigger;   
 	  	TBranch                   *b_channels;   
 	  	TBranch                   *b_dwc_timestamps;   
+
 
 	public:
 		explicit HGCalTBWireChamberSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc);

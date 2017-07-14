@@ -12,6 +12,8 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
   	std::vector<double> v0(4, 0.2/40);		//0.2mm/ns and TDC binning is 25ps
 	slope_x = pset.getUntrackedParameter<std::vector<double> >("slope_x", v0);
 	slope_y = pset.getUntrackedParameter<std::vector<double> >("slope_y", v0);
+	performAlignment = pset.getUntrackedParameter<bool>("performAlignment", false);
+	alignmentParamaterFile = pset.getUntrackedParameter<std::string>("alignmentParamaterFile", "");
 
 	produces<WireChambers>("WireChambers");
 
@@ -30,6 +32,8 @@ void HGCalTBWireChamberSource::beginJob() {
 	nextFileIndex = 0;
 	rootFile = NULL;
 	tree = NULL;
+
+	if (performAlignment) ReadAlignmentParameters();
 }
 
 
@@ -79,7 +83,6 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc1->goodMeasurement_X = ((dwc_timestamps->at(DWC1_LEFT) >= 0) && (dwc_timestamps->at(DWC1_RIGHT) >=0));
 	dwc1->goodMeasurement_Y = ((dwc_timestamps->at(DWC1_DOWN) >= 0) && (dwc_timestamps->at(DWC1_UP) >=0));
 	dwc1->goodMeasurement = (dwc1->goodMeasurement_X && dwc1->goodMeasurement_Y);
-	mwcs->push_back(*dwc1);
 
 
 	WireChamberData* dwc2 = new WireChamberData();
@@ -90,7 +93,6 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc2->goodMeasurement_X = ((dwc_timestamps->at(DWC2_LEFT) >= 0) && (dwc_timestamps->at(DWC2_RIGHT) >=0));
 	dwc2->goodMeasurement_Y = ((dwc_timestamps->at(DWC2_DOWN) >= 0) && (dwc_timestamps->at(DWC2_UP) >=0));
 	dwc2->goodMeasurement = (dwc2->goodMeasurement_X && dwc2->goodMeasurement_Y);
-	mwcs->push_back(*dwc2);
 
 
 	WireChamberData* dwc3 = new WireChamberData();
@@ -101,7 +103,6 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc3->goodMeasurement_X = ((dwc_timestamps->at(DWC3_LEFT) >= 0) && (dwc_timestamps->at(DWC3_RIGHT) >=0));
 	dwc3->goodMeasurement_Y = ((dwc_timestamps->at(DWC3_DOWN) >= 0) && (dwc_timestamps->at(DWC3_UP) >=0));
 	dwc3->goodMeasurement = (dwc3->goodMeasurement_X && dwc3->goodMeasurement_Y);
-	mwcs->push_back(*dwc3);
 
 
 	WireChamberData* dwc4 = new WireChamberData();
@@ -112,16 +113,23 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc4->goodMeasurement_X = ((dwc_timestamps->at(DWC4_LEFT) >= 0) && (dwc_timestamps->at(DWC4_RIGHT) >=0));
 	dwc4->goodMeasurement_Y = ((dwc_timestamps->at(DWC4_DOWN) >= 0) && (dwc_timestamps->at(DWC4_UP) >=0));
 	dwc4->goodMeasurement = (dwc4->goodMeasurement_X && dwc4->goodMeasurement_Y);
-	mwcs->push_back(*dwc4);
 
-	/*
-	if (dwc1->goodMeasurement && dwc2->goodMeasurement && dwc3->goodMeasurement && dwc4->goodMeasurement) {
-		for (size_t i=0; i<16; i++) 
-			std::cout<<dwc_timestamps->at(i)<<" ";
-		std::cout<<std::endl;
+	if (performAlignment) {
+		dwc1->x = dwc1->x * alignmentParameters[121] - alignmentParameters[111];
+		dwc1->y = dwc1->y * alignmentParameters[122] - alignmentParameters[112];
+		dwc2->x = dwc2->x * alignmentParameters[221] - alignmentParameters[211];
+		dwc2->y = dwc2->y * alignmentParameters[222] - alignmentParameters[212];
+		dwc3->x = dwc3->x * alignmentParameters[321] - alignmentParameters[311];
+		dwc3->y = dwc3->y * alignmentParameters[322] - alignmentParameters[312];
+		dwc4->x = dwc4->x * alignmentParameters[421] - alignmentParameters[411];
+		dwc4->y = dwc4->y * alignmentParameters[422] - alignmentParameters[412];
 	}
-	*/
 
+
+	mwcs->push_back(*dwc1);
+	mwcs->push_back(*dwc2);
+	mwcs->push_back(*dwc3);
+	mwcs->push_back(*dwc4);
 	event.put(std::move(mwcs), "WireChambers");		
 
 }
@@ -131,6 +139,45 @@ void HGCalTBWireChamberSource::endJob() {
 	delete rootFile;
 }
 
+
+void HGCalTBWireChamberSource::ReadAlignmentParameters() {
+  
+  std::fstream file; 
+  char fragment[100];
+  int readCounter = -2, currentParameter = 0;
+  
+  if (readCounter==-2) {
+    for (int i=1; i<= 4; i++) {
+      alignmentParameters[i*100+11] = 0.;
+      alignmentParameters[i*100+12] = 0.;
+      alignmentParameters[i*100+21] = 1.;
+      alignmentParameters[i*100+22] = 1.;
+    }
+  }	
+  
+  if (alignmentParamaterFile!="")
+  	file.open(alignmentParamaterFile.c_str(), std::fstream::in);
+
+ 
+  while (file.is_open() && !file.eof()) {
+    if (readCounter!=-2) readCounter++;
+    file >> fragment;
+    if (std::string(fragment)=="111") readCounter = 0;  //first parameter is read out
+
+    if (readCounter==0) currentParameter = atoi(fragment);
+    if (readCounter==1) currentParameter = alignmentParameters[currentParameter] = atof(fragment); 
+    if (readCounter==2) if (atof(fragment)==-1.) readCounter = -1;
+    if (readCounter==4) readCounter = -1;
+  }
+
+for (int i=1; i<= 4; i++) {
+  std::cout<<"Alignment parameter: "<<i*100+11<<": "<<alignmentParameters[i*100+11]<<std::endl;
+  std::cout<<"Alignment parameter: "<<i*100+12<<": "<<alignmentParameters[i*100+12]<<std::endl;
+  std::cout<<"Alignment parameter: "<<i*100+21<<": "<<alignmentParameters[i*100+21]<<std::endl;
+  std::cout<<"Alignment parameter: "<<i*100+22<<": "<<alignmentParameters[i*100+22]<<std::endl;
+}
+
+}
 
 #include "FWCore/Framework/interface/InputSourceMacros.h"
 
