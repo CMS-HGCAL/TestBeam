@@ -24,7 +24,7 @@ options.register('reportEvery',
 
 options.parseArguments()
 
-files = ["dwc_run_921.root", "dwc_run_922.root", "dwc_run_923.root"]
+files = ["dwc_run_15.root"]
 
 
 ################################
@@ -55,8 +55,9 @@ process.source = cms.Source("HGCalTBWireChamberSource",
 
 
 process.millepede_binarywriter.binaryFile = cms.string('/afs/cern.ch/user/t/tquast/millepede.bin')
-process.millepede_binarywriter.nLayers = cms.int32(3)
-process.millepede_binarywriter.MWCQualityCut = cms.bool(True)
+process.millepede_binarywriter.nLayers = cms.int32(4)
+process.millepede_binarywriter.MWCQualityCut = cms.bool(False)
+process.millepede_binarywriter.makeTree = cms.untracked.bool(True)
 process.millepede_binarywriter.MWCHAMBERS = cms.InputTag("source","WireChambers","unpack" )
 process.millepede_binarywriter.fittingMethod = cms.string("lineAnalytical")
 process.millepede_binarywriter.binaryFile = cms.string("/tmp/millepede.bin")

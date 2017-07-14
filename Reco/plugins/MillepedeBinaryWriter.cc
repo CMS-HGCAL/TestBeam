@@ -31,6 +31,8 @@
 #include "HGCal/Reco/interface/Sensors.h"
 
 #include "Alignment/ReferenceTrajectories/interface/MilleBinary.h"
+#include "TTree.h"
+#include "TFile.h"
 
 
 class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
@@ -58,7 +60,7 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		bool MWCQualityCut;
 
 
-		double mwc_resolution;
+		double wc_resolution;
 		double energy;
 
 		//helper variables that are set within the event loop, i.e. are defined per event
@@ -67,11 +69,17 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		
 		Mille* mille;
 		gbl::MilleBinary* milleBinary;
+		std::string binaryFileName;
 
   		int NLC, NGLperLayer, NGL;
 		float rMeas, sigma;
 		float *derLc, *derGl;
 		int *label;
+
+		bool makeTree;
+		double res1_x, res1_y;double res2_x, res2_y;double res3_x, res3_y;double res4_x, res4_y;
+		TTree* tree;
+
 };
 
 MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
@@ -97,35 +105,10 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 	useMWCReference = iConfig.getParameter<bool>("useMWCReference");
 	MWCQualityCut = iConfig.getParameter<bool>("MWCQualityCut");
 
-	if (fittingMethod==GBLTRACK) {
-		milleBinary = new gbl::MilleBinary((iConfig.getParameter<std::string>("binaryFile")).c_str());
-		mille = NULL;
-	} else{
-		milleBinary = NULL;
-		mille = new Mille((iConfig.getParameter<std::string>("binaryFile")).c_str());
-		std::cout<<"Writing to the file: "<<iConfig.getParameter<std::string>("binaryFile")<<std::endl;
-	}
-  
-	NLC = 4;
-	NGLperLayer = 4;	//two translations, two scales, but no rotation
-	NGL = nLayers*NGLperLayer;
-	rMeas = 0.;
-	sigma = 0.;
-	derLc = new float[NLC];
-	derGl = new float[NGL];
-	label = new int[NGL];
+	binaryFileName = iConfig.getParameter<std::string>("binaryFile");
 
-	for (int l=0; l<nLayers; l++) {
-		label[l*NGLperLayer + 0] = (l+1)*100 + 11;
-		label[l*NGLperLayer + 1] = (l+1)*100 + 12;
-		label[l*NGLperLayer + 2] = (l+1)*100 + 21;
-		label[l*NGLperLayer + 3] = (l+1)*100 + 22;
-	
-		std::cout<<"label: "<<l*NGLperLayer + 0<<": "<<label[l*NGLperLayer + 0]<<std::endl;
-		std::cout<<"label: "<<l*NGLperLayer + 1<<": "<<label[l*NGLperLayer + 1]<<std::endl;
-		std::cout<<"label: "<<l*NGLperLayer + 2<<": "<<label[l*NGLperLayer + 2]<<std::endl;
-		std::cout<<"label: "<<l*NGLperLayer + 3<<": "<<label[l*NGLperLayer + 3]<<std::endl;
-	}
+	makeTree = iConfig.getUntrackedParameter<bool>("makeTree", true);
+	tree = NULL;
 
 
 }//constructor ends here
@@ -147,16 +130,14 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	}
 
 	
-
-
 	for (size_t n_layer=0; n_layer<4; n_layer++) {
 		//Step 4: add MWCs to the setup if useMWCReference option is set true
 		Sensors[n_layer] = new SensorHitMap(n_layer);				//attention: This is specifically tailored for the 8-layer setup
 
 		Sensors[n_layer]->setLabZ(mwcs->at(n_layer).z, 1.);
-		Sensors[n_layer]->setCenterHitPosition(mwcs->at(n_layer).x, mwcs->at(n_layer).y ,mwc_resolution , mwc_resolution);
+		Sensors[n_layer]->setCenterHitPosition(mwcs->at(n_layer).x, mwcs->at(n_layer).y ,wc_resolution , wc_resolution);
 		Sensors[n_layer]->setParticleEnergy(energy);
-		Sensors[n_layer]->setResidualResolution(mwc_resolution);	
+		Sensors[n_layer]->setResidualResolution(wc_resolution);	
 	}
 
 	//step 5: fill particle tracks
@@ -229,7 +210,32 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			std::cout<<" ---> delta y = "<<rMeas<<std::endl;
 			sigma = Sensors[n_layer]->getResidualResolution();
 			mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
+		
+
+			if (makeTree) {
+				double res_x=x_true - x_predicted;
+				double res_y=y_true - y_predicted;
+				switch(n_layer) {
+					case 0:
+						res1_x=res_x;
+						res1_y=res_y;
+						break;
+					case 1:
+						res2_x=res_x;
+						res2_y=res_y;
+						break;
+					case 2:
+						res3_x=res_x;
+						res3_y=res_y;
+						break;
+					case 3:
+						res4_x=res_x;
+						res4_y=res_y;
+						break;
+				}
+			}
 		}
+		if (makeTree) tree->Fill();
 		mille->end();
 	}
 	
@@ -242,11 +248,55 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	eventCounter++;
 }// analyze ends here
 
+
 void MillepedeBinaryWriter::beginJob() {	
-	mwc_resolution=0.2;
+	wc_resolution=1.0;
 	energy=250;
 
 	eventCounter = 0;
+
+	if (fittingMethod==GBLTRACK) {
+		milleBinary = new gbl::MilleBinary((binaryFileName).c_str());
+		mille = NULL;
+	} else{
+		milleBinary = NULL;
+		mille = new Mille((binaryFileName).c_str());
+		std::cout<<"Writing to the file: "<<binaryFileName<<std::endl;
+	}
+  
+	NLC = 4;
+	NGLperLayer = 4;	//two translations, two scales, but no rotation
+	NGL = nLayers*NGLperLayer;
+	rMeas = 0.;
+	sigma = 0.;
+	derLc = new float[NLC];
+	derGl = new float[NGL];
+	label = new int[NGL];
+
+	for (int l=0; l<nLayers; l++) {
+		label[l*NGLperLayer + 0] = (l+1)*100 + 11;
+		label[l*NGLperLayer + 1] = (l+1)*100 + 12;
+		label[l*NGLperLayer + 2] = (l+1)*100 + 21;
+		label[l*NGLperLayer + 3] = (l+1)*100 + 22;
+	
+		std::cout<<"label: "<<l*NGLperLayer + 0<<": "<<label[l*NGLperLayer + 0]<<std::endl;
+		std::cout<<"label: "<<l*NGLperLayer + 1<<": "<<label[l*NGLperLayer + 1]<<std::endl;
+		std::cout<<"label: "<<l*NGLperLayer + 2<<": "<<label[l*NGLperLayer + 2]<<std::endl;
+		std::cout<<"label: "<<l*NGLperLayer + 3<<": "<<label[l*NGLperLayer + 3]<<std::endl;
+	}
+
+
+	if (makeTree) {
+		tree = new TTree("residuals", "residuals");
+		tree->Branch("res1_x", &res1_x);
+		tree->Branch("res1_y", &res1_y);
+		tree->Branch("res2_x", &res2_x);
+		tree->Branch("res2_y", &res2_y);
+		tree->Branch("res3_x", &res3_x);
+		tree->Branch("res3_y", &res3_y);
+		tree->Branch("res4_x", &res4_x);
+		tree->Branch("res4_y", &res4_y);
+	}
 }
 
 void MillepedeBinaryWriter::endJob() {
@@ -259,6 +309,13 @@ void MillepedeBinaryWriter::endJob() {
 	}
 	delete derLc; delete derGl; delete label;
 	
+	if (tree!=NULL) {
+		TFile* outFile = new TFile("Residuals.root", "RECREATE");
+		tree->Write();
+		outFile->Close();
+		delete tree; delete outFile;
+	}
+
 	std::cout<<"Number of events for alignment with "<<nLayers<<" wire chambers: "<<eventCounter<<std::endl;
 }
 
