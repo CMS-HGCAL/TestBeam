@@ -59,16 +59,18 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		std::vector<double> slope_y;
 
 		int eventCounter;
+		int fileCounter;
+		int nextFileIndex;
 		
 		TFile *rootFile;
 	  	TTree *tree;   //!pointer to the analyzed TTree or TChain
 
-	  	unsigned int n_run; unsigned int n_event; 
+	  	unsigned int n_run; unsigned int n_trigger; 
 	  	std::vector<int> *channels;
 	  	std::vector<int> *dwc_timestamps;
 	 
 	  	TBranch                   *b_run;   
-	  	TBranch                   *b_event;   
+	  	TBranch                   *b_trigger;   
 	  	TBranch                   *b_channels;   
 	  	TBranch                   *b_dwc_timestamps;   
 

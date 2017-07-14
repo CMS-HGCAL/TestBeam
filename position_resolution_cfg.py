@@ -8,8 +8,8 @@ options = VarParsing.VarParsing('standard')
 
 ####################################
 # Options for reading in the data
-options.register('filePath',
-                '/eos/user/t/tquast/data/Testbeam/July2017/DWC/dwc_run_1.root',
+options.register('fileDirectory',
+                '/eos/user/t/tquast/data/Testbeam/July2017/DWC/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Path to the file from which the DWCs are read.'
@@ -24,6 +24,7 @@ options.register('reportEvery',
 
 options.parseArguments()
 
+files = ["dwc_run_921.root", "dwc_run_922.root", "dwc_run_923.root"]
 
 
 ################################
@@ -49,7 +50,7 @@ process.load('HGCal.StandardSequences.LocalReco_cff')
 # Initialize the data read-in plugins
 process.source = cms.Source("HGCalTBWireChamberSource",
     OutputCollectionName = cms.string("WireChambers"), 
-    fileNames = cms.untracked.vstring(["file:%s"%options.filePath])
+    fileNames = cms.untracked.vstring(["file:%s/%s"%(options.fileDirectory, file) for file in files])
 )
 
 

@@ -17,32 +17,52 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 
 	tree = NULL;
 
+	//values from the 
 	n_run=0;
-	n_event=0;
+	n_trigger=0;
 	channels=0;
 	dwc_timestamps=0;
 }
 
 void HGCalTBWireChamberSource::beginJob() {
-
-	rootFile = new TFile(fileNames()[0].c_str());	
-	tree = (TTree*)rootFile->Get("DelayWireChambers");
-
-	tree->SetBranchAddress("run", &n_run, &b_run);
-	tree->SetBranchAddress("event", &n_event, &b_event);
-	tree->SetBranchAddress("channels", &channels, &b_channels);
-	tree->SetBranchAddress("dwc_timestamps", &dwc_timestamps, &b_dwc_timestamps);
+	fileCounter = -1;
+	eventCounter = 0;
+	nextFileIndex = 0;
+	rootFile = NULL;
+	tree = NULL;
 }
 
 
-bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& type) {
-	
-	if (n_event == tree->GetEntries()) {
-		return false;
+bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType) {	
+	if (nextFileIndex == (int)fileNames().size()) {
+
+		return false; 		//end of files is reached
+	}
+
+	if (fileCounter != nextFileIndex) {		//initial loading of a file
+		fileCounter = nextFileIndex;
+		eventCounter = 0;
+  
+		std::cout<<"Opening "<<fileNames()[fileCounter].c_str()<<std::endl;
+		rootFile = new TFile(fileNames()[fileCounter].c_str());	
+		tree = (TTree*)rootFile->Get("DelayWireChambers");
+
+		tree->SetBranchAddress("run", &n_run, &b_run);
+		tree->SetBranchAddress("event", &n_trigger, &b_trigger);
+		tree->SetBranchAddress("channels", &channels, &b_channels);
+		tree->SetBranchAddress("dwc_timestamps", &dwc_timestamps, &b_dwc_timestamps);
+	}
+
+
+	if (eventCounter == tree->GetEntries()) {
+		nextFileIndex++;
+		fileCounter = -1;
+		setRunAndEventInfo(id, time, evType);
 	}
 	
-	tree->GetEntry(n_event);
-	
+	tree->GetEntry(eventCounter);
+	eventCounter++;
+
 	return true;
 }
 
