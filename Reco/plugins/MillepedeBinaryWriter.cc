@@ -126,10 +126,10 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	edm::Handle<WireChambers> mwcs;
 
 	event.getByToken(MWCToken, mwcs);
-	if (MWCQualityCut) {
-		for (int n_layer=0; n_layer<nLayers; n_layer++)
-			if (!mwcs->at(n_layer).goodMeasurement) return;
-	}
+	
+	for (int n_layer=0; n_layer<nLayers; n_layer++)
+		if (!mwcs->at(n_layer).goodMeasurement) return;
+	
 
 	
 	for (size_t n_layer=0; n_layer<4; n_layer++) {
@@ -168,7 +168,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			double x_true = position_true.first;
 			double y_true = position_true.second;
 			
-			if (fabs(x_true - x_predicted) > 3. || fabs(y_true - y_predicted) > 3.) return;
+			if (MWCQualityCut&&(fabs(x_true - x_predicted) > 10. || fabs(y_true - y_predicted) > 10.)) return;
 
 			Sensors[n_layer]->getHitPositionError();	
 
@@ -188,8 +188,8 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 
 			derGl[n_layer*NGLperLayer+0] = 1.;		
 			derGl[n_layer*NGLperLayer+1] = 0.;		
-			derGl[n_layer*NGLperLayer+2] = x_true;		
-			derGl[n_layer*NGLperLayer+3] = 0.;		
+			//derGl[n_layer*NGLperLayer+2] = x_true;		
+			//derGl[n_layer*NGLperLayer+3] = 0.;		
 
 			rMeas = x_true - x_predicted;
 			//std::cout<<" ---> delta x = "<<rMeas<<"  ";
@@ -205,8 +205,8 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 
 			derGl[n_layer*NGLperLayer+0] = 0.;		
 			derGl[n_layer*NGLperLayer+1] = 1.;			
-			derGl[n_layer*NGLperLayer+2] = 0.;			
-			derGl[n_layer*NGLperLayer+3] = y_true;			
+			//derGl[n_layer*NGLperLayer+2] = 0.;			
+			//derGl[n_layer*NGLperLayer+3] = y_true;			
 
 			rMeas = y_true - y_predicted;
 			//std::cout<<" ---> delta y = "<<rMeas<<std::endl;
@@ -268,7 +268,7 @@ void MillepedeBinaryWriter::beginJob() {
 	}
   
 	NLC = 4;
-	NGLperLayer = 4;	//two translations, two scales, but no rotation
+	NGLperLayer = 2;	//two translations, no scales, but no rotation
 	NGL = nLayers*NGLperLayer;
 	rMeas = 0.;
 	sigma = 0.;
@@ -279,13 +279,8 @@ void MillepedeBinaryWriter::beginJob() {
 	for (int l=0; l<nLayers; l++) {
 		label[l*NGLperLayer + 0] = (l+1)*100 + 11;
 		label[l*NGLperLayer + 1] = (l+1)*100 + 12;
-		label[l*NGLperLayer + 2] = (l+1)*100 + 21;
-		label[l*NGLperLayer + 3] = (l+1)*100 + 22;
-	
-		std::cout<<"label: "<<l*NGLperLayer + 0<<": "<<label[l*NGLperLayer + 0]<<std::endl;
-		std::cout<<"label: "<<l*NGLperLayer + 1<<": "<<label[l*NGLperLayer + 1]<<std::endl;
-		std::cout<<"label: "<<l*NGLperLayer + 2<<": "<<label[l*NGLperLayer + 2]<<std::endl;
-		std::cout<<"label: "<<l*NGLperLayer + 3<<": "<<label[l*NGLperLayer + 3]<<std::endl;
+		//label[l*NGLperLayer + 2] = (l+1)*100 + 21;
+		//label[l*NGLperLayer + 3] = (l+1)*100 + 22;
 	}
 
 
