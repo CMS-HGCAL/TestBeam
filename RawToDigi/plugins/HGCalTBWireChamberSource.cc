@@ -101,7 +101,6 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc1->goodMeasurement_Y = ((dwc_timestamps->at(DWC1_DOWN) >= 0) && (dwc_timestamps->at(DWC1_UP) >=0));
 	dwc1->goodMeasurement = (dwc1->goodMeasurement_X && dwc1->goodMeasurement_Y);
 
-	mwcs->push_back(*dwc1);
 
 
 	//DWC 2
@@ -126,7 +125,6 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc2->goodMeasurement_Y = ((dwc_timestamps->at(DWC2_DOWN) >= 0) && (dwc_timestamps->at(DWC2_UP) >=0));
 	dwc2->goodMeasurement = (dwc2->goodMeasurement_X && dwc2->goodMeasurement_Y);
 
-	mwcs->push_back(*dwc2);
 
 
 	//DWC 3
@@ -151,7 +149,6 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc3->goodMeasurement_Y = ((dwc_timestamps->at(DWC3_DOWN) >= 0) && (dwc_timestamps->at(DWC3_UP) >=0));
 	dwc3->goodMeasurement = (dwc3->goodMeasurement_X && dwc3->goodMeasurement_Y);
 
-	mwcs->push_back(*dwc3);
 
 
 	//DWC 4
@@ -176,7 +173,6 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc4->goodMeasurement_Y = ((dwc_timestamps->at(DWC4_DOWN) >= 0) && (dwc_timestamps->at(DWC4_UP) >=0));
 	dwc4->goodMeasurement = (dwc4->goodMeasurement_X && dwc4->goodMeasurement_Y);
 
-	mwcs->push_back(*dwc4);
 
 
 	if (performAlignment) {
@@ -190,7 +186,10 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 		dwc4->y = dwc4->y * alignmentParameters[422] - alignmentParameters[412];
 	}
 
-
+	mwcs->push_back(*dwc1);
+	mwcs->push_back(*dwc2);
+	mwcs->push_back(*dwc3);
+	mwcs->push_back(*dwc4);
 
 
 	event.put(std::move(mwcs), "WireChambers");		
