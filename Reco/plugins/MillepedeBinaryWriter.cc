@@ -23,6 +23,8 @@
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+
 #include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
 #include "HGCal/Reco/interface/Mille.h"
 
@@ -49,6 +51,7 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		// ----------member data ---------------------------
 
 		edm::EDGetTokenT<WireChambers> MWCToken;
+		edm::Service<TFileService> fs;
 
 		int eventCounter;
 		int acceptedCounter;
@@ -84,6 +87,8 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 };
 
 MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
+	usesResource("TFileService");
+
 	// initialization	
 	MWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
 
@@ -285,7 +290,7 @@ void MillepedeBinaryWriter::beginJob() {
 
 
 	if (makeTree) {
-		tree = new TTree("residuals", "residuals");
+		tree = fs->make<TTree>("residuals", "residuals");
 		tree->Branch("res1_x", &res1_x);
 		tree->Branch("res1_y", &res1_y);
 		tree->Branch("res2_x", &res2_x);
@@ -307,13 +312,6 @@ void MillepedeBinaryWriter::endJob() {
 	}
 	delete derLc; delete derGl; delete label;
 	
-	if (tree!=NULL) {
-		TFile* outFile = new TFile("Residuals.root", "RECREATE");
-		tree->Write();
-		outFile->Close();
-		delete tree; delete outFile;
-	}
-
 	std::cout<<"Number of events for alignment with "<<nLayers<<" wire chambers: "<<acceptedCounter<<" / "<<eventCounter<<std::endl;
 }
 
