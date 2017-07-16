@@ -15,7 +15,6 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	performAlignment = pset.getUntrackedParameter<bool>("performAlignment", false);
 	alignmentParamaterFile = pset.getUntrackedParameter<std::string>("alignmentParamaterFile", "");
 
-	makeTree = pset.getUntrackedParameter<bool>("makeTree", true);
 
 	produces<WireChambers>("WireChambers");
 
@@ -37,13 +36,6 @@ void HGCalTBWireChamberSource::beginJob() {
 
 	if (performAlignment) ReadAlignmentParameters();
 
-	if (makeTree) {
-		outTree = new TTree("averaged_timestamps", "averaged_timestamps");
-	  	outTree->Branch("time_DWC1", &time_DWC1);
-	  	outTree->Branch("time_DWC2", &time_DWC2);
-	  	outTree->Branch("time_DWC3", &time_DWC3);
-	  	outTree->Branch("time_DWC4", &time_DWC4);
-	}
 }
 
 
@@ -86,8 +78,22 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	std::auto_ptr<WireChambers> mwcs(new WireChambers);	
 
 	//make the wire chambers
+
+	//DWC 1
 	WireChamberData* dwc1 = new WireChamberData();
 	dwc1->ID = 1;
+	dwc1->recordedTimeStamps=0;
+	dwc1->averagedTimeStamp=0;
+	dwc1->recordedTimeStamps+=(dwc_timestamps->at(DWC1_LEFT)>=0) ? 1 : 0;
+	dwc1->averagedTimeStamp+=(dwc_timestamps->at(DWC1_LEFT)>=0) ? dwc_timestamps->at(DWC1_LEFT) : 0;
+	dwc1->recordedTimeStamps+=(dwc_timestamps->at(DWC1_RIGHT)>=0) ? 1 : 0;
+	dwc1->averagedTimeStamp+=(dwc_timestamps->at(DWC1_RIGHT)>=0) ? dwc_timestamps->at(DWC1_RIGHT) : 0;
+	dwc1->recordedTimeStamps+=(dwc_timestamps->at(DWC1_DOWN)>=0) ? 1 : 0;
+	dwc1->averagedTimeStamp+=(dwc_timestamps->at(DWC1_DOWN)>=0) ? dwc_timestamps->at(DWC1_DOWN) : 0;
+	dwc1->recordedTimeStamps+=(dwc_timestamps->at(DWC1_UP)>=0) ? 1 : 0;
+	dwc1->averagedTimeStamp+=(dwc_timestamps->at(DWC1_UP)>=0) ? dwc_timestamps->at(DWC1_UP) : 0;
+	if (dwc1->recordedTimeStamps>0) dwc1->averagedTimeStamp /= dwc1->recordedTimeStamps;
+
 	dwc1->x = slope_x.at(0) * (dwc_timestamps->at(DWC1_LEFT)-dwc_timestamps->at(DWC1_RIGHT));
 	dwc1->y = slope_y.at(0) * (dwc_timestamps->at(DWC1_DOWN)-dwc_timestamps->at(DWC1_UP));
 	dwc1->z = dwc_z1;
@@ -95,49 +101,83 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc1->goodMeasurement_Y = ((dwc_timestamps->at(DWC1_DOWN) >= 0) && (dwc_timestamps->at(DWC1_UP) >=0));
 	dwc1->goodMeasurement = (dwc1->goodMeasurement_X && dwc1->goodMeasurement_Y);
 
-	if (dwc_timestamps->at(DWC1_LEFT)>=0 && dwc_timestamps->at(DWC1_RIGHT)>=0 && dwc_timestamps->at(DWC1_DOWN)>=0 && dwc_timestamps->at(DWC1_UP))
-		time_DWC1 = (dwc_timestamps->at(DWC1_LEFT)+dwc_timestamps->at(DWC1_RIGHT)+dwc_timestamps->at(DWC1_DOWN)+dwc_timestamps->at(DWC1_UP))/4;
-	else
-		time_DWC1 = -1;
+	mwcs->push_back(*dwc1);
 
+
+	//DWC 2
 	WireChamberData* dwc2 = new WireChamberData();
 	dwc2->ID = 2;
+	dwc2->recordedTimeStamps=0;
+	dwc2->averagedTimeStamp=0;
+	dwc2->recordedTimeStamps+=(dwc_timestamps->at(DWC2_LEFT)>=0) ? 1 : 0;
+	dwc2->averagedTimeStamp+=(dwc_timestamps->at(DWC2_LEFT)>=0) ? dwc_timestamps->at(DWC2_LEFT) : 0;
+	dwc2->recordedTimeStamps+=(dwc_timestamps->at(DWC2_RIGHT)>=0) ? 1 : 0;
+	dwc2->averagedTimeStamp+=(dwc_timestamps->at(DWC2_RIGHT)>=0) ? dwc_timestamps->at(DWC2_RIGHT) : 0;
+	dwc2->recordedTimeStamps+=(dwc_timestamps->at(DWC2_DOWN)>=0) ? 1 : 0;
+	dwc2->averagedTimeStamp+=(dwc_timestamps->at(DWC2_DOWN)>=0) ? dwc_timestamps->at(DWC2_DOWN) : 0;
+	dwc2->recordedTimeStamps+=(dwc_timestamps->at(DWC2_UP)>=0) ? 1 : 0;
+	dwc2->averagedTimeStamp+=(dwc_timestamps->at(DWC2_UP)>=0) ? dwc_timestamps->at(DWC1_UP) : 0;
+	if (dwc2->recordedTimeStamps>0) dwc2->averagedTimeStamp /= dwc2->recordedTimeStamps;
+
 	dwc2->x = slope_x.at(1) * (dwc_timestamps->at(DWC2_LEFT)-dwc_timestamps->at(DWC2_RIGHT));
 	dwc2->y = slope_y.at(1) * (dwc_timestamps->at(DWC2_DOWN)-dwc_timestamps->at(DWC2_UP));
 	dwc2->z = dwc_z2;
 	dwc2->goodMeasurement_X = ((dwc_timestamps->at(DWC2_LEFT) >= 0) && (dwc_timestamps->at(DWC2_RIGHT) >=0));
 	dwc2->goodMeasurement_Y = ((dwc_timestamps->at(DWC2_DOWN) >= 0) && (dwc_timestamps->at(DWC2_UP) >=0));
 	dwc2->goodMeasurement = (dwc2->goodMeasurement_X && dwc2->goodMeasurement_Y);
-	if (dwc_timestamps->at(DWC2_LEFT)>=0 && dwc_timestamps->at(DWC2_RIGHT)>=0 && dwc_timestamps->at(DWC2_DOWN)>=0 && dwc_timestamps->at(DWC2_UP))
-		time_DWC2 = (dwc_timestamps->at(DWC2_LEFT)+dwc_timestamps->at(DWC2_RIGHT)+dwc_timestamps->at(DWC2_DOWN)+dwc_timestamps->at(DWC2_UP))/4;
-	else
-		time_DWC2 = -1;
 
+	mwcs->push_back(*dwc2);
+
+
+	//DWC 3
 	WireChamberData* dwc3 = new WireChamberData();
 	dwc3->ID = 3;
+	dwc3->recordedTimeStamps=0;
+	dwc3->averagedTimeStamp=0;
+	dwc3->recordedTimeStamps+=(dwc_timestamps->at(DWC3_LEFT)>=0) ? 1 : 0;
+	dwc3->averagedTimeStamp+=(dwc_timestamps->at(DWC3_LEFT)>=0) ? dwc_timestamps->at(DWC3_LEFT) : 0;
+	dwc3->recordedTimeStamps+=(dwc_timestamps->at(DWC3_RIGHT)>=0) ? 1 : 0;
+	dwc3->averagedTimeStamp+=(dwc_timestamps->at(DWC3_RIGHT)>=0) ? dwc_timestamps->at(DWC3_RIGHT) : 0;
+	dwc3->recordedTimeStamps+=(dwc_timestamps->at(DWC3_DOWN)>=0) ? 1 : 0;
+	dwc3->averagedTimeStamp+=(dwc_timestamps->at(DWC3_DOWN)>=0) ? dwc_timestamps->at(DWC3_DOWN) : 0;
+	dwc3->recordedTimeStamps+=(dwc_timestamps->at(DWC3_UP)>=0) ? 1 : 0;
+	dwc3->averagedTimeStamp+=(dwc_timestamps->at(DWC3_UP)>=0) ? dwc_timestamps->at(DWC1_UP) : 0;
+	if (dwc3->recordedTimeStamps>0) dwc3->averagedTimeStamp /= dwc3->recordedTimeStamps;
+
 	dwc3->x = slope_x.at(2) * (dwc_timestamps->at(DWC3_LEFT)-dwc_timestamps->at(DWC3_RIGHT));
 	dwc3->y = slope_y.at(2) * (dwc_timestamps->at(DWC3_DOWN)-dwc_timestamps->at(DWC3_UP));
 	dwc3->z = dwc_z3;
 	dwc3->goodMeasurement_X = ((dwc_timestamps->at(DWC3_LEFT) >= 0) && (dwc_timestamps->at(DWC3_RIGHT) >=0));
 	dwc3->goodMeasurement_Y = ((dwc_timestamps->at(DWC3_DOWN) >= 0) && (dwc_timestamps->at(DWC3_UP) >=0));
 	dwc3->goodMeasurement = (dwc3->goodMeasurement_X && dwc3->goodMeasurement_Y);
-	if (dwc_timestamps->at(DWC3_LEFT)>=0 && dwc_timestamps->at(DWC3_RIGHT)>=0 && dwc_timestamps->at(DWC3_DOWN)>=0 && dwc_timestamps->at(DWC3_UP))
-		time_DWC3 = (dwc_timestamps->at(DWC3_LEFT)+dwc_timestamps->at(DWC3_RIGHT)+dwc_timestamps->at(DWC3_DOWN)+dwc_timestamps->at(DWC3_UP))/4;
-	else
-		time_DWC3 = -1;
 
+	mwcs->push_back(*dwc3);
+
+
+	//DWC 4
 	WireChamberData* dwc4 = new WireChamberData();
 	dwc4->ID = 4;
+	dwc4->recordedTimeStamps=0;
+	dwc4->averagedTimeStamp=0;
+	dwc4->recordedTimeStamps+=(dwc_timestamps->at(DWC4_LEFT)>=0) ? 1 : 0;
+	dwc4->averagedTimeStamp+=(dwc_timestamps->at(DWC4_LEFT)>=0) ? dwc_timestamps->at(DWC4_LEFT) : 0;
+	dwc4->recordedTimeStamps+=(dwc_timestamps->at(DWC4_RIGHT)>=0) ? 1 : 0;
+	dwc4->averagedTimeStamp+=(dwc_timestamps->at(DWC4_RIGHT)>=0) ? dwc_timestamps->at(DWC4_RIGHT) : 0;
+	dwc4->recordedTimeStamps+=(dwc_timestamps->at(DWC4_DOWN)>=0) ? 1 : 0;
+	dwc4->averagedTimeStamp+=(dwc_timestamps->at(DWC4_DOWN)>=0) ? dwc_timestamps->at(DWC4_DOWN) : 0;
+	dwc4->recordedTimeStamps+=(dwc_timestamps->at(DWC4_UP)>=0) ? 1 : 0;
+	dwc4->averagedTimeStamp+=(dwc_timestamps->at(DWC4_UP)>=0) ? dwc_timestamps->at(DWC1_UP) : 0;
+	if (dwc4->recordedTimeStamps>0) dwc4->averagedTimeStamp /= dwc4->recordedTimeStamps;
+	
 	dwc4->x = slope_x.at(2) * (dwc_timestamps->at(DWC4_LEFT)-dwc_timestamps->at(DWC4_RIGHT));
 	dwc4->y = slope_y.at(2) * (dwc_timestamps->at(DWC4_DOWN)-dwc_timestamps->at(DWC4_UP));
 	dwc4->z = dwc_z3;
 	dwc4->goodMeasurement_X = ((dwc_timestamps->at(DWC4_LEFT) >= 0) && (dwc_timestamps->at(DWC4_RIGHT) >=0));
 	dwc4->goodMeasurement_Y = ((dwc_timestamps->at(DWC4_DOWN) >= 0) && (dwc_timestamps->at(DWC4_UP) >=0));
 	dwc4->goodMeasurement = (dwc4->goodMeasurement_X && dwc4->goodMeasurement_Y);
-	if (dwc_timestamps->at(DWC4_LEFT)>=0 && dwc_timestamps->at(DWC4_RIGHT)>=0 && dwc_timestamps->at(DWC4_DOWN)>=0 && dwc_timestamps->at(DWC4_UP))
-		time_DWC4 = (dwc_timestamps->at(DWC4_LEFT)+dwc_timestamps->at(DWC4_RIGHT)+dwc_timestamps->at(DWC4_DOWN)+dwc_timestamps->at(DWC4_UP))/4;
-	else
-		time_DWC4 = -1;
+
+	mwcs->push_back(*dwc4);
+
 
 	if (performAlignment) {
 		dwc1->x = dwc1->x * alignmentParameters[121] - alignmentParameters[111];
@@ -151,23 +191,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	}
 
 
-	mwcs->push_back(*dwc1);
-	mwcs->push_back(*dwc2);
-	mwcs->push_back(*dwc3);
-	mwcs->push_back(*dwc4);
 
-	if (makeTree) outTree->Fill();
 
 	event.put(std::move(mwcs), "WireChambers");		
-
-}
-
-void HGCalTBWireChamberSource::endJob() {
-	if (makeTree) {
-		TFile* outFile = new TFile("timestamps.root", "RECREATE");
-		outTree->Write();
-		outFile->Close();	
-	}
 
 }
 

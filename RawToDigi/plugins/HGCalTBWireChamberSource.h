@@ -30,12 +30,12 @@ enum DWC_to_TDC_MAP {
 	DWC2_RIGHT = 5,
 	DWC2_DOWN = 6,
 	DWC2_UP = 7,
-	DWC3_LEFT = 15,
-	DWC3_RIGHT = 14,
+	DWC3_LEFT = 14,		//default: 15 --> but mind the flip for these chambers
+	DWC3_RIGHT = 15,	//default: 14 --> but mind the flip for these chambers
 	DWC3_DOWN = 13,
 	DWC3_UP = 12,
-	DWC4_LEFT = 11,
-	DWC4_RIGHT = 10,
+	DWC4_LEFT = 10,		//defalt: 10 --> but mind the flip for these chambers
+	DWC4_RIGHT = 11,	//default: 11 --> but mind the flip for these chambers
 	DWC4_DOWN = 9,
 	DWC4_UP = 8
 };
@@ -52,7 +52,6 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& type);
 		virtual void produce(edm::Event & e);
 	  	virtual void beginJob() override;
-	  	virtual void endJob() override;
 	  	void ReadAlignmentParameters();
 		
 		std::string outputCollectionName;
@@ -74,12 +73,6 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 	  	std::vector<int> *channels;
 	  	std::vector<int> *dwc_timestamps;
 	 
-	  	bool makeTree;
-	  	TTree* outTree;
-	  	double time_DWC1;
-	  	double time_DWC2;
-	  	double time_DWC3;
-	  	double time_DWC4;
 
 	  	TBranch                   *b_run;   
 	  	TBranch                   *b_trigger;   

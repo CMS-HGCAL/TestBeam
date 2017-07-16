@@ -63,7 +63,6 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		bool useMWCReference;
 		bool MWCQualityCut;
 
-
 		double wc_resolution;
 		double energy;
 
@@ -81,7 +80,11 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		int *label;
 
 		bool makeTree;
-		double res1_x, res1_y;double res2_x, res2_y;double res3_x, res3_y;double res4_x, res4_y;
+		double res1_x, res1_y, res2_x, res2_y, res3_x, res3_y, res4_x, res4_y;
+		double reco1_x, reco1_y, reco2_x, reco2_y, reco3_x, reco3_y, reco4_x, reco4_y;
+	  	double time_DWC1, time_DWC2, time_DWC3, time_DWC4;
+	  	double x1_m_x2, x1_m_x3, x1_m_x4, x2_m_x3, x2_m_x4, x3_m_x4;
+	  	double y1_m_y2, y1_m_y3, y1_m_y4, y2_m_y3, y2_m_y4, y3_m_y4;
 		TTree* tree;
 
 };
@@ -128,21 +131,21 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	eventCounter++;
 
 	//get the multi wire chambers
-	edm::Handle<WireChambers> mwcs;
+	edm::Handle<WireChambers> dwcs;
 
-	event.getByToken(MWCToken, mwcs);
+	event.getByToken(MWCToken, dwcs);
 	
 	for (int n_layer=0; n_layer<nLayers; n_layer++)
-		if (!mwcs->at(n_layer).goodMeasurement) return;
+		if (!dwcs->at(n_layer).goodMeasurement) return;
 	
 
 	
 	for (size_t n_layer=0; n_layer<4; n_layer++) {
-		//Step 4: add MWCs to the setup if useMWCReference option is set true
+		//Step 4: add dWCs to the setup if useMWCReference option is set true
 		Sensors[n_layer] = new SensorHitMap(n_layer);				//attention: This is specifically tailored for the 8-layer setup
 
-		Sensors[n_layer]->setLabZ(mwcs->at(n_layer).z, 1.);
-		Sensors[n_layer]->setCenterHitPosition(mwcs->at(n_layer).x, mwcs->at(n_layer).y ,wc_resolution , wc_resolution);
+		Sensors[n_layer]->setLabZ(dwcs->at(n_layer).z, 1.);
+		Sensors[n_layer]->setCenterHitPosition(dwcs->at(n_layer).x, dwcs->at(n_layer).y ,wc_resolution , wc_resolution);
 		Sensors[n_layer]->setParticleEnergy(energy);
 		Sensors[n_layer]->setResidualResolution(wc_resolution);	
 	}
@@ -218,7 +221,6 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			sigma = Sensors[n_layer]->getResidualResolution();
 			mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
 		
-
 			if (makeTree) {
 				double res_x=x_true - x_predicted;
 				double res_y=y_true - y_predicted;
@@ -242,7 +244,38 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 				}
 			}
 		}
-		if (makeTree) tree->Fill();
+
+		if (makeTree) {
+
+		 	time_DWC1 = dwcs->at(0).averagedTimeStamp;
+		 	time_DWC2 = dwcs->at(1).averagedTimeStamp;
+		 	time_DWC3 = dwcs->at(2).averagedTimeStamp;
+		 	time_DWC4 = dwcs->at(3).averagedTimeStamp;
+
+		 	x1_m_x2 = dwcs->at(0).x - dwcs->at(1).x;
+		 	x1_m_x3 = dwcs->at(0).x - dwcs->at(2).x;
+			x1_m_x4 = dwcs->at(0).x - dwcs->at(3).x;
+			x2_m_x3 = dwcs->at(1).x - dwcs->at(2).x;
+			x2_m_x4 = dwcs->at(1).x - dwcs->at(3).x;
+			x3_m_x4 = dwcs->at(2).x - dwcs->at(3).x;
+			y1_m_y2 = dwcs->at(0).y - dwcs->at(1).y;
+			y1_m_y3 = dwcs->at(0).y - dwcs->at(2).y;
+			y1_m_y4 = dwcs->at(0).y - dwcs->at(3).y;
+			y2_m_y3 = dwcs->at(1).y - dwcs->at(2).y;
+			y2_m_y4 = dwcs->at(1).y - dwcs->at(3).y;
+			y3_m_y4 = dwcs->at(2).y - dwcs->at(3).y;
+	 
+			reco1_x = dwcs->at(0).x;
+			reco1_y = dwcs->at(0).y;
+			reco2_x = dwcs->at(1).x;
+			reco2_y = dwcs->at(1).y;
+			reco3_x = dwcs->at(2).x;
+			reco3_y = dwcs->at(2).y;
+			reco4_x = dwcs->at(3).x;
+			reco4_y = dwcs->at(3).y;
+
+			tree->Fill();
+		}
 		mille->end();
 	}
 	
@@ -290,7 +323,7 @@ void MillepedeBinaryWriter::beginJob() {
 
 
 	if (makeTree) {
-		tree = fs->make<TTree>("residuals", "residuals");
+		tree = fs->make<TTree>("dwc_reco", "dwc_reco");
 		tree->Branch("res1_x", &res1_x);
 		tree->Branch("res1_y", &res1_y);
 		tree->Branch("res2_x", &res2_x);
@@ -299,6 +332,31 @@ void MillepedeBinaryWriter::beginJob() {
 		tree->Branch("res3_y", &res3_y);
 		tree->Branch("res4_x", &res4_x);
 		tree->Branch("res4_y", &res4_y);
+		tree->Branch("reco1_x", &reco1_x);
+		tree->Branch("reco1_y", &reco1_y);
+		tree->Branch("reco2_x", &reco2_x);
+		tree->Branch("reco2_y", &reco2_y);
+		tree->Branch("reco3_x", &reco3_x);
+		tree->Branch("reco3_y", &reco3_y);
+		tree->Branch("reco4_x", &reco4_x);
+		tree->Branch("reco4_y", &reco4_y);
+	  	tree->Branch("time_DWC1", &time_DWC1);
+	  	tree->Branch("time_DWC2", &time_DWC2);
+	  	tree->Branch("time_DWC3", &time_DWC3);
+	  	tree->Branch("time_DWC4", &time_DWC4);
+	  	tree->Branch("x1_m_x2", &x1_m_x2);
+	  	tree->Branch("x1_m_x3", &x1_m_x3);
+	  	tree->Branch("x1_m_x4", &x1_m_x4);
+	  	tree->Branch("x2_m_x3", &x2_m_x3);
+	  	tree->Branch("x2_m_x4", &x2_m_x4);
+	  	tree->Branch("x3_m_x4", &x3_m_x4);
+	  	tree->Branch("y1_m_y2", &y1_m_y2);
+	  	tree->Branch("y1_m_y3", &y1_m_y3);
+	  	tree->Branch("y1_m_y4", &y1_m_y4);
+	  	tree->Branch("y2_m_y3", &y2_m_y3);
+	  	tree->Branch("y2_m_y4", &y2_m_y4);
+	  	tree->Branch("y3_m_y4", &y3_m_y4);
+
 	}
 }
 
