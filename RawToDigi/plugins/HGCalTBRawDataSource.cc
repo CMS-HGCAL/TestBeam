@@ -78,7 +78,7 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
     }
     for( size_t i=0; i<m_nWords; i++ ){
       uint32_t aint;
-      char buf[] = {m_buffer[i*4+3],m_buffer[i*4+2],m_buffer[i*4+1],m_buffer[i*4]};
+      char buf[] = {m_buffer[i*4],m_buffer[i*4+1],m_buffer[i*4+2],m_buffer[i*4+3]};
       memcpy(&aint, &buf, sizeof(aint));
       rawData.push_back(aint);
     }
