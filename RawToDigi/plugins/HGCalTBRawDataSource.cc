@@ -63,8 +63,8 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
   }
 
   m_decodedData.clear();
-  std::vector<uint32_t> rawData;
   for( uint16_t iorm=0; iorm<m_nOrmBoards; iorm++ ){
+    std::vector<uint32_t> rawData;
     m_input.seekg( m_headerSize+m_nOrmBoards*m_event*(m_nWords*4+m_eventTrailerSize)+iorm*(m_nWords*4+m_eventTrailerSize), std::ios::beg );
     m_input.read ( m_buffer, m_nWords*4+m_eventTrailerSize );
     if( !m_input.good() ){
@@ -147,7 +147,7 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
     skirocs->push_back(skiroc);
   }
   //getchar();
-  //std::cout << "skirocs->size() = " << skirocs->size() << std::endl;
+  std::cout << "skirocs->size() = " << skirocs->size() << std::endl;
   e.put(skirocs, m_outputCollectionName);
   m_event++;
 }
