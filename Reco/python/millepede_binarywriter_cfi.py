@@ -7,5 +7,6 @@ millepede_binarywriter  = cms.EDAnalyzer("MillepedeBinaryWriter",
                                 useMWCReference = cms.bool(True),
                                 MWCQualityCut = cms.bool(True),
                                 MWCHAMBERS = cms.InputTag("source","WireChambers","unpack" ), 
+                                RUNDATA = cms.InputTag("source","RunData","unpack" ), 
                                 fittingMethod = cms.string("lineAnalytical")
                               )

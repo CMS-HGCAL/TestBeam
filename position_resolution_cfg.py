@@ -126,5 +126,5 @@ process.options = cms.untracked.PSet(
     SkipEvent = cms.untracked.vstring('ProductNotFound')
 )
 
-process.p = cms.Path(process.millepede_binarywriter)
+process.p = cms.Path(process.millepede_binarywriter*process.dwc_ntupelizer)
 
