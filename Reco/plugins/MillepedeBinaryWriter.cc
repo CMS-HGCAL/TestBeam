@@ -56,7 +56,6 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		edm::Service<TFileService> fs;
 
 		int eventCounter;
-		int acceptedCounter;
 
 		std::string methodString;
 		TrackFittingMethod fittingMethod;		
@@ -267,7 +266,6 @@ void MillepedeBinaryWriter::beginJob() {
 	wc_resolution=1.0;	//dummy value
 	energy=250;			//dummy value
 
-	acceptedCounter = 0;
 	eventCounter = 0;
 
 	if (fittingMethod==GBLTRACK) {
@@ -320,7 +318,6 @@ void MillepedeBinaryWriter::endJob() {
 	}
 	delete derLc; delete derGl; delete label;
 	
-	std::cout<<"Number of events for alignment with "<<nLayers<<" wire chambers: "<<acceptedCounter<<" / "<<eventCounter<<std::endl;
 }
 
 void MillepedeBinaryWriter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {

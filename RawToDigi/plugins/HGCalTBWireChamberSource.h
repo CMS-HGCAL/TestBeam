@@ -66,7 +66,7 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 
 		std::vector<std::string> timingFileNames;
 		std::vector<int> skipFirstEventInDWCProducer;
-		std::vector<int> runType;
+		std::vector<std::string> runType;
 		std::map<int, int> trigger_to_event_table;
 
 		int rootTreeIndex;

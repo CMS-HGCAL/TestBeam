@@ -17,7 +17,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 
 	timingFileNames = pset.getParameter<std::vector<std::string> >("timingFileNames");
 	skipFirstEventInDWCProducer = pset.getParameter<std::vector<int> >("skipFirstEventInDWCProducer");
-	runType = pset.getParameter<std::vector<int> >("runType");
+	runType = pset.getParameter<std::vector<std::string> >("runType");
 
 	produces<WireChambers>("WireChambers");
 	produces<RunData>("RunData");
