@@ -4,6 +4,7 @@
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
 
+#include "HGCal/DataFormats/interface/HGCalTBRunData.h"
 #include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
 
 #include <fstream>
@@ -53,6 +54,7 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		virtual void produce(edm::Event & e);
 	  	virtual void beginJob() override;
 	  	void ReadAlignmentParameters();
+	  	void ReadTimingFile(std::string);
 		
 		std::string outputCollectionName;
 		std::vector<double> slope_x;
@@ -62,7 +64,11 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 	  	std::string alignmentParamaterFile;
 		std::map<int, double> alignmentParameters;
 
-		int eventCounter;
+		std::vector<std::string> timingFileNames;
+		std::vector<int> skipFirstEventInDWCProducer;
+		std::map<int, int> trigger_to_event_table;
+
+		int rootTreeIndex;
 		int fileCounter;
 		int nextFileIndex;
 		

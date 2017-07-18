@@ -24,9 +24,53 @@ options.register('reportEvery',
 
 options.parseArguments()
 
-#files = ["dwc_run_10.root", "dwc_run_12.root", "dwc_run_13.root", "dwc_run_14.root", "dwc_run_15.root"]
-runs = [993, 994, 996, 997, 998, 999, 1000, 1001, 1002, 1003, 1004, 1012, 1013, 1025, 1027, 1028, 1029, 1030, 1032, 1033, 1035, 1036, 1039, 1045]
-files = ["dwc_run_%s.root" % run for run in runs]
+#300 GeV pions
+input_data = [(993, "150717_0800", 0)]
+input_data.append((994, "150717_0838", 0))
+input_data.append((996, "150717_0924", 0))
+input_data.append((997, "150717_1009", 0))
+input_data.append((998, "150717_1100", 0))
+input_data.append((999, "150717_1145", 0))
+input_data.append((1000, "150717_1343", 0))
+input_data.append((1001, "150717_1455", 0))
+input_data.append((1002, "150717_1532", 0))
+input_data.append((1003, "150717_1619", 0))
+input_data.append((1004, "150717_1701", 0))
+input_data.append((1012, "150717_1851", 0))
+input_data.append((1013, "150717_1929", 0))
+input_data.append((1025, "150717_2331", 0))
+input_data.append((1027, "160717_0117", 0))
+input_data.append((1028, "160717_0153", 0))
+input_data.append((1029, "160717_0229", 0))
+input_data.append((1030, "160717_0305", 0))
+input_data.append((1032, "160717_0347", 0))
+input_data.append((1033, "160717_0422", 0))
+input_data.append((1034, "160717_0459", 0))
+input_data.append((1035, "160717_0546", 0))
+input_data.append((1036, "160717_0710", 0))
+input_data.append((1039, "160717_0950", 0))
+input_data.append((1040, "160717_1010", 1))
+input_data.append((1045, "160717_1154", 0))
+input_data.append((1050, "160717_1342", 1))
+#150 GeV pions:
+input_data.append((1051, "160717_1425", 1))
+input_data.append((1067, "170717_0015", 0))
+input_data.append((1069, "170717_0115", 0))
+input_data.append((1070, "170717_0205", 0))
+input_data.append((1071, "170717_0251", 0))
+input_data.append((1072, "170717_0336", 0))
+input_data.append((1073, "170717_0421", 0))
+input_data.append((1074, "170717_0506", 0))
+input_data.append((1076, "170717_0558", 0))
+input_data.append((1079, "170717_0654", 0))
+input_data.append((1082, "170717_0901", 1))
+input_data.append((1088, "170717_1048", 1))
+input_data.append((1090, "170717_1203", 0))
+input_data.append((1096, "170717_1625", 0))
+
+
+files = ["dwc_run_%s.root" % data[0] for data in input_data]
+timingFileNames = ["RUN_%04d_%s_TIMING_RDOUT2.txt" % (data[0], data[1]) for data in input_data]
 
 
 ################################
@@ -53,7 +97,9 @@ process.load('HGCal.StandardSequences.LocalReco_cff')
 process.source = cms.Source("HGCalTBWireChamberSource",
     OutputCollectionName = cms.string("WireChambers"), 
     fileNames = cms.untracked.vstring(["file:%s/%s"%(options.fileDirectory, file) for file in files]),
-    performAlignment = cms.untracked.bool(False),
+    timingFileNames = cms.vstring(["/eos/user/t/tquast/data/Testbeam/July2017/Timing/%s"%file for file in timingFileNames]),
+    skipFirstEventInDWCProducer = cms.vint32([data[2] for data in input_data]),
+    performAlignment = cms.untracked.bool(True),
     alignmentParamaterFile = cms.untracked.string("/tmp/millepede.res") 
 
 )

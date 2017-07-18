@@ -7,6 +7,7 @@ struct RunData {
   RunData(): configuration(0), run(0), energy(0), runType(""), trueEnergy(-1){};
   int configuration;
   int run;
+  int trigger;
   int event;
   double energy;
   std::string runType;

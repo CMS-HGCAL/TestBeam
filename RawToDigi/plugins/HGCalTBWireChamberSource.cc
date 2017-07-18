@@ -15,8 +15,11 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	performAlignment = pset.getUntrackedParameter<bool>("performAlignment", false);
 	alignmentParamaterFile = pset.getUntrackedParameter<std::string>("alignmentParamaterFile", "");
 
+	timingFileNames = pset.getParameter<std::vector<std::string> >("timingFileNames");
+	skipFirstEventInDWCProducer = pset.getParameter<std::vector<int> >("skipFirstEventInDWCProducer");
 
 	produces<WireChambers>("WireChambers");
+	produces<RunData>("RunData");
 
 	tree = NULL;
 
@@ -29,7 +32,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 
 void HGCalTBWireChamberSource::beginJob() {
 	fileCounter = -1;
-	eventCounter = 0;
+	rootTreeIndex = 0;
 	nextFileIndex = 0;
 	rootFile = NULL;
 	tree = NULL;
@@ -46,8 +49,9 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 	}
 
 	if (fileCounter != nextFileIndex) {		//initial loading of a file
+		//set the root file
 		fileCounter = nextFileIndex;
-		eventCounter = 0;
+		rootTreeIndex = 0;
   
 		std::cout<<"Opening "<<fileNames()[fileCounter].c_str()<<std::endl;
 		rootFile = new TFile(fileNames()[fileCounter].c_str());	
@@ -57,19 +61,21 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 		tree->SetBranchAddress("event", &n_trigger, &b_trigger);
 		tree->SetBranchAddress("channels", &channels, &b_channels);
 		tree->SetBranchAddress("dwc_timestamps", &dwc_timestamps, &b_dwc_timestamps);
+
+		ReadTimingFile(timingFileNames[fileCounter]);
 	}
 
 
-	if (eventCounter == tree->GetEntries()) {
+	if (rootTreeIndex == tree->GetEntries()) {
 		nextFileIndex++;
 		fileCounter = -1;
 		rootFile->Close();
 		setRunAndEventInfo(id, time, evType);
 	}
 	
-	tree->GetEntry(eventCounter);
-	eventCounter++;
-
+	tree->GetEntry(rootTreeIndex);
+	rootTreeIndex++;
+	
 	return true;
 }
 
@@ -78,6 +84,8 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	std::auto_ptr<WireChambers> mwcs(new WireChambers);	
 
 	//make the wire chambers
+	int N_DWC_points = 0;
+
 
 	//DWC 1
 	WireChamberData* dwc1 = new WireChamberData();
@@ -100,7 +108,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc1->goodMeasurement_X = ((dwc_timestamps->at(DWC1_LEFT) >= 0) && (dwc_timestamps->at(DWC1_RIGHT) >=0));
 	dwc1->goodMeasurement_Y = ((dwc_timestamps->at(DWC1_DOWN) >= 0) && (dwc_timestamps->at(DWC1_UP) >=0));
 	dwc1->goodMeasurement = (dwc1->goodMeasurement_X && dwc1->goodMeasurement_Y);
-
+	N_DWC_points = dwc1->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
 
 
 	//DWC 2
@@ -124,7 +132,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc2->goodMeasurement_X = ((dwc_timestamps->at(DWC2_LEFT) >= 0) && (dwc_timestamps->at(DWC2_RIGHT) >=0));
 	dwc2->goodMeasurement_Y = ((dwc_timestamps->at(DWC2_DOWN) >= 0) && (dwc_timestamps->at(DWC2_UP) >=0));
 	dwc2->goodMeasurement = (dwc2->goodMeasurement_X && dwc2->goodMeasurement_Y);
-
+	N_DWC_points = dwc2->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
 
 
 	//DWC 3
@@ -148,7 +156,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc3->goodMeasurement_X = ((dwc_timestamps->at(DWC3_LEFT) >= 0) && (dwc_timestamps->at(DWC3_RIGHT) >=0));
 	dwc3->goodMeasurement_Y = ((dwc_timestamps->at(DWC3_DOWN) >= 0) && (dwc_timestamps->at(DWC3_UP) >=0));
 	dwc3->goodMeasurement = (dwc3->goodMeasurement_X && dwc3->goodMeasurement_Y);
-
+	N_DWC_points = dwc3->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
 
 
 	//DWC 4
@@ -172,7 +180,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc4->goodMeasurement_X = ((dwc_timestamps->at(DWC4_LEFT) >= 0) && (dwc_timestamps->at(DWC4_RIGHT) >=0));
 	dwc4->goodMeasurement_Y = ((dwc_timestamps->at(DWC4_DOWN) >= 0) && (dwc_timestamps->at(DWC4_UP) >=0));
 	dwc4->goodMeasurement = (dwc4->goodMeasurement_X && dwc4->goodMeasurement_Y);
-
+	N_DWC_points = dwc4->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
 
 
 	if (performAlignment) {
@@ -191,48 +199,97 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	mwcs->push_back(*dwc3);
 	mwcs->push_back(*dwc4);
 
-
 	event.put(std::move(mwcs), "WireChambers");		
+
+
+
+	//add the RunData
+	std::auto_ptr<RunData> rd(new RunData);
+
+	int n_trigger_corrected = skipFirstEventInDWCProducer[fileCounter] ? n_trigger-1: n_trigger;
+
+	rd->energy = -1;
+	rd->configuration = -1;
+	rd->runType = 1;
+	rd->run = n_run;
+	if (trigger_to_event_table.count(n_trigger_corrected)==0) rd->event=-1;
+	else rd->event = trigger_to_event_table[n_trigger_corrected];
+	rd->trigger = n_trigger_corrected;
+
+
+	rd->hasDanger = false;
+	rd->hasValidMWCMeasurement = (N_DWC_points>=2);
+
+	event.put(std::move(rd), "RunData");
 
 }
 
+
+void HGCalTBWireChamberSource::ReadTimingFile(std::string timingFilePath) {
+	trigger_to_event_table.clear();
+		//Todo
+	std::fstream file; 
+	char fragment[100];
+	int readCounter = -2, currentEvent = 0;
+
+	file.open(timingFilePath.c_str(), std::fstream::in);
+
+	std::cout<<"Reading file "<<timingFilePath<<std::endl;
+	while (file.is_open() && !file.eof()) {
+		if (readCounter!=-2) readCounter++;
+			file >> fragment;
+
+		if (std::string(fragment)=="0000") readCounter = 0;  //first parameter is read out
+
+		if (readCounter==0) currentEvent = atoi(fragment);
+		if (readCounter==1) trigger_to_event_table[atoi(fragment)] = currentEvent;
+		if (readCounter==3) readCounter = -1;
+	}
+
+	/*
+	std::map<int, int>::iterator it;
+	for (it=trigger_to_event_table.begin(); it!=trigger_to_event_table.end(); it++) {
+		std::cout<<it->first<<"  -  "<<it->second<<std::endl;
+	}
+	*/
+}
 
 void HGCalTBWireChamberSource::ReadAlignmentParameters() {
   
-  std::fstream file; 
-  char fragment[100];
-  int readCounter = -2, currentParameter = 0;
-  
-  if (readCounter==-2) {
-    for (int i=1; i<= 4; i++) {
-      alignmentParameters[i*100+11] = 0.;
-      alignmentParameters[i*100+12] = 0.;
-      alignmentParameters[i*100+21] = 1.;
-      alignmentParameters[i*100+22] = 1.;
-    }
-  }	
-  
-  if (alignmentParamaterFile!="")
-  	file.open(alignmentParamaterFile.c_str(), std::fstream::in);
+	std::fstream file; 
+	char fragment[100];
+	int readCounter = -2, currentParameter = 0;
 
- 
-  while (file.is_open() && !file.eof()) {
-    if (readCounter!=-2) readCounter++;
-    file >> fragment;
-    if (std::string(fragment)=="111") readCounter = 0;  //first parameter is read out
+	if (readCounter==-2) {
+		for (int i=1; i<= 4; i++) {
+		  alignmentParameters[i*100+11] = 0.;
+		  alignmentParameters[i*100+12] = 0.;
+		  alignmentParameters[i*100+21] = 1.;
+		  alignmentParameters[i*100+22] = 1.;
+		}
+	}	
 
-    if (readCounter==0) currentParameter = atoi(fragment);
-    if (readCounter==1) currentParameter = alignmentParameters[currentParameter] = atof(fragment); 
-    if (readCounter==2) if (atof(fragment)==-1.) readCounter = -1;
-    if (readCounter==4) readCounter = -1;
-  }
+	if (alignmentParamaterFile!="")
+		file.open(alignmentParamaterFile.c_str(), std::fstream::in);
 
-for (int i=1; i<= 4; i++) {
-  std::cout<<"Alignment parameter: "<<i*100+11<<": "<<alignmentParameters[i*100+11]<<std::endl;
-  std::cout<<"Alignment parameter: "<<i*100+12<<": "<<alignmentParameters[i*100+12]<<std::endl;
-  std::cout<<"Alignment parameter: "<<i*100+21<<": "<<alignmentParameters[i*100+21]<<std::endl;
-  std::cout<<"Alignment parameter: "<<i*100+22<<": "<<alignmentParameters[i*100+22]<<std::endl;
-}
+
+	while (file.is_open() && !file.eof()) {
+		if (readCounter!=-2) readCounter++;
+			file >> fragment;
+		if (std::string(fragment)=="111") readCounter = 0;  //first parameter is read out
+
+		if (readCounter==0) currentParameter = atoi(fragment);
+		if (readCounter==1) currentParameter = alignmentParameters[currentParameter] = atof(fragment); 
+		if (readCounter==2) if (atof(fragment)==-1.) readCounter = -1;
+		if (readCounter==4) readCounter = -1;
+	}
+
+	for (int i=1; i<= 4; i++) {
+	  std::cout<<"Alignment parameter: "<<i*100+11<<": "<<alignmentParameters[i*100+11]<<std::endl;
+	  std::cout<<"Alignment parameter: "<<i*100+12<<": "<<alignmentParameters[i*100+12]<<std::endl;
+	  std::cout<<"Alignment parameter: "<<i*100+21<<": "<<alignmentParameters[i*100+21]<<std::endl;
+	  std::cout<<"Alignment parameter: "<<i*100+22<<": "<<alignmentParameters[i*100+22]<<std::endl;
+	}
 
 }
 
