@@ -17,6 +17,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 
 	timingFileNames = pset.getParameter<std::vector<std::string> >("timingFileNames");
 	skipFirstEventInDWCProducer = pset.getParameter<std::vector<int> >("skipFirstEventInDWCProducer");
+	runType = pset.getParameter<std::vector<int> >("runType");
 
 	produces<WireChambers>("WireChambers");
 	produces<RunData>("RunData");
@@ -54,6 +55,7 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 		rootTreeIndex = 0;
   
 		std::cout<<"Opening "<<fileNames()[fileCounter].c_str()<<std::endl;
+		std::cout<<"Run type "<<runType[fileCounter]<<std::endl;
 		rootFile = new TFile(fileNames()[fileCounter].c_str());	
 		tree = (TTree*)rootFile->Get("DelayWireChambers");
 
@@ -81,6 +83,8 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 
 
 void HGCalTBWireChamberSource::produce(edm::Event & event) {	
+	if (fileCounter==-1) return;
+	
 	std::auto_ptr<WireChambers> mwcs(new WireChambers);	
 
 	//make the wire chambers
@@ -210,7 +214,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 	rd->energy = -1;
 	rd->configuration = -1;
-	rd->runType = 1;
+	rd->runType = runType[fileCounter];
 	rd->run = n_run;
 	if (trigger_to_event_table.count(n_trigger_corrected)==0) rd->event=-1;
 	else rd->event = trigger_to_event_table[n_trigger_corrected];

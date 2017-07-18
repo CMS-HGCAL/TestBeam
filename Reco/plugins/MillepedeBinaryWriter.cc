@@ -26,6 +26,7 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
+#include "HGCal/DataFormats/interface/HGCalTBRunData.h"	//for the runData type definition
 #include "HGCal/Reco/interface/Mille.h"
 
 #include "HGCal/Reco/interface/PositionResolutionHelpers.h"
@@ -50,6 +51,7 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 
 		// ----------member data ---------------------------
 
+		edm::EDGetTokenT<RunData> RunDataToken;	
 		edm::EDGetTokenT<WireChambers> MWCToken;
 		edm::Service<TFileService> fs;
 
@@ -94,6 +96,7 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 
 	// initialization	
 	MWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
+	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
 
 	//read the track fitting method
 	methodString = iConfig.getParameter<std::string>("fittingMethod");
@@ -128,6 +131,10 @@ MillepedeBinaryWriter::~MillepedeBinaryWriter() {
 
 // ------------ method called for each event  ------------
 void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSetup& setup) {
+	edm::Handle<RunData> rd;
+ 	//get the relevant event information
+	event.getByToken(RunDataToken, rd);
+
 	eventCounter++;
 
 	//get the multi wire chambers
@@ -285,7 +292,8 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	delete Track;
 	//std::cout<<std::endl;
 	
-	acceptedCounter++;
+	if ((rd->event!=-1)&&(rd->runType==1))
+		acceptedCounter++;
 }// analyze ends here
 
 
