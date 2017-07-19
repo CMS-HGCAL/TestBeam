@@ -60,6 +60,7 @@ class DWC_NTupelizer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	  	int dwc1_goodMeasurement, dwc2_goodMeasurement, dwc3_goodMeasurement, dwc4_goodMeasurement; 
 	  	int dwc1_goodMeasurementX, dwc2_goodMeasurementX, dwc3_goodMeasurementX, dwc4_goodMeasurementX; 
 	  	int dwc1_goodMeasurementY, dwc2_goodMeasurementY, dwc3_goodMeasurementY, dwc4_goodMeasurementY; 
+	  	int N_goodMeasurements, N_goodMeasurements_X, N_goodMeasurements_Y;
   		
 		TTree* tree;
 
@@ -143,6 +144,23 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 	dwc3_goodMeasurementY = dwcs->at(2).goodMeasurement_Y;
 	dwc4_goodMeasurementY = dwcs->at(3).goodMeasurement_Y;
 
+	N_goodMeasurements = N_goodMeasurements_X = N_goodMeasurements_Y = 0;
+
+	if(dwc1_goodMeasurement) N_goodMeasurements++;
+	if(dwc2_goodMeasurement) N_goodMeasurements++;
+	if(dwc3_goodMeasurement) N_goodMeasurements++;
+	if(dwc4_goodMeasurement) N_goodMeasurements++;
+
+	if(dwc1_goodMeasurementX) N_goodMeasurements_X++;
+	if(dwc2_goodMeasurementX) N_goodMeasurements_X++;
+	if(dwc3_goodMeasurementX) N_goodMeasurements_X++;
+	if(dwc4_goodMeasurementX) N_goodMeasurements_X++;
+	
+	if(dwc1_goodMeasurementY) N_goodMeasurements_Y++;
+	if(dwc2_goodMeasurementY) N_goodMeasurements_Y++;
+	if(dwc3_goodMeasurementY) N_goodMeasurements_Y++;
+	if(dwc4_goodMeasurementY) N_goodMeasurements_Y++;
+
 	tree->Fill();
 		
 
@@ -199,6 +217,10 @@ void DWC_NTupelizer::beginJob() {
 	tree->Branch("dwc3_goodMeasurementY", &dwc3_goodMeasurementY);
 	tree->Branch("dwc4_goodMeasurementY", &dwc4_goodMeasurementY); 
 	
+
+	tree->Branch("N_goodMeasurements", &N_goodMeasurements);
+	tree->Branch("N_goodMeasurements_X", &N_goodMeasurements_X);
+	tree->Branch("N_goodMeasurements_Y", &N_goodMeasurements_Y);
 }
 
 void DWC_NTupelizer::endJob() {

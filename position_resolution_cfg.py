@@ -23,35 +23,22 @@ options.register('reportEvery',
                 )
 
 options.parseArguments()
+input_data = []
 
-#300 GeV pions
-input_data = [(993, "150717_0800", 0, "1")]
-input_data.append((994, "150717_0838", 0, "1"))
-input_data.append((996, "150717_0924", 0, "1"))
-input_data.append((997, "150717_1009", 0, "1"))
-input_data.append((998, "150717_1100", 0, "1"))
-input_data.append((999, "150717_1145", 0, "1"))
-input_data.append((1000, "150717_1343", 0, "1"))
-input_data.append((1001, "150717_1455", 0, "1"))
-input_data.append((1002, "150717_1532", 0, "1"))
-input_data.append((1003, "150717_1619", 0, "1"))
-input_data.append((1004, "150717_1701", 0, "1"))
-input_data.append((1012, "150717_1851", 0, "1"))
-input_data.append((1013, "150717_1929", 0, "1"))
-input_data.append((1025, "150717_2331", 0, "1"))
-input_data.append((1027, "160717_0117", 0, "1"))
-input_data.append((1028, "160717_0153", 0, "1"))
-input_data.append((1029, "160717_0229", 0, "1"))
-input_data.append((1030, "160717_0305", 0, "1"))
-input_data.append((1032, "160717_0347", 0, "1"))
-input_data.append((1033, "160717_0422", 0, "1"))
-input_data.append((1034, "160717_0459", 0, "1"))
-input_data.append((1035, "160717_0546", 0, "1"))
-input_data.append((1036, "160717_0710", 0, "1"))
-input_data.append((1039, "160717_0950", 0, "1"))
-input_data.append((1040, "160717_1010", 1, "1"))
-input_data.append((1045, "160717_1154", 0, "1"))
-input_data.append((1050, "160717_1342", 1, "1"))
+#100 GeV pions
+input_data.append((1159, "", 0, "1"))
+input_data.append((1161, "", 0, "1"))
+input_data.append((1162, "", 0, "1"))
+input_data.append((1163, "", 0, "1"))
+input_data.append((1165, "", 0, "1"))
+input_data.append((1166, "", 0, "1"))   #check synchronisation of trigger
+input_data.append((1171, "", 0, "1"))
+input_data.append((1172, "", 0, "1"))
+input_data.append((1173, "", 0, "1"))   #check synchronisation of trigger
+input_data.append((1193, "", 0, "1"))
+
+
+
 #150 GeV pions:
 input_data.append((1051, "160717_1425", 1, "2"))
 input_data.append((1067, "170717_0015", 0, "2"))
@@ -67,24 +54,67 @@ input_data.append((1082, "170717_0901", 1, "2"))
 input_data.append((1088, "170717_1048", 1, "2"))
 input_data.append((1090, "170717_1203", 0, "2"))
 input_data.append((1096, "170717_1625", 0, "2"))
-#200 GeV pions , with IPBus
-input_data.append((1132, "", 0, "2"))
-input_data.append((1133, "", 0, "2"))
-#100 GeV pions , with IPBus
-input_data.append((1134, "", 0, "3"))
-input_data.append((1135, "", 0, "3"))
-input_data.append((1136, "", 0, "3"))
-input_data.append((1159, "", 0, "3"))
-input_data.append((1161, "", 0, "3"))
-input_data.append((1162, "", 0, "3"))
-input_data.append((1163, "", 0, "3"))
-input_data.append((1164, "", 0, "3"))
-input_data.append((1165, "", 0, "3"))
-input_data.append((1166, "", 0, "3"))
-#150 GeV muons, with IPBus
-input_data.append((1140, "", 0, "11"))
+
+input_data.append((1134, "", 1, "2"))   #possibly remove last: careful check is necessary
+input_data.append((1135, "", 0, "2"))   #check synchronisation of trigger
+input_data.append((1136, "", 0, "2"))   #check synchronisation of trigger
+input_data.append((1185, "", 0, "2"))   #check synchronisation of trigger
+input_data.append((1192, "", 0, "2"))
 
 
+
+#200 GeV pions
+input_data.append((1132, "", 0, "3"))
+input_data.append((1133, "", 0, "3"))   #check synchronisation of trigger
+input_data.append((1190, "", 0, "3"))   #check synchronisation of trigger
+
+
+
+#250 GeV pions
+input_data.append((1189, "", 0, "4"))   #check synchronisation of trigger
+
+
+#300 GeV pions
+input_data.append((993, "150717_0800", 0, "5"))
+input_data.append((994, "150717_0838", 0, "5"))
+input_data.append((996, "150717_0924", 0, "5"))
+input_data.append((997, "150717_1009", 0, "5"))
+input_data.append((998, "150717_1100", 0, "5"))
+input_data.append((999, "150717_1145", 0, "5"))
+input_data.append((1000, "150717_1343", 0, "5"))
+input_data.append((1001, "150717_1455", 0, "5"))
+input_data.append((1002, "150717_1532", 0, "5"))
+input_data.append((1003, "150717_1619", 0, "5"))
+input_data.append((1004, "150717_1701", 0, "5"))
+input_data.append((1012, "150717_1851", 0, "5"))
+input_data.append((1013, "150717_1929", 0, "5"))
+input_data.append((1025, "150717_2331", 0, "5"))
+input_data.append((1027, "160717_0117", 0, "5"))
+input_data.append((1028, "160717_0153", 0, "5"))
+input_data.append((1029, "160717_0229", 0, "5"))
+input_data.append((1030, "160717_0305", 0, "5"))
+input_data.append((1032, "160717_0347", 0, "5"))
+input_data.append((1033, "160717_0422", 0, "5"))
+input_data.append((1034, "160717_0459", 0, "5"))
+input_data.append((1035, "160717_0546", 0, "5"))
+input_data.append((1036, "160717_0710", 0, "5"))
+input_data.append((1039, "160717_0950", 0, "5"))
+input_data.append((1040, "160717_1010", 1, "5"))
+input_data.append((1045, "160717_1154", 0, "5"))
+input_data.append((1050, "160717_1342", 1, "5"))
+
+
+#150 GeV muons
+#input_data.append((1140, "", 0, "12"))
+#input_data.append((1181, "", 0, "12"))  #check synchronisation of trigger
+
+
+#150 GeV electrons
+input_data.append((1194, "", 0, "22"))
+
+
+#250 GeV electrons
+input_data.append((1038, "160717_0758", 0, "24"))
 
 
 

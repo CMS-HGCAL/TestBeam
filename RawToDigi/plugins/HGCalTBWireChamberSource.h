@@ -72,7 +72,8 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		int rootTreeIndex;
 		int fileCounter;
 		int nextFileIndex;
-		
+		int eventCounter, goodEventCounter;
+
 		TFile *rootFile;
 	  	TTree *tree;   //!pointer to the analyzed TTree or TChain
 
