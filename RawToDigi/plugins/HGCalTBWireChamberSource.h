@@ -54,20 +54,24 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		virtual void produce(edm::Event & e);
 	  	virtual void beginJob() override;
 	  	void ReadAlignmentParameters();
-	  	void ReadTimingFile(std::string);
+	  	void ReadTimingFile(std::string, bool);
 		
 		std::string outputCollectionName;
 		std::vector<double> slope_x;
 		std::vector<double> slope_y;
+
+		int triggerTimeDifferenceTolerance;
 
 		bool performAlignment;
 	  	std::string alignmentParamaterFile;
 		std::map<int, double> alignmentParameters;
 
 		std::vector<std::string> timingFileNames;
+		std::vector<int> sumTriggerTimes;
 		std::vector<int> skipFirstNEvents;
 		std::vector<std::string> runType;
 		std::map<int, int> trigger_to_event_table;
+		std::map<int, int> event_trigger_time;
 
 		int rootTreeIndex;
 		int fileCounter;
@@ -80,12 +84,16 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 	  	unsigned int n_run; unsigned int n_trigger; 
 	  	std::vector<int> *channels;
 	  	std::vector<int> *dwc_timestamps;
+	  	int timeSinceStart;
 	 
+	  	int ref_time_sync, ref_time_dwc;
+
 
 	  	TBranch                   *b_run;   
 	  	TBranch                   *b_trigger;   
 	  	TBranch                   *b_channels;   
 	  	TBranch                   *b_dwc_timestamps;   
+	  	TBranch                   *b_timeSinceStart;   
 
 
 	public:

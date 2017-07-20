@@ -1,5 +1,7 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBWireChamberSource.h"
 
+//#define DEBUG
+
 
 bool validTimestamp(int ts) {
 	return (ts>=0);
@@ -13,14 +15,18 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	outputCollectionName = pset.getParameter<std::string>("OutputCollectionName");
 
   	std::vector<double> v0(4, 0.2/40);		//0.2mm/ns and TDC binning is 25ps
+	triggerTimeDifferenceTolerance = pset.getUntrackedParameter<int>("triggerTimeDifferenceTolerance", 2);
+	
 	slope_x = pset.getUntrackedParameter<std::vector<double> >("slope_x", v0);
 	slope_y = pset.getUntrackedParameter<std::vector<double> >("slope_y", v0);
 	performAlignment = pset.getUntrackedParameter<bool>("performAlignment", false);
 	alignmentParamaterFile = pset.getUntrackedParameter<std::string>("alignmentParamaterFile", "");
 
 	timingFileNames = pset.getParameter<std::vector<std::string> >("timingFileNames");
+	sumTriggerTimes = pset.getParameter<std::vector<int> >("sumTriggerTimes");
 	skipFirstNEvents = pset.getParameter<std::vector<int> >("skipFirstNEvents");
 	runType = pset.getParameter<std::vector<std::string> >("runType");
+
 
 	produces<WireChambers>("WireChambers");
 	produces<RunData>("RunData");
@@ -56,6 +62,7 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 			fileCounter = -1;
 			rootFile->Close();
 			std::cout<<"Number of good (DWC) events: "<<goodEventCounter<<" / "<<eventCounter<<std::endl<<std::endl;
+			ref_time_sync = ref_time_dwc = 0;
 		}
 
 		if (nextFileIndex == (int)fileNames().size()) {
@@ -76,8 +83,9 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 		tree->SetBranchAddress("event", &n_trigger, &b_trigger);
 		tree->SetBranchAddress("channels", &channels, &b_channels);
 		tree->SetBranchAddress("dwc_timestamps", &dwc_timestamps, &b_dwc_timestamps);
+		tree->SetBranchAddress("timeSinceStart", &timeSinceStart, &b_timeSinceStart);
 
-		ReadTimingFile(timingFileNames[fileCounter]);
+		ReadTimingFile(timingFileNames[fileCounter], sumTriggerTimes[fileCounter]);
 	}
 
 
@@ -223,16 +231,36 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	rd->configuration = -1;
 	rd->runType = runType[fileCounter];
 	rd->run = n_run;
-	if (trigger_to_event_table.count(n_trigger_corrected)==0) rd->event=-1;
-	else rd->event = trigger_to_event_table[n_trigger_corrected];
 	rd->trigger = n_trigger_corrected;
-
-
 	rd->hasDanger = false;
-	rd->hasValidMWCMeasurement = (N_DWC_points>=3);
+	rd->hasValidMWCMeasurement = (N_DWC_points>=3) && (dwc1->goodMeasurement);
+	
+	//do the matching to the HGCal events
+	if (trigger_to_event_table.count(n_trigger_corrected)==0) {
+		rd->event=-1;
+	} else {
+		int event_candidate_index = trigger_to_event_table[n_trigger_corrected];
 
-	if (rd->event!=-1) {
-		if (rd->hasValidMWCMeasurement) goodEventCounter++;
+		double deltaTs = fabs((event_trigger_time[event_candidate_index]-ref_time_sync) - (timeSinceStart - ref_time_dwc));
+
+		#ifdef DEBUG
+			std::cout<<"Event: "<<event_candidate_index<<"  trigger: "<<n_trigger<<": "<<deltaTs<<std::endl;
+		#endif
+
+		if (deltaTs < triggerTimeDifferenceTolerance) {
+			rd->event = event_candidate_index;
+			if (rd->hasValidMWCMeasurement) goodEventCounter++;
+		}
+
+		if (deltaTs > 200. && event_candidate_index != 1) {			//the first line is not used to test synchronisation since a time offset is present for the two streams.
+			throw cms::Exception("EventAsynch") << "Trigger time interval differs by more than 200ms. The files are likely not synchronised. ";
+		}
+
+		ref_time_sync = event_trigger_time[event_candidate_index]; 
+		ref_time_dwc = timeSinceStart;	
+		
+
+
 		eventCounter++;
 	}
 	
@@ -242,14 +270,17 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 }
 
 
-void HGCalTBWireChamberSource::ReadTimingFile(std::string timingFilePath) {
+void HGCalTBWireChamberSource::ReadTimingFile(std::string timingFilePath, bool sumTriggerTimes) {
 	trigger_to_event_table.clear();
+	event_trigger_time.clear();
 		//Todo
 	std::fstream file; 
 	char fragment[100];
 	int readCounter = -5, currentEvent = 0;
 
 	file.open(timingFilePath.c_str(), std::fstream::in);
+
+	int time_sinceStart = 0;
 
 	std::cout<<"Reading file "<<timingFilePath<<" -open: "<<file.is_open()<<std::endl;
 	while (file.is_open() && !file.eof()) {
@@ -259,15 +290,24 @@ void HGCalTBWireChamberSource::ReadTimingFile(std::string timingFilePath) {
 		if (readCounter==1) {
 			trigger_to_event_table[atoi(fragment)] = currentEvent;
 		}
-		if (readCounter==3) readCounter = -1;
+		if (readCounter==3) {
+			std::istringstream reader(fragment);
+			long time;					//must read this value as long since it is given in ns
+			reader >> time;
+			time_sinceStart =  sumTriggerTimes ? time_sinceStart + ((double) 25e-6 * time) : ((double) 25e-6 * time);
+			event_trigger_time[currentEvent] = time_sinceStart; 		//one time stamp is 25ns --> conversion to ms for comparison.
+			readCounter = -1;
+		}
 	}
 
-	/*
-	std::map<int, int>::iterator it;
-	for (it=trigger_to_event_table.begin(); it!=trigger_to_event_table.end(); it++) {
-		std::cout<<it->first<<"  -  "<<it->second<<std::endl;
-	}
-	*/
+	#ifdef DEBUG
+		std::map<int, int>::iterator it;
+		for (it=event_trigger_time.begin(); it!=event_trigger_time.end(); it++) {
+			std::cout<<it->first<<"  -  "<<it->second<<std::endl;
+		}
+	#endif
+	
+	
 	
 }
 
