@@ -50,7 +50,7 @@ class DWC_NTupelizer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		edm::EDGetTokenT<WireChambers> MWCToken;
 		edm::Service<TFileService> fs;
 
-	  	int run, runType, n_event;
+	  	int run, runType, n_event, goodDWC_Measurement;
 	  	double time_DWC1, time_DWC2, time_DWC3, time_DWC4;
 		double reco1_x, reco1_y, reco2_x, reco2_y, reco3_x, reco3_y, reco4_x, reco4_y;
 	  	int dwc1_z, dwc2_z, dwc3_z, dwc4_z;
@@ -96,6 +96,7 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 	run = rd->run;
 	runType = std::atoi((rd->runType).c_str());
 	n_event = rd->event;
+	goodDWC_Measurement = rd->hasValidMWCMeasurement ? 1 : 0;
 
  	time_DWC1 = dwcs->at(0).averagedTimeStamp;
  	time_DWC2 = dwcs->at(1).averagedTimeStamp;
@@ -173,6 +174,7 @@ void DWC_NTupelizer::beginJob() {
 	tree->Branch("run", &run);
 	tree->Branch("runType", &runType);
 	tree->Branch("event", &n_event);
+	tree->Branch("goodDWC_Measurement", &goodDWC_Measurement);
 
   	tree->Branch("time_DWC1", &time_DWC1);
   	tree->Branch("time_DWC2", &time_DWC2);
