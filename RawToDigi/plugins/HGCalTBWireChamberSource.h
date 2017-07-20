@@ -42,10 +42,10 @@ enum DWC_to_TDC_MAP {
 };
 
 //numbers to be validated through more precise measurements
-double dwc_z1 = -103;	//z=0 is the HGCal table, unit is cm
-double dwc_z2 = -231.;
-double dwc_z3 = -1479.;
-double dwc_z4 = -1784.;
+double dwc_z1 = -109.;	//z=0 is the HGCal table, unit is cm
+double dwc_z2 = -235.;
+double dwc_z3 = -1509.;
+double dwc_z4 = -1769.;
 
 //to the EDM::Event via auxiliary information
 class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {

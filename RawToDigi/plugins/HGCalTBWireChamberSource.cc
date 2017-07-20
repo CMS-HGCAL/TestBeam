@@ -2,7 +2,7 @@
 
 
 bool validTimestamp(int ts) {
-	return (ts>=22000 && ts<=35000);
+	return (ts>=0);
 }
 
 

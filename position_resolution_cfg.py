@@ -105,8 +105,8 @@ input_data.append((1050, "160717_1342", 1, "5"))
 
 
 #150 GeV muons
-#input_data.append((1140, "", 0, "12"))
-#input_data.append((1181, "", 0, "12"))  #check synchronisation of trigger
+input_data.append((1140, "", 0, "12"))
+input_data.append((1181, "", 0, "12"))  #check synchronisation of trigger
 
 
 #150 GeV electrons
