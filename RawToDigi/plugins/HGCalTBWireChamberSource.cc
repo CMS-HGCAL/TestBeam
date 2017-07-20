@@ -19,7 +19,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	alignmentParamaterFile = pset.getUntrackedParameter<std::string>("alignmentParamaterFile", "");
 
 	timingFileNames = pset.getParameter<std::vector<std::string> >("timingFileNames");
-	skipFirstEventInDWCProducer = pset.getParameter<std::vector<int> >("skipFirstEventInDWCProducer");
+	skipFirstNEvents = pset.getParameter<std::vector<int> >("skipFirstNEvents");
 	runType = pset.getParameter<std::vector<std::string> >("runType");
 
 	produces<WireChambers>("WireChambers");
@@ -217,7 +217,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	//add the RunData
 	std::auto_ptr<RunData> rd(new RunData);
 
-	int n_trigger_corrected = skipFirstEventInDWCProducer[fileCounter] ? n_trigger-1: n_trigger;
+	int n_trigger_corrected = n_trigger-skipFirstNEvents[fileCounter];
 
 	rd->energy = -1;
 	rd->configuration = -1;
@@ -231,8 +231,11 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	rd->hasDanger = false;
 	rd->hasValidMWCMeasurement = (N_DWC_points>=3);
 
-	if (rd->hasValidMWCMeasurement) goodEventCounter++;
-	eventCounter++;
+	if (rd->event!=-1) {
+		if (rd->hasValidMWCMeasurement) goodEventCounter++;
+		eventCounter++;
+	}
+	
 
 	event.put(std::move(rd), "RunData");
 
@@ -244,19 +247,18 @@ void HGCalTBWireChamberSource::ReadTimingFile(std::string timingFilePath) {
 		//Todo
 	std::fstream file; 
 	char fragment[100];
-	int readCounter = -2, currentEvent = 0;
+	int readCounter = -5, currentEvent = 0;
 
 	file.open(timingFilePath.c_str(), std::fstream::in);
 
-	//std::cout<<"Reading file "<<timingFilePath<<std::endl;
+	std::cout<<"Reading file "<<timingFilePath<<" -open: "<<file.is_open()<<std::endl;
 	while (file.is_open() && !file.eof()) {
-		if (readCounter!=-2) readCounter++;
-			file >> fragment;
-
-		if (std::string(fragment)=="0000") readCounter = 0;  //first parameter is read out
-
-		if (readCounter==0) currentEvent = atoi(fragment);
-		if (readCounter==1) trigger_to_event_table[atoi(fragment)] = currentEvent;
+		readCounter++;
+		file >> fragment;
+		if (readCounter==0) currentEvent++;
+		if (readCounter==1) {
+			trigger_to_event_table[atoi(fragment)] = currentEvent;
+		}
 		if (readCounter==3) readCounter = -1;
 	}
 
@@ -266,6 +268,7 @@ void HGCalTBWireChamberSource::ReadTimingFile(std::string timingFilePath) {
 		std::cout<<it->first<<"  -  "<<it->second<<std::endl;
 	}
 	*/
+	
 }
 
 void HGCalTBWireChamberSource::ReadAlignmentParameters() {
