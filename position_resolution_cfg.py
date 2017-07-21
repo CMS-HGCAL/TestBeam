@@ -144,6 +144,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
 ####################################
 # Load the standard sequences
 process.load('HGCal.StandardSequences.LocalReco_cff')
+process.load('HGCal.StandardSequences.RawToDigi_cff')
 ####################################
 
 
@@ -175,6 +176,11 @@ process.millepede_binarywriter.binaryFile = cms.string("/tmp/millepede.bin")
 process.dwc_ntupelizer.writeMinimal = cms.bool(True)
 
 
+process.wirechamber_producer.MWCHAMBERS = cms.InputTag("source","WireChambers","unpack")
+process.wirechamber_producer.RUNDATA = cms.InputTag("source","RunData","unpack")
+process.wirechamber_producer.inputFile = cms.string("/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/reconstructed_DWC_data.root")
+
+
 #tree file:
 process.TFileService = cms.Service("TFileService", fileName = cms.string("outfile_DWCs.root"))
 
@@ -186,3 +192,4 @@ process.options = cms.untracked.PSet(
 
 process.p = cms.Path(process.millepede_binarywriter*process.dwc_ntupelizer)
 
+#process.p = cms.Path(process.wirechamber_producer)
