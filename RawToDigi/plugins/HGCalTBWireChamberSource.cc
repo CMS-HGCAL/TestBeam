@@ -256,6 +256,8 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 				std::cout<<std::endl;
 			#endif
 			if (rd->hasValidMWCMeasurement) goodEventCounter++;
+		} else {
+			rd->event=-1;
 		}
 
 		if (deltaTs > 200. && event_candidate_index != 1) {			//the first line is not used to test synchronisation since a time offset is present for the two streams.
