@@ -171,7 +171,8 @@ process.millepede_binarywriter.MWCHAMBERS = cms.InputTag("source","WireChambers"
 process.millepede_binarywriter.RUNDATA = cms.InputTag("source","RunData","unpack")
 process.millepede_binarywriter.fittingMethod = cms.string("lineAnalytical")
 process.millepede_binarywriter.binaryFile = cms.string("/tmp/millepede.bin")
-                              
+             
+process.dwc_ntupelizer.writeMinimal = cms.bool(True)
 
 
 #tree file:
