@@ -234,7 +234,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	rd->run = n_run;
 	rd->trigger = n_trigger_corrected;
 	rd->hasDanger = false;
-	rd->hasValidMWCMeasurement = (N_DWC_points>=2) && (dwc1->goodMeasurement);		//need two points for track extrapolation
+	rd->hasValidMWCMeasurement = (N_DWC_points>=3);		//need two points for track extrapolation
 	
 	//do the matching to the HGCal events
 	if (trigger_to_event_table.count(n_trigger_corrected)==0) {
