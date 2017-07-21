@@ -40,10 +40,14 @@ input_data.append((1171, "HexaData_Run1171_TIMING_RDOUT_ORM0.txt", 0, 0, 0, "1")
 input_data.append((1172, "HexaData_Run1172_TIMING_RDOUT_ORM0.txt", 0, 0, 0, "1"))   #Number of events below 2ms difference:  208  /  219                     
 input_data.append((1173, "HexaData_Run1173_TIMING_RDOUT_ORM0.txt", 0, 0, 0, "1"))   #Number of events below 2ms difference:  400  /  424                                  
 input_data.append((1193, "HexaData_Run1193_TIMING_RDOUT_ORM0.txt", 0, 0, 0, "1"))   #Number of events below 2ms difference:  8658  /  8714
+input_data.append((1134, "-", 0, 1, 0, "1"))   #possibly remove last: careful check is necessary
+input_data.append((1135, "-", 0, 0, 0, "1"))   #check synchronisation of trigger
+input_data.append((1136, "-", 0, 0, 0, "1"))   #check synchronisation of trigger
 
 
 #150 GeV pions:
-input_data.append((1051, "RUN_1051_160717_1425_TIMING_RDOUT2.txt", 1, 1, 0, "2"))
+input_data.append((1039, "RUN_1039_160717_0950_TIMING_RDOUT2.txt", 1, 0, 0, "2"))
+input_data.append((1040, "RUN_1040_160717_1010_TIMING_RDOUT2.txt", 1, 1, 0, "2"))
 input_data.append((1067, "RUN_1067_170717_0015_TIMING_RDOUT2.txt", 1, 0, 0, "2"))
 input_data.append((1069, "RUN_1069_170717_0115_TIMING_RDOUT2.txt", 1, 0, 0, "2"))
 input_data.append((1070, "RUN_1070_170717_0205_TIMING_RDOUT2.txt", 1, 0, 0, "2"))
@@ -57,10 +61,6 @@ input_data.append((1082, "RUN_1082_170717_0901_TIMING_RDOUT2.txt", 1, 1, 0, "2")
 input_data.append((1088, "RUN_1088_170717_1048_TIMING_RDOUT2.txt", 1, 1, 0, "2"))
 input_data.append((1090, "RUN_1090_170717_1203_TIMING_RDOUT2.txt", 1, 0, 0, "2"))
 input_data.append((1096, "RUN_1096_170717_1625_TIMING_RDOUT2.txt", 1, 0, 0, "2"))
-
-input_data.append((1134, "-", 0, 1, 0, "2"))   #possibly remove last: careful check is necessary
-input_data.append((1135, "-", 0, 0, 0, "2"))   #check synchronisation of trigger
-input_data.append((1136, "-", 0, 0, 0, "2"))   #check synchronisation of trigger
 input_data.append((1185, "HexaData_Run1185_TIMING_RDOUT_ORM0.txt", 0, 0, 0, "2"))   #Number of events below 2ms difference:  4981  /  5000                     
 input_data.append((1192, "HexaData_Run1192_TIMING_RDOUT_ORM0.txt", 0, 0, 0, "2"))   #Number of events below 2ms difference:  29927  /  30000
 
@@ -70,7 +70,7 @@ input_data.append((1133, "-", 0, 0, 0, "3"))   #check synchronisation of trigger
 input_data.append((1190, "HexaData_Run1190_TIMING_RDOUT_ORM0.txt", 0, 2, 0, "3"))   #Number of events below 2ms difference:  29438  /  30000
 
 #250 GeV pions
-input_data.append((1189, "HexaData_Run1189_TIMING_RDOUT_ORM0.txt", 0, 0, 0, "4"))   #Number of events below 2ms difference:  27915  /  30000
+input_data.append((1188, "HexaData_Run1188_TIMING_RDOUT_ORM0.txt", 0, 0, 0, "4"))    #Number of events below 2ms difference:  24817  /  25000
 
 #300 GeV pions
 input_data.append((993, "RUN_993_150717_0800_TIMING_RDOUT2.txt", 1, 0, 0, "5"))
@@ -96,10 +96,10 @@ input_data.append((1033, "RUN_1033_160717_0422_TIMING_RDOUT2.txt", 1, 0, 0, "5")
 input_data.append((1034, "RUN_1034_160717_0459_TIMING_RDOUT2.txt", 1, 0, 0, "5"))
 input_data.append((1035, "RUN_1035_160717_0546_TIMING_RDOUT2.txt", 1, 0, 0, "5"))
 input_data.append((1036, "RUN_1036_160717_0710_TIMING_RDOUT2.txt", 1, 0, 0, "5"))
-input_data.append((1039, "RUN_1039_160717_0950_TIMING_RDOUT2.txt", 1, 0, 0, "5"))
-input_data.append((1040, "RUN_1040_160717_1010_TIMING_RDOUT2.txt", 1, 1, 0, "5"))
 input_data.append((1045, "RUN_1045_160717_1154_TIMING_RDOUT2.txt", 1, 0, 0, "5"))
 input_data.append((1050, "RUN_1050_160717_1342_TIMING_RDOUT2.txt", 1, 1, 0, "5"))
+input_data.append((1051, "RUN_1051_160717_1425_TIMING_RDOUT2.txt", 1, 1, 0, "5"))
+input_data.append((1189, "HexaData_Run1189_TIMING_RDOUT_ORM0.txt", 0, 0, 0, "5"))               #Number of events below 2ms difference:  27915  /  30000
 input_data.append((1215, "HexaData_Run1215_TIMING_RDOUT_ORM0.txt", 1, 0, 0, "5"))              #Number of events below 2ms difference:  3236  /  3239
 
 #150 GeV muons
@@ -119,10 +119,6 @@ input_data.append((1194, "HexaData_Run1194_TIMING_RDOUT_ORM0.txt", 0, 0, 0, "22"
 
 #250 GeV electrons
 input_data.append((1038, "RUN_1038_160717_0758_TIMING_RDOUT2.txt", 1, 0, 0, "24"))
-
-
-
-
 
 
 
