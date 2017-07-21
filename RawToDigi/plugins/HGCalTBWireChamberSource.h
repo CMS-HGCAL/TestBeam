@@ -69,6 +69,7 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		std::vector<std::string> timingFileNames;
 		std::vector<int> sumTriggerTimes;
 		std::vector<int> skipFirstNEvents;
+		std::vector<int> triggerCountOffsets;
 		std::vector<std::string> runType;
 		std::map<int, int> trigger_to_event_table;
 		std::map<int, int> event_trigger_time;

@@ -24,6 +24,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 
 	timingFileNames = pset.getParameter<std::vector<std::string> >("timingFileNames");
 	sumTriggerTimes = pset.getParameter<std::vector<int> >("sumTriggerTimes");
+	triggerCountOffsets = pset.getParameter<std::vector<int> >("triggerCountOffsets");
 	skipFirstNEvents = pset.getParameter<std::vector<int> >("skipFirstNEvents");
 	runType = pset.getParameter<std::vector<std::string> >("runType");
 
@@ -233,7 +234,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	rd->run = n_run;
 	rd->trigger = n_trigger_corrected;
 	rd->hasDanger = false;
-	rd->hasValidMWCMeasurement = (N_DWC_points>=3) && (dwc1->goodMeasurement);
+	rd->hasValidMWCMeasurement = (N_DWC_points>=2) && (dwc1->goodMeasurement);		//need two points for track extrapolation
 	
 	//do the matching to the HGCal events
 	if (trigger_to_event_table.count(n_trigger_corrected)==0) {
@@ -249,6 +250,11 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 		if (deltaTs < triggerTimeDifferenceTolerance) {
 			rd->event = event_candidate_index;
+			#ifdef DEBUG
+				std::cout<<"good x1: "<<dwc1->goodMeasurement_X<<"   good y1: "<<dwc1->goodMeasurement_Y<<"     good x2: "<<dwc2->goodMeasurement_X<<"   good y2: "<<dwc2->goodMeasurement_Y;
+				std::cout<<"   good x3: "<<dwc3->goodMeasurement_X<<"   good y3: "<<dwc3->goodMeasurement_Y<<"     good x4: "<<dwc4->goodMeasurement_X<<"   good y4: "<<dwc4->goodMeasurement_Y;
+				std::cout<<std::endl;
+			#endif
 			if (rd->hasValidMWCMeasurement) goodEventCounter++;
 		}
 
@@ -288,7 +294,7 @@ void HGCalTBWireChamberSource::ReadTimingFile(std::string timingFilePath, bool s
 		file >> fragment;
 		if (readCounter==0) currentEvent++;
 		if (readCounter==1) {
-			trigger_to_event_table[atoi(fragment)] = currentEvent;
+			trigger_to_event_table[atoi(fragment)-triggerCountOffsets[fileCounter]] = currentEvent;
 		}
 		if (readCounter==3) {
 			std::istringstream reader(fragment);
