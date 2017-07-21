@@ -54,6 +54,7 @@ class DWC_NTupelizer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	  	int run, runType, n_event, goodDWC_Measurement;
 	  	double time_DWC1, time_DWC2, time_DWC3, time_DWC4;
 		double reco1_x, reco1_y, reco2_x, reco2_y, reco3_x, reco3_y, reco4_x, reco4_y;
+		double z1, z2, z3, z4;
 	  	int dwc1_z, dwc2_z, dwc3_z, dwc4_z;
 	  	double x1_m_x2, x1_m_x3, x1_m_x4, x2_m_x3, x2_m_x4, x3_m_x4;
 	  	double y1_m_y2, y1_m_y3, y1_m_y4, y2_m_y3, y2_m_y4, y3_m_y4;
@@ -110,6 +111,11 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 	reco4_x = dwcs->at(3).x;
 	reco4_y = dwcs->at(3).y;
 	
+	z1 = dwcs->at(0).z;
+	z2 = dwcs->at(1).z;
+	z3 = dwcs->at(2).z;
+	z4 = dwcs->at(3).z;
+
 	dwc1_goodMeasurement = dwcs->at(0).goodMeasurement;
 	dwc2_goodMeasurement = dwcs->at(1).goodMeasurement;
 	dwc3_goodMeasurement = dwcs->at(2).goodMeasurement;
@@ -184,12 +190,16 @@ void DWC_NTupelizer::beginJob() {
 	tree->Branch("goodDWC_Measurement", &goodDWC_Measurement);
 	tree->Branch("reco1_x", &reco1_x);
 	tree->Branch("reco1_y", &reco1_y);
+	tree->Branch("z1", &z1);
 	tree->Branch("reco2_x", &reco2_x);
 	tree->Branch("reco2_y", &reco2_y);
+	tree->Branch("z2", &z2);
 	tree->Branch("reco3_x", &reco3_x);
 	tree->Branch("reco3_y", &reco3_y);
+	tree->Branch("z3", &z3);
 	tree->Branch("reco4_x", &reco4_x);
 	tree->Branch("reco4_y", &reco4_y);
+	tree->Branch("z4", &z4);
 	tree->Branch("dwc1_goodMeasurement", &dwc1_goodMeasurement);
 	tree->Branch("dwc2_goodMeasurement", &dwc2_goodMeasurement);
 	tree->Branch("dwc3_goodMeasurement", &dwc3_goodMeasurement);
