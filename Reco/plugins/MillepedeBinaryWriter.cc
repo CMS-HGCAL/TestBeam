@@ -122,6 +122,8 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 	nLayers = iConfig.getParameter<int>("nLayers");
 	useMWCReference = iConfig.getParameter<bool>("useMWCReference");
 	MWCQualityCut = iConfig.getParameter<bool>("MWCQualityCut");
+	wc_resolution = iConfig.getUntrackedParameter<double>("wc_resolution", 0.5);
+
 
 	binaryFileName = iConfig.getParameter<std::string>("binaryFile");
 
@@ -193,6 +195,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			std::pair<double, double> position_predicted = Track->calculatePositionXY(layer_labZ+intrinsic_z, n_layer);
 			double x_predicted = position_predicted.first;
 			double y_predicted = position_predicted.second;
+			
 
 
 			std::pair<double, double> position_true = Sensors[n_layer]->getHitPosition();	
@@ -300,7 +303,6 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 
 
 void MillepedeBinaryWriter::beginJob() {	
-	wc_resolution=0.5;	//dummy value		//mm
 
 	eventCounter = 0;
 
@@ -323,10 +325,10 @@ void MillepedeBinaryWriter::beginJob() {
 	label = new int[NGL];
 
 	for (int l=0; l<nLayers; l++) {
-		label[l*NGLperLayer + 0] = (l+1)*100 + 11;
-		label[l*NGLperLayer + 1] = (l+1)*100 + 12;
-		//label[l*NGLperLayer + 2] = (l+1)*100 + 21;
-		//label[l*NGLperLayer + 3] = (l+1)*100 + 22;
+		label[l*NGLperLayer + 0] = (l)*100 + 11;
+		label[l*NGLperLayer + 1] = (l)*100 + 12;
+		//label[l*NGLperLayer + 2] = (l)*100 + 21;
+		//label[l*NGLperLayer + 3] = (l)*100 + 22;
 	}
 
 

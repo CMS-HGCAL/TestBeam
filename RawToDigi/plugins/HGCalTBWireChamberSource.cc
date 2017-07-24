@@ -204,14 +204,14 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 
 	if (performAlignment) {
-		dwc1->x = dwc1->x * alignmentParameters[121] - alignmentParameters[111];
-		dwc1->y = dwc1->y * alignmentParameters[122] - alignmentParameters[112];
-		dwc2->x = dwc2->x * alignmentParameters[221] - alignmentParameters[211];
-		dwc2->y = dwc2->y * alignmentParameters[222] - alignmentParameters[212];
-		dwc3->x = dwc3->x * alignmentParameters[321] - alignmentParameters[311];
-		dwc3->y = dwc3->y * alignmentParameters[322] - alignmentParameters[312];
-		dwc4->x = dwc4->x * alignmentParameters[421] - alignmentParameters[411];
-		dwc4->y = dwc4->y * alignmentParameters[422] - alignmentParameters[412];
+		dwc1->x = dwc1->x - alignmentParameters[11];
+		dwc1->y = dwc1->y - alignmentParameters[12];
+		dwc2->x = dwc2->x - alignmentParameters[111];
+		dwc2->y = dwc2->y - alignmentParameters[112];
+		dwc3->x = dwc3->x - alignmentParameters[211];
+		dwc3->y = dwc3->y - alignmentParameters[212];
+		dwc4->x = dwc4->x - alignmentParameters[311];
+		dwc4->y = dwc4->y - alignmentParameters[312];
 	}
 
 	mwcs->push_back(*dwc1);
@@ -334,7 +334,7 @@ void HGCalTBWireChamberSource::ReadAlignmentParameters() {
 	int readCounter = -2, currentParameter = 0;
 
 	if (readCounter==-2) {
-		for (int i=1; i<= 4; i++) {
+		for (int i=0; i< 4; i++) {
 		  alignmentParameters[i*100+11] = 0.;
 		  alignmentParameters[i*100+12] = 0.;
 		  alignmentParameters[i*100+21] = 1.;
@@ -349,7 +349,7 @@ void HGCalTBWireChamberSource::ReadAlignmentParameters() {
 	while (file.is_open() && !file.eof()) {
 		if (readCounter!=-2) readCounter++;
 			file >> fragment;
-		if (std::string(fragment)=="111") readCounter = 0;  //first parameter is read out
+		if (std::string(fragment)=="11") readCounter = 0;  //first parameter is read out
 
 		if (readCounter==0) currentParameter = atoi(fragment);
 		if (readCounter==1) currentParameter = alignmentParameters[currentParameter] = atof(fragment); 
@@ -357,7 +357,7 @@ void HGCalTBWireChamberSource::ReadAlignmentParameters() {
 		if (readCounter==4) readCounter = -1;
 	}
 
-	for (int i=1; i<= 4; i++) {
+	for (int i=0; i<4; i++) {
 	  std::cout<<"Alignment parameter: "<<i*100+11<<": "<<alignmentParameters[i*100+11]<<std::endl;
 	  std::cout<<"Alignment parameter: "<<i*100+12<<": "<<alignmentParameters[i*100+12]<<std::endl;
 	  std::cout<<"Alignment parameter: "<<i*100+21<<": "<<alignmentParameters[i*100+21]<<std::endl;
