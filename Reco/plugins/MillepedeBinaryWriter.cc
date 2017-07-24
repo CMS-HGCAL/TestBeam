@@ -44,7 +44,7 @@
 	//DWC ext.: index 3
 */
 
-double DWC_x0s[4] = {0.04, 0.25, 0.001, 0.0};
+double DWC_x0s[4] = {0.004, 0.25, 0.008, 0.0};
 
 
 class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
