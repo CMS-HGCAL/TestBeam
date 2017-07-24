@@ -48,6 +48,7 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   unsigned int m_trailerSize;
   unsigned int m_eventTrailerSize;
   unsigned int m_nOrmBoards;
+  unsigned int m_nSkipEvents;
 
   unsigned int timeStartRun;
   unsigned int timeStopRun;
