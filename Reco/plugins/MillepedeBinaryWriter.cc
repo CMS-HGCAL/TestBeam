@@ -37,6 +37,15 @@
 #include "TTree.h"
 #include "TFile.h"
 
+/*
+	//DWC E: index 0,
+	//DWC D: index 1,
+	//DWC A: index 2,
+	//DWC ext.: index 3
+*/
+
+double DWC_x0s[4] = {0.04, 0.25, 0.001, 0.0};
+
 
 class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	public:
@@ -82,6 +91,8 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 
 		bool makeTree;
 		double res1_x, res1_y, res2_x, res2_y, res3_x, res3_y, res4_x, res4_y;
+		int NDF;
+		double chi2;
 		TTree* tree;
 
 };
@@ -129,6 +140,8 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	edm::Handle<RunData> rd;
  	//get the relevant event information
 	event.getByToken(RunDataToken, rd);
+	if (rd->event>-1)
+		return;
 
 	eventCounter++;
 
@@ -141,30 +154,38 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		if (!dwcs->at(n_layer).goodMeasurement) return;
 	
 
-	
 	for (size_t n_layer=0; n_layer<4; n_layer++) {
 		//Step 4: add dWCs to the setup if useMWCReference option is set true
 		Sensors[n_layer] = new SensorHitMap(n_layer);				//attention: This is specifically tailored for the 8-layer setup
 
-		Sensors[n_layer]->setLabZ(dwcs->at(n_layer).z, 1.);
-		Sensors[n_layer]->setCenterHitPosition(dwcs->at(n_layer).x, dwcs->at(n_layer).y ,wc_resolution , wc_resolution);
-		Sensors[n_layer]->setParticleEnergy(energy);
+		Sensors[n_layer]->setLabZ(dwcs->at(n_layer).z, DWC_x0s[n_layer]);
+		Sensors[n_layer]->setCenterHitPosition(dwcs->at(n_layer).x, dwcs->at(n_layer).y , wc_resolution , wc_resolution);
+		Sensors[n_layer]->setParticleEnergy(rd->energy);
 		Sensors[n_layer]->setResidualResolution(wc_resolution);	
 	}
 
-	//step 5: fill particle tracks
+	//first layer of HGCal as reference
 	Track = new ParticleTrack();
+	Sensors[nLayers] = new SensorHitMap(nLayers);
+	Sensors[nLayers]->setLabZ(0., 0.003);
+	Sensors[nLayers]->setParticleEnergy(rd->energy);
+	Track->addReferenceSensor(Sensors[nLayers]);
+
+	//step 5: fill particle tracks
 	for (int n_layer=0; n_layer<nLayers; n_layer++) {
 		Track->addFitPoint(Sensors[n_layer]);
 	}	
 	
 	Track->fitTrack(fittingMethod);
+	NDF = Track->getNDF();
+	chi2 = Track->getChi2();
 
+	std::cout<<"Track chi2: "<<Track->getChi2()<<" / "<<Track->getNDF()<<" = "<<Track->getChi2()/Track->getNDF()<<"   uncertainty at z=0: "<<Track->calculateReferenceErrorXY().first<<" , "<<Track->calculateReferenceErrorXY().second<<std::endl;
+	bool accept = true;
+	if (MWCQualityCut&&Track->getChi2()/Track->getNDF() > 10) accept=false;		//perform a cut on the quality of the track
 	
-	//step 6: calculate the deviations between each fit missing one layer and exactly that layer's true central position
-	if (fittingMethod==GBLTRACK) {
-		Track->gblTrackToMilleBinary(milleBinary);
-	} else{	
+	if (accept) {
+		//step 6: calculate the deviations between each fit missing one layer and exactly that layer's true central position
 		for (int n_layer=0; n_layer<nLayers; n_layer++) {
 			double layer_labZ = Sensors[n_layer]->getLabZ();
 			double intrinsic_z = Sensors[n_layer]->getIntrinsicHitZPosition();	
@@ -178,51 +199,6 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			double x_true = position_true.first;
 			double y_true = position_true.second;
 			
-			if (MWCQualityCut&&(fabs(x_true - x_predicted) > 10. || fabs(y_true - y_predicted) > 10.)) return;
-
-			Sensors[n_layer]->getHitPositionError();	
-
-			//step7: calculate the necessary derivatives for Mille and fill them into the binary file			
-			//reset all global parameters:
-			for (int k=0; k<NGL; k++){
-				derGl[k] = 0.;
-			}
-
-			//the x-coordinate								
-			derLc[0] = layer_labZ;
-			derLc[1] = 1.;
-			derLc[2] = 0.;
-			derLc[3] = 0.;
-			
-			//std::cout<<"x_predicted: "<<x_predicted<<"   y_predicted: "<<y_predicted<<"     x_true: "<<x_true<<"   y_true: "<<y_true<<std::endl;
-
-			derGl[n_layer*NGLperLayer+0] = 1.;		
-			derGl[n_layer*NGLperLayer+1] = 0.;		
-			//derGl[n_layer*NGLperLayer+2] = x_true;		
-			//derGl[n_layer*NGLperLayer+3] = 0.;		
-
-			rMeas = x_true - x_predicted;
-			//std::cout<<" ---> delta x = "<<rMeas<<"  ";
-			sigma = Sensors[n_layer]->getResidualResolution();
-			mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
-
-
-			//the y-coordinate
-			derLc[0] = 0.;
-			derLc[1] = 0.;
-			derLc[2] = layer_labZ;
-			derLc[3] = 1.;
-
-			derGl[n_layer*NGLperLayer+0] = 0.;		
-			derGl[n_layer*NGLperLayer+1] = 1.;			
-			//derGl[n_layer*NGLperLayer+2] = 0.;			
-			//derGl[n_layer*NGLperLayer+3] = y_true;			
-
-			rMeas = y_true - y_predicted;
-			//std::cout<<" ---> delta y = "<<rMeas<<std::endl;
-			sigma = Sensors[n_layer]->getResidualResolution();
-			mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
-		
 			if (makeTree) {
 				double res_x=x_true - x_predicted;
 				double res_y=y_true - y_predicted;
@@ -246,13 +222,74 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 				}
 			}
 		}
+		tree->Fill();
 
-		if (makeTree) {
-			tree->Fill();
+
+		if (fittingMethod==GBLTRACK) {
+			Track->gblTrackToMilleBinary(milleBinary);
+		} else{	
+			for (int n_layer=0; n_layer<nLayers; n_layer++) {
+				double layer_labZ = Sensors[n_layer]->getLabZ();
+				double intrinsic_z = Sensors[n_layer]->getIntrinsicHitZPosition();	
+				
+				std::pair<double, double> position_predicted = Track->calculatePositionXY(layer_labZ+intrinsic_z, n_layer);
+				double x_predicted = position_predicted.first;
+				double y_predicted = position_predicted.second;
+
+
+				std::pair<double, double> position_true = Sensors[n_layer]->getHitPosition();	
+				double x_true = position_true.first;
+				double y_true = position_true.second;
+				
+
+				//step7: calculate the necessary derivatives for Mille and fill them into the binary file			
+				//reset all global parameters:
+				for (int k=0; k<NGL; k++){
+					derGl[k] = 0.;
+				}
+
+				//the x-coordinate								
+				derLc[0] = layer_labZ;
+				derLc[1] = 1.;
+				derLc[2] = 0.;
+				derLc[3] = 0.;
+				
+				//std::cout<<"x_predicted: "<<x_predicted<<"   y_predicted: "<<y_predicted<<"     x_true: "<<x_true<<"   y_true: "<<y_true<<std::endl;
+
+				derGl[n_layer*NGLperLayer+0] = 1.;		
+				derGl[n_layer*NGLperLayer+1] = 0.;		
+				//derGl[n_layer*NGLperLayer+2] = x_true;		
+				//derGl[n_layer*NGLperLayer+3] = 0.;		
+
+				rMeas = x_true - x_predicted;
+				//std::cout<<" ---> delta x = "<<rMeas<<"  ";
+				sigma = Sensors[n_layer]->getResidualResolution();
+				mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
+
+
+				//the y-coordinate
+				derLc[0] = 0.;
+				derLc[1] = 0.;
+				derLc[2] = layer_labZ;
+				derLc[3] = 1.;
+
+				derGl[n_layer*NGLperLayer+0] = 0.;		
+				derGl[n_layer*NGLperLayer+1] = 1.;			
+				//derGl[n_layer*NGLperLayer+2] = 0.;			
+				//derGl[n_layer*NGLperLayer+3] = y_true;			
+
+				rMeas = y_true - y_predicted;
+				//std::cout<<" ---> delta y = "<<rMeas<<std::endl;
+				sigma = Sensors[n_layer]->getResidualResolution();
+				mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
+			
+			}
+
+			mille->end();
 		}
-		mille->end();
 	}
-	
+
+
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		delete (*it).second;
 	};	Sensors.clear();
@@ -263,8 +300,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 
 
 void MillepedeBinaryWriter::beginJob() {	
-	wc_resolution=1.0;	//dummy value
-	energy=250;			//dummy value
+	wc_resolution=0.5;	//dummy value		//mm
 
 	eventCounter = 0;
 
@@ -304,6 +340,8 @@ void MillepedeBinaryWriter::beginJob() {
 		tree->Branch("res3_y", &res3_y);
 		tree->Branch("res4_x", &res4_x);
 		tree->Branch("res4_y", &res4_y);
+		tree->Branch("chi2", &chi2);
+		tree->Branch("NDF", &NDF);
 
 	}
 }

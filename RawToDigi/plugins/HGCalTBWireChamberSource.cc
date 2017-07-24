@@ -228,9 +228,17 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 	int n_trigger_corrected = n_trigger-skipFirstNEvents[fileCounter];
 
-	rd->energy = -1;
 	rd->configuration = -1;
-	rd->runType = runType[fileCounter];
+	switch(atoi(runType[fileCounter].c_str()) % 10) {
+		case 1: rd->energy=100; break;
+		case 2: rd->energy=150; break;
+		case 3: rd->energy=200; break;
+		case 4: rd->energy=250; break;
+		case 5: rd->energy=300; break;
+		default: rd->energy=-1;
+	}
+
+
 	rd->run = n_run;
 	rd->trigger = n_trigger_corrected;
 	rd->hasDanger = false;

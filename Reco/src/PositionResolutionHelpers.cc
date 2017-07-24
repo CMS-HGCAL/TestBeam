@@ -135,3 +135,16 @@ double LineFitter::evalError(double x) {
   else
     return sqrt(pow(this->getBError(), 2) + pow(x*this->getMError(),2) + 2*fabs(x)*this->getMBCovariance());
 };
+
+int LineFitter::GetNDF() {
+  return _x.size() - 2;
+} 
+
+double LineFitter::GetChisquare() {
+  double chi2=0;
+  for (size_t i=0; i<_x.size(); i++) {
+    chi2 = chi2 + pow((_y[i]-eval(_x[i]))/_sigma_y[i],2);
+  }
+
+  return chi2;
+};

@@ -1,5 +1,7 @@
 #include "HGCal/Reco/interface/Tracks.h"
 
+//#define DEBUG
+
 //****   gblhelpers    ****//
 double gblhelpers::showerProfile(double *t, double *par) {
   return par[0]*par[2]*(pow(par[2]*t[0], par[1]-1)*exp(-par[2]*t[0]))/TMath::Gamma(par[1]);
@@ -54,7 +56,7 @@ void ParticleTrack::addFitPoint(SensorHitMap* sensor){
 
   Energies.push_back(sensor->getTotalEnergy());
 
-  //This is for gbl: Check why this has to be set to exactly those values for it to work
+  //This is for gbl: Check why this has to be set to positive values in z for it to work
   std::pair<double, double> measurementError = sensor->getHitPositionError();
   measurementError.first = sensor->getResidualResolution() ==-1 ? measurementError.first : sensor->getResidualResolution();
   measurementError.second = sensor->getResidualResolution() ==-1 ? measurementError.second : sensor->getResidualResolution();
@@ -117,7 +119,9 @@ void ParticleTrack::fitTrack(TrackFittingMethod method){
     }
     lastAppliedMethod = method;      
   } catch(cms::Exception& iException) {
-    //std::cout<<"Fitting method has failed with error code "<< iException <<". Attempting the default fitting."<<std::endl<<std::endl;
+    #ifdef DEBUG
+      std::cout<<"Fitting method has failed with error code "<< iException <<". Attempting the default fitting."<<std::endl<<std::endl;
+    #endif
     fitTrack(DEFAULTFITTING);
   }
 }
@@ -173,7 +177,9 @@ double ParticleTrack::getSumOfEnergies() {  //returns the original Energies (i.e
 
 void ParticleTrack::gblTrackToMilleBinary(gbl::MilleBinary *milleBinary) {
   if (gblTrajectory != NULL) {
-    //std::cout<<"Writing to MilleBinary"<<std::endl;
+    #ifdef DEBUG
+      std::cout<<"Writing to MilleBinary"<<std::endl;
+    #endif
     gblTrajectory->milleOut(*milleBinary);
   }
 }
@@ -186,7 +192,7 @@ void ParticleTrack::gblTrackFit() {
   double dz, particleEnergy, layerX0, thetaRMS_abs;//, thetaRMS_sensor;
   int label;
 
-  double z_prev = gblLayers[0].z() - 1.;    //1cm to incorporate possible absorbers
+  double z_prev = gblLayers[0].z()-60000.;    //H2 beam line is approximately 600m
 
   for (size_t i=0; i<gblLayers.size(); i++) {
     dz = gblLayers[i].z() - z_prev;
@@ -194,35 +200,40 @@ void ParticleTrack::gblTrackFit() {
     particleEnergy = gblLayers[i].particleEnergy();
     layerX0 = gblLayers[i].absorberX0();
     label = gblLayers[i].label();
+    #ifdef DEBUG
+      std::cout<<"LayerX0: "<<layerX0<<std::endl<<"  layerZ: "<<gblLayers[i].z()<<std::endl;
+    #endif
 
-    thetaRMS_abs = (0.0136*sqrt(layerX0)/particleEnergy*(1+0.038*log(layerX0)));     //according to PDG formula
+    if (layerX0 > 0) {  
+      thetaRMS_abs = (0.0136*sqrt(layerX0)/particleEnergy*(1+0.038*log(layerX0)));     //according to PDG formula
 
-    TMatrixD jac_abs1(5, 5);
-    jac_abs1.UnitMatrix();
-    jac_abs1[3][1] = (0.5-sqrt(1/12.))*dz;
-    jac_abs1[4][2] = (0.5-sqrt(1/12.))*dz;
-    gbl::GblPoint point_abs1(jac_abs1);
-    TVectorD scat_mean_abs1(2); //mean of kink angle variation
-    scat_mean_abs1.Zero();
-    TVectorD scat_invResRMS_abs1(2);
-    scat_invResRMS_abs1[0] = 1./(2.*thetaRMS_abs*thetaRMS_abs);
-    scat_invResRMS_abs1[1] = 1./(2.*thetaRMS_abs*thetaRMS_abs);
-    point_abs1.addScatterer(scat_mean_abs1, scat_invResRMS_abs1);
-    listOfGblPoints.push_back(point_abs1);
+      TMatrixD jac_abs1(5, 5);
+      jac_abs1.UnitMatrix();
+      jac_abs1[3][1] = (0.5-sqrt(1/12.))*dz;
+      jac_abs1[4][2] = (0.5-sqrt(1/12.))*dz;
+      gbl::GblPoint point_abs1(jac_abs1);
+      TVectorD scat_mean_abs1(2); //mean of kink angle variation
+      scat_mean_abs1.Zero();
+      TVectorD scat_invResRMS_abs1(2);
+      scat_invResRMS_abs1[0] = 1./(2.*thetaRMS_abs*thetaRMS_abs);
+      scat_invResRMS_abs1[1] = 1./(2.*thetaRMS_abs*thetaRMS_abs);
+      point_abs1.addScatterer(scat_mean_abs1, scat_invResRMS_abs1);
+      listOfGblPoints.push_back(point_abs1);
 
-    
-    TMatrixD jac_abs2(5, 5);
-    jac_abs2.UnitMatrix();
-    jac_abs2[3][1] = 2*sqrt(1./12.)*dz;
-    jac_abs2[4][2] = 2*sqrt(1./12.)*dz;
-    gbl::GblPoint point_abs2(jac_abs2);
-    TVectorD scat_mean_abs2(2); //mean of kink angle variation
-    scat_mean_abs2.Zero();
-    TVectorD scat_invResRMS_abs2(2);
-    scat_invResRMS_abs2[0] = 1./(2.*thetaRMS_abs*thetaRMS_abs);
-    scat_invResRMS_abs2[1] = 1./(2.*thetaRMS_abs*thetaRMS_abs);
-    point_abs2.addScatterer(scat_mean_abs2, scat_invResRMS_abs2);
-    listOfGblPoints.push_back(point_abs2);
+      
+      TMatrixD jac_abs2(5, 5);
+      jac_abs2.UnitMatrix();
+      jac_abs2[3][1] = 2*sqrt(1./12.)*dz;
+      jac_abs2[4][2] = 2*sqrt(1./12.)*dz;
+      gbl::GblPoint point_abs2(jac_abs2);
+      TVectorD scat_mean_abs2(2); //mean of kink angle variation
+      scat_mean_abs2.Zero();
+      TVectorD scat_invResRMS_abs2(2);
+      scat_invResRMS_abs2[0] = 1./(2.*thetaRMS_abs*thetaRMS_abs);
+      scat_invResRMS_abs2[1] = 1./(2.*thetaRMS_abs*thetaRMS_abs);
+      point_abs2.addScatterer(scat_mean_abs2, scat_invResRMS_abs2);
+      listOfGblPoints.push_back(point_abs2);
+    }
     
    
     //1. Make Jacobian (5x5) from plane i-1 to i  
@@ -254,15 +265,25 @@ void ParticleTrack::gblTrackFit() {
 
     listOfGblPoints.push_back(point);
     gblPointLabels[label] = listOfGblPoints.size();
+    #ifdef DEBUG
+      std::cout<<"Number of gbl points: "<<listOfGblPoints.size()<<std::endl;
+    #endif
   }
 
 
   gblTrajectory = new gbl::GblTrajectory(listOfGblPoints, false);
   
 
-  double chi2, lw; int ndf;
-  gblTrajectory->fit(chi2, ndf, lw);
-  //std::cout<<"chi2: "<<chi2<<"   lw: "<<lw<<"    ndf: "<<ndf<<"  listOfGblPoints: "<<listOfGblPoints.size()<<std::endl;
+  double gbl_chi2 = -1;
+  double lw; int ndf;
+  gblTrajectory->fit(gbl_chi2, ndf, lw);
+  #ifdef DEBUG
+    std::cout<<"chi2: "<<gbl_chi2<<"   lw: "<<lw<<"    ndf: "<<ndf<<"  listOfGblPoints: "<<listOfGblPoints.size()<<std::endl;
+  #endif
+
+  chi2 = gbl_chi2;
+  NDF = ndf;
+
 };
 
 std::pair<double, double> ParticleTrack::positionFromGblTrackFit(int layerLabel) {
@@ -293,16 +314,18 @@ void ParticleTrack::analyticalStraightLineFit() {
   linefit_x->fit();
   linefit_y->fit();
 
+  NDF = linefit_x->GetNDF() + linefit_y->GetNDF();
+  chi2 = linefit_x->GetChisquare() + linefit_y->GetChisquare();
+
 };
 
 std::pair<double, double> ParticleTrack::positionFromAnalyticalStraightLine(double z) {
   return std::make_pair(linefit_x->eval(z), linefit_y->eval(z));
 };
+
 std::pair<double, double> ParticleTrack::positionFromAnalyticalStraightLineErrors(double z) {
   return std::make_pair(linefit_x->evalError(z), linefit_y->evalError(z));
 };
-
-
 
 void ParticleTrack::polFitTGraphErrors(int degree){  
   if (ROOTpol_x != NULL)
@@ -318,6 +341,9 @@ void ParticleTrack::polFitTGraphErrors(int degree){
   
   fit_result_x = tmp_graph_x->Fit(ROOTpol_x, "QFS");    //for some ROOT versions, the option 'S' is essential to retrieve the fit results object
   fit_result_y = tmp_graph_y->Fit(ROOTpol_y, "QFS");
+
+  NDF = ROOTpol_x->GetNDF() + ROOTpol_y->GetNDF();
+  chi2 = ROOTpol_x->GetChisquare() + ROOTpol_y->GetChisquare();
 
   delete tmp_graph_x;
   delete tmp_graph_y;
@@ -341,6 +367,14 @@ std::pair<double, double> ParticleTrack::positionErrorFromPolFitTGraphErrors(int
   return std::make_pair(sqrt(err_x), sqrt(err_y));
 }
 
+
+double ParticleTrack::getChi2() {
+  return chi2;
+}
+
+int ParticleTrack::getNDF() {
+  return NDF;
+}
 
 double weightToFitPointWeight(double e, double sum_e, FitPointWeightingMethod m) {
   switch(m) {
