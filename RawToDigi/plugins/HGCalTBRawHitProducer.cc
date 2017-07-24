@@ -92,6 +92,12 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
   edm::Handle<HGCalTBSkiroc2CMSCollection> skirocs;
   event.getByToken(m_HGCalTBSkiroc2CMSCollection, skirocs);
+
+  if( !skirocs->size() ){
+    event.put(hits, m_outputCollectionName);
+    return;
+  }
+  
   for( size_t iski=0; iski<skirocs->size(); iski++ ){
     for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
       HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);

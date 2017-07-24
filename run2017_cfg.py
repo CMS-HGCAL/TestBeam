@@ -6,7 +6,7 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 #Change the data folder appropriately to where you wish to access the files from:
 options.register('dataFolder',
-                 '/afs/cern.ch/work/a/asteen/public/data/lab-July2017',
+                 '/disk2_2TB/July2017_TB_data_orm',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw input')
@@ -18,7 +18,7 @@ options.register('runNumber',
                  'Input run to process')
 
 options.register('outputFolder',
-                 '/afs/cern.ch/work/a/asteen/public/data/may2017/',
+                 '/afs/cern.ch/work/a/asteen/public/data/july2017/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output folder where analysis output are stored')
@@ -44,11 +44,12 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             ElectronicMap=cms.untracked.string(electronicMap),
                             fileNames=cms.untracked.vstring("file:%s/HexaData_Run%04d.raw"%(options.dataFolder,options.runNumber)),
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
-                            NumberOf32BitsWordsPerReadOut=cms.untracked.uint32(30788),
+                            NumberOf32BitsWordsPerReadOut=cms.untracked.uint32(30787),
                             NumberOfBytesForTheHeader=cms.untracked.uint32(8),
                             NumberOfBytesForTheTrailer=cms.untracked.uint32(4),
                             NumberOfBytesForTheEventTrailers=cms.untracked.uint32(4),
-                            NumberOfOrmBoards=cms.untracked.uint32(1)
+                            NumberOfOrmBoards=cms.untracked.uint32(1),
+                            NSkipEvents=cms.untracked.uint32(0)
                             )
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/HexaOutput_%d.root"%(options.outputFolder,options.runNumber)))
@@ -97,52 +98,10 @@ process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        SubtractCommonMode=cms.untracked.bool(True)
                                        )
 
-process.pulseshapeplotter = cms.EDAnalyzer("PulseShapePlotter",
-                                           InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
-                                           ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
-                                           CommonModeThreshold=cms.untracked.double(100)
-                                           )
 
-
-
-process.recHitNtuplizer = cms.EDAnalyzer("RecHitsNtuplizer",
-                                         InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
-                                         ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
-                                         CommonModeThreshold=cms.untracked.double(100),
-                                         LG2HG = cms.untracked.vdouble(10.0),
-                                         TOT2LG = cms.untracked.vdouble(10.0),
-                                         HighGainADCSaturation = cms.untracked.double(2000),
-                                         LowGainADCSaturation = cms.untracked.double(1500)
-                                         )
-
-
-process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
-                                        OutputCollectionName = cms.string('HGCALTBRECHITS'),
-                                        InputCollection = cms.InputTag('rawhitproducer','HGCALTBRAWHITS'),
-                                        LG2HG = cms.untracked.vdouble(10.0),
-                                        TOT2LG = cms.untracked.vdouble(10.0),
-                                        HighGainADCSaturation = cms.untracked.double(2000),
-                                        LowGainADCSaturation = cms.untracked.double(1500),
-                                        ElectronicsMap = cms.untracked.string('HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt'),
-                                        CommonModeThreshold = cms.untracked.double(100.),
-                                        KeepOnlyTimeSample3 = cms.untracked.bool(False)
-                                        )
-
-process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",
-                                       InputCollection=cms.InputTag("rechitproducer","HGCALTBRECHITS"),
-                                       ElectronicMap=cms.untracked.string("HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"),
-                                       SensorSize=cms.untracked.int32(128),
-                                       EventPlotter=cms.untracked.bool(True),
-                                       MipThreshold=cms.untracked.double(200),
-                                       NoiseThreshold=cms.untracked.double(25)
-                                       )
-
-#process.p = cms.Path( process.pedestalplotter )
-process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
+process.p = cms.Path( process.pedestalplotter )
+#process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
 #process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.pulseshapeplotter )
-#process.p = cms.Path( process.rawhitproducer*process.recHitNtuplizer )
-#process.p = cms.Path( process.rawhitproducer*process.rechitproducer)
-#process.p = cms.Path( process.rawhitproducer*process.rechitproducer*process.rechitplotter*process.rawhitplotter )
 
 process.end = cms.EndPath(process.output)
 

@@ -127,6 +127,7 @@ void RawDataPlotter::analyze(const edm::Event& event, const edm::EventSetup& set
   edm::Handle<HGCalTBSkiroc2CMSCollection> skirocs;
   event.getByToken(m_HGCalTBSkiroc2CMSCollection, skirocs);
 
+  if( !skirocs->size() ) return;
   
   std::map<int,TH2Poly*>  polyMap;
   if( m_eventPlotter ){

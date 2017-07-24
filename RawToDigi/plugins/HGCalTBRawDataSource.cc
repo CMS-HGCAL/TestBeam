@@ -15,7 +15,8 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   m_headerSize(pset.getUntrackedParameter<unsigned int> ("NumberOfBytesForTheHeader",8)),
   m_trailerSize(pset.getUntrackedParameter<unsigned int> ("NumberOfBytesForTheTrailer",4)),
   m_eventTrailerSize(pset.getUntrackedParameter<unsigned int> ("NumberOfBytesForTheEventTrailers",4)),
-  m_nOrmBoards(pset.getUntrackedParameter<unsigned int> ("NumberOfOrmBoards",1))
+  m_nOrmBoards(pset.getUntrackedParameter<unsigned int> ("NumberOfOrmBoards",1)),
+  m_nSkipEvents(pset.getUntrackedParameter<unsigned int> ("NSkipEvents",0))
 {
   produces<HGCalTBSkiroc2CMSCollection>(m_outputCollectionName);
   
@@ -62,10 +63,11 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
     m_run=aint >> 8 ;
   }
 
+  uint64_t nBytesToSkip=m_headerSize+m_nOrmBoards*m_nSkipEvents*(m_nWords*4+m_eventTrailerSize);
   m_decodedData.clear();
-  for( uint16_t iorm=0; iorm<m_nOrmBoards; iorm++ ){
+  for( uint32_t iorm=0; iorm<m_nOrmBoards; iorm++ ){
     std::vector<uint32_t> rawData;
-    m_input.seekg( m_headerSize+m_nOrmBoards*m_event*(m_nWords*4+m_eventTrailerSize)+iorm*(m_nWords*4+m_eventTrailerSize), std::ios::beg );
+    m_input.seekg( (std::streamoff)nBytesToSkip+(std::streamoff)m_nOrmBoards*m_event*(m_nWords*4+m_eventTrailerSize)+(std::streamoff)iorm*(m_nWords*4+m_eventTrailerSize), std::ios::beg );
     m_input.read ( m_buffer, m_nWords*4+m_eventTrailerSize );
     if( !m_input.good() ){
       m_input.close();
@@ -84,11 +86,11 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
     char buf[] = {m_buffer[m_nWords*4],m_buffer[m_nWords*4+1],m_buffer[m_nWords*4+2],m_buffer[m_nWords*4+3]};
     memcpy(&evtTrailer, &buf, sizeof(evtTrailer));
     uint32_t ormId=evtTrailer&0xff;
-    uint32_t evtNumber=evtTrailer>>0x8;
     if( ormId != iorm )
       std::cout << "Problem in event trailer : wrong ORM id -> evtTrailer&0xff = " << std::dec << ormId << "\t iorm = " << iorm << std::endl;
-    if( evtNumber != m_event+1 )
-      std::cout << "Problem in event trailer : wrong event number -> evtTrailer>>8 = " << std::dec << evtNumber << "\t m_event+1 = " << m_event+1 << std::endl;
+    // uint32_t evtNumber=evtTrailer>>0x8;
+    // if( evtNumber != m_event+1 )
+    //   std::cout << "Problem in event trailer : wrong event number -> evtTrailer>>8 = " << std::dec << evtNumber << "\t m_event+1 = " << m_event+1 << std::endl;
     std::vector< std::array<uint16_t,1924> > decodedData=decode_raw_32bit(rawData);
     m_decodedData.insert(m_decodedData.end(),decodedData.begin(),decodedData.end());
   }
@@ -124,7 +126,8 @@ std::vector< std::array<uint16_t,1924> > HGCalTBRawDataSource::decode_raw_32bit(
 void HGCalTBRawDataSource::produce(edm::Event & e)
 {
   std::auto_ptr<HGCalTBSkiroc2CMSCollection> skirocs(new HGCalTBSkiroc2CMSCollection);
-
+  std::auto_ptr<HGCalTBSkiroc2CMSCollection> emptycol(new HGCalTBSkiroc2CMSCollection);
+  bool correctEvent=true;
   for( size_t iski=0; iski<m_decodedData.size(); iski++){
     std::vector<HGCalTBDetId> detids;
     for (size_t ichan = 0; ichan < HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++) {
@@ -141,13 +144,15 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
     }
     std::vector<uint16_t> vdata;vdata.insert(vdata.end(),m_decodedData.at(iski).begin(),m_decodedData.at(iski).end());
     HGCalTBSkiroc2CMS skiroc( vdata,detids );
-    if(!skiroc.check())
-      exit(1);
-    //std::cout << skiroc << std::endl;
-    skirocs->push_back(skiroc);
+    if(skiroc.check())
+      skirocs->push_back(skiroc);
+    else{
+      correctEvent=false;
+      break;
+    }
   }
-  //getchar();
-  std::cout << "skirocs->size() = " << skirocs->size() << std::endl;
+  if( !correctEvent )
+    skirocs->swap(*emptycol);
   e.put(skirocs, m_outputCollectionName);
   m_event++;
 }
@@ -165,6 +170,7 @@ void HGCalTBRawDataSource::fillDescriptions(edm::ConfigurationDescriptions& desc
   desc.addUntracked<unsigned int> ("NumberOfBytesForTheTrailer");
   desc.addUntracked<unsigned int> ("NumberOfBytesForTheEventTrailers");
   desc.addUntracked<unsigned int> ("NumberOfOrmBoards");
+  desc.addUntracked<unsigned int> ("NSkipEvents");
   descriptions.add("source", desc);
 }
 
