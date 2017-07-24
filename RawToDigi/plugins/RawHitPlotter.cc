@@ -108,7 +108,9 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
 
   edm::Handle<HGCalTBRawHitCollection> hits;
   event.getByToken(m_HGCalTBRawHitCollection, hits);
-  
+  if( !hits->size() )
+    return;
+
   std::map<int,TH2Poly*>  polyMap;
   if( m_eventPlotter ){
     std::ostringstream os( std::ostringstream::ate );

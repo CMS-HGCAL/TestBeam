@@ -23,6 +23,22 @@
 #include <iomanip>
 #include <set>
 
+struct hgcal_channel{
+  hgcal_channel() : key(0),
+		    counter(0),
+		    meanHG(0.),
+		    meanLG(0.),
+		    rmsHG(0.),
+		    rmsLG(0.){;}
+  int key;
+  int counter;
+  float meanHG;
+  float meanLG;
+  float rmsHG;
+  float rmsLG;
+
+};
+
 class PedestalPlotter : public edm::one::EDAnalyzer<edm::one::SharedResources>
 {
 public:
@@ -47,13 +63,7 @@ private:
 
   int m_evtID;
   uint16_t m_numberOfBoards;
-  std::map<int,float> m_meanHGMap;
-  std::map<int,float> m_meanLGMap;
-  std::map<int,float> m_rmsHGMap;
-  std::map<int,float> m_rmsLGMap;
-  std::map<int,int> m_counterMap;
-  // std::map<int,TH1F*> m_h_adcHigh;
-  // std::map<int,TH1F*> m_h_adcLow;
+  std::map<int,hgcal_channel> m_channelMap;
 
   edm::EDGetTokenT<HGCalTBSkiroc2CMSCollection> m_HGCalTBSkiroc2CMSCollection;
 
@@ -75,29 +85,6 @@ PedestalPlotter::PedestalPlotter(const edm::ParameterSet& iConfig) :
 
   m_evtID=0;
 
-  // usesResource("TFileService");
-  // edm::Service<TFileService> fs;
-  // std::ostringstream os( std::ostringstream::ate );
-  // TH1F* htmp1;
-  // for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
-  //   std::cout << "Hexaboard " << ib << std::endl;
-  //   for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
-  //     os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
-  //     TFileDirectory dir = fs->mkdir( os.str().c_str() );
-  //     for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
-  // 	for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-  // 	  os.str("");
-  // 	  os << "HighGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan << "_SCA" << it ;
-  // 	  htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,0,4096);
-  // 	  m_h_adcHigh.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+ichan*100+it, htmp1) );
-  // 	  os.str("");
-  // 	  os << "LowGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan << "_SCA" << it ;
-  // 	  htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,0,4096);
-  // 	  m_h_adcLow.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+ichan*100+it, htmp1) );
-  // 	}
-  //     }
-  //   }
-  // }
   HGCalCondObjectTextIO io(0);
   edm::FileInPath fip(m_electronicMap);
   if (!io.load(fip.fullPath(), essource_.emap_)) {
@@ -114,18 +101,15 @@ PedestalPlotter::~PedestalPlotter()
 
 void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 {
-  //  std::cout << "Here I am" << std::endl;
   edm::Handle<HGCalTBSkiroc2CMSCollection> skirocs;
   event.getByToken(m_HGCalTBSkiroc2CMSCollection, skirocs);
 
-  //std::cout << skirocs->size() << std::endl;
-
   m_numberOfBoards = skirocs->size()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-
-  // std::cout << "m_numberOfBoards = " << m_numberOfBoards << std::endl;
 
   m_evtID++;
 
+  if( !skirocs->size() ) return;
+  
   for( size_t iski=0;iski<skirocs->size(); iski++ ){
     HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
     std::vector<int> rollpositions=skiroc.rollPositions();
@@ -141,25 +125,27 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
 	if( rollpositions[it]<9 ){ //rm on track samples+2 last time sample which show weird behaviour
 	  uint32_t key=iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it;
-	  // m_h_adcHigh[key]->Fill(skiroc.ADCHigh(ichan,it));
-	  // m_h_adcLow[key]->Fill(skiroc.ADCLow(ichan,it));
-	  if( m_meanHGMap.find(key)==m_meanHGMap.end() ){
-	    m_meanHGMap[key]=skiroc.ADCHigh(ichan,it);
-	    m_meanLGMap[key]=skiroc.ADCLow(ichan,it);
-	    m_rmsHGMap[key]=skiroc.ADCHigh(ichan,it)*skiroc.ADCHigh(ichan,it);
-	    m_rmsLGMap[key]=skiroc.ADCLow(ichan,it)*skiroc.ADCLow(ichan,it);
-	    m_counterMap[key]=1;
+	  std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
+	  if( iter==m_channelMap.end() ){
+	    hgcal_channel tmp;
+	    tmp.key=key;
+	    tmp.counter=1;
+	    tmp.meanHG=skiroc.ADCHigh(ichan,it);
+	    tmp.meanLG=skiroc.ADCLow(ichan,it);
+	    tmp.rmsHG=skiroc.ADCHigh(ichan,it)*skiroc.ADCHigh(ichan,it);
+	    tmp.rmsLG=skiroc.ADCLow(ichan,it)*skiroc.ADCLow(ichan,it);
+	    std::pair<int,hgcal_channel> p(key,tmp);
+	    m_channelMap.insert( p );
 	  }
 	  else{
-	    m_meanHGMap[key]+=skiroc.ADCHigh(ichan,it);
-	    m_meanLGMap[key]+=skiroc.ADCLow(ichan,it);
-	    m_rmsHGMap[key]+=skiroc.ADCHigh(ichan,it)*skiroc.ADCHigh(ichan,it);
-	    m_rmsLGMap[key]+=skiroc.ADCLow(ichan,it)*skiroc.ADCLow(ichan,it);
-	    m_counterMap[key]+=1;
+	    iter->second.meanHG+=skiroc.ADCHigh(ichan,it);
+	    iter->second.meanLG+=skiroc.ADCLow(ichan,it);
+	    iter->second.rmsHG+=skiroc.ADCHigh(ichan,it)*skiroc.ADCHigh(ichan,it);
+	    iter->second.rmsLG+=skiroc.ADCLow(ichan,it)*skiroc.ADCLow(ichan,it);
+	    iter->second.counter+=1;
 	  }
 	}
       }
-
     }
   }
 }
@@ -256,10 +242,11 @@ void PedestalPlotter::endJob()
     double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
     for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
       int key=iboard*100000+iski*10000+ichan*100+it;
-      float hgMean=m_meanHGMap[key]/m_counterMap[key];
-      float lgMean=m_meanLGMap[key]/m_counterMap[key];
-      float hgRMS=std::sqrt(m_rmsHGMap[key]/m_counterMap[key]-m_meanHGMap[key]/m_counterMap[key]*m_meanHGMap[key]/m_counterMap[key]);
-      float lgRMS=std::sqrt(m_rmsLGMap[key]/m_counterMap[key]-m_meanLGMap[key]/m_counterMap[key]*m_meanLGMap[key]/m_counterMap[key]);
+      std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
+      float hgMean=iter->second.meanHG/iter->second.counter;
+      float lgMean=iter->second.meanLG/iter->second.counter;
+      float hgRMS=std::sqrt(iter->second.rmsHG/iter->second.counter-iter->second.meanHG/iter->second.counter*iter->second.meanHG/iter->second.counter);
+      float lgRMS=std::sqrt(iter->second.rmsLG/iter->second.counter-iter->second.meanLG/iter->second.counter*iter->second.meanLG/iter->second.counter);
       hgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgMean );
       lgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgMean );
       hgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgRMS );
