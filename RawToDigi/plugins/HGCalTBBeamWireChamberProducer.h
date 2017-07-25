@@ -26,7 +26,8 @@ class HGCalTBBeamWireChamberProducer : public edm::EDProducer{
  
   private:
     edm::EDGetTokenT<RunData> RunDataToken; 
-    edm::EDGetTokenT<WireChambers> MWCToken;
+    
+    std::string outputCollectionName;
 
     std::string inputFile;
     TFile* rootFile;
@@ -34,39 +35,55 @@ class HGCalTBBeamWireChamberProducer : public edm::EDProducer{
 
 
     int run, eventId, goodDWC_Measurement;
-    double reco1_x, reco1_y, z1, reco2_x, reco2_y, z2, reco3_x, reco3_y, z3, reco4_x, reco4_y, z4;    
+    double reco1_x, reco1_y, res1_x, res1_y, z1, reco2_x, reco2_y, res2_x, res2_y, z2, reco3_x, reco3_y, res3_x, res3_y, z3, reco4_x, reco4_y, res4_x, res4_y, z4;    
     TBranch                   *b_run;   
     TBranch                   *b_event;   
     TBranch                   *b_goodDWC_Measurement;   
     TBranch                   *b_reco1_x;   
+    TBranch                   *b_res1_x;   
     TBranch                   *b_reco1_y;   
+    TBranch                   *b_res1_y;   
     TBranch                   *b_z1;   
     TBranch                   *b_reco2_x;   
+    TBranch                   *b_res2_x;   
     TBranch                   *b_reco2_y;   
+    TBranch                   *b_res2_y;   
     TBranch                   *b_z2;   
     TBranch                   *b_reco3_x;   
+    TBranch                   *b_res3_x;   
     TBranch                   *b_reco3_y;   
+    TBranch                   *b_res3_y;   
     TBranch                   *b_z3;   
     TBranch                   *b_reco4_x;   
+    TBranch                   *b_res4_x;   
     TBranch                   *b_reco4_y;   
+    TBranch                   *b_res4_y;   
     TBranch                   *b_z4;       
 
 
     int loaded_run;
     std::map<int, double> reco1_x_loaded;
+    std::map<int, double> res1_x_loaded;
     std::map<int, double> reco1_y_loaded;
+    std::map<int, double> res1_y_loaded;
     std::map<int, double> z1_loaded;
 
     std::map<int, double> reco2_x_loaded;
+    std::map<int, double> res2_x_loaded;
     std::map<int, double> reco2_y_loaded;
+    std::map<int, double> res2_y_loaded;
     std::map<int, double> z2_loaded;
     
     std::map<int, double> reco3_x_loaded;
+    std::map<int, double> res3_x_loaded;
     std::map<int, double> reco3_y_loaded;
+    std::map<int, double> res3_y_loaded;
     std::map<int, double> z3_loaded;
 
     std::map<int, double> reco4_x_loaded;
+    std::map<int, double> res4_x_loaded;
     std::map<int, double> reco4_y_loaded;
+    std::map<int, double> res4_y_loaded;
     std::map<int, double> z4_loaded;
 
     void loadRun(int loading_run);
