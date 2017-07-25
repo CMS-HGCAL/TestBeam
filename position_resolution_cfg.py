@@ -174,9 +174,9 @@ process.millepede_binarywriter.binaryFile = cms.string("/tmp/millepede.bin")
 process.dwc_ntupelizer.writeMinimal = cms.bool(False)
 
 
-process.wirechamber_producer.MWCHAMBERS = cms.InputTag("source","WireChambers","unpack")
-process.wirechamber_producer.RUNDATA = cms.InputTag("source","RunData","unpack")
-process.wirechamber_producer.inputFile = cms.string("/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/reconstructed_DWC_data.root")
+process.wirechamberproducer.OutputCollectionName = cms.string("DelayWireChambers") 
+process.wirechamberproducer.RUNDATA = cms.InputTag("source","RunData","unpack")
+process.wirechamberproducer.inputFile = cms.string("/eos/user/t/tquast/outputs/Testbeam/July2017/reconstructed_DWC_data.root")
 
 
 #tree file:
@@ -188,6 +188,6 @@ process.options = cms.untracked.PSet(
     SkipEvent = cms.untracked.vstring('ProductNotFound')
 )
 
-process.p = cms.Path(process.millepede_binarywriter*process.dwc_ntupelizer)
+#process.p = cms.Path(process.millepede_binarywriter*process.dwc_ntupelizer)
 
-#process.p = cms.Path(process.wirechamber_producer)
+process.p = cms.Path(process.wirechamberproducer)
