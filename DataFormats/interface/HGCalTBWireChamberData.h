@@ -7,6 +7,8 @@ struct WireChamberData {
   int ID;
   double x;
   double y;
+  double res_x;
+  double res_y;
   double z;
   bool goodMeasurement_X;
   bool goodMeasurement_Y;

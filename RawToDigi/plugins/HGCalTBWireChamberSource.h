@@ -21,7 +21,6 @@
 #include "TTree.h"
 
 
-
 enum DWC_to_TDC_MAP {
 	DWC1_LEFT = 0,
 	DWC1_RIGHT = 1,
@@ -59,6 +58,8 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		std::string outputCollectionName;
 		std::vector<double> slope_x;
 		std::vector<double> slope_y;
+
+		double wc_resolution;
 
 		int triggerTimeDifferenceTolerance;
 

@@ -8,7 +8,6 @@
 		thorben.quast@cern.ch / thorben.quast@rwth-aachen.de
 */
 
-
 // system include files
 #include <iostream>
 #include <string>
@@ -73,7 +72,6 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		bool useMWCReference;
 		bool MWCQualityCut;
 
-		double wc_resolution;
 		double energy;
 
 		//helper variables that are set within the event loop, i.e. are defined per event
@@ -122,8 +120,6 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 	nLayers = iConfig.getParameter<int>("nLayers");
 	useMWCReference = iConfig.getParameter<bool>("useMWCReference");
 	MWCQualityCut = iConfig.getParameter<bool>("MWCQualityCut");
-	wc_resolution = iConfig.getUntrackedParameter<double>("wc_resolution", 0.5);
-
 
 	binaryFileName = iConfig.getParameter<std::string>("binaryFile");
 
@@ -158,12 +154,12 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 
 	for (size_t n_layer=0; n_layer<4; n_layer++) {
 		//Step 4: add dWCs to the setup if useMWCReference option is set true
-		Sensors[n_layer] = new SensorHitMap(n_layer);				//attention: This is specifically tailored for the 8-layer setup
+		Sensors[n_layer] = new SensorHitMap(n_layer);				
 
 		Sensors[n_layer]->setLabZ(dwcs->at(n_layer).z, DWC_x0s[n_layer]);
-		Sensors[n_layer]->setCenterHitPosition(dwcs->at(n_layer).x, dwcs->at(n_layer).y , wc_resolution , wc_resolution);
+		Sensors[n_layer]->setCenterHitPosition(dwcs->at(n_layer).x, dwcs->at(n_layer).y , dwcs->at(n_layer).res_x , dwcs->at(n_layer).res_y);
 		Sensors[n_layer]->setParticleEnergy(rd->energy);
-		Sensors[n_layer]->setResidualResolution(wc_resolution);	
+		Sensors[n_layer]->setResidualResolution(dwcs->at(n_layer).res_x);	
 	}
 
 	//first layer of HGCal as reference
@@ -182,7 +178,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	NDF = Track->getNDF();
 	chi2 = Track->getChi2();
 
-	std::cout<<"Track chi2: "<<Track->getChi2()<<" / "<<Track->getNDF()<<" = "<<Track->getChi2()/Track->getNDF()<<"   uncertainty at z=0: "<<Track->calculateReferenceErrorXY().first<<" , "<<Track->calculateReferenceErrorXY().second<<std::endl;
+	//std::cout<<"Track chi2 (millepede): "<<Track->getChi2()<<" / "<<Track->getNDF()<<" = "<<Track->getChi2()/Track->getNDF()<<"   uncertainty at z=0: "<<Track->calculateReferenceErrorXY().first<<std::endl;
 	bool accept = true;
 	if (MWCQualityCut&&Track->getChi2()/Track->getNDF() > 10) accept=false;		//perform a cut on the quality of the track
 	
@@ -196,8 +192,6 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			double x_predicted = position_predicted.first;
 			double y_predicted = position_predicted.second;
 			
-
-
 			std::pair<double, double> position_true = Sensors[n_layer]->getHitPosition();	
 			double x_true = position_true.first;
 			double y_true = position_true.second;

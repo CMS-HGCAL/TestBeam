@@ -1,9 +1,8 @@
 #include "HGCal/Reco/interface/PositionResolutionHelpers.h"
 
+//#define DEBUG
 
 //****   Parsing of alignment values    ****//
-
-
     
     
 AlignmentParameters::AlignmentParameters(std::vector<std::string> files, double _defaultRun) : defaultRun(_defaultRun) {
@@ -86,6 +85,9 @@ LineFitter::LineFitter(std::vector<double> x, std::vector<double> y, std::vector
 }
 
 void LineFitter::addPoint(double x, double y, double sigma_y) {
+  #ifdef DEBUG
+    std::cout<<"Adding x: "<<x<<"  adding y: "<<y<<"  with resolution: "<<sigma_y<<std::endl;
+  #endif
   _x.push_back(x); _y.push_back(y); _sigma_y.push_back(sigma_y);
 }
 

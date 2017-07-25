@@ -121,8 +121,6 @@ input_data.append((1194, "HexaData_Run1194_TIMING_RDOUT_ORM0.txt", 0, 0, 0, "22"
 input_data.append((1038, "RUN_1038_160717_0758_TIMING_RDOUT2.txt", 1, 0, 0, "24"))
 
 
-
-
             
 files = ["dwc_run_%s.root" % data[0] for data in input_data]
 timingFileNames = [data[1] for data in input_data]
@@ -158,9 +156,9 @@ process.source = cms.Source("HGCalTBWireChamberSource",
     skipFirstNEvents = cms.vint32([data[3] for data in input_data]),
     triggerCountOffsets = cms.vint32([data[4] for data in input_data]),
     runType = cms.vstring([data[5] for data in input_data]),
+    wc_resolution = cms.untracked.double(0.6),
     performAlignment = cms.untracked.bool(True),
     alignmentParamaterFile = cms.untracked.string("/tmp/millepede.res") 
-
 )
 
 
@@ -170,13 +168,10 @@ process.millepede_binarywriter.MWCQualityCut = cms.bool(True)
 process.millepede_binarywriter.makeTree = cms.untracked.bool(True)
 process.millepede_binarywriter.MWCHAMBERS = cms.InputTag("source","WireChambers","unpack")
 process.millepede_binarywriter.RUNDATA = cms.InputTag("source","RunData","unpack")
-process.millepede_binarywriter.wc_resolution = cms.untracked.double(0.600)
 process.millepede_binarywriter.fittingMethod = cms.string("lineAnalytical")
-#process.millepede_binarywriter.fittingMethod = cms.string("lineTGraphErrors")
-#process.millepede_binarywriter.fittingMethod = cms.string("gblTrack")
 process.millepede_binarywriter.binaryFile = cms.string("/tmp/millepede.bin")
              
-process.dwc_ntupelizer.writeMinimal = cms.bool(True)
+process.dwc_ntupelizer.writeMinimal = cms.bool(False)
 
 
 process.wirechamber_producer.MWCHAMBERS = cms.InputTag("source","WireChambers","unpack")

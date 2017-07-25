@@ -51,6 +51,11 @@ void ParticleTrack::addFitPoint(SensorHitMap* sensor){
   z.push_back(sensor->getLabZ()+sensor->getIntrinsicHitZPosition());  
   z_err.push_back(0.0);
 
+  #ifdef DEBUG
+    std::cout<<"In Tracks: adding x: "<<sensor->getLabHitPosition().first<<"  y: "<<sensor->getLabHitPosition().second<<std::endl;
+    std::cout<<"In Tracks: adding x_err: "<<sensor->getHitPositionError().first<<"  y_err: "<<sensor->getHitPositionError().second<<std::endl<<std::endl;
+  #endif
+
   preAbsorber.push_back(sensor->getX0()); 
   particleEnergy.push_back(sensor->getParticleEnergy());
 

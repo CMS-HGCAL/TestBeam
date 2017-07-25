@@ -27,7 +27,8 @@
 
 #include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"	//for the runData type definition
-
+#include "HGCal/Reco/interface/Tracks.h"
+#include "HGCal/Reco/interface/Sensors.h"
 
 #include "TTree.h"
 #include "TFile.h"
@@ -54,6 +55,7 @@ class DWC_NTupelizer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	  	int run, runType, n_event, goodDWC_Measurement;
 	  	double time_DWC1, time_DWC2, time_DWC3, time_DWC4;
 		double reco1_x, reco1_y, reco2_x, reco2_y, reco3_x, reco3_y, reco4_x, reco4_y;
+		double res1_x, res1_y, res2_x, res2_y, res3_x, res3_y, res4_x, res4_y;
 		double z1, z2, z3, z4;
 	  	int dwc1_z, dwc2_z, dwc3_z, dwc4_z;
 	  	double x1_m_x2, x1_m_x3, x1_m_x4, x2_m_x3, x2_m_x4, x3_m_x4;
@@ -63,7 +65,10 @@ class DWC_NTupelizer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	  	int dwc1_goodMeasurementX, dwc2_goodMeasurementX, dwc3_goodMeasurementX, dwc4_goodMeasurementX; 
 	  	int dwc1_goodMeasurementY, dwc2_goodMeasurementY, dwc3_goodMeasurementY, dwc4_goodMeasurementY; 
 	  	int N_goodMeasurements, N_goodMeasurements_X, N_goodMeasurements_Y;
-  		
+
+	  	int NDF; double chi2, referenceError;
+		std::map<int, SensorHitMap*> Sensors;
+		ParticleTrack* Track;  		
 		TTree* tree;
 
 };
@@ -92,7 +97,6 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 	edm::Handle<RunData> rd;
 	event.getByToken(RunDataToken, rd);
 
-
 	//get the multi wire chambers
 	edm::Handle<WireChambers> dwcs;
 	event.getByToken(MWCToken, dwcs);
@@ -110,6 +114,15 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 	reco3_y = dwcs->at(2).y;
 	reco4_x = dwcs->at(3).x;
 	reco4_y = dwcs->at(3).y;
+
+	res1_x = dwcs->at(0).res_x;
+	res1_y = dwcs->at(0).res_y;
+	res2_x = dwcs->at(1).res_x;
+	res2_y = dwcs->at(1).res_y;
+	res3_x = dwcs->at(2).res_x;
+	res3_y = dwcs->at(2).res_y;
+	res4_x = dwcs->at(3).res_x;
+	res4_y = dwcs->at(3).res_y;
 	
 	z1 = dwcs->at(0).z;
 	z2 = dwcs->at(1).z;
@@ -172,6 +185,43 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 		if(dwc2_goodMeasurementY) N_goodMeasurements_Y++;
 		if(dwc3_goodMeasurementY) N_goodMeasurements_Y++;
 		if(dwc4_goodMeasurementY) N_goodMeasurements_Y++;
+
+
+		if (N_goodMeasurements>=2) {
+			//first layer of HGCal as reference
+			Track = new ParticleTrack();
+			Sensors[5] = new SensorHitMap(5);
+			Sensors[5]->setLabZ(0., 0);
+			Sensors[5]->setParticleEnergy(rd->energy);
+			Track->addReferenceSensor(Sensors[5]);
+			
+			for (size_t n_layer=0; n_layer<4; n_layer++) {	
+				if (! dwcs->at(n_layer).goodMeasurement) continue;		
+				Sensors[n_layer] = new SensorHitMap(n_layer);				
+				Sensors[n_layer]->setLabZ(dwcs->at(n_layer).z, 0.);
+				Sensors[n_layer]->setCenterHitPosition(dwcs->at(n_layer).x, dwcs->at(n_layer).y , dwcs->at(n_layer).res_x, dwcs->at(n_layer).res_y);
+				Sensors[n_layer]->setParticleEnergy(rd->energy);
+				Sensors[n_layer]->setResidualResolution(dwcs->at(n_layer).res_x);	
+				Track->addFitPoint(Sensors[n_layer]);
+			}
+			
+			Track->fitTrack(LINEFITANALYTICAL);
+			NDF = Track->getNDF();
+			chi2 = Track->getChi2();
+			referenceError = Track->calculateReferenceErrorXY().first;
+			
+			//std::cout<<"Track (ntupelizer) chi2: "<<Track->getChi2()<<" / "<<Track->getNDF()<<" = "<<Track->getChi2()/Track->getNDF()<<"   uncertainty at z=0: "<<Track->calculateReferenceErrorXY().first<<std::endl;
+
+			for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
+				delete (*it).second;
+			};	Sensors.clear();
+			delete Track;
+		} else {
+			NDF = 0;
+			chi2 = -1;
+			referenceError = -1;
+		}
+
 	}
 
 	if ((rd->event==-1)&&writeMinimal) return;
@@ -190,15 +240,23 @@ void DWC_NTupelizer::beginJob() {
 	tree->Branch("goodDWC_Measurement", &goodDWC_Measurement);
 	tree->Branch("reco1_x", &reco1_x);
 	tree->Branch("reco1_y", &reco1_y);
+	tree->Branch("res1_x", &res1_x);
+	tree->Branch("res1_y", &res1_y);
 	tree->Branch("z1", &z1);
 	tree->Branch("reco2_x", &reco2_x);
 	tree->Branch("reco2_y", &reco2_y);
+	tree->Branch("res2_x", &res2_x);
+	tree->Branch("res2_y", &res2_y);
 	tree->Branch("z2", &z2);
 	tree->Branch("reco3_x", &reco3_x);
 	tree->Branch("reco3_y", &reco3_y);
+	tree->Branch("res3_x", &res3_x);
+	tree->Branch("res3_y", &res3_y);
 	tree->Branch("z3", &z3);
 	tree->Branch("reco4_x", &reco4_x);
 	tree->Branch("reco4_y", &reco4_y);
+	tree->Branch("res4_x", &res4_x);
+	tree->Branch("res4_y", &res4_y);
 	tree->Branch("z4", &z4);
 	tree->Branch("dwc1_goodMeasurement", &dwc1_goodMeasurement);
 	tree->Branch("dwc2_goodMeasurement", &dwc2_goodMeasurement);
@@ -240,6 +298,10 @@ void DWC_NTupelizer::beginJob() {
 		tree->Branch("N_goodMeasurements", &N_goodMeasurements);
 		tree->Branch("N_goodMeasurements_X", &N_goodMeasurements_X);
 		tree->Branch("N_goodMeasurements_Y", &N_goodMeasurements_Y);
+	
+		tree->Branch("NDF", &NDF);
+		tree->Branch("chi2", &chi2);
+		tree->Branch("referenceError", &referenceError);
 	}	
 }
 

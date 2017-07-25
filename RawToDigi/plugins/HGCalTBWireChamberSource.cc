@@ -7,7 +7,6 @@ bool validTimestamp(int ts) {
 	return (ts>=0);
 }
 
-
 HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :  edm::ProducerSourceFromFiles(pset, desc, true),
 	rootFile(NULL)
 {
@@ -19,6 +18,8 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	
 	slope_x = pset.getUntrackedParameter<std::vector<double> >("slope_x", v0);
 	slope_y = pset.getUntrackedParameter<std::vector<double> >("slope_y", v0);
+	wc_resolution = pset.getUntrackedParameter<double>("wc_resolution", 0.5);
+
 	performAlignment = pset.getUntrackedParameter<bool>("performAlignment", false);
 	alignmentParamaterFile = pset.getUntrackedParameter<std::string>("alignmentParamaterFile", "");
 
@@ -89,8 +90,6 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 		ReadTimingFile(timingFileNames[fileCounter], sumTriggerTimes[fileCounter]);
 	}
 
-
-	
 	tree->GetEntry(rootTreeIndex);
 	rootTreeIndex++;
 	
@@ -126,7 +125,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc1->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC1_DOWN)) && validTimestamp(dwc_timestamps->at(DWC1_UP));
 	dwc1->goodMeasurement = (dwc1->goodMeasurement_X && dwc1->goodMeasurement_Y);
 	dwc1->x = dwc1->goodMeasurement_X ? slope_x.at(0) * (dwc_timestamps->at(DWC1_LEFT)-dwc_timestamps->at(DWC1_RIGHT)): -999;
+	dwc1->res_x = wc_resolution;
 	dwc1->y = dwc1->goodMeasurement_Y ? slope_y.at(0) * (dwc_timestamps->at(DWC1_DOWN)-dwc_timestamps->at(DWC1_UP)): -999;
+	dwc1->res_y = wc_resolution;
 	dwc1->z = dwc_z1;
 	N_DWC_points = dwc1->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
 
@@ -150,7 +151,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc2->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC2_DOWN)) && validTimestamp(dwc_timestamps->at(DWC2_UP));
 	dwc2->goodMeasurement = (dwc2->goodMeasurement_X && dwc2->goodMeasurement_Y);
 	dwc2->x = dwc2->goodMeasurement_X ? slope_x.at(1) * (dwc_timestamps->at(DWC2_LEFT)-dwc_timestamps->at(DWC2_RIGHT)): -999;
+	dwc2->res_x = wc_resolution;
 	dwc2->y = dwc2->goodMeasurement_Y ? slope_y.at(1) * (dwc_timestamps->at(DWC2_DOWN)-dwc_timestamps->at(DWC2_UP)): -999;
+	dwc2->res_y = wc_resolution;
 	dwc2->z = dwc_z2;
 	N_DWC_points = dwc2->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
 
@@ -174,7 +177,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc3->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC3_DOWN)) && validTimestamp(dwc_timestamps->at(DWC3_UP));
 	dwc3->goodMeasurement = (dwc3->goodMeasurement_X && dwc3->goodMeasurement_Y);
 	dwc3->x = dwc3->goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC3_LEFT)-dwc_timestamps->at(DWC3_RIGHT)): -999;
+	dwc3->res_x = wc_resolution;
 	dwc3->y = dwc3->goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC3_DOWN)-dwc_timestamps->at(DWC3_UP)): -999;
+	dwc3->res_y = wc_resolution;
 	dwc3->z = dwc_z3;
 	N_DWC_points = dwc3->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
 
@@ -198,7 +203,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc4->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC4_DOWN)) && validTimestamp(dwc_timestamps->at(DWC4_UP));
 	dwc4->goodMeasurement = (dwc4->goodMeasurement_X && dwc4->goodMeasurement_Y);
 	dwc4->x = dwc4->goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC4_LEFT)-dwc_timestamps->at(DWC4_RIGHT)): -999;
+	dwc4->res_x = wc_resolution;
 	dwc4->y = dwc4->goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC4_DOWN)-dwc_timestamps->at(DWC4_UP)): -999;
+	dwc4->res_y = wc_resolution;
 	dwc4->z = dwc_z4;
 	N_DWC_points = dwc4->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
 
