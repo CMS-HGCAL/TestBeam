@@ -140,6 +140,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       if( !essource_.emap_.existsEId(eid) ) continue;
       if( m_subtractCommonMode ){
   	int iski = eid.iskiroc();
+	if( cmMap[iski].fullHG[it]==4 ) continue;
   	float subHG(0),subLG(0);
   	switch ( hit.detid().cellType() ){
   	case 0 : subHG=cmMap[iski].fullHG[it]; subLG=cmMap[iski].fullLG[it]; break;
