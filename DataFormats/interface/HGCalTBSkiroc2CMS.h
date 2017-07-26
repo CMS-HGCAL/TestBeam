@@ -21,11 +21,13 @@ static const int SKIROC_DATA_SIZE = 1924; //number of 16 bits words
 class HGCalTBSkiroc2CMS
 {
  public:
-
- HGCalTBSkiroc2CMS( const std::vector<uint16_t> data, const std::vector<HGCalTBDetId> &ids ) :
+  HGCalTBSkiroc2CMS(){;}
+ HGCalTBSkiroc2CMS( const std::vector<uint16_t> data, const std::vector<HGCalTBDetId> &ids, uint64_t triggerTimeStamp=0, uint32_t triggerCounter=0 ) :
   m_data(data),
-  m_id(ids)
-  {;}
+    m_id(ids),
+    m_triggerTimeStamp(triggerTimeStamp),
+    m_triggerCounter(triggerCounter)
+    {;}
   uint16_t gray_to_brady(const uint16_t gray) const;
     
   uint16_t ADCLow( int chan, int sca ) const {chan=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC-1-chan; sca=NUMBER_OF_SCA-1-sca; return (sca>=0 && sca<NUMBER_OF_SCA) ? gray_to_brady( m_data.at(chan+ADCLOW_SHIFT+SCA_SHIFT*sca) & MASK_ADC ) : 10000;}
@@ -45,6 +47,8 @@ class HGCalTBSkiroc2CMS
   
  public:
   uint32_t globalTS()const{ return gray_to_brady( globalTS_MSB()<<12 | globalTS_LSB()); }
+  uint64_t triggerTimeStamp()const{ return m_triggerTimeStamp; }
+  uint32_t triggerCounter()const{ return m_triggerCounter; }
   int skirocId()const{ return (m_data.at(SKIROC_DATA_SIZE-1) & MASK_ID); }
   bool check();
 
@@ -56,6 +60,8 @@ class HGCalTBSkiroc2CMS
  private:
   std::vector<uint16_t> m_data;
   std::vector<HGCalTBDetId> m_id;
+  uint64_t m_triggerTimeStamp;
+  uint32_t m_triggerCounter;
 };
 
 std::ostream& operator<<(std::ostream&, HGCalTBSkiroc2CMS&);

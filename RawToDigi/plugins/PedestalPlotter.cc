@@ -228,35 +228,37 @@ void PedestalPlotter::endJob()
     }
   }
 
-  std::fstream pedestalHG;pedestalHG.open(m_pedestalHigh_filename,std::ios::out);
-  std::fstream pedestalLG;pedestalLG.open(m_pedestalLow_filename,std::ios::out);
-  for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
-    int iboard=(*it).first/1000;
-    int iski=((*it).first%1000)/100;
-    int ichan=(*it).first%100;
-    pedestalHG << iboard << " " << iski << " " << ichan ;
-    pedestalLG << iboard << " " << iski << " " << ichan ;
-    HGCalTBDetId detid=(*it).second;
-    CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
-    double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
-    double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
-    for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-      int key=iboard*100000+iski*10000+ichan*100+it;
-      std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
-      float hgMean=iter->second.meanHG/iter->second.counter;
-      float lgMean=iter->second.meanLG/iter->second.counter;
-      float hgRMS=std::sqrt(iter->second.rmsHG/iter->second.counter-iter->second.meanHG/iter->second.counter*iter->second.meanHG/iter->second.counter);
-      float lgRMS=std::sqrt(iter->second.rmsLG/iter->second.counter-iter->second.meanLG/iter->second.counter*iter->second.meanLG/iter->second.counter);
-      hgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgMean );
-      lgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgMean );
-      hgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgRMS );
-      lgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgRMS );
-      pedestalHG << " " << hgMean << " " << hgRMS;
-      pedestalLG << " " << lgMean << " " << lgRMS;;
+  if( m_writePedestalFile ){
+    std::fstream pedestalHG;pedestalHG.open(m_pedestalHigh_filename,std::ios::out);
+    std::fstream pedestalLG;pedestalLG.open(m_pedestalLow_filename,std::ios::out);
+    for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
+      int iboard=(*it).first/1000;
+      int iski=((*it).first%1000)/100;
+      int ichan=(*it).first%100;
+      pedestalHG << iboard << " " << iski << " " << ichan ;
+      pedestalLG << iboard << " " << iski << " " << ichan ;
+      HGCalTBDetId detid=(*it).second;
+      CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
+      double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
+      double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
+      for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
+	int key=iboard*100000+iski*10000+ichan*100+it;
+	std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
+	float hgMean=iter->second.meanHG/iter->second.counter;
+	float lgMean=iter->second.meanLG/iter->second.counter;
+	float hgRMS=std::sqrt(iter->second.rmsHG/iter->second.counter-iter->second.meanHG/iter->second.counter*iter->second.meanHG/iter->second.counter);
+	float lgRMS=std::sqrt(iter->second.rmsLG/iter->second.counter-iter->second.meanLG/iter->second.counter*iter->second.meanLG/iter->second.counter);
+	hgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgMean );
+	lgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgMean );
+	hgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgRMS );
+	lgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgRMS );
+	pedestalHG << " " << hgMean << " " << hgRMS;
+	pedestalLG << " " << lgMean << " " << lgRMS;;
+      }
     }
+    pedestalHG.close();
+    pedestalLG.close();
   }
-  pedestalHG.close();
-  pedestalLG.close();
 }
 
 void PedestalPlotter::fillDescriptions(edm::ConfigurationDescriptions& descriptions)

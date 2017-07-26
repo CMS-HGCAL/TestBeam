@@ -13,10 +13,21 @@
 /**
  * \class HGCalTBRawDataSource HGCal/RawToDigi/plugins/HGCalTBRawDataSource.h
  *
- * \brief convert data from raw file to FEDRawData
+ * \brief convert data from raw file to HGCalTBSkiroc2CMS data
  *
  */
 
+class EventTimingInformation{
+ public:
+  EventTimingInformation(){;}
+  EventTimingInformation(const uint32_t trigger){m_triggerCounter=trigger;}
+  uint32_t triggerCounter() const {return m_triggerCounter;}
+  uint64_t triggerTimeStamp(int ormId) const {return m_triggerTimeStamp.at(ormId);}
+  void addTriggerTimeStamp( uint64_t ts ){ m_triggerTimeStamp.push_back(ts); }
+ private:
+  uint32_t m_triggerCounter;
+  std::vector<uint64_t> m_triggerTimeStamp;
+};
 
 class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
 {
@@ -35,7 +46,7 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
 
   bool readRaw(void);
   std::vector< std::array<uint16_t,1924> > decode_raw_32bit(std::vector<uint32_t> &raw);
-
+  void fillEventTimingInformations();
  private:
   std::string m_filePath;
   std::string m_fileName;
@@ -49,7 +60,8 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   unsigned int m_eventTrailerSize;
   unsigned int m_nOrmBoards;
   unsigned int m_nSkipEvents;
-
+  bool m_readTXTForTiming;
+  
   unsigned int timeStartRun;
   unsigned int timeStopRun;
   
@@ -64,11 +76,13 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   char* m_trailer;
   std::ifstream m_input;
   std::vector< std::array<uint16_t,1924> > m_decodedData;
+  std::map<uint32_t,EventTimingInformation> m_eventTimingInfoMap;
+  EventTimingInformation m_eventTimingInfo;
   
   struct {
     HGCalElectronicsMap emap_;
   } essource_;
 
-  float m_meanReadingTime;
-  float m_rmsReadingTime;
+  /* float m_meanReadingTime; */
+  /* float m_rmsReadingTime; */
 };
