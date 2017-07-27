@@ -253,7 +253,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 			std::cout<<"Event: "<<event_candidate_index<<"  trigger: "<<n_trigger<<": "<<deltaTs<<std::endl;
 		#endif
 
-		if (deltaTs < triggerTimeDifferenceTolerance) {
+		if ((deltaTs < triggerTimeDifferenceTolerance) ||  sumTriggerTimes[fileCounter]==-1){
 			rd->event = event_candidate_index;
 			#ifdef DEBUG
 				std::cout<<"good x1: "<<dwc1->goodMeasurement_X<<"   good y1: "<<dwc1->goodMeasurement_Y<<"     good x2: "<<dwc2->goodMeasurement_X<<"   good y2: "<<dwc2->goodMeasurement_Y;
@@ -265,15 +265,13 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 			rd->event=-1;
 		}
 
-		if (deltaTs > 200. && event_candidate_index != 1) {			//the first line is not used to test synchronisation since a time offset is present for the two streams.
+		if (deltaTs > 200. && event_candidate_index != 1 && sumTriggerTimes[fileCounter]!=-1) {			//the first line is not used to test synchronisation since a time offset is present for the two streams.
 			throw cms::Exception("EventAsynch") << "Trigger time interval differs by more than 200ms. The files are likely not synchronised. ";
 		}
 
 		ref_time_sync = event_trigger_time[event_candidate_index]; 
 		ref_time_dwc = timeSinceStart;	
-		
-
-
+	
 		eventCounter++;
 	}
 	
