@@ -40,8 +40,6 @@ private:
   } essource_;
   int m_sensorsize;
   bool m_eventPlotter;
-  std::string m_pedestalHigh_filename;
-  std::string m_pedestalLow_filename;
   std::string m_electronicMap;
 
   int m_evtID;
@@ -62,8 +60,6 @@ private:
 RawDataPlotter::RawDataPlotter(const edm::ParameterSet& iConfig) :
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
   m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
-  m_pedestalHigh_filename( iConfig.getUntrackedParameter<std::string>("HighGainPedestalFileName",std::string("pedestalHG.txt")) ),
-  m_pedestalLow_filename( iConfig.getUntrackedParameter<std::string>("LowGainPedestalFileName",std::string("pedestalLG.txt")) ),
   m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"))
 {
   usesResource("TFileService");
@@ -206,94 +202,6 @@ void RawDataPlotter::beginJob()
 
 void RawDataPlotter::endJob()
 {
-  usesResource("TFileService");
-  edm::Service<TFileService> fs;
-  TFileDirectory dir = fs->mkdir( "PedestalPlotter" );
-  std::map<int,TH2Poly*>  pedPolyMap;
-  std::map<int,TH2Poly*>  pedPolyMapNC;
-  std::map<int,TH2Poly*>  noisePolyMap;
-  std::map<int,TH2Poly*>  noisePolyMapNC;
-  std::map<int,TH2Poly*>  chanMap;
-  std::ostringstream os( std::ostringstream::ate );
-  TH2Poly *h;
-  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
-    for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-      h=dir.make<TH2Poly>();
-      os.str("");
-      os<<"HighGain_HexaBoard"<<ib<<"_SCA"<<it;
-      h->SetName(os.str().c_str());
-      h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, (int)ib, 0, 0);
-      pedPolyMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
-      h=dir.make<TH2Poly>();
-      os.str("");
-      os<<"NC_HighGain_HexaBoard"<<ib<<"_SCA"<<it;
-      h->SetName(os.str().c_str());
-      h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, (int)ib, 0, 0);
-      pedPolyMapNC.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
-      h=dir.make<TH2Poly>();
-      os.str("");
-      os<<"Noise_HighGain_HexaBoard"<<ib<<"_SCA"<<it;
-      h->SetName(os.str().c_str());
-      h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, (int)ib, 0, 0);
-      noisePolyMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
-      h=dir.make<TH2Poly>();
-      os.str("");
-      os<<"NC_Noise_HighGain_HexaBoard"<<ib<<"_SCA"<<it;
-      h->SetName(os.str().c_str());
-      h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, (int)ib, 0, 0);
-      noisePolyMapNC.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
-    }
-    h=dir.make<TH2Poly>();
-    os.str("");
-    os<<"ChannelMapping";
-    h->SetName(os.str().c_str());
-    h->SetTitle(os.str().c_str());
-    InitTH2Poly(*h, (int)ib, 0, 0);
-    chanMap.insert( std::pair<int,TH2Poly*>(ib,h) );
-  }
-
-  for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
-    int iboard=(*it).first/1000;
-    int iski=((*it).first%1000)/100;
-    int ichan=(*it).first%100;
-    int ichanNC=(*it).first%100+1;
-    HGCalTBDetId detid=(*it).second;
-    CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
-    double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
-    double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
-    for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-      pedPolyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->GetMean() );
-      pedPolyMapNC[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichanNC*100+it]->GetMean() );
-      noisePolyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichan*100+it]->GetRMS() );
-      noisePolyMapNC[ 100*iboard+it ]->Fill(iux/2 , iuy, m_h_adcHigh[iboard*100000+iski*10000+ichanNC*100+it]->GetRMS() );
-    }
-    chanMap[ iboard ]->Fill(iux/2 , iuy, iski*1000+ichan );
-  }
-
-  std::fstream pedestalHG;pedestalHG.open(m_pedestalHigh_filename,std::ios::out);
-  std::fstream pedestalLG;pedestalLG.open(m_pedestalLow_filename,std::ios::out);
-  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
-    for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
-      for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
-	pedestalHG << ib << " " << iski << " " << ichan ;
-	pedestalLG << ib << " " << iski << " " << ichan ;
-	for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-	  int key=ib*100000+iski*10000+ichan*100+it;
-	  pedestalHG << " " << m_h_adcHigh[key]->GetMean() << " " << m_h_adcHigh[key]->GetRMS();
-	  pedestalLG << " " << m_h_adcLow[key]->GetMean() << " " << m_h_adcLow[key]->GetRMS();
-	}
-	pedestalHG << "\n" ;
-	pedestalLG << "\n" ;	
-      }
-    }
-  }
-  pedestalHG.close();
-  pedestalLG.close();
-
 }
 
 void RawDataPlotter::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
