@@ -25,13 +25,13 @@
 
 struct hgcal_channel{
   hgcal_channel() : key(0),
-		    meanHG(0.),
-		    meanLG(0.),
+		    medianHG(0.),
+		    medianLG(0.),
 		    rmsHG(0.),
 		    rmsLG(0.){;}
   int key;
-  float meanHG;
-  float meanLG;
+  float medianHG;
+  float medianLG;
   float rmsHG;
   float rmsLG;
   std::vector<float> highGain;
@@ -238,12 +238,12 @@ void PedestalPlotter::endJob()
     std::sort( it->second.highGain.begin(),it->second.highGain.end() );
     std::sort( it->second.lowGain.begin(),it->second.lowGain.end() );
     unsigned int size = it->second.highGain.size();
-    int medianIndex = size%2==0 ? size/2 : size/2+1 ;
-    it->second.meanHG = it->second.highGain.at(medianIndex) ;
-    it->second.meanLG = it->second.lowGain.at(medianIndex) ;
+    int medianIndex = size%2==0 ? size/2-1 : size/2 ;
+    it->second.medianHG = it->second.highGain.at(medianIndex) ;
+    it->second.medianLG = it->second.lowGain.at(medianIndex) ;
     for( unsigned int ii=medianIndex; ii<size; ii++ ){
-      it->second.rmsHG+=(it->second.meanHG-it->second.highGain.at(ii))*(it->second.meanHG-it->second.highGain.at(ii));
-      it->second.rmsLG+=(it->second.meanLG-it->second.lowGain.at(ii))*(it->second.meanLG-it->second.lowGain.at(ii));
+      it->second.rmsHG+=(it->second.medianHG-it->second.highGain.at(ii))*(it->second.medianHG-it->second.highGain.at(ii));
+      it->second.rmsLG+=(it->second.medianLG-it->second.lowGain.at(ii))*(it->second.medianLG-it->second.lowGain.at(ii));
     }
     it->second.rmsHG=std::sqrt(2*it->second.rmsHG/size);
     it->second.rmsLG=std::sqrt(2*it->second.rmsLG/size);
@@ -271,8 +271,8 @@ void PedestalPlotter::endJob()
     for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
       int key=iboard*100000+iski*10000+ichan*100+it;
       std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
-      float hgMean=iter->second.meanHG;
-      float lgMean=iter->second.meanLG;
+      float hgMean=iter->second.medianHG;
+      float lgMean=iter->second.medianLG;
       float hgRMS=iter->second.rmsHG;
       float lgRMS=iter->second.rmsLG;
       hgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgMean );
