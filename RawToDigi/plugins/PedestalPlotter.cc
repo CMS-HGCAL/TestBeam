@@ -25,18 +25,17 @@
 
 struct hgcal_channel{
   hgcal_channel() : key(0),
-		    counter(0),
 		    meanHG(0.),
 		    meanLG(0.),
 		    rmsHG(0.),
 		    rmsLG(0.){;}
   int key;
-  int counter;
   float meanHG;
   float meanLG;
   float rmsHG;
   float rmsLG;
-
+  std::vector<float> highGain;
+  std::vector<float> lowGain;
 };
 
 class PedestalPlotter : public edm::one::EDAnalyzer<edm::one::SharedResources>
@@ -129,20 +128,17 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
 	  if( iter==m_channelMap.end() ){
 	    hgcal_channel tmp;
 	    tmp.key=key;
-	    tmp.counter=1;
-	    tmp.meanHG=skiroc.ADCHigh(ichan,it);
-	    tmp.meanLG=skiroc.ADCLow(ichan,it);
-	    tmp.rmsHG=skiroc.ADCHigh(ichan,it)*skiroc.ADCHigh(ichan,it);
-	    tmp.rmsLG=skiroc.ADCLow(ichan,it)*skiroc.ADCLow(ichan,it);
+	    std::vector<float> vecH,vecL;
+	    vecH.push_back(skiroc.ADCHigh(ichan,it));
+	    vecL.push_back(skiroc.ADCLow(ichan,it));
+	    tmp.highGain=vecH;
+	    tmp.lowGain=vecL;
 	    std::pair<int,hgcal_channel> p(key,tmp);
 	    m_channelMap.insert( p );
 	  }
 	  else{
-	    iter->second.meanHG+=skiroc.ADCHigh(ichan,it);
-	    iter->second.meanLG+=skiroc.ADCLow(ichan,it);
-	    iter->second.rmsHG+=skiroc.ADCHigh(ichan,it)*skiroc.ADCHigh(ichan,it);
-	    iter->second.rmsLG+=skiroc.ADCLow(ichan,it)*skiroc.ADCLow(ichan,it);
-	    iter->second.counter+=1;
+	    iter->second.highGain.push_back(skiroc.ADCHigh(ichan,it));
+	    iter->second.lowGain.push_back(skiroc.ADCLow(ichan,it));
 	  }
 	}
       }
@@ -183,17 +179,26 @@ void PedestalPlotter::endJob()
   std::map<int,TH2Poly*>  lgMeanMap;
   std::map<int,TH2Poly*>  hgRMSMap;
   std::map<int,TH2Poly*>  lgRMSMap;
+  std::map<int,TH2Poly*>  chanMap;
   std::ostringstream os( std::ostringstream::ate );
   TH2Poly *h;
   for(size_t ib = 0; ib<m_numberOfBoards; ib++) {
     os.str("");
     os << "HexaBoard" << ib ;
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
+    h=dir.make<TH2Poly>();
+    os.str("");
+    os<<"ChannelMapping";
+    h->SetName(os.str().c_str());
+    h->SetTitle(os.str().c_str());
+    InitTH2Poly(*h, (int)ib, 0, 0);
+    chanMap.insert( std::pair<int,TH2Poly*>(ib,h) );
     TFileDirectory hgpdir = dir.mkdir( "HighGainPedestal" );
     TFileDirectory lgpdir = dir.mkdir( "LowGainPedestal" );
     TFileDirectory hgndir = dir.mkdir( "HighGainNoise" );
     TFileDirectory lgndir = dir.mkdir( "LowGainNoise" );
     for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
+
       h=hgpdir.make<TH2Poly>();
       os.str("");
       os<<"SCA"<<it;
@@ -225,37 +230,67 @@ void PedestalPlotter::endJob()
       h->SetTitle(os.str().c_str());
       InitTH2Poly(*h, (int)ib, 0, 0);
       lgRMSMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
+
     }
   }
+  
+  for( std::map<int,hgcal_channel>::iterator it=m_channelMap.begin(); it!=m_channelMap.end(); ++it ){
+    std::sort( it->second.highGain.begin(),it->second.highGain.end() );
+    std::sort( it->second.lowGain.begin(),it->second.lowGain.end() );
+    unsigned int size = it->second.highGain.size();
+    int medianIndex = size%2==0 ? size/2 : size/2+1 ;
+    it->second.meanHG = it->second.highGain.at(medianIndex) ;
+    it->second.meanLG = it->second.lowGain.at(medianIndex) ;
+    for( unsigned int ii=medianIndex; ii<size; ii++ ){
+      it->second.rmsHG+=(it->second.meanHG-it->second.highGain.at(ii))*(it->second.meanHG-it->second.highGain.at(ii));
+      it->second.rmsLG+=(it->second.meanLG-it->second.lowGain.at(ii))*(it->second.meanLG-it->second.lowGain.at(ii));
+    }
+    it->second.rmsHG=std::sqrt(2*it->second.rmsHG/size);
+    it->second.rmsLG=std::sqrt(2*it->second.rmsLG/size);
+  }
 
+  
+  std::fstream pedestalHG;
+  std::fstream pedestalLG;
   if( m_writePedestalFile ){
-    std::fstream pedestalHG;pedestalHG.open(m_pedestalHigh_filename,std::ios::out);
-    std::fstream pedestalLG;pedestalLG.open(m_pedestalLow_filename,std::ios::out);
-    for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
-      int iboard=(*it).first/1000;
-      int iski=((*it).first%1000)/100;
-      int ichan=(*it).first%100;
+    pedestalHG.open(m_pedestalHigh_filename,std::ios::out);
+    pedestalLG.open(m_pedestalLow_filename,std::ios::out);
+  }
+  for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
+    int iboard=(*it).first/1000;
+    int iski=((*it).first%1000)/100;
+    int ichan=(*it).first%100;
+    if( m_writePedestalFile ){
       pedestalHG << iboard << " " << iski << " " << ichan ;
       pedestalLG << iboard << " " << iski << " " << ichan ;
-      HGCalTBDetId detid=(*it).second;
-      CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
-      double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
-      double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
-      for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-	int key=iboard*100000+iski*10000+ichan*100+it;
-	std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
-	float hgMean=iter->second.meanHG/iter->second.counter;
-	float lgMean=iter->second.meanLG/iter->second.counter;
-	float hgRMS=std::sqrt(iter->second.rmsHG/iter->second.counter-iter->second.meanHG/iter->second.counter*iter->second.meanHG/iter->second.counter);
-	float lgRMS=std::sqrt(iter->second.rmsLG/iter->second.counter-iter->second.meanLG/iter->second.counter*iter->second.meanLG/iter->second.counter);
-	hgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgMean );
-	lgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgMean );
-	hgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgRMS );
-	lgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgRMS );
+    }
+    HGCalTBDetId detid=(*it).second;
+    CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
+    double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
+    double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
+    for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
+      int key=iboard*100000+iski*10000+ichan*100+it;
+      std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
+      float hgMean=iter->second.meanHG;
+      float lgMean=iter->second.meanLG;
+      float hgRMS=iter->second.rmsHG;
+      float lgRMS=iter->second.rmsLG;
+      hgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgMean );
+      lgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgMean );
+      hgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgRMS );
+      lgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgRMS );
+      if( m_writePedestalFile ){
 	pedestalHG << " " << hgMean << " " << hgRMS;
 	pedestalLG << " " << lgMean << " " << lgRMS;;
       }
     }
+    chanMap[ iboard ]->Fill(iux/2 , iuy, iski*1000+ichan );
+    if( m_writePedestalFile ){
+      pedestalHG << std::endl;
+      pedestalLG << std::endl;
+    }
+  }
+  if( m_writePedestalFile ){
     pedestalHG.close();
     pedestalLG.close();
   }

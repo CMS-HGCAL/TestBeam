@@ -60,24 +60,25 @@ process.output = cms.OutputModule("PoolOutputModule",
                                   )
 
 
-pedestalHighGain="pedestalHG_"+str(options.runNumber)+".txt"
-pedestalLowGain="pedestalLG_"+str(options.runNumber)+".txt"
+pedestalToCreateHighGain="pedestalHG_"+str(options.runNumber)+".txt"
+pedestalToCreateLowGain="pedestalLG_"+str(options.runNumber)+".txt"
+
+pedestalToSubtractHighGain="pedestalHG_1197.txt"
+pedestalToSubtractLowGain="pedestalLG_1197.txt"
 
 process.pedestalplotter = cms.EDAnalyzer("PedestalPlotter",
                                          SensorSize=cms.untracked.int32(128),
-                                         WritePedestalFile=cms.untracked.bool(False),
+                                         WritePedestalFile=cms.untracked.bool(True),
                                          InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                          ElectronicMap=cms.untracked.string(electronicMap),
-                                         HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
-                                         LowGainPedestalFileName=cms.untracked.string(pedestalLowGain)
+                                         HighGainPedestalFileName=cms.untracked.string(pedestalToCreateHighGain),
+                                         LowGainPedestalFileName=cms.untracked.string(pedestalToCreateLowGain)
                                          )
 
 process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         SensorSize=cms.untracked.int32(128),
                                         EventPlotter=cms.untracked.bool(False),
-                                        InputCollection=cms.InputTag("source","skiroc2cmsdata"),
-                                        HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
-                                        LowGainPedestalFileName=cms.untracked.string(pedestalLowGain)
+                                        InputCollection=cms.InputTag("source","skiroc2cmsdata")
                                         )
 
 process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in cms.Path if you want to check which collections are in the event
@@ -87,8 +88,8 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
                                         ElectronicMap=cms.untracked.string(electronicMap),
                                         SubtractPedestal=cms.untracked.bool(False),
-                                        HighGainPedestalFileName=cms.string(pedestalHighGain),
-                                        LowGainPedestalFileName=cms.string(pedestalLowGain)
+                                        HighGainPedestalFileName=cms.string(pedestalToSubtractHighGain),
+                                        LowGainPedestalFileName=cms.string(pedestalToSubtractLowGain)
                                         )
 
 process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
@@ -100,8 +101,8 @@ process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        )
 
 
-process.p = cms.Path( process.pedestalplotter )
-#process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
+process.p = cms.Path( process.rawdataplotter*process.pedestalplotter )
+#process.p = cms.Path(  )#*process.rawhitproducer*process.rawhitplotter )
 #process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.pulseshapeplotter )
 
 process.end = cms.EndPath(process.output)
