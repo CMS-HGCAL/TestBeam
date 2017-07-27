@@ -49,7 +49,8 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             NumberOfBytesForTheTrailer=cms.untracked.uint32(4),
                             NumberOfBytesForTheEventTrailers=cms.untracked.uint32(4),
                             NumberOfOrmBoards=cms.untracked.uint32(1),
-                            NSkipEvents=cms.untracked.uint32(0)
+                            NSkipEvents=cms.untracked.uint32(0),
+                            ReadTXTForTiming=cms.untracked.bool(False)
                             )
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/HexaOutput_%d.root"%(options.outputFolder,options.runNumber)))
