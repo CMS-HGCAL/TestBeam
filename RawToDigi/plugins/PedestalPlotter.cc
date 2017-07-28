@@ -2,6 +2,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH2Poly.h"
+#include "TTree.h"
 #include <fstream>
 #include <sstream>
 // user include files
@@ -122,7 +123,7 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
       }
       else continue;
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-	if( rollpositions[it]<9 ){ //rm on track samples+2 last time sample which show weird behaviour
+	if( rollpositions[it]<1 ){ //rm on track samples+2 last time sample which show weird behaviour
 	  uint32_t key=iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it;
 	  std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
 	  if( iter==m_channelMap.end() ){
@@ -256,6 +257,19 @@ void PedestalPlotter::endJob()
     pedestalHG.open(m_pedestalHigh_filename,std::ios::out);
     pedestalLG.open(m_pedestalLow_filename,std::ios::out);
   }
+
+  TTree* pedestalTree = fs->make<TTree>("pedestalTree", "pedestalTree");
+  int board, skiroc, channel, sca;
+  double median_high, RMS_high, median_low, RMS_low;
+  pedestalTree->Branch("board", &board);
+  pedestalTree->Branch("skiroc", &skiroc);
+  pedestalTree->Branch("channel", &channel);
+  pedestalTree->Branch("sca", &sca);
+  pedestalTree->Branch("median_high", &median_high);
+  pedestalTree->Branch("RMS_high", &RMS_high);
+  pedestalTree->Branch("median_low", &median_low);
+  pedestalTree->Branch("RMS_low", &RMS_low);
+
   for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
     int iboard=(*it).first/1000;
     int iski=((*it).first%1000)/100;
@@ -279,6 +293,13 @@ void PedestalPlotter::endJob()
       lgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgMean );
       hgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgRMS );
       lgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgRMS );
+      
+      median_high = hgMean;
+      RMS_high = hgRMS;
+      median_low = lgMean;
+      RMS_low = lgRMS;
+      pedestalTree->Fill();
+
       if( m_writePedestalFile ){
 	pedestalHG << " " << hgMean << " " << hgRMS;
 	pedestalLG << " " << lgMean << " " << lgRMS;;
