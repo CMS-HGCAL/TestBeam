@@ -72,19 +72,21 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             timingFilePath=cms.untracked.string("")
                             )
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
+
 
 #process.output = cms.OutputModule("PoolOutputModule",
 #                                  fileName = cms.untracked.string(options.output)
 #                                  )
+process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
 
+outputFilePath = "/".join(options.outputFile.split("/")[0:-1])
 
-pedestalHighGain="pedestalHG_"+str(options.runNumber)+".txt"
-pedestalLowGain="pedestalLG_"+str(options.runNumber)+".txt"
+pedestalHighGain="%s/pedestalHG_%s.txt" % (outputFilePath, str(options.runNumber))
+pedestalLowGain="%s/pedestalLG_%s.txt" % (outputFilePath, str(options.runNumber))
 
 process.pedestalplotter = cms.EDAnalyzer("PedestalPlotter",
                                          SensorSize=cms.untracked.int32(128),
-                                         WritePedestalFile=cms.untracked.bool(False),
+                                         WritePedestalFile=cms.untracked.bool(True),
                                          InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                          ElectronicMap=cms.untracked.string(electronicMap),
                                          HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
@@ -105,7 +107,7 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
                                         ElectronicMap=cms.untracked.string(electronicMap),
-                                        SubtractPedestal=cms.untracked.bool(False),
+                                        SubtractPedestal=cms.untracked.bool(True),
                                         HighGainPedestalFileName=cms.string(pedestalHighGain),
                                         LowGainPedestalFileName=cms.string(pedestalLowGain)
                                         )
@@ -115,13 +117,28 @@ process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        ElectronicMap=cms.untracked.string(electronicMap),
                                        SensorSize=cms.untracked.int32(128),
                                        EventPlotter=cms.untracked.bool(False),
-                                       SubtractCommonMode=cms.untracked.bool(True)
+                                       SubtractCommonMode=cms.untracked.bool(True),
+                                       outputFile = cms.untracked.string(options.outputFile)
                                        )
+
+process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
+                                        OutputCollectionName = cms.string('HGCALTBRECHITS'),
+                                        InputCollection = cms.InputTag('rawhitproducer','HGCALTBRAWHITS'),
+                                        LG2HG = cms.untracked.vdouble(10.0),
+                                        TOT2LG = cms.untracked.vdouble(10.0),
+                                        HighGainADCSaturation = cms.untracked.double(2000),
+                                        LowGainADCSaturation = cms.untracked.double(1500),
+                                        ElectronicsMap = cms.untracked.string('HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt'),
+                                        CommonModeThreshold = cms.untracked.double(100.),
+                                        KeepOnlyTimeSample3 = cms.untracked.bool(False)
+                                        )
+
 
 if options.chainSequence==1:
     process.p = cms.Path( process.pedestalplotter )
-#process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
-#process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.pulseshapeplotter )
+if options.chainSequence==2:
+    process.p = cms.Path( process.rawhitproducer*process.rawhitplotter)
+
 
 #process.end = cms.EndPath(process.output)
 

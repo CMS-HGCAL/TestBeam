@@ -2,6 +2,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH2Poly.h"
+#include "TTree.h"
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -67,7 +68,17 @@ private:
   std::vector<std::pair<double, double>> CellXY;
   std::pair<double, double> CellCentreXY;
   std::set< std::pair<int,HGCalTBDetId> > setOfConnectedDetId;
-  
+
+
+  TTree* recHitsTree;
+  int tree_board;
+  int tree_skiroc;
+  int tree_channel;
+  double tree_lg3, tree_lg0;
+  double tree_hg3, tree_hg0;
+  double tree_lg3_cm, tree_lg0_cm;
+  double tree_hg3_cm, tree_hg0_cm;
+
 };
 
 RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
@@ -99,6 +110,21 @@ void RawHitPlotter::beginJob()
   if (!io.load(fip.fullPath(), essource_.emap_)) {
     throw cms::Exception("Unable to load electronics map");
   };  
+
+  usesResource("TFileService");
+  edm::Service<TFileService> fs;
+  recHitsTree = fs->make<TTree>("recHitsTree", "recHitsTree");
+  recHitsTree->Branch("board", &tree_board);
+  recHitsTree->Branch("skiroc", &tree_skiroc);
+  recHitsTree->Branch("channel", &tree_channel);
+  recHitsTree->Branch("lg3", &tree_lg3);
+  recHitsTree->Branch("hg3", &tree_hg3);
+  recHitsTree->Branch("lg0", &tree_lg0);
+  recHitsTree->Branch("hg0", &tree_hg0);
+  recHitsTree->Branch("lg3_cm", &tree_lg3_cm);
+  recHitsTree->Branch("hg3_cm", &tree_hg3_cm);
+  recHitsTree->Branch("lg0_cm", &tree_lg0_cm);
+  recHitsTree->Branch("hg0_cm", &tree_hg0_cm);
 }
 
 void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
@@ -161,6 +187,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       std::pair<int,HGCalTBDetId> p( iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan,hit.detid() );
       setOfConnectedDetId.insert(p);
       uint32_t key=iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it;
+
       if( m_meanHGMap.find(key)==m_meanHGMap.end() ){
 	m_meanHGMap[key]=highGain;
 	m_meanLGMap[key]=lowGain;
@@ -181,6 +208,23 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
       polyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, highGain);
     }
+
+
+    if (hit.detid().cellType()==0)  {  //only full cells for now
+        tree_board = hit.skiroc()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+        tree_skiroc = hit.skiroc();
+        tree_channel = hit.channel();
+        tree_lg3 = hit.lowGainADC(3);
+        tree_hg3 = hit.highGainADC(3);
+        tree_lg3_cm = hit.lowGainADC(3)-cmMap[tree_skiroc].fullLG[3];
+        tree_hg3_cm = hit.highGainADC(3)-cmMap[tree_skiroc].fullHG[3];
+        tree_lg0 = hit.lowGainADC(0);
+        tree_hg0 = hit.highGainADC(0);
+        tree_lg0_cm = hit.lowGainADC(0)-cmMap[tree_skiroc].fullLG[0];
+        tree_hg0_cm = hit.highGainADC(0)-cmMap[tree_skiroc].fullHG[0];
+      }
+
+        recHitsTree->Fill();
   }
 }
 
