@@ -123,7 +123,7 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
       }
       else continue;
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-	if( rollpositions[it]<1 ){ //rm on track samples+2 last time sample which show weird behaviour
+	if( rollpositions[it]<=1 ){ //only consider first two time samples for pedestal subtraction
 	  uint32_t key=iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it;
 	  std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
 	  if( iter==m_channelMap.end() ){
@@ -283,6 +283,11 @@ void PedestalPlotter::endJob()
     double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
     double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
     for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
+      board = iboard;
+      skiroc = iski;
+      channel = ichan;
+      sca = it;
+
       int key=iboard*100000+iski*10000+ichan*100+it;
       std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
       float hgMean=iter->second.meanHG;
