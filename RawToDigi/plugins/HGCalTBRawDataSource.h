@@ -66,9 +66,12 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   unsigned int timeStopRun;
   
   unsigned int m_time;
-  unsigned int m_event, m_run, m_spill;
+  unsigned int m_event, m_run, m_spill, m_trigger;
   int m_eventSize,m_nevents;
   unsigned int m_fileId;
+  
+  std::string m_timingFilePath;
+  std::ofstream timingFile;
   
   uint32_t m_skiMask;
   char* m_buffer;

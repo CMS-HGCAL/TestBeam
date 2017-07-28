@@ -19,7 +19,8 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   m_eventTrailerSize(pset.getUntrackedParameter<unsigned int> ("NumberOfBytesForTheEventTrailers",4)),
   m_nOrmBoards(pset.getUntrackedParameter<unsigned int> ("NumberOfOrmBoards",1)),
   m_nSkipEvents(pset.getUntrackedParameter<unsigned int> ("NSkipEvents",0)),
-  m_readTXTForTiming(pset.getUntrackedParameter<bool> ("ReadTXTForTiming",false))
+  m_readTXTForTiming(pset.getUntrackedParameter<bool> ("ReadTXTForTiming",false)),
+  m_timingFilePath(pset.getUntrackedParameter<std::string>("timingFilePath","/eos/user/t/tquast/data/Testbeam/July2017/Timing/HexaData_RunXX_TIMING_RDOUT_ORM0.txt"))
 {
   produces<HGCalTBSkiroc2CMSCollection>(m_outputCollectionName);
   
@@ -64,6 +65,8 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
     memcpy(&aint, &buf1, sizeof(aint));
     m_nOrmBoards=aint & 0xff;
     m_run=aint >> 8 ;
+    timingFile.open(m_timingFilePath.c_str(), std::ios::out);
+    if (timingFile.is_open()) timingFile << "TrigNumber TrigCount TimeStamp TimeDiff" << std::endl;
     if( m_readTXTForTiming ) fillEventTimingInformations();
   }
 
@@ -76,6 +79,7 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
     m_input.read ( m_buffer, m_nWords*4+m_eventTrailerSize );
     if( !m_input.good() ){
       m_input.close();
+      timingFile.close();
       m_fileId++;
       if( (uint32_t)(m_fileId+1)<fileNames().size() )
 	m_event=0;
@@ -91,6 +95,7 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
     char buf[] = {m_buffer[m_nWords*4],m_buffer[m_nWords*4+1],m_buffer[m_nWords*4+2],m_buffer[m_nWords*4+3]};
     memcpy(&evtTrailer, &buf, sizeof(evtTrailer));
     uint32_t ormId=evtTrailer&0xff;
+    m_trigger = (evtTrailer>>0x8);
     if( ormId != iorm )
       std::cout << "Problem in event trailer : wrong ORM id -> evtTrailer&0xff = " << std::dec << ormId << "\t iorm = " << iorm << std::endl;
     triggerNumber=evtTrailer>>0x8;
@@ -218,6 +223,10 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
   if( !correctEvent )
     skirocs->swap(*emptycol);
   e.put(skirocs, m_outputCollectionName);
+
+  //std::cout<<"event: "<<m_event<<"   trigger number ? "<<m_trigger<<std::endl;
+  if (timingFile.is_open()) timingFile<<m_event<<"   "<<m_trigger<<"   "<<"   0000    0000"<<std::endl;
+
   m_event++;
 }
 
@@ -236,6 +245,7 @@ void HGCalTBRawDataSource::fillDescriptions(edm::ConfigurationDescriptions& desc
   desc.addUntracked<unsigned int> ("NumberOfOrmBoards");
   desc.addUntracked<unsigned int> ("NSkipEvents");
   desc.addUntracked<bool> ("ReadTXTForTiming");
+  desc.addUntracked<std::string>("timingFilePath");
   descriptions.add("source", desc);
 }
 
