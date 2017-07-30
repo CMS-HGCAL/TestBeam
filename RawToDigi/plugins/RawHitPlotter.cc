@@ -222,9 +222,9 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
         tree_hg0 = hit.highGainADC(0);
         tree_lg0_cm = hit.lowGainADC(0)-cmMap[tree_skiroc].fullLG[0];
         tree_hg0_cm = hit.highGainADC(0)-cmMap[tree_skiroc].fullHG[0];
+        recHitsTree->Fill();
       }
 
-        recHitsTree->Fill();
   }
 }
 
