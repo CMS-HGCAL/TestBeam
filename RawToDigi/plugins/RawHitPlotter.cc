@@ -113,7 +113,7 @@ void RawHitPlotter::beginJob()
 
   usesResource("TFileService");
   edm::Service<TFileService> fs;
-  recHitsTree = fs->make<TTree>("recHitsTree", "recHitsTree");
+  recHitsTree = fs->make<TTree>("rawHitsTree", "rawHitsTree");
   recHitsTree->Branch("board", &tree_board);
   recHitsTree->Branch("skiroc", &tree_skiroc);
   recHitsTree->Branch("channel", &tree_channel);
