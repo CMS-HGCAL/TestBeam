@@ -6,7 +6,7 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 #Change the data folder appropriately to where you wish to access the files from:
 options.register('dataFolder',
-                 '/disk2_2TB/July2017_TB_data_orm',
+                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/july2017/July2017_TB_data_orm',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw input')
@@ -63,13 +63,14 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             fileNames=cms.untracked.vstring("file:%s/HexaData_Run%04d.raw"%(options.dataFolder,options.runNumber)),
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
                             NumberOf32BitsWordsPerReadOut=cms.untracked.uint32(30787),
-                            NumberOfBytesForTheHeader=cms.untracked.uint32(8),
-                            NumberOfBytesForTheTrailer=cms.untracked.uint32(4),
-                            NumberOfBytesForTheEventTrailers=cms.untracked.uint32(4),
+                            NumberOfBytesForTheHeader=cms.untracked.uint32(8 if options.runNumber<1241 else 12),          #for the new headers/trailers from run 1241 onward: 12
+                            NumberOfBytesForTheTrailer=cms.untracked.uint32(4),         #for the new headers/trailers from run 1241 onward: 4
+                            NumberOfBytesForTheEventTrailers=cms.untracked.uint32(4 if options.runNumber<1241 else 12),   #for the new headers/trailers from run 1241 onward: 12
                             NumberOfOrmBoards=cms.untracked.uint32(1),
                             NSkipEvents=cms.untracked.uint32(0),
                             ReadTXTForTiming=cms.untracked.bool(False),
-                            timingFilePath=cms.untracked.string("")
+                            #timingFilePath=cms.untracked.string("")
+                            timingFilePath=cms.untracked.string("/eos/user/t/tquast/data/Testbeam/July2017/Timing/HexaData_Run%s_TIMING_RDOUT_ORM0.txt" % options.runNumber)
                             )
 
 
@@ -133,6 +134,9 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         KeepOnlyTimeSample3 = cms.untracked.bool(False)
                                         )
 
+
+if options.chainSequence==0:
+    process.p = cms.Path()
 
 if options.chainSequence==1:
     process.p = cms.Path( process.pedestalplotter )
