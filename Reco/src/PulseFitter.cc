@@ -1,8 +1,6 @@
 #include <HGCal/Reco/interface/PulseFitter.h>
 
-#include <Math/Minimizer.h>
-#include <Math/Factory.h>
-#include <Math/Functor.h>
+
 
 double _time[13],_energy[13];double _maxTime=225.; //seems to be mandatory since we need static function
 double _alpha=10.;
@@ -49,12 +47,14 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   for( uint16_t i=time.size(); i<13; i++ )
     _time[i] = _maxTime+1;
 
+
   if( noise>0 )
     _noise=noise;
   
-  ROOT::Math::Minimizer* m = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
+  ROOT::Math::Minimizer* m = ROOT::Math::Factory::CreateMinimizer("Minuit", "Migrad");
   m->SetMaxFunctionCalls(100);
   m->SetMaxIterations(100);
+
   m->SetTolerance(0.001);
   //default parameters from tutorials
   m->SetPrintLevel(_printLevel);
@@ -71,8 +71,8 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
 
   m->Minimize();
 
-  const double *xm = m->X();
-  const double *errors = m->Errors();
+  xm = m->X();
+  errors = m->Errors();
   fit.tmax=xm[0];
   fit.trise=_trise;
   fit.amplitude=xm[1];
@@ -81,4 +81,5 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   fit.chi2=m->MinValue();
   fit.status=m->Status();
   fit.ncalls=m->NCalls();
+
 }

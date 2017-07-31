@@ -30,10 +30,10 @@
   <class name="HGCalTBRawHitCollection"/>
   <class name="edm::Wrapper<edm::EDCollection<HGCalTBRawHit> >"/>
 
-  <class name="MultiWireChamberData"/>
-  <class name="edm::Wrapper<MultiWireChamberData>"/>
-  <class name="std::vector<MultiWireChamberData>"/>
-  <class name="edm::Wrapper<std::vector<MultiWireChamberData> >"/>
+  <class name="WireChamberData"/>
+  <class name="edm::Wrapper<WireChamberData>"/>
+  <class name="std::vector<WireChamberData>"/>
+  <class name="edm::Wrapper<std::vector<WireChamberData> >"/>
   
 
 </lcgdict>

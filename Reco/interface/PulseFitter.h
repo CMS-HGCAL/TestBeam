@@ -5,6 +5,10 @@
 #include <cmath>
 #include <iostream>
 
+#include <Math/Minimizer.h>
+#include <Math/Factory.h>
+#include <Math/Functor.h>
+
 struct PulseFitterResult{
 PulseFitterResult() : tmax(0.), amplitude(0.),
     errortmax(0.), erroramplitude(0.) {;}
@@ -24,8 +28,12 @@ class PulseFitter{
   PulseFitter(  int printLevel=1 , double maxTime=225. , double alpha=10 , double trise=50 );
   ~PulseFitter(){;}
   void run(std::vector<double> &time, std::vector<double> &energy, PulseFitterResult &fit, double noise=-1);
+
  private:
   int _printLevel;
+  ROOT::Math::Minimizer* m;
+  const double *xm;
+  const double *errors;
 };
 
 #endif

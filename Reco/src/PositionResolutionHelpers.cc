@@ -1,9 +1,8 @@
 #include "HGCal/Reco/interface/PositionResolutionHelpers.h"
 
+//#define DEBUG
 
 //****   Parsing of alignment values    ****//
-
-
     
     
 AlignmentParameters::AlignmentParameters(std::vector<std::string> files, double _defaultRun) : defaultRun(_defaultRun) {
@@ -86,6 +85,9 @@ LineFitter::LineFitter(std::vector<double> x, std::vector<double> y, std::vector
 }
 
 void LineFitter::addPoint(double x, double y, double sigma_y) {
+  #ifdef DEBUG
+    std::cout<<"Adding x: "<<x<<"  adding y: "<<y<<"  with resolution: "<<sigma_y<<std::endl;
+  #endif
   _x.push_back(x); _y.push_back(y); _sigma_y.push_back(sigma_y);
 }
 
@@ -134,4 +136,17 @@ double LineFitter::evalError(double x) {
   if (!converged()) return 0;
   else
     return sqrt(pow(this->getBError(), 2) + pow(x*this->getMError(),2) + 2*fabs(x)*this->getMBCovariance());
+};
+
+int LineFitter::GetNDF() {
+  return _x.size() - 2;
+} 
+
+double LineFitter::GetChisquare() {
+  double chi2=0;
+  for (size_t i=0; i<_x.size(); i++) {
+    chi2 = chi2 + pow((_y[i]-eval(_x[i]))/_sigma_y[i],2);
+  }
+
+  return chi2;
 };
