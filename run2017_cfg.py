@@ -69,8 +69,8 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             NumberOfOrmBoards=cms.untracked.uint32(1),
                             NSkipEvents=cms.untracked.uint32(0),
                             ReadTXTForTiming=cms.untracked.bool(False),
-                            #timingFilePath=cms.untracked.string("")
-                            timingFilePath=cms.untracked.string("/eos/user/t/tquast/data/Testbeam/July2017/Timing/HexaData_Run%s_TIMING_RDOUT_ORM0.txt" % options.runNumber)
+                            timingFilePath=cms.untracked.string("")
+                            #timingFilePath=cms.untracked.string("/eos/user/t/tquast/data/Testbeam/July2017/Timing/HexaData_Run%s_TIMING_RDOUT_ORM0.txt" % options.runNumber)
                             )
 
 
