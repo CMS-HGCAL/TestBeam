@@ -190,7 +190,9 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 		if(dwc4_goodMeasurementY) N_goodMeasurements_Y++;
 
 
-		if (N_goodMeasurements>=2) {
+
+		//fit for x
+		if (N_goodMeasurements_X>=2) {
 			//first layer of HGCal as reference
 			Track = new ParticleTrack();
 			Sensors[5] = new SensorHitMap(5);
@@ -202,6 +204,8 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 				Sensors[n_layer] = new SensorHitMap(n_layer);				
 				Sensors[n_layer]->setLabZ(dwcs->at(n_layer).z, 0.);
 				Sensors[n_layer]->setCenterHitPosition(dwcs->at(n_layer).x, dwcs->at(n_layer).y , dwcs->at(n_layer).res_x, dwcs->at(n_layer).res_y);
+				//std::cout<<n_layer<<": "<<dwcs->at(n_layer).y<<" good measurement ? "<<dwcs->at(n_layer).goodMeasurement_Y<<std::endl;
+
 				Sensors[n_layer]->setParticleEnergy(rd->energy);
 				//Sensors[n_layer]->setResidualResolution(dwcs->at(n_layer).res_x);	
 				Track->addFitPoint(Sensors[n_layer]);
@@ -211,35 +215,64 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 			NDF_x = Track->getNDF(1);
 			chi2_x = Track->getChi2(1);
 			referenceError_x = Track->calculateReferenceErrorXY().first;
-
-			NDF_y = Track->getNDF(2);
-			chi2_y = Track->getChi2(2);
-			referenceError_y = Track->calculateReferenceErrorXY().second;
-
 			residual1_x = Sensors[0]->getHitPosition().first-Track->calculatePositionXY(Sensors[0]->getLabZ(), 0).first;
-			residual1_y = Sensors[0]->getHitPosition().second-Track->calculatePositionXY(Sensors[0]->getLabZ(), 0).second;
-
 			residual2_x = Sensors[1]->getHitPosition().first-Track->calculatePositionXY(Sensors[1]->getLabZ(), 0).first;
-			residual2_y = Sensors[1]->getHitPosition().second-Track->calculatePositionXY(Sensors[1]->getLabZ(), 0).second;
-
 			residual3_x = Sensors[2]->getHitPosition().first-Track->calculatePositionXY(Sensors[2]->getLabZ(), 0).first;
-			residual3_y = Sensors[2]->getHitPosition().second-Track->calculatePositionXY(Sensors[2]->getLabZ(), 0).second;
-
 			residual4_x = Sensors[3]->getHitPosition().first-Track->calculatePositionXY(Sensors[3]->getLabZ(), 0).first;
-			residual4_y = Sensors[3]->getHitPosition().second-Track->calculatePositionXY(Sensors[3]->getLabZ(), 0).second;
-
-			//std::cout<<"Track (ntupelizer) chi2: "<<Track->getChi2()<<" / "<<Track->getNDF()<<" = "<<Track->getChi2()/Track->getNDF()<<"   uncertainty at z=0: "<<Track->calculateReferenceErrorXY().first<<std::endl;
 
 			for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 				delete (*it).second;
 			};	Sensors.clear();
 			delete Track;
 		} else {
-			NDF_x = NDF_y = 0;
-			chi2_x = chi2_y = -1;
-			referenceError_x = referenceError_y = -1;
-			residual1_x = residual1_y = residual2_x = residual2_y = residual3_x = residual3_y = residual4_x = residual4_y = -1.;
+			NDF_x = 0;
+			chi2_x = -1;
+			referenceError_x = -1;
+			residual1_x = residual2_x = residual3_x = residual4_x = -1.;
 		}
+
+		//fit for y
+		if (N_goodMeasurements_Y>=2) {
+			//first layer of HGCal as reference
+			Track = new ParticleTrack();
+			Sensors[5] = new SensorHitMap(5);
+			Sensors[5]->setLabZ(0., 0);
+			Sensors[5]->setParticleEnergy(rd->energy);
+			Track->addReferenceSensor(Sensors[5]);
+			
+			for (size_t n_layer=0; n_layer<4; n_layer++) {	
+				Sensors[n_layer] = new SensorHitMap(n_layer);				
+				Sensors[n_layer]->setLabZ(dwcs->at(n_layer).z, 0.);
+				Sensors[n_layer]->setCenterHitPosition(dwcs->at(n_layer).x, dwcs->at(n_layer).y , dwcs->at(n_layer).res_x, dwcs->at(n_layer).res_y);
+				//std::cout<<n_layer<<": "<<dwcs->at(n_layer).y<<" good measurement ? "<<dwcs->at(n_layer).goodMeasurement_Y<<std::endl;
+
+				Sensors[n_layer]->setParticleEnergy(rd->energy);
+				//Sensors[n_layer]->setResidualResolution(dwcs->at(n_layer).res_x);	
+				Track->addFitPoint(Sensors[n_layer]);
+			}
+			
+			Track->fitTrack(LINEFITANALYTICAL);
+			NDF_y = Track->getNDF(2);
+			chi2_y = Track->getChi2(2);
+			referenceError_y = Track->calculateReferenceErrorXY().second;
+			residual1_y = Sensors[0]->getHitPosition().second-Track->calculatePositionXY(Sensors[0]->getLabZ(), 0).second;
+			residual2_y = Sensors[1]->getHitPosition().second-Track->calculatePositionXY(Sensors[1]->getLabZ(), 0).second;
+			residual3_y = Sensors[2]->getHitPosition().second-Track->calculatePositionXY(Sensors[2]->getLabZ(), 0).second;
+			residual4_y = Sensors[3]->getHitPosition().second-Track->calculatePositionXY(Sensors[3]->getLabZ(), 0).second;
+
+
+			for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
+				delete (*it).second;
+			};	Sensors.clear();
+			delete Track;
+
+		} else {
+			NDF_y = 0;
+			chi2_y = -1;
+			referenceError_y = -1;
+			residual1_y = residual2_y = residual3_y = residual4_y = -1.;
+		}
+
 
 	}
 
@@ -305,18 +338,18 @@ void DWC_NTupelizer::beginJob() {
 		tree->Branch("dwc2_Ntimestamps", &dwc2_Ntimestamps);
 		tree->Branch("dwc3_Ntimestamps", &dwc3_Ntimestamps);
 		tree->Branch("dwc4_Ntimestamps", &dwc4_Ntimestamps);
-		tree->Branch("dwc1_goodMeasurementX", &dwc1_goodMeasurementX);
-		tree->Branch("dwc2_goodMeasurementX", &dwc2_goodMeasurementX);
-		tree->Branch("dwc3_goodMeasurementX", &dwc3_goodMeasurementX);
-		tree->Branch("dwc4_goodMeasurementX", &dwc4_goodMeasurementX); 
-		tree->Branch("dwc1_goodMeasurementY", &dwc1_goodMeasurementY);
-		tree->Branch("dwc2_goodMeasurementY", &dwc2_goodMeasurementY);
-		tree->Branch("dwc3_goodMeasurementY", &dwc3_goodMeasurementY);
-		tree->Branch("dwc4_goodMeasurementY", &dwc4_goodMeasurementY); 
+		tree->Branch("dwc1_goodMeasurement_x", &dwc1_goodMeasurementX);
+		tree->Branch("dwc2_goodMeasurement_x", &dwc2_goodMeasurementX);
+		tree->Branch("dwc3_goodMeasurement_x", &dwc3_goodMeasurementX);
+		tree->Branch("dwc4_goodMeasurement_x", &dwc4_goodMeasurementX); 
+		tree->Branch("dwc1_goodMeasurement_y", &dwc1_goodMeasurementY);
+		tree->Branch("dwc2_goodMeasurement_y", &dwc2_goodMeasurementY);
+		tree->Branch("dwc3_goodMeasurement_y", &dwc3_goodMeasurementY);
+		tree->Branch("dwc4_goodMeasurement_y", &dwc4_goodMeasurementY); 
 		
 		tree->Branch("N_goodMeasurements", &N_goodMeasurements);
-		tree->Branch("N_goodMeasurements_X", &N_goodMeasurements_X);
-		tree->Branch("N_goodMeasurements_Y", &N_goodMeasurements_Y);
+		tree->Branch("N_goodMeasurements_x", &N_goodMeasurements_X);
+		tree->Branch("N_goodMeasurements_y", &N_goodMeasurements_Y);
 	
 		tree->Branch("NDF_x", &NDF_x);
 		tree->Branch("chi2_x", &chi2_x);

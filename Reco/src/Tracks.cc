@@ -356,7 +356,11 @@ void ParticleTrack::polFitTGraphErrors(int degree){
   fit_result_y = tmp_graph_y->Fit(ROOTpol_y, "QFS");
 
   NDF = ROOTpol_x->GetNDF() + ROOTpol_y->GetNDF();
+  NDF_x = ROOTpol_x->GetNDF();
+  NDF_y = ROOTpol_y->GetNDF();
   chi2 = ROOTpol_x->GetChisquare() + ROOTpol_y->GetChisquare();
+  chi2_x = ROOTpol_x->GetChisquare();
+  chi2_y = ROOTpol_y->GetChisquare();
 
   delete tmp_graph_x;
   delete tmp_graph_y;
