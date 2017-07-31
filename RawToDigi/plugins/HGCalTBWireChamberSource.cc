@@ -180,6 +180,14 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc3->y = dwc3->goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC3_DOWN)-dwc_timestamps->at(DWC3_UP))-alignmentParameters[212]: -999;
 	dwc3->res_y = wc_resolution;
 	dwc3->z = dwc_z3;
+	
+	if (n_run>=1194) {	//from run 1195, x-coordinate of DWC A was not connected anymore. TDC channels 14&15 were input by trigger signals.
+						//also the channels for the y-coordinate of DWCA must have been flipped
+		dwc3->goodMeasurement_X = dwc3->goodMeasurement = false;	
+		dwc3->x = -999;
+		dwc3->y = -dwc3->y;
+	} 
+
 	N_DWC_points = dwc3->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
 
 
@@ -227,6 +235,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	rd->configuration = -1;
 	rd->runType = runType[fileCounter];
 	switch(atoi(runType[fileCounter].c_str()) % 10) {
+		case 0: rd->energy=80; break;
 		case 1: rd->energy=100; break;
 		case 2: rd->energy=150; break;
 		case 3: rd->energy=200; break;
