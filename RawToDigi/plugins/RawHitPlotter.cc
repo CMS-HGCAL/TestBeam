@@ -28,6 +28,22 @@
 #include <iomanip>
 #include <set>
 
+
+double parabolicFit(std::vector<double> x, std::vector<double> y) {
+      if (x.size()!=3) return -1;
+
+      //energy reconstruction from parabolic function a*x^2 + b*x + c
+      double _a = ( (y[2]-y[1])/(x[2]-x[1]) - (y[1]-y[0])/(x[1]-x[0]) )/( (pow(x[2],2)-pow(x[1],2))/(x[2]-x[1]) - (pow(x[1],2)-pow(x[0],2))/(x[1]-x[0]) );
+      double _b = (y[2]-y[1]+_a*(pow(x[1],2)-pow(x[2],2)))/(x[2]-x[1]);
+      //double _c = y[0]-_a*pow(x[0],2)-_b*x[0];
+
+      double max_x = (_a < 0) ? -_b/(2*_a) : 0;   //require maximum <--> a<0, unit is ns
+      
+      return (max_x<=125. && max_x>=25.) ? _a*pow(max_x,2)+_b*max_x : -1.;
+}
+
+
+
 #define MAXVERTICES 6
 static const double delta = 0.00001;//Add/subtract delta = 0.00001 to x,y of a cell centre so the TH2Poly::Fill doesnt have a problem at the edges where the centre of a half-hex cell passes through the sennsor boundary line.
 
@@ -77,7 +93,8 @@ private:
   double tree_lg3, tree_lg0;
   double tree_hg3, tree_hg0;
   double tree_lg3_cm, tree_lg0_cm;
-  double tree_hg3_cm, tree_hg0_cm;
+  double tree_hg3_cm, tree_hg0_cm; 
+  double lowGain_fit, highGain_fit, lowGain_cm_fit, highGain_cm_fit;
 
 };
 
@@ -125,6 +142,10 @@ void RawHitPlotter::beginJob()
   recHitsTree->Branch("hg3_cm", &tree_hg3_cm);
   recHitsTree->Branch("lg0_cm", &tree_lg0_cm);
   recHitsTree->Branch("hg0_cm", &tree_hg0_cm);
+  recHitsTree->Branch("lowGain_fit", &lowGain_fit);
+  recHitsTree->Branch("highGain_fit", &highGain_fit);
+  recHitsTree->Branch("lowGain_cm_fit", &lowGain_cm_fit);
+  recHitsTree->Branch("highGain_cm_fit", &highGain_cm_fit);
 }
 
 void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
@@ -211,19 +232,36 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
 
 
     if (hit.detid().cellType()==0)  {  //only full cells for now
-        tree_board = hit.skiroc()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-        tree_skiroc = hit.skiroc();
-        tree_channel = hit.channel();
-        tree_lg3 = hit.lowGainADC(3);
-        tree_hg3 = hit.highGainADC(3);
-        tree_lg3_cm = hit.lowGainADC(3)-cmMap[tree_skiroc].fullLG[3];
-        tree_hg3_cm = hit.highGainADC(3)-cmMap[tree_skiroc].fullHG[3];
-        tree_lg0 = hit.lowGainADC(0);
-        tree_hg0 = hit.highGainADC(0);
-        tree_lg0_cm = hit.lowGainADC(0)-cmMap[tree_skiroc].fullLG[0];
-        tree_hg0_cm = hit.highGainADC(0)-cmMap[tree_skiroc].fullHG[0];
-        recHitsTree->Fill();
+      std::vector<double> sampleLG, sampleHG, sampleLGCM, sampleHGCM, sampleT;
+
+      for (int i=2; i<5; i++) {
+        sampleT.push_back(i*25.);
+        sampleLG.push_back(hit.lowGainADC(i));
+        sampleHG.push_back(hit.highGainADC(i));
+        sampleLGCM.push_back(hit.highGainADC(i)-cmMap[tree_skiroc].fullHG[i]);
+        sampleHGCM.push_back(hit.highGainADC(i)-cmMap[tree_skiroc].fullHG[i]);
       }
+
+      tree_board = hit.skiroc()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+      tree_skiroc = hit.skiroc();
+      tree_channel = hit.channel();
+      tree_lg3 = hit.lowGainADC(3);
+      tree_hg3 = hit.highGainADC(3);
+      tree_lg3_cm = hit.lowGainADC(3)-cmMap[tree_skiroc].fullLG[3];
+      tree_hg3_cm = hit.highGainADC(3)-cmMap[tree_skiroc].fullHG[3];
+      tree_lg0 = hit.lowGainADC(0);
+      tree_hg0 = hit.highGainADC(0);
+      tree_lg0_cm = hit.lowGainADC(0)-cmMap[tree_skiroc].fullLG[0];
+      tree_hg0_cm = hit.highGainADC(0)-cmMap[tree_skiroc].fullHG[0];
+      recHitsTree->Fill();
+
+    
+      lowGain_fit = parabolicFit(sampleT, sampleLG);
+      highGain_fit = parabolicFit(sampleT, sampleHG);
+      lowGain_cm_fit = parabolicFit(sampleT, sampleLGCM);
+      highGain_cm_fit = parabolicFit(sampleT, sampleHGCM);
+
+    }
 
   }
 }
