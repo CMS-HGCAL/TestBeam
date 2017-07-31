@@ -65,8 +65,11 @@ class DWC_NTupelizer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	  	int dwc1_goodMeasurementX, dwc2_goodMeasurementX, dwc3_goodMeasurementX, dwc4_goodMeasurementX; 
 	  	int dwc1_goodMeasurementY, dwc2_goodMeasurementY, dwc3_goodMeasurementY, dwc4_goodMeasurementY; 
 	  	int N_goodMeasurements, N_goodMeasurements_X, N_goodMeasurements_Y;
+	  	double residual1_x, residual1_y, residual2_x, residual2_y, residual3_x, residual3_y, residual4_x, residual4_y; 
 
-	  	int NDF; double chi2, referenceError;
+
+	  	int NDF_x; double chi2_x, referenceError_x;
+	  	int NDF_y; double chi2_y, referenceError_y;
 		std::map<int, SensorHitMap*> Sensors;
 		ParticleTrack* Track;  		
 		TTree* tree;
@@ -196,20 +199,35 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 			Track->addReferenceSensor(Sensors[5]);
 			
 			for (size_t n_layer=0; n_layer<4; n_layer++) {	
-				if (! dwcs->at(n_layer).goodMeasurement) continue;		
 				Sensors[n_layer] = new SensorHitMap(n_layer);				
 				Sensors[n_layer]->setLabZ(dwcs->at(n_layer).z, 0.);
 				Sensors[n_layer]->setCenterHitPosition(dwcs->at(n_layer).x, dwcs->at(n_layer).y , dwcs->at(n_layer).res_x, dwcs->at(n_layer).res_y);
 				Sensors[n_layer]->setParticleEnergy(rd->energy);
-				Sensors[n_layer]->setResidualResolution(dwcs->at(n_layer).res_x);	
+				//Sensors[n_layer]->setResidualResolution(dwcs->at(n_layer).res_x);	
 				Track->addFitPoint(Sensors[n_layer]);
 			}
 			
 			Track->fitTrack(LINEFITANALYTICAL);
-			NDF = Track->getNDF();
-			chi2 = Track->getChi2();
-			referenceError = Track->calculateReferenceErrorXY().first;
-			
+			NDF_x = Track->getNDF(1);
+			chi2_x = Track->getChi2(1);
+			referenceError_x = Track->calculateReferenceErrorXY().first;
+
+			NDF_y = Track->getNDF(2);
+			chi2_y = Track->getChi2(2);
+			referenceError_y = Track->calculateReferenceErrorXY().second;
+
+			residual1_x = Sensors[0]->getHitPosition().first-Track->calculatePositionXY(Sensors[0]->getLabZ(), 0).first;
+			residual1_y = Sensors[0]->getHitPosition().second-Track->calculatePositionXY(Sensors[0]->getLabZ(), 0).second;
+
+			residual2_x = Sensors[1]->getHitPosition().first-Track->calculatePositionXY(Sensors[1]->getLabZ(), 0).first;
+			residual2_y = Sensors[1]->getHitPosition().second-Track->calculatePositionXY(Sensors[1]->getLabZ(), 0).second;
+
+			residual3_x = Sensors[2]->getHitPosition().first-Track->calculatePositionXY(Sensors[2]->getLabZ(), 0).first;
+			residual3_y = Sensors[2]->getHitPosition().second-Track->calculatePositionXY(Sensors[2]->getLabZ(), 0).second;
+
+			residual4_x = Sensors[3]->getHitPosition().first-Track->calculatePositionXY(Sensors[3]->getLabZ(), 0).first;
+			residual4_y = Sensors[3]->getHitPosition().second-Track->calculatePositionXY(Sensors[3]->getLabZ(), 0).second;
+
 			//std::cout<<"Track (ntupelizer) chi2: "<<Track->getChi2()<<" / "<<Track->getNDF()<<" = "<<Track->getChi2()/Track->getNDF()<<"   uncertainty at z=0: "<<Track->calculateReferenceErrorXY().first<<std::endl;
 
 			for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
@@ -217,9 +235,10 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 			};	Sensors.clear();
 			delete Track;
 		} else {
-			NDF = 0;
-			chi2 = -1;
-			referenceError = -1;
+			NDF_x = NDF_y = 0;
+			chi2_x = chi2_y = -1;
+			referenceError_x = referenceError_y = -1;
+			residual1_x = residual1_y = residual2_x = residual2_y = residual3_x = residual3_y = residual4_x = residual4_y = -1.;
 		}
 
 	}
@@ -299,9 +318,22 @@ void DWC_NTupelizer::beginJob() {
 		tree->Branch("N_goodMeasurements_X", &N_goodMeasurements_X);
 		tree->Branch("N_goodMeasurements_Y", &N_goodMeasurements_Y);
 	
-		tree->Branch("NDF", &NDF);
-		tree->Branch("chi2", &chi2);
-		tree->Branch("referenceError", &referenceError);
+		tree->Branch("NDF_x", &NDF_x);
+		tree->Branch("chi2_x", &chi2_x);
+		tree->Branch("referenceError_x", &referenceError_x);
+
+		tree->Branch("NDF_y", &NDF_y);
+		tree->Branch("chi2_y", &chi2_y);
+		tree->Branch("referenceError_y", &referenceError_y);
+
+		tree->Branch("residual1_x", &residual1_x);
+		tree->Branch("residual1_y", &residual1_y);
+		tree->Branch("residual2_x", &residual2_x);
+		tree->Branch("residual2_y", &residual2_y);
+		tree->Branch("residual3_x", &residual3_x);
+		tree->Branch("residual3_y", &residual3_y);
+		tree->Branch("residual4_x", &residual4_x);
+		tree->Branch("residual4_y", &residual4_y);
 	}	
 }
 

@@ -79,7 +79,10 @@ LineFitter::LineFitter(std::vector<double> x, std::vector<double> y, std::vector
     std::cout<<"LineFitter class: y and sigma_y vectors have different dimension!"<<std::endl;
     return;
   }
-  _x = x; _y = y; _sigma_y = sigma_y;
+  
+  for (size_t i=0; i<sigma_y.size(); i++) addPoint(x[i], y[i], sigma_y[i]);
+
+  
   _S_x = _S_xx = _S_y = _S_xy = 0.;
   _S = 1.;
 }
@@ -88,6 +91,8 @@ void LineFitter::addPoint(double x, double y, double sigma_y) {
   #ifdef DEBUG
     std::cout<<"Adding x: "<<x<<"  adding y: "<<y<<"  with resolution: "<<sigma_y<<std::endl;
   #endif
+  if (sigma_y == 0) return;
+  if (y == -999.) return;
   _x.push_back(x); _y.push_back(y); _sigma_y.push_back(sigma_y);
 }
 
@@ -98,7 +103,6 @@ void LineFitter::fit() {
   _S_x = _S_xx = _S_y = _S_xy = _S = _Delta = 0.;
 
   for (size_t i=0; i<_x.size(); i++) {
-    if (_sigma_y[i] == 0) continue;
     _S += 1.0/pow(_sigma_y[i], 2);
     _S_x += _x[i]/pow(_sigma_y[i], 2);
     _S_y += _y[i]/pow(_sigma_y[i], 2);

@@ -289,6 +289,9 @@ void ParticleTrack::gblTrackFit() {
   chi2 = gbl_chi2;
   NDF = ndf;
 
+  NDF_x = NDF_y = NDF/2;
+  chi2_x = chi2_y = chi2/2;
+
 };
 
 std::pair<double, double> ParticleTrack::positionFromGblTrackFit(int layerLabel) {
@@ -320,7 +323,12 @@ void ParticleTrack::analyticalStraightLineFit() {
   linefit_y->fit();
 
   NDF = linefit_x->GetNDF() + linefit_y->GetNDF();
+  NDF_x = linefit_x->GetNDF();
+  NDF_y = linefit_y->GetNDF();
+  
   chi2 = linefit_x->GetChisquare() + linefit_y->GetChisquare();
+  chi2_x = linefit_x->GetChisquare();
+  chi2_y = linefit_y->GetChisquare();
 
 };
 
@@ -373,12 +381,16 @@ std::pair<double, double> ParticleTrack::positionErrorFromPolFitTGraphErrors(int
 }
 
 
-double ParticleTrack::getChi2() {
-  return chi2;
+double ParticleTrack::getChi2(int coordinate) {
+  if (coordinate==1) return chi2_x;
+  if (coordinate==2) return chi2_y;
+  else return chi2;
 }
 
-int ParticleTrack::getNDF() {
-  return NDF;
+int ParticleTrack::getNDF(int coordinate) {
+  if (coordinate==1) return NDF_x;
+  if (coordinate==2) return NDF_y;
+  else return NDF;
 }
 
 double weightToFitPointWeight(double e, double sum_e, FitPointWeightingMethod m) {

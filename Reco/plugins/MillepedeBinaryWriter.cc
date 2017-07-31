@@ -175,12 +175,12 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	}	
 	
 	Track->fitTrack(fittingMethod);
-	NDF = Track->getNDF();
-	chi2 = Track->getChi2();
+	NDF = Track->getNDF(-1);
+	chi2 = Track->getChi2(-1);
 
 	//std::cout<<"Track chi2 (millepede): "<<Track->getChi2()<<" / "<<Track->getNDF()<<" = "<<Track->getChi2()/Track->getNDF()<<"   uncertainty at z=0: "<<Track->calculateReferenceErrorXY().first<<std::endl;
 	bool accept = true;
-	if (MWCQualityCut&&Track->getChi2()/Track->getNDF() > 10) accept=false;		//perform a cut on the quality of the track
+	if (MWCQualityCut&&Track->getChi2(-1)/Track->getNDF(-1) > 10) accept=false;		//perform a cut on the quality of the track
 	
 	if (accept) {
 		//step 6: calculate the deviations between each fit missing one layer and exactly that layer's true central position
