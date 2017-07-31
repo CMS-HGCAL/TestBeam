@@ -122,7 +122,7 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
       }
       else continue;
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-	if( rollpositions[it]<9 ){ //rm on track samples+2 last time sample which show weird behaviour
+	if( rollpositions[it]<2 ){ //keep only 2 first time sample for pedestal evaluation
 	  uint32_t key=iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it;
 	  std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
 	  if( iter==m_channelMap.end() ){
