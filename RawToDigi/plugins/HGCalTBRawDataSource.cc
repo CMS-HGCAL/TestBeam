@@ -9,6 +9,8 @@
 #include <ctime>
 #include <cmath>
 
+//#define DEBUG
+
 HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :
   edm::ProducerSourceFromFiles(pset, desc, true),
   m_electronicMap(pset.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers.txt")),
@@ -224,7 +226,9 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
     skirocs->swap(*emptycol);
   e.put(skirocs, m_outputCollectionName);
 
-  //std::cout<<"event: "<<m_event<<"   trigger number ? "<<m_trigger<<std::endl;
+  #ifdef DEBUG
+    std::cout<<"event: "<<m_event<<"   trigger number ? "<<m_trigger<<std::endl;
+  #endif
   if (timingFile.is_open()) timingFile<<m_event<<"   "<<m_trigger<<"   "<<"   0000    0000"<<std::endl;
 
   m_event++;
