@@ -45,11 +45,11 @@ options.register('performAlignment',
                  'Perform alignment (1:yes, 0:no).'
                 )
 
-options.register('alignmentFile',
-                '/eos/user/t/tquast/outputs/Testbeam/July2017/default.root',
-                 VarParsing.VarParsing.multiplicity.singleton,
+options.register('alignmentFiles',
+                '/tmp/millepede.res',
+                 VarParsing.VarParsing.multiplicity.list,
                  VarParsing.VarParsing.varType.string,
-                 'Path to the alignment file.'
+                 'Path to the alignment files.'
                 )
 
 options.register('inputFiles',
@@ -94,10 +94,9 @@ options.register('runTypes',
                  'Run types (e.g. 1: 100 GeV pions).'
                 )
        
-
 #Alignment specific:
 options.register('Layers',
-                [0, 1, 2, 3],
+                [],
                  VarParsing.VarParsing.multiplicity.list,
                  VarParsing.VarParsing.varType.int,
                  '0: E, 1: D, 2: A, 3: ext'
@@ -155,8 +154,9 @@ process.source = cms.Source("HGCalTBWireChamberSource",
     runType = cms.vstring([runType for runType in options.runTypes]),
     wc_resolution = cms.untracked.double(0.6),
     performAlignment = cms.untracked.bool(bool(options.performAlignment)),
-    alignmentParamaterFile = cms.untracked.string(options.alignmentFile) 
+    alignmentParamaterFiles = cms.vstring(options.alignmentFiles) 
 )
+
 
 ####################################
 #Millepede binary writer 

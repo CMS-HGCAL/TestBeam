@@ -52,7 +52,7 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& type);
 		virtual void produce(edm::Event & e);
 	  	virtual void beginJob() override;
-	  	void ReadAlignmentParameters();
+	  	void ReadAlignmentParameters(int);
 	  	void ReadTimingFile(std::string, bool);
 		
 		std::string outputCollectionName;
@@ -64,8 +64,10 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		int triggerTimeDifferenceTolerance;
 
 		bool performAlignment;
-	  	std::string alignmentParamaterFile;
-		std::map<int, double> alignmentParameters;
+	  	std::vector<std::string> alignmentParamaterFiles;
+		
+	  	std::map<std::pair<int, int> ,std::map<int, double> >loadedAlignmentParameters;
+		std::map<int, double> currentAlignmentParameters;
 
 		std::vector<std::string> timingFileNames;
 		std::vector<int> sumTriggerTimes;

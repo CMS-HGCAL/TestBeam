@@ -21,7 +21,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	wc_resolution = pset.getUntrackedParameter<double>("wc_resolution", 0.5);
 
 	performAlignment = pset.getUntrackedParameter<bool>("performAlignment", false);
-	alignmentParamaterFile = pset.getUntrackedParameter<std::string>("alignmentParamaterFile", "");
+	alignmentParamaterFiles = pset.getParameter<std::vector<std::string> >("alignmentParamaterFiles");
 
 	timingFileNames = pset.getParameter<std::vector<std::string> >("timingFileNames");
 	sumTriggerTimes = pset.getParameter<std::vector<int> >("sumTriggerTimes");
@@ -50,7 +50,7 @@ void HGCalTBWireChamberSource::beginJob() {
 	rootFile = NULL;
 	tree = NULL;
 
-	if (performAlignment) ReadAlignmentParameters();
+	if (performAlignment) ReadAlignmentParameters(0);
 }
 
 
@@ -92,6 +92,20 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 	tree->GetEntry(rootTreeIndex);
 	rootTreeIndex++;
 	
+
+	std::map<std::pair<int, int> ,std::map<int, double> >::iterator alignmentParameterIterator;
+	for (alignmentParameterIterator=loadedAlignmentParameters.begin(); alignmentParameterIterator!=loadedAlignmentParameters.end(); alignmentParameterIterator++) {
+		int run_min = alignmentParameterIterator->first.first;
+		int run_max = alignmentParameterIterator->first.second;
+		int this_run = n_run;
+
+		if (this_run>=run_min && (this_run<=run_max || run_max==-1) ) {
+			currentAlignmentParameters = alignmentParameterIterator->second;
+			break;
+		}
+
+	}
+
 	return true;
 }
 
@@ -123,9 +137,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc1->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC1_LEFT)) && validTimestamp(dwc_timestamps->at(DWC1_RIGHT));
 	dwc1->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC1_DOWN)) && validTimestamp(dwc_timestamps->at(DWC1_UP));
 	dwc1->goodMeasurement = (dwc1->goodMeasurement_X && dwc1->goodMeasurement_Y);
-	dwc1->x = dwc1->goodMeasurement_X ? slope_x.at(0) * (dwc_timestamps->at(DWC1_LEFT)-dwc_timestamps->at(DWC1_RIGHT))-alignmentParameters[11]: -999;
+	dwc1->x = dwc1->goodMeasurement_X ? slope_x.at(0) * (dwc_timestamps->at(DWC1_LEFT)-dwc_timestamps->at(DWC1_RIGHT))-currentAlignmentParameters[11]: -999;
 	dwc1->res_x = wc_resolution;
-	dwc1->y = dwc1->goodMeasurement_Y ? slope_y.at(0) * (dwc_timestamps->at(DWC1_DOWN)-dwc_timestamps->at(DWC1_UP))-alignmentParameters[12]: -999;
+	dwc1->y = dwc1->goodMeasurement_Y ? slope_y.at(0) * (dwc_timestamps->at(DWC1_DOWN)-dwc_timestamps->at(DWC1_UP))-currentAlignmentParameters[12]: -999;
 	dwc1->res_y = wc_resolution;
 	dwc1->z = dwc_z1;
 	N_DWC_points = dwc1->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
@@ -149,9 +163,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc2->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC2_LEFT)) && validTimestamp(dwc_timestamps->at(DWC2_RIGHT));
 	dwc2->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC2_DOWN)) && validTimestamp(dwc_timestamps->at(DWC2_UP));
 	dwc2->goodMeasurement = (dwc2->goodMeasurement_X && dwc2->goodMeasurement_Y);
-	dwc2->x = dwc2->goodMeasurement_X ? slope_x.at(1) * (dwc_timestamps->at(DWC2_LEFT)-dwc_timestamps->at(DWC2_RIGHT))-alignmentParameters[111]: -999;
+	dwc2->x = dwc2->goodMeasurement_X ? slope_x.at(1) * (dwc_timestamps->at(DWC2_LEFT)-dwc_timestamps->at(DWC2_RIGHT))-currentAlignmentParameters[111]: -999;
 	dwc2->res_x = wc_resolution;
-	dwc2->y = dwc2->goodMeasurement_Y ? slope_y.at(1) * (dwc_timestamps->at(DWC2_DOWN)-dwc_timestamps->at(DWC2_UP))-alignmentParameters[112]: -999;
+	dwc2->y = dwc2->goodMeasurement_Y ? slope_y.at(1) * (dwc_timestamps->at(DWC2_DOWN)-dwc_timestamps->at(DWC2_UP))-currentAlignmentParameters[112]: -999;
 	dwc2->res_y = wc_resolution;
 	dwc2->z = dwc_z2;
 	N_DWC_points = dwc2->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
@@ -175,9 +189,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc3->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC3_LEFT)) && validTimestamp(dwc_timestamps->at(DWC3_RIGHT));
 	dwc3->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC3_DOWN)) && validTimestamp(dwc_timestamps->at(DWC3_UP));
 	dwc3->goodMeasurement = (dwc3->goodMeasurement_X && dwc3->goodMeasurement_Y);
-	dwc3->x = dwc3->goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC3_LEFT)-dwc_timestamps->at(DWC3_RIGHT))-alignmentParameters[211]: -999;
+	dwc3->x = dwc3->goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC3_LEFT)-dwc_timestamps->at(DWC3_RIGHT))-currentAlignmentParameters[211]: -999;
 	dwc3->res_x = wc_resolution;
-	dwc3->y = dwc3->goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC3_DOWN)-dwc_timestamps->at(DWC3_UP))-alignmentParameters[212]: -999;
+	dwc3->y = dwc3->goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC3_DOWN)-dwc_timestamps->at(DWC3_UP))-currentAlignmentParameters[212]: -999;
 	dwc3->res_y = wc_resolution;
 	dwc3->z = dwc_z3;
 	
@@ -209,9 +223,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc4->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC4_LEFT)) && validTimestamp(dwc_timestamps->at(DWC4_RIGHT));
 	dwc4->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC4_DOWN)) && validTimestamp(dwc_timestamps->at(DWC4_UP));
 	dwc4->goodMeasurement = (dwc4->goodMeasurement_X && dwc4->goodMeasurement_Y);
-	dwc4->x = dwc4->goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC4_LEFT)-dwc_timestamps->at(DWC4_RIGHT))-alignmentParameters[311]: -999;
+	dwc4->x = dwc4->goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC4_LEFT)-dwc_timestamps->at(DWC4_RIGHT))-currentAlignmentParameters[311]: -999;
 	dwc4->res_x = wc_resolution;
-	dwc4->y = dwc4->goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC4_DOWN)-dwc_timestamps->at(DWC4_UP))-alignmentParameters[312]: -999;
+	dwc4->y = dwc4->goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC4_DOWN)-dwc_timestamps->at(DWC4_UP))-currentAlignmentParameters[312]: -999;
 	dwc4->res_y = wc_resolution;
 	dwc4->z = dwc_z4;
 	N_DWC_points = dwc4->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
@@ -330,43 +344,61 @@ void HGCalTBWireChamberSource::ReadTimingFile(std::string timingFilePath, bool s
 	
 }
 
-void HGCalTBWireChamberSource::ReadAlignmentParameters() {
-  
+void HGCalTBWireChamberSource::ReadAlignmentParameters(int fileIndex) {
+  	if (fileIndex==(int)alignmentParamaterFiles.size()) return;
+
 	std::fstream file; 
 	char fragment[100];
 	int readCounter = -2, currentParameter = 0;
 
+	std::map<int, double> _parameters;
+
 	if (readCounter==-2) {
 		for (int i=0; i< 4; i++) {
-		  alignmentParameters[i*100+11] = 0.;
-		  alignmentParameters[i*100+12] = 0.;
-		  alignmentParameters[i*100+21] = 1.;
-		  alignmentParameters[i*100+22] = 1.;
+		  _parameters[i*100+11] = 0.;
+		  _parameters[i*100+12] = 0.;
+		  _parameters[i*100+21] = 1.;
+		  _parameters[i*100+22] = 1.;
 		}
 	}	
 
-	if (alignmentParamaterFile!="")
-		file.open(alignmentParamaterFile.c_str(), std::fstream::in);
+	if (alignmentParamaterFiles[fileIndex]!=""){
+		std::cout<<"Opening: "<<alignmentParamaterFiles[fileIndex]<<std::endl;
+		file.open(alignmentParamaterFiles[fileIndex].c_str(), std::fstream::in);
+	}
 
+	int minRun, maxRun;
+	if (file.is_open()) {
+		file >> fragment;
+		minRun = atoi(fragment);
+		file >> fragment;
+		maxRun = atoi(fragment);
+	}
 
 	while (file.is_open() && !file.eof()) {
+		
 		if (readCounter!=-2) readCounter++;
 			file >> fragment;
+
 		if (std::string(fragment)=="11") readCounter = 0;  //first parameter is read out
 
 		if (readCounter==0) currentParameter = atoi(fragment);
-		if (readCounter==1) currentParameter = alignmentParameters[currentParameter] = atof(fragment); 
+		if (readCounter==1) currentParameter = _parameters[currentParameter] = atof(fragment); 
 		if (readCounter==2) if (atof(fragment)==-1.) readCounter = -1;
 		if (readCounter==4) readCounter = -1;
 	}
 
+	std::cout<<"Min run: "<<minRun<<"   Max run: "<<maxRun<<std::endl;
 	for (int i=0; i<4; i++) {
-	  std::cout<<"Alignment parameter: "<<i*100+11<<": "<<alignmentParameters[i*100+11]<<std::endl;
-	  std::cout<<"Alignment parameter: "<<i*100+12<<": "<<alignmentParameters[i*100+12]<<std::endl;
-	  std::cout<<"Alignment parameter: "<<i*100+21<<": "<<alignmentParameters[i*100+21]<<std::endl;
-	  std::cout<<"Alignment parameter: "<<i*100+22<<": "<<alignmentParameters[i*100+22]<<std::endl;
+	  std::cout<<"Alignment parameter: "<<i*100+11<<": "<<_parameters[i*100+11]<<std::endl;
+	  std::cout<<"Alignment parameter: "<<i*100+12<<": "<<_parameters[i*100+12]<<std::endl;
+	  std::cout<<"Alignment parameter: "<<i*100+21<<": "<<_parameters[i*100+21]<<std::endl;
+	  std::cout<<"Alignment parameter: "<<i*100+22<<": "<<_parameters[i*100+22]<<std::endl;
 	}
 
+	loadedAlignmentParameters[std::make_pair(minRun, maxRun)] = _parameters;
+
+	return ReadAlignmentParameters(fileIndex+1);
 }
 
 #include "FWCore/Framework/interface/InputSourceMacros.h"
