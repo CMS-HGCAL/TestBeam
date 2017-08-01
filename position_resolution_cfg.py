@@ -30,6 +30,7 @@ options.register('outputFile',
                  'Path to the output file.'
                 )
 
+
 options.register('writeMinimal',
                 1,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -38,7 +39,7 @@ options.register('writeMinimal',
                 )
 
 options.register('performAlignment',
-                1,
+                0,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Perform alignment (1:yes, 0:no).'
@@ -94,6 +95,28 @@ options.register('runTypes',
                 )
        
 
+#Alignment specific:
+options.register('Layers',
+                [0, 1, 2, 3],
+                 VarParsing.VarParsing.multiplicity.list,
+                 VarParsing.VarParsing.varType.int,
+                 '0: E, 1: D, 2: A, 3: ext'
+                )
+
+options.register('coordinateString',
+                'x',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Coordinate for translational alignment of DWCs (x/y).'
+                )
+
+options.register('outputMillepedeFile',
+                '/tmp/millepede.bin',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Path to the millepede binary file.'
+                )
+    
 
 options.parseArguments()
 
@@ -137,8 +160,9 @@ process.source = cms.Source("HGCalTBWireChamberSource",
 
 ####################################
 #Millepede binary writer 
-process.millepede_binarywriter.binaryFile = cms.string('/tmp/millepede.bin')
-process.millepede_binarywriter.nLayers = cms.int32(4)
+process.millepede_binarywriter.binaryFile = cms.string(options.outputMillepedeFile)
+process.millepede_binarywriter.Layers = cms.vint32(options.Layers)
+process.millepede_binarywriter.Coordinate = cms.string(options.coordinateString)
 process.millepede_binarywriter.MWCQualityCut = cms.bool(True)
 process.millepede_binarywriter.makeTree = cms.untracked.bool(True)
 process.millepede_binarywriter.MWCHAMBERS = cms.InputTag("source","WireChambers","unpack")
@@ -162,8 +186,11 @@ process.options = cms.untracked.PSet(
     SkipEvent = cms.untracked.vstring('ProductNotFound')
 )
 
+process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
 if (options.chainSequence == 1):
-    process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
-    process.p = cms.Path(process.millepede_binarywriter*process.dwc_ntupelizer)
+    process.p = cms.Path(process.dwc_ntupelizer)
+if (options.chainSequence == 2):
+    process.p = cms.Path(process.millepede_binarywriter)
+
 
 #process.p = cms.Path(process.wirechamberproducer)
