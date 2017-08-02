@@ -39,6 +39,9 @@ class CommonMode{
   bool _cmPerChip;
   float _threshold;
 
+  double thresholdHG;
+  double thresholdLG;
+
   std::map<int,commonModeNoise> _cmMap;
   
 };
