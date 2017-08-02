@@ -137,9 +137,12 @@ void HGCalTBRawDataSource::fillEventTimingInformations()
   std::ifstream input;
   std::string tc0,tc1,ts0,ts1;
   for(uint16_t ii=0; ii<m_nOrmBoards; ii++){
-    os.str(""); os << "/afs/cern.ch/user/a/asteen/cmssw/CMSSW_8_0_1/src/HGCal/HexaData_Run" << m_run << "_TIMING_RDOUT_ORM" << ii << ".txt";
-    //std::cout << os.str().c_str() << std::endl;
+    os.str(""); os << "./HexaData_Run" << m_run << "_TIMING_RDOUT_ORM" << ii << ".txt";
     input.open(os.str().c_str() , std::ifstream::in);
+    if( !input.is_open() )
+      std::cout << "Can't open " << os.str().c_str() << "; no such file or directory"<< std::endl;
+    else
+      std::cout << os.str().c_str() << std::endl;
     while(1){
       input >> tc0 >> tc1 >> ts0 >> ts1;
       if( !input.good() ) break; 
@@ -158,12 +161,13 @@ void HGCalTBRawDataSource::fillEventTimingInformations()
     }
     input.close();
   }
+  std::cout << m_eventTimingInfoMap.size() << std::endl;
   uint64_t prevTime[m_nOrmBoards];
   uint64_t timeDiff=0;
   for(unsigned int ii=0; ii<m_nOrmBoards; ii++) prevTime[ii]=0;
   for( std::map<uint32_t,EventTimingInformation>::iterator it=m_eventTimingInfoMap.begin(); it!=m_eventTimingInfoMap.end(); ++it ){
     if( prevTime[0]==0 )
-      for(unsigned int ii=1; ii<m_nOrmBoards; ii++)
+      for(unsigned int ii=0; ii<m_nOrmBoards; ii++)
 	prevTime[ii]=it->second.triggerTimeStamp(ii);
     else{
       timeDiff=it->second.triggerTimeStamp(0)-prevTime[0];
@@ -173,7 +177,6 @@ void HGCalTBRawDataSource::fillEventTimingInformations()
 	  std::cout << "Problem of timing sync in trigger " << it->first << " for rdout board " << ii
 		    << " with time stamp = " << it->second.triggerTimeStamp(ii)
 		    << " time diff : " << it->second.triggerTimeStamp(ii)-prevTime[ii] << " != " << timeDiff << std::endl;
-	  exit(1);
 	}
 	prevTime[ii]=it->second.triggerTimeStamp(ii);
       }

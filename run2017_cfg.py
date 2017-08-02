@@ -38,10 +38,12 @@ if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
 
 electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"
-pedestalToCreateHighGain="pedestalHG_"+str(options.runNumber)+".txt"
-pedestalToCreateLowGain="pedestalLG_"+str(options.runNumber)+".txt"
-pedestalToSubtractHighGain="pedestalHG_1197.txt"
-pedestalToSubtractLowGain="pedestalLG_1197.txt"
+pedestalToCreateHighGain=options.outputFolder+"/pedestalHG_"+str(options.runNumber)+".txt"
+pedestalToCreateLowGain=options.outputFolder+"/pedestalLG_"+str(options.runNumber)+".txt"
+# pedestalToSubtractHighGain="pedestalHG_"+str(options.runNumber)+".txt"
+# pedestalToSubtractLowGain="pedestalLG_"+str(options.runNumber)+".txt"
+pedestalToSubtractHighGain="pedestalHG_1216.txt"
+pedestalToSubtractLowGain="pedestalLG_1216.txt"
 
 
 ################################
@@ -65,7 +67,12 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             ReadTXTForTiming=cms.untracked.bool(False)
 )
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/HexaOutput_%d.root"%(options.outputFolder,options.runNumber)))
+if options.evaluatePedestal==True:
+    filename = options.outputFolder+"/PedestalOutput_"+str(options.runNumber)+".root"
+    process.TFileService = cms.Service("TFileService", fileName=cms.string(filename))
+else:
+    filename = options.outputFolder+"/HexaOutput_"+str(options.runNumber)+".root"
+    process.TFileService = cms.Service("TFileService", fileName = cms.string(filename))
 
 process.output = cms.OutputModule("PoolOutputModule",
                                   fileName = cms.untracked.string(options.output)
@@ -93,7 +100,7 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
                                         ElectronicMap=cms.untracked.string(electronicMap),
-                                        SubtractPedestal=cms.untracked.bool(False),
+                                        SubtractPedestal=cms.untracked.bool(True),
                                         HighGainPedestalFileName=cms.string(pedestalToSubtractHighGain),
                                         LowGainPedestalFileName=cms.string(pedestalToSubtractLowGain)
 )
@@ -107,7 +114,7 @@ process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
 )
 
 
-if options.evaluatePedestal:
+if options.evaluatePedestal==True:
     process.p = cms.Path( process.rawdataplotter*process.pedestalplotter )
 else:
     process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
