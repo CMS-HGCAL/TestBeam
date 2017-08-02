@@ -24,6 +24,8 @@
 #include <iomanip>
 #include <set>
 
+#define DEBUG
+
 struct hgcal_channel{
   hgcal_channel() : key(0),
 		    meanHG(0.),
@@ -304,6 +306,14 @@ void PedestalPlotter::endJob()
       median_low = lgMean;
       RMS_low = lgRMS;
       pedestalTree->Fill();
+
+      #ifdef DEBUG
+        if (iboard==0 && iski==0 && ichan==0) {
+          std::cout<<"iboard: "<<iboard<<"   iski: "<<iski<<"   ichan: "<<ichan<<"   sca: "<<it<<"  --> "<<std::endl;
+          std::cout<<"hg mean: "<<hgMean<<"   hg RMS: "<<hgRMS<<std::endl;
+          std::cout<<"hg mean: "<<hgMean<<"   hg RMS: "<<hgRMS<<std::endl;
+        }
+      #endif
 
       if( m_writePedestalFile ){
 	pedestalHG << " " << hgMean << " " << hgRMS;

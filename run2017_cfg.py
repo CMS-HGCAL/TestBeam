@@ -139,7 +139,7 @@ if options.chainSequence==0:
     process.p = cms.Path()
 
 if options.chainSequence==1:
-    process.p = cms.Path( process.pedestalplotter )
+    process.p = cms.Path( process.rawdataplotter*process.pedestalplotter )
 if options.chainSequence==2:
     process.p = cms.Path( process.rawhitproducer*process.rawhitplotter)
 

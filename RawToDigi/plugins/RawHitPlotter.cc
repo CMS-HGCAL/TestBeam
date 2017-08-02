@@ -186,7 +186,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
       if( !essource_.emap_.existsEId(eid) ) continue;
       if( m_subtractCommonMode ){
-  	int iski = eid.iskiroc();
+  	int iski = hit.skiroc();
 	if( cmMap[iski].fullHG[it]==4 ) continue;
   	float subHG(0),subLG(0);
   	switch ( hit.detid().cellType() ){
@@ -195,6 +195,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   	case 3 : subHG=cmMap[iski].mouseBiteHG[it]; subLG=cmMap[iski].mouseBiteLG[it]; break;
   	case 4 : subHG=cmMap[iski].outerHG[it]; subLG=cmMap[iski].outerLG[it]; break;
   	}
+    
   	highGain=hit.highGainADC(it)-subHG;
   	lowGain=hit.lowGainADC(it)-subLG;
       }
@@ -204,6 +205,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       }
       int iboard=hit.skiroc()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
       int iski=hit.skiroc();
+      
       int ichan=hit.channel();
       std::pair<int,HGCalTBDetId> p( iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan,hit.detid() );
       setOfConnectedDetId.insert(p);
@@ -253,14 +255,13 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       tree_hg0 = hit.highGainADC(0);
       tree_lg0_cm = hit.lowGainADC(0)-cmMap[tree_skiroc].fullLG[0];
       tree_hg0_cm = hit.highGainADC(0)-cmMap[tree_skiroc].fullHG[0];
-      recHitsTree->Fill();
-
     
       lowGain_fit = parabolicFit(sampleT, sampleLG);
       highGain_fit = parabolicFit(sampleT, sampleHG);
       lowGain_cm_fit = parabolicFit(sampleT, sampleLGCM);
       highGain_cm_fit = parabolicFit(sampleT, sampleHGCM);
 
+      recHitsTree->Fill();
     }
 
   }
