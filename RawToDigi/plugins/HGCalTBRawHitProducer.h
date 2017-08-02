@@ -28,7 +28,9 @@ class HGCalTBRawHitProducer : public edm::EDProducer
   bool m_subtractPedestal;
   std::string m_pedestalHigh_filename;
   std::string m_pedestalLow_filename;
-
+  int m_underSaturationADC;
+  int m_maxTimeSampleForSaturation;
+  
   edm::EDGetTokenT<HGCalTBSkiroc2CMSCollection> m_HGCalTBSkiroc2CMSCollection;
 
   struct {

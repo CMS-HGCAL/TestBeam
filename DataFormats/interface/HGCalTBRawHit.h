@@ -16,7 +16,9 @@ class HGCalTBRawHit
     m_skiroc(skiroc),
     m_channel(channel),
     m_adcHigh(adcHigh),
-    m_adcLow(adcLow)
+    m_adcLow(adcLow),
+    m_underSaturationHG(false),
+    m_underSaturationLG(false)
     {;}
  HGCalTBRawHit( unsigned int rawid, unsigned int skiroc, unsigned int channel, std::vector<float> &adcHigh, std::vector<float> &adcLow, float toaRise, float toaFall, float totSlow, float totFast ) :
   m_rawid(rawid),
@@ -27,7 +29,9 @@ class HGCalTBRawHit
     m_toaRise(toaRise),
     m_toaFall(toaFall),
     m_totSlow(totSlow),
-    m_totFast(totFast)
+    m_totFast(totFast),
+    m_underSaturationHG(false),
+    m_underSaturationLG(false)
     {;}
 
   HGCalTBDetId detid() const {return HGCalTBDetId(m_rawid);}
@@ -50,6 +54,11 @@ class HGCalTBRawHit
   float totFast(){return m_totFast;}
   float totSlow(){return m_totSlow;}
 
+  void setUnderSaturationForHighGain(){ m_underSaturationHG=true; }
+  void setUnderSaturationForLowGain(){ m_underSaturationLG=true; }
+  bool isUnderSaturationForHighGain(){ return m_underSaturationHG; }
+  bool isUnderSaturationForLowGain(){ return m_underSaturationLG; }
+  
  private:
   unsigned int m_rawid; //for some reasons (I don't know) root does not allow saving HGCalTBDetId because of some dictionary issue. 
   // because of non-connected channels for which we assign dummy det id, we must keep skiroc and channel here
@@ -61,6 +70,8 @@ class HGCalTBRawHit
   float m_toaFall;
   float m_totSlow;
   float m_totFast;
+  bool m_underSaturationHG;
+  bool m_underSaturationLG;
 };
 
 std::ostream& operator<<(std::ostream&, HGCalTBRawHit&);

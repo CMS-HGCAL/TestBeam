@@ -7,7 +7,9 @@ HGCalTBRawHitProducer::HGCalTBRawHitProducer(const edm::ParameterSet& cfg) :
   m_outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
   m_subtractPedestal(cfg.getUntrackedParameter<bool>("SubtractPedestal",false)),
   m_pedestalHigh_filename(cfg.getParameter<std::string>("HighGainPedestalFileName")),
-  m_pedestalLow_filename(cfg.getParameter<std::string>("LowGainPedestalFileName"))
+  m_pedestalLow_filename(cfg.getParameter<std::string>("LowGainPedestalFileName")),
+  m_underSaturationADC(cfg.getUntrackedParameter<int>("UnderSaturationADC",4)),
+  m_maxTimeSampleForSaturation(cfg.getUntrackedParameter<int>("MaxTimeSampleForSaturation",5))
 {
   m_HGCalTBSkiroc2CMSCollection = consumes<HGCalTBSkiroc2CMSCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
   produces <HGCalTBRawHitCollection>(m_outputCollectionName);
@@ -107,9 +109,10 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       std::vector<float> adchigh(NUMBER_OF_SCA,0);
       std::vector<float> adclow(NUMBER_OF_SCA,0);
       std::vector<int> rollpositions=skiroc.rollPositions();
-      //if( m_pedMap[10000*iboard+100*iskiroc+ichan].id!=HGCalTBDetId(rawid) )
-      //std::cout << "Problem : in " << iboard << "\t" << iskiroc << "\t" << ichan << "\t" << m_pedMap[10000*iboard+100*iskiroc+ichan].id << std::endl;
+      bool hgSat(false),lgSat(false);
       for( int it=0; it<NUMBER_OF_SCA; it++ ){
+	if( it<m_maxTimeSampleForSaturation && skiroc.ADCHigh(ichan,it)==m_underSaturationADC ) hgSat=true;
+	if( it<m_maxTimeSampleForSaturation && skiroc.ADCLow(ichan,it)==m_underSaturationADC ) lgSat=true;
 	if( m_subtractPedestal ){
 	  adchigh.at( rollpositions[it] ) = skiroc.ADCHigh(ichan,it)-m_pedMap[10000*iboard+100*iskiroc+ichan].pedHGMean[it] ;
 	  adclow.at( rollpositions[it] ) = skiroc.ADCLow(ichan,it)-m_pedMap[10000*iboard+100*iskiroc+ichan].pedLGMean[it] ;
@@ -126,6 +129,8 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       HGCalTBRawHit hit(rawid, iski, ichan, adchigh, adclow,
 			skiroc.TOARise(ichan), skiroc.TOAFall(ichan),
 			skiroc.TOTSlow(ichan), skiroc.TOTFast(ichan));
+      if(hgSat) hit.setUnderSaturationForHighGain();
+      if(lgSat) hit.setUnderSaturationForLowGain();
       hits->push_back(hit);
     }
   }
