@@ -23,6 +23,12 @@ options.register('outputFolder',
                  VarParsing.VarParsing.varType.string,
                  'Output folder where analysis output are stored')
 
+options.register('evaluatePedestal',
+                 False,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 'Boolean to set for pedestal evaluation')
+
 options.maxEvents = -1
 options.output = "cmsswEvents.root"
 
@@ -31,15 +37,21 @@ print options
 if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
 
+electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"
+pedestalToCreateHighGain="pedestalHG_"+str(options.runNumber)+".txt"
+pedestalToCreateLowGain="pedestalLG_"+str(options.runNumber)+".txt"
+pedestalToSubtractHighGain="pedestalHG_1197.txt"
+pedestalToSubtractLowGain="pedestalLG_1197.txt"
+
+
 ################################
 process = cms.Process("unpack")
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)
-    )
+)
 
 ####################################
 
-electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"
 process.source = cms.Source("HGCalTBRawDataSource",
                             ElectronicMap=cms.untracked.string(electronicMap),
                             fileNames=cms.untracked.vstring("file:%s/HexaData_Run%04d.raw"%(options.dataFolder,options.runNumber)),
@@ -51,20 +63,17 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             NumberOfOrmBoards=cms.untracked.uint32(1),
                             NSkipEvents=cms.untracked.uint32(0),
                             ReadTXTForTiming=cms.untracked.bool(False)
-                            )
+)
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/HexaOutput_%d.root"%(options.outputFolder,options.runNumber)))
 
 process.output = cms.OutputModule("PoolOutputModule",
                                   fileName = cms.untracked.string(options.output)
-                                  )
+)
 
 
-pedestalToCreateHighGain="pedestalHG_"+str(options.runNumber)+".txt"
-pedestalToCreateLowGain="pedestalLG_"+str(options.runNumber)+".txt"
 
-pedestalToSubtractHighGain="pedestalHG_1197.txt"
-pedestalToSubtractLowGain="pedestalLG_1197.txt"
+process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in cms.Path if you want to check which collections are in the event
 
 process.pedestalplotter = cms.EDAnalyzer("PedestalPlotter",
                                          SensorSize=cms.untracked.int32(128),
@@ -73,16 +82,13 @@ process.pedestalplotter = cms.EDAnalyzer("PedestalPlotter",
                                          ElectronicMap=cms.untracked.string(electronicMap),
                                          HighGainPedestalFileName=cms.untracked.string(pedestalToCreateHighGain),
                                          LowGainPedestalFileName=cms.untracked.string(pedestalToCreateLowGain)
-                                         )
+)
 
 process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         SensorSize=cms.untracked.int32(128),
                                         EventPlotter=cms.untracked.bool(False),
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata")
-                                        )
-
-process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in cms.Path if you want to check which collections are in the event
-
+)
 process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
@@ -90,7 +96,7 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         SubtractPedestal=cms.untracked.bool(False),
                                         HighGainPedestalFileName=cms.string(pedestalToSubtractHighGain),
                                         LowGainPedestalFileName=cms.string(pedestalToSubtractLowGain)
-                                        )
+)
 
 process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
@@ -98,11 +104,14 @@ process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        SensorSize=cms.untracked.int32(128),
                                        EventPlotter=cms.untracked.bool(False),
                                        SubtractCommonMode=cms.untracked.bool(True)
-                                       )
+)
 
 
-process.p = cms.Path( process.rawdataplotter*process.pedestalplotter )
-#process.p = cms.Path(  )#*process.rawhitproducer*process.rawhitplotter )
+if options.evaluatePedestal:
+    process.p = cms.Path( process.rawdataplotter*process.pedestalplotter )
+else:
+    process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
+
 #process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.pulseshapeplotter )
 
 process.end = cms.EndPath(process.output)
