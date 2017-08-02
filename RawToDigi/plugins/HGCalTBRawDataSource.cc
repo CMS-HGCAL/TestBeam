@@ -17,7 +17,6 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   m_headerSize(pset.getUntrackedParameter<unsigned int> ("NumberOfBytesForTheHeader",8)),
   m_trailerSize(pset.getUntrackedParameter<unsigned int> ("NumberOfBytesForTheTrailer",4)),
   m_eventTrailerSize(pset.getUntrackedParameter<unsigned int> ("NumberOfBytesForTheEventTrailers",4)),
-  m_nOrmBoards(pset.getUntrackedParameter<unsigned int> ("NumberOfOrmBoards",1)),
   m_nSkipEvents(pset.getUntrackedParameter<unsigned int> ("NSkipEvents",0)),
   m_readTXTForTiming(pset.getUntrackedParameter<bool> ("ReadTXTForTiming",false))
 {
@@ -36,6 +35,8 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   if (!io.load(fip.fullPath(), essource_.emap_)) {
     throw cms::Exception("Unable to load electronics map");
   }
+
+  m_timingFiles=pset.getParameter< std::vector<std::string> >("timingFiles");
   
   std::cout << pset << std::endl;
 
@@ -133,16 +134,15 @@ std::vector< std::array<uint16_t,1924> > HGCalTBRawDataSource::decode_raw_32bit(
 
 void HGCalTBRawDataSource::fillEventTimingInformations()
 {
-  std::ostringstream os( std::ostringstream::ate );
   std::ifstream input;
   std::string tc0,tc1,ts0,ts1;
+  if( m_nOrmBoards != m_timingFiles.size() ) {std::cout << "oops " << m_nOrmBoards << " " << m_timingFiles.size() << std::endl; return;}
   for(uint16_t ii=0; ii<m_nOrmBoards; ii++){
-    os.str(""); os << "./HexaData_Run" << m_run << "_TIMING_RDOUT_ORM" << ii << ".txt";
-    input.open(os.str().c_str() , std::ifstream::in);
+    input.open(m_timingFiles[ii].c_str() , std::ifstream::in);
     if( !input.is_open() )
-      std::cout << "Can't open " << os.str().c_str() << "; no such file or directory"<< std::endl;
+      std::cout << "Can't open " << m_timingFiles[ii] << "; no such file or directory"<< std::endl;
     else
-      std::cout << os.str().c_str() << std::endl;
+      std::cout << m_timingFiles[ii] << std::endl;
     while(1){
       input >> tc0 >> tc1 >> ts0 >> ts1;
       if( !input.good() ) break; 
@@ -236,9 +236,9 @@ void HGCalTBRawDataSource::fillDescriptions(edm::ConfigurationDescriptions& desc
   desc.addUntracked<unsigned int> ("NumberOfBytesForTheHeader");
   desc.addUntracked<unsigned int> ("NumberOfBytesForTheTrailer");
   desc.addUntracked<unsigned int> ("NumberOfBytesForTheEventTrailers");
-  desc.addUntracked<unsigned int> ("NumberOfOrmBoards");
   desc.addUntracked<unsigned int> ("NSkipEvents");
   desc.addUntracked<bool> ("ReadTXTForTiming");
+  desc.add<std::vector<std::string> >("timingFiles");
   descriptions.add("source", desc);
 }
 

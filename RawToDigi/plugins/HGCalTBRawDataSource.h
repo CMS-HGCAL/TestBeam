@@ -52,6 +52,7 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   std::string m_fileName;
   std::string m_electronicMap;
   std::string m_outputCollectionName;
+  std::vector<std::string> m_timingFiles;
   //std::vector<FileInfo>::iterator fileIterator;
   unsigned int m_nHexaboards;
   unsigned int m_nWords;
