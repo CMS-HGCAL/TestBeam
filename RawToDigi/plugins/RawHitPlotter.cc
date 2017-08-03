@@ -25,10 +25,12 @@
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include "HGCal/Reco/interface/CommonMode.h"
+
 #include <iomanip>
 #include <set>
 
 
+#include "HGCal/Reco/interface/PulseFitter.h"
 double parabolicFit(std::vector<double> x, std::vector<double> y) {
       if (x.size()!=3) return -1;
 
@@ -96,9 +98,11 @@ private:
   int tree_channel;
   double tree_lg3, tree_lg0;
   double tree_hg3, tree_hg0;
-  double tree_lg3_cm, tree_lg0_cm;
-  double tree_hg3_cm, tree_hg0_cm; 
+  double tree_lg3_cms, tree_lg0_cms;
+  double tree_hg3_cms, tree_hg0_cms; 
   double lowGain_fit, highGain_fit, lowGain_cm_fit, highGain_cm_fit;
+  double tree_hg3_cm, tree_hg0_cm, tree_lg3_cm, tree_lg0_cm;
+
 
 };
 
@@ -163,6 +167,10 @@ void RawHitPlotter::beginJob()
   recHitsTree->Branch("hg3", &tree_hg3);
   recHitsTree->Branch("lg0", &tree_lg0);
   recHitsTree->Branch("hg0", &tree_hg0);
+  recHitsTree->Branch("lg3_cms", &tree_lg3_cms);
+  recHitsTree->Branch("hg3_cms", &tree_hg3_cms);
+  recHitsTree->Branch("lg0_cms", &tree_lg0_cms);
+  recHitsTree->Branch("hg0_cms", &tree_hg0_cms);
   recHitsTree->Branch("lg3_cm", &tree_lg3_cm);
   recHitsTree->Branch("hg3_cm", &tree_hg3_cm);
   recHitsTree->Branch("lg0_cm", &tree_lg0_cm);
@@ -269,7 +277,8 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     if (hit.detid().cellType()==0)  {  //only full cells for now
       std::vector<double> sampleLG, sampleHG, sampleLGCM, sampleHGCM, sampleT;
 
-      for (int i=2; i<5; i++) {
+      //seven time samples for fitting
+      for (int i=0; i<7; i++) {
         sampleT.push_back(i*25.);
         sampleLG.push_back(hit.lowGainADC(i));
         sampleHG.push_back(hit.highGainADC(i));
@@ -282,17 +291,33 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       tree_channel = hit.channel();
       tree_lg3 = hit.lowGainADC(3);
       tree_hg3 = hit.highGainADC(3);
-      tree_lg3_cm = hit.lowGainADC(3)-cmMap[tree_skiroc].fullLG[3];
-      tree_hg3_cm = hit.highGainADC(3)-cmMap[tree_skiroc].fullHG[3];
+      tree_lg3_cms = hit.lowGainADC(3)-cmMap[tree_skiroc].fullLG[3];
+      tree_hg3_cms = hit.highGainADC(3)-cmMap[tree_skiroc].fullHG[3];
       tree_lg0 = hit.lowGainADC(0);
       tree_hg0 = hit.highGainADC(0);
-      tree_lg0_cm = hit.lowGainADC(0)-cmMap[tree_skiroc].fullLG[0];
-      tree_hg0_cm = hit.highGainADC(0)-cmMap[tree_skiroc].fullHG[0];
+      tree_lg0_cms = hit.lowGainADC(0)-cmMap[tree_skiroc].fullLG[0];
+      tree_hg0_cms = hit.highGainADC(0)-cmMap[tree_skiroc].fullHG[0];
     
-      lowGain_fit = parabolicFit(sampleT, sampleLG);
-      highGain_fit = parabolicFit(sampleT, sampleHG);
-      lowGain_cm_fit = parabolicFit(sampleT, sampleLGCM);
-      highGain_cm_fit = parabolicFit(sampleT, sampleHGCM);
+      
+      PulseFitter fitter(0,150);
+      PulseFitterResult fithg;
+      fitter.run(sampleT, sampleHG, fithg);
+      PulseFitterResult fitlg;
+      fitter.run(sampleT, sampleLG, fitlg);
+      PulseFitterResult fithgcm;
+      fitter.run(sampleT, sampleHGCM, fithgcm);
+      PulseFitterResult fitlgcm;
+      fitter.run(sampleT, sampleLGCM, fitlgcm);
+
+      lowGain_fit = fitlg.amplitude;//parabolicFit(sampleT, sampleLG);
+      highGain_fit = fithg.amplitude;//parabolicFit(sampleT, sampleHG);
+      lowGain_cm_fit = fitlgcm.amplitude;//parabolicFit(sampleT, sampleLGCM);
+      highGain_cm_fit = fithgcm.amplitude;//parabolicFit(sampleT, sampleHGCM);
+
+      tree_lg3_cm = cmMap[tree_skiroc].fullLG[3];
+      tree_hg3_cm = cmMap[tree_skiroc].fullHG[3];
+      tree_lg0_cm = cmMap[tree_skiroc].fullLG[0];
+      tree_hg0_cm = cmMap[tree_skiroc].fullHG[0];
 
       recHitsTree->Fill();
     }
