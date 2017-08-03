@@ -81,5 +81,5 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   fit.chi2=m->MinValue();
   fit.status=m->Status();
   fit.ncalls=m->NCalls();
-
+  delete m;
 }
