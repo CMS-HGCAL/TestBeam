@@ -25,6 +25,7 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   m_timingFilePath(pset.getUntrackedParameter<std::string>("timingFilePath","/eos/user/t/tquast/data/Testbeam/July2017/Timing/HexaData_RunXX_TIMING_RDOUT_ORM0.txt"))
 {
   produces<HGCalTBSkiroc2CMSCollection>(m_outputCollectionName);
+  produces<RunData>("RunData");
   
   m_event = 0;
   m_fileId=0;
@@ -113,6 +114,8 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
   // end=clock();
   // m_meanReadingTime += (float)(end-start)/CLOCKS_PER_SEC;
   // m_rmsReadingTime += (float)(end-start)/CLOCKS_PER_SEC*(end-start)/CLOCKS_PER_SEC;
+  
+
   return true;
 }
 
@@ -232,6 +235,20 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
   if (timingFile.is_open()) timingFile<<m_event<<"   "<<m_trigger<<"   "<<"   0000    0000"<<std::endl;
 
   m_event++;
+
+  //set the RunData
+  std::auto_ptr<RunData> rd(new RunData);
+
+
+  rd->energy = -1;
+  rd->configuration = -1;
+  rd->runType = -1;
+  rd->run = m_run;
+  rd->event = m_event;
+  rd->hasDanger = false;
+  rd->hasValidMWCMeasurement = false;
+
+  e.put(std::move(rd), "RunData");
 }
 
 void HGCalTBRawDataSource::fillDescriptions(edm::ConfigurationDescriptions& descriptions)

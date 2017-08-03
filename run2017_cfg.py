@@ -29,6 +29,12 @@ options.register('outputFile',
                  VarParsing.VarParsing.varType.string,
                  'Output folder where analysis output are stored')
 
+options.register('DWCFile',
+                 '/eos/user/t/tquast/outputs/Testbeam/July2017/reconstructed_DWC_data_full.root',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'path to the reconstructed DWC file.')
+
 options.register('reportEvery',
                 100,
                 VarParsing.VarParsing.multiplicity.singleton,
@@ -69,6 +75,13 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
 
 ####################################
+
+####################################
+# Load the standard sequences
+process.load('HGCal.StandardSequences.LocalReco_cff')
+process.load('HGCal.StandardSequences.RawToDigi_cff')
+####################################
+
 
 process.source = cms.Source("HGCalTBRawDataSource",
                             ElectronicMap=cms.untracked.string(electronicMap),
@@ -129,6 +142,8 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
 
 process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
+                                       MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers","unpack"),
+                                       RUNDATA = cms.InputTag("source","RunData","unpack"),
                                        ElectronicMap=cms.untracked.string(electronicMap),
                                        SensorSize=cms.untracked.int32(128),
                                        EventPlotter=cms.untracked.bool(False),
@@ -148,6 +163,18 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         KeepOnlyTimeSample3 = cms.untracked.bool(False)
                                         )
 
+#Wire chamber producer
+process.wirechamberproducer.OutputCollectionName = cms.string("DelayWireChambers") 
+process.wirechamberproducer.RUNDATA = cms.InputTag("source","RunData","unpack")
+process.wirechamberproducer.inputFile = cms.string(options.DWCFile)
+
+
+####################################
+#add skip event exception which might occur for simulated samples because the last event is not properly passed forward
+process.options = cms.untracked.PSet(
+    SkipEvent = cms.untracked.vstring('ProductNotFound')
+)
+
 
 if options.chainSequence==0:
     process.p = cms.Path()
@@ -155,7 +182,7 @@ if options.chainSequence==0:
 if options.chainSequence==1:
     process.p = cms.Path( process.rawdataplotter*process.pedestalplotter )
 if options.chainSequence==2:
-    process.p = cms.Path( process.rawhitproducer*process.rawhitplotter)
+    process.p = cms.Path( process.rawhitproducer*process.wirechamberproducer*process.rawhitplotter)
 
 
 

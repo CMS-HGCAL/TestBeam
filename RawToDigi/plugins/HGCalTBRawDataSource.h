@@ -3,6 +3,7 @@
 #include "FWCore/Sources/interface/ProducerSourceFromFiles.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "HGCal/DataFormats/interface/HGCalTBRunData.h"
 #include <fstream>
 #include <iostream>
 #include <stdio.h>

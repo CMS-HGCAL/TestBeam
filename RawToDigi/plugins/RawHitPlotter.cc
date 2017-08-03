@@ -25,6 +25,8 @@
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include "HGCal/Reco/interface/CommonMode.h"
+#include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
+#include "HGCal/DataFormats/interface/HGCalTBRunData.h" 
 
 #include <iomanip>
 #include <set>
@@ -41,7 +43,7 @@ double parabolicFit(std::vector<double> x, std::vector<double> y) {
 
       double max_x = (_a < 0) ? -_b/(2*_a) : 0;   //require maximum <--> a<0, unit is ns
       
-      return (max_x<=125. && max_x>=25.) ? _a*pow(max_x,2)+_b*max_x : -1.;
+      return (max_x<=100. && max_x>=50.) ? _a*pow(max_x,2)+_b*max_x : -1000.;
 }
 
 
@@ -62,6 +64,8 @@ private:
   void InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV);
 
   std::string m_electronicMap;
+  edm::EDGetTokenT<WireChambers> MWCToken;
+  edm::EDGetTokenT<RunData> RunDataToken; 
 
   struct {
     HGCalElectronicsMap emap_;
@@ -102,6 +106,7 @@ private:
   double tree_hg3_cms, tree_hg0_cms; 
   double lowGain_fit, highGain_fit, lowGain_cm_fit, highGain_cm_fit;
   double tree_hg3_cm, tree_hg0_cm, tree_lg3_cm, tree_lg0_cm;
+  double tree_dwc1_x, tree_dwc1_y;
 
 
 };
@@ -116,6 +121,8 @@ RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
   edm::Service<TFileService> fs;
 
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
+  MWCToken = consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
+  RunDataToken = consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
 
   m_evtID=0;
   
@@ -179,6 +186,8 @@ void RawHitPlotter::beginJob()
   recHitsTree->Branch("highGain_fit", &highGain_fit);
   recHitsTree->Branch("lowGain_cm_fit", &lowGain_cm_fit);
   recHitsTree->Branch("highGain_cm_fit", &highGain_cm_fit);
+  recHitsTree->Branch("dwcE_x", &tree_dwc1_x);
+  recHitsTree->Branch("dwcE_y", &tree_dwc1_y);
 }
 
 void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
@@ -186,6 +195,21 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   usesResource("TFileService");
   edm::Service<TFileService> fs;
 
+
+  edm::Handle<RunData> rd;
+  event.getByToken(RunDataToken, rd);
+  
+  //get the multi wire chambers
+  edm::Handle<WireChambers> dwcs;
+  event.getByToken(MWCToken, dwcs);
+
+  tree_dwc1_x = -999.;
+  tree_dwc1_y = -999.;
+  if (dwcs->at(0).goodMeasurement){
+    tree_dwc1_x = dwcs->at(0).x; 
+    tree_dwc1_y = dwcs->at(0).y; 
+  }
+  
   edm::Handle<HGCalTBRawHitCollection> hits;
   event.getByToken(m_HGCalTBRawHitCollection, hits);
   if( !hits->size() )
@@ -282,7 +306,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
         sampleT.push_back(i*25.);
         sampleLG.push_back(hit.lowGainADC(i));
         sampleHG.push_back(hit.highGainADC(i));
-        sampleLGCM.push_back(hit.highGainADC(i)-cmMap[tree_skiroc].fullHG[i]);
+        sampleLGCM.push_back(hit.lowGainADC(i)-cmMap[tree_skiroc].fullHG[i]);
         sampleHGCM.push_back(hit.highGainADC(i)-cmMap[tree_skiroc].fullHG[i]);
       }
 
@@ -298,21 +322,29 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       tree_lg0_cms = hit.lowGainADC(0)-cmMap[tree_skiroc].fullLG[0];
       tree_hg0_cms = hit.highGainADC(0)-cmMap[tree_skiroc].fullHG[0];
     
-      
       PulseFitter fitter(0,150);
+      /*
       PulseFitterResult fithg;
       fitter.run(sampleT, sampleHG, fithg);
       PulseFitterResult fitlg;
       fitter.run(sampleT, sampleLG, fitlg);
+      */
       PulseFitterResult fithgcm;
       fitter.run(sampleT, sampleHGCM, fithgcm);
       PulseFitterResult fitlgcm;
       fitter.run(sampleT, sampleLGCM, fitlgcm);
-
-      lowGain_fit = fitlg.amplitude;//parabolicFit(sampleT, sampleLG);
-      highGain_fit = fithg.amplitude;//parabolicFit(sampleT, sampleHG);
-      lowGain_cm_fit = fitlgcm.amplitude;//parabolicFit(sampleT, sampleLGCM);
-      highGain_cm_fit = fithgcm.amplitude;//parabolicFit(sampleT, sampleHGCM);
+      
+      lowGain_fit = -1;//fitlg.amplitude;
+      highGain_fit = -1;//fithg.amplitude;
+      lowGain_cm_fit = fitlgcm.amplitude;
+      highGain_cm_fit = fithgcm.amplitude;
+  
+      /*
+      lowGain_fit = parabolicFit(sampleT, sampleLG);
+      highGain_fit = parabolicFit(sampleT, sampleHG);
+      lowGain_cm_fit = parabolicFit(sampleT, sampleLGCM);
+      highGain_cm_fit = parabolicFit(sampleT, sampleHGCM);
+      */
 
       tree_lg3_cm = cmMap[tree_skiroc].fullLG[3];
       tree_hg3_cm = cmMap[tree_skiroc].fullHG[3];
