@@ -275,16 +275,16 @@ void PedestalPlotter::endJob()
       float lgMean=iter->second.medianLG;
       float hgRMS=iter->second.rmsHG;
       float lgRMS=iter->second.rmsLG;
-      hgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgMean );
-      lgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgMean );
-      hgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgRMS );
-      lgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgRMS );
+      hgMeanMap[ 100*iboard+it ]->Fill(iux , iuy, hgMean );
+      lgMeanMap[ 100*iboard+it ]->Fill(iux , iuy, lgMean );
+      hgRMSMap[ 100*iboard+it ]->Fill(iux , iuy, hgRMS );
+      lgRMSMap[ 100*iboard+it ]->Fill(iux , iuy, lgRMS );
       if( m_writePedestalFile ){
 	pedestalHG << " " << hgMean << " " << hgRMS;
 	pedestalLG << " " << lgMean << " " << lgRMS;;
       }
     }
-    chanMap[ iboard ]->Fill(iux/2 , iuy, iski*1000+ichan );
+    chanMap[ iboard ]->Fill(iux , iuy, iski*1000+ichan );
     if( m_writePedestalFile ){
       pedestalHG << std::endl;
       pedestalLG << std::endl;
