@@ -85,6 +85,15 @@ public:
 	void setCellCenterCoordinate(float x, float y);
 
 	float getCellCenterCartesianCoordinate(int index);	//index of the access
+
+	void setUnderSaturationForHighGain(){ m_underSaturationHG=true; }
+	void setUnderSaturationForLowGain(){ m_underSaturationLG=true; }
+	bool isUnderSaturationForHighGain(){ return m_underSaturationHG; }
+	bool isUnderSaturationForLowGain(){ return m_underSaturationLG; }
+ private:
+	bool m_underSaturationHG;
+	bool m_underSaturationLG;
+	
 };
 
 std::ostream& operator<<(std::ostream& s, const HGCalTBRecHit& hit);

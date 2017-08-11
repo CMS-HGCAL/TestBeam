@@ -141,12 +141,12 @@ void RawHitPlotter::beginJob()
 	for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
 	  os.str("");
 	  os << "HighGain_Channel" << ichan << "_TS" << it ;
-	  htmp1=adcdir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,-500,3500);
+	  htmp1=adcdir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
 	  cif->h_adcHigh[it]=htmp1;
 
 	  os.str("");
 	  os << "LowGain_Channel" << ichan << "_TS" << it ;
-	  htmp1=adcdir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,-500,3500);
+	  htmp1=adcdir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
 	  cif->h_adcLow[it]=htmp1;
 	}
 	m_channelMap.insert( std::pair<int,channelInfo*>(key,cif) );
@@ -155,12 +155,12 @@ void RawHitPlotter::beginJob()
       for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
 	os.str("");
 	os << "HighGain_TS" << it ;
-	htmp1=cmdir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,-500,3500);
+	htmp1=cmdir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
 	m_h_cmHigh.insert( std::pair<int,TH1F*>(ib*1000+iski*100+it, htmp1) );
 
 	os.str("");
 	os << "LowGain_TS" << it ;
-	htmp1=cmdir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,-500,3500);
+	htmp1=cmdir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
 	m_h_cmLow.insert( std::pair<int,TH1F*>(ib*1000+iski*100+it, htmp1) );
       }
     }
