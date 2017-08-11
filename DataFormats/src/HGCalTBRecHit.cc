@@ -16,7 +16,9 @@ HGCalTBRecHit::HGCalTBRecHit(const DetId& id, float energy, float energyLow, flo
   _energyHigh(energyHigh),
   _energyTot(energyTot),
   cellCenter_x(0),
-  cellCenter_y(0)
+  cellCenter_y(0),
+  m_underSaturationHG(false),
+  m_underSaturationLG(false)
 {
 }
 
