@@ -9,6 +9,8 @@
 #include <ctime>
 #include <cmath>
 
+using namespace std;
+
 HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :
   edm::ProducerSourceFromFiles(pset, desc, true),
   m_electronicMap(pset.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers.txt")),
@@ -202,6 +204,7 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
       else{ 
 	HGCalTBDetId did = essource_.emap_.eid2detId(eid);
 	detids.push_back(did);
+//	cout<<endl<<" ski = "<<iski<<"  Chan = "<<ichan<<" Layer = "<<did.layer()<<" Sensor IU = "<< did.sensorIU()<<" Sensor IV = "<< did.sensorIV()<<" iu = "<< did.iu()<<" iv = "<<did.iv()<<endl;
       }
     }
     std::vector<uint16_t> vdata;vdata.insert(vdata.end(),m_decodedData.at(iski).begin(),m_decodedData.at(iski).end());

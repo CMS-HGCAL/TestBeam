@@ -31,7 +31,7 @@ print options
 if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
 
-electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"
+electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
 pedestalHighGain=options.outputFolder+"/pedestalHG_"+str(options.runNumber)+".txt"
 pedestalLowGain=options.outputFolder+"/pedestalLG_"+str(options.runNumber)+".txt"
 
@@ -53,7 +53,7 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             NumberOfBytesForTheTrailer=cms.untracked.uint32(4),
                             NumberOfBytesForTheEventTrailers=cms.untracked.uint32(4),
                             NSkipEvents=cms.untracked.uint32(0),
-                            ReadTXTForTiming=cms.untracked.bool(True),
+                            ReadTXTForTiming=cms.untracked.bool(False),
                             timingFiles=cms.vstring("%s/HexaData_Run%04d_TIMING_RDOUT_ORM0.txt"%(options.dataFolder,options.runNumber),
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM1.txt"%(options.dataFolder,options.runNumber),
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM2.txt"%(options.dataFolder,options.runNumber))
