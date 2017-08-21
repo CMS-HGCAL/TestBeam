@@ -106,7 +106,7 @@ private:
   double tree_hg3_cms, tree_hg0_cms; 
   double lowGain_fit, highGain_fit, lowGain_cm_fit, highGain_cm_fit;
   double tree_hg3_cm, tree_hg0_cm, tree_lg3_cm, tree_lg0_cm;
-  double tree_dwc1_x, tree_dwc1_y;
+  double tree_dwc_x_at_0, tree_dwc_y_at_0;
 
 
 };
@@ -186,8 +186,8 @@ void RawHitPlotter::beginJob()
   recHitsTree->Branch("highGain_fit", &highGain_fit);
   recHitsTree->Branch("lowGain_cm_fit", &lowGain_cm_fit);
   recHitsTree->Branch("highGain_cm_fit", &highGain_cm_fit);
-  recHitsTree->Branch("dwcE_x", &tree_dwc1_x);
-  recHitsTree->Branch("dwcE_y", &tree_dwc1_y);
+  recHitsTree->Branch("dwc_x_at_0", &tree_dwc_x_at_0);
+  recHitsTree->Branch("dwc_y_at_0", &tree_dwc_y_at_0);
 }
 
 void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
@@ -203,11 +203,21 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   edm::Handle<WireChambers> dwcs;
   event.getByToken(MWCToken, dwcs);
 
-  tree_dwc1_x = -999.;
-  tree_dwc1_y = -999.;
-  if (dwcs->at(0).goodMeasurement){
-    tree_dwc1_x = dwcs->at(0).x; 
-    tree_dwc1_y = dwcs->at(0).y; 
+  tree_dwc_x_at_0 = -999.;
+  tree_dwc_y_at_0 = -999.;
+  if (dwcs->at(0).goodMeasurement && dwcs->at(1).goodMeasurement){
+    double x1 = dwcs->at(0).x;
+    double x2 = dwcs->at(1).x;
+    double y1 = dwcs->at(0).y;
+    double y2 = dwcs->at(1).y;
+    double z1 = dwcs->at(0).z;
+    double z2 = dwcs->at(1).z;    
+
+    tree_dwc_x_at_0 = x1 - (x2-x1)/(z2-z1) * z1 ; 
+    tree_dwc_y_at_0 = y1 - (y2-y1)/(z2-z1) * z1 ; 
+  } else if (dwcs->at(0).goodMeasurement) {
+    tree_dwc_x_at_0 = dwcs->at(0).x;
+    tree_dwc_y_at_0 = dwcs->at(0).y;
   }
   
   edm::Handle<HGCalTBRawHitCollection> hits;
@@ -313,15 +323,25 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       tree_board = hit.skiroc()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
       tree_skiroc = hit.skiroc();
       tree_channel = hit.channel();
-      tree_lg3 = hit.lowGainADC(3);
-      tree_hg3 = hit.highGainADC(3);
-      tree_lg3_cms = hit.lowGainADC(3)-cmMap[tree_skiroc].fullLG[3];
-      tree_hg3_cms = hit.highGainADC(3)-cmMap[tree_skiroc].fullHG[3];
+      
+      tree_lg3 = tree_hg3 = tree_lg3_cms = tree_hg3_cms = 0;
+      for (size_t i=1; i<=3; i++) {
+        tree_lg3 += hit.lowGainADC(i);
+        tree_hg3 += hit.highGainADC(i);
+        tree_lg3_cms += hit.lowGainADC(i)-cmMap[tree_skiroc].fullLG[i];
+        tree_hg3_cms += hit.highGainADC(i)-cmMap[tree_skiroc].fullHG[i];
+      }
+      tree_lg3/=3;
+      tree_hg3/=3;
+      tree_lg3_cms/=3;
+      tree_hg3_cms/=3;
+      
       tree_lg0 = hit.lowGainADC(0);
       tree_hg0 = hit.highGainADC(0);
       tree_lg0_cms = hit.lowGainADC(0)-cmMap[tree_skiroc].fullLG[0];
       tree_hg0_cms = hit.highGainADC(0)-cmMap[tree_skiroc].fullHG[0];
     
+
       PulseFitter fitter(0,150);
       /*
       PulseFitterResult fithg;

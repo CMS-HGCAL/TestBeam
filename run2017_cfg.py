@@ -47,12 +47,23 @@ options.register('evaluatePedestal',
                  VarParsing.VarParsing.varType.bool,
                  'Boolean to set for pedestal evaluation')
 
+options.register('timingFile',
+                '',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'path to the timing file which is produced with chain sequence 0.')
 
 options.maxEvents = -1
+
+
 options.output = "cmsswEvents.root"
 
 options.parseArguments()
 print options
+
+#for the quick check for synchronisation
+if options.chainSequence==2:
+    options.maxEvents = 1000
 if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
 
@@ -94,8 +105,7 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             NumberOfOrmBoards=cms.untracked.uint32(1),
                             NSkipEvents=cms.untracked.uint32(0),
                             ReadTXTForTiming=cms.untracked.bool(False),
-                            timingFilePath=cms.untracked.string("")
-                            #timingFilePath=cms.untracked.string("/eos/user/t/tquast/data/Testbeam/July2017/Timing/HexaData_Run%s_TIMING_RDOUT_ORM0.txt" % options.runNumber)
+                            timingFilePath=cms.untracked.string(options.timingFile)
                             )
 
 
