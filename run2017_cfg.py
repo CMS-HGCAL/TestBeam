@@ -68,10 +68,6 @@ if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
 
 electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"
-pedestalToCreateHighGain="pedestalHG_"+str(options.runNumber)+".txt"
-pedestalToCreateLowGain="pedestalLG_"+str(options.runNumber)+".txt"
-pedestalToSubtractHighGain="pedestalHG_1197.txt"
-pedestalToSubtractLowGain="pedestalLG_1197.txt"
 
 
 ################################
@@ -102,12 +98,13 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             NumberOfBytesForTheHeader=cms.untracked.uint32(8 if options.runNumber<1241 else 12),          #for the new headers/trailers from run 1241 onward: 12
                             NumberOfBytesForTheTrailer=cms.untracked.uint32(4),         #for the new headers/trailers from run 1241 onward: 4
                             NumberOfBytesForTheEventTrailers=cms.untracked.uint32(4 if options.runNumber<1241 else 12),   #for the new headers/trailers from run 1241 onward: 12
-                            NumberOfOrmBoards=cms.untracked.uint32(1),
                             NSkipEvents=cms.untracked.uint32(0),
                             ReadTXTForTiming=cms.untracked.bool(False),
-                            timingFilePath=cms.untracked.string(options.timingFile)
+                            timingFilePath=cms.untracked.string(options.timingFile),
+                            timingFiles=cms.vstring("%s/HexaData_Run%04d_TIMING_RDOUT_ORM0.txt"%(options.dataFolder,options.runNumber),
+                                                    "%s/HexaData_Run%04d_TIMING_RDOUT_ORM1.txt"%(options.dataFolder,options.runNumber),
+                                                    "%s/HexaData_Run%04d_TIMING_RDOUT_ORM2.txt"%(options.dataFolder,options.runNumber))
                             )
-
 
 
 process.output = cms.OutputModule("PoolOutputModule",
@@ -149,7 +146,6 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         LowGainPedestalFileName=cms.string(pedestalLowGain)
                                         )
 
-
 process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
                                        MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers","unpack"),
@@ -188,7 +184,6 @@ process.options = cms.untracked.PSet(
 
 if options.chainSequence==0:
     process.p = cms.Path()
-
 if options.chainSequence==1:
     process.p = cms.Path( process.rawdataplotter*process.pedestalplotter )
 if options.chainSequence==2:

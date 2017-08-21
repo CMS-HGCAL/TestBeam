@@ -1,19 +1,18 @@
 #include "HGCal/Reco/plugins/HGCalTBRecHitProducer.h"
 #include "HGCal/Reco/interface/PulseFitter.h"
 #include "HGCal/Reco/interface/CommonMode.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
+
 #include <iostream>
 
-const static size_t N_SKIROC_PER_HEXA = 4;
-static const double deltaCellBoundary = 0.00001;
 const static int SENSORSIZE = 128;
-
 
 HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) : 
   m_outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
-  m_electronicMap(cfg.getUntrackedParameter<std::string>("ElectronicsMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
+  m_electronicMap(cfg.getUntrackedParameter<std::string>("ElectronicsMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt")),
   m_highGainADCSaturation(cfg.getUntrackedParameter<double>("HighGainADCSaturation",1800)),
   m_lowGainADCSaturation(cfg.getUntrackedParameter<double>("LowGainADCSaturation",1800)),
-  m_keepOnlyTimeSample3(cfg.getUntrackedParameter<bool>("KeepOnlyTimeSample3",true))
+  m_timeSample3ADCCut(cfg.getUntrackedParameter<double>("TimeSample3ADCCut",15))
 {
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
 
@@ -51,8 +50,9 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   for( auto rawhit : *rawhits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid) ) continue;
-    int iboard=(eid.iskiroc()-1)/N_SKIROC_PER_HEXA;
+    int iboard=rawhit.detid().layer()-1;
     int iski=eid.iskiroc();
+    //std::cout << iboard << " " << iski << std::endl;
 
     std::vector<double> sampleHG, sampleLG, sampleT;
 
@@ -105,8 +105,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     float en4=rawhit.highGainADC(4)-subHG[4];
     float en6=rawhit.highGainADC(6)-subHG[6];
     
-    if(!m_keepOnlyTimeSample3 && 
-       (en2<en3 && en3>en6 && en4>en6 && en3>20)){
+    if( en2<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
       PulseFitter fitter(0,150);
       PulseFitterResult fithg;
       fitter.run(sampleT, sampleHG, fithg);
@@ -119,13 +118,6 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       timeLG = fitlg.tmax - fitlg.trise;
       hgStatus = fithg.status;
       lgStatus = fitlg.status;
-    }
-    if(m_keepOnlyTimeSample3 && 
-       (en2<en3 && en3>en6 && en4>en6)){
-      highGain=rawhit.highGainADC(3)-subHG[3];
-      lowGain=rawhit.lowGainADC(3)-subLG[3];
-      hgStatus = 3;
-      lgStatus = 3;
     }
     if(hgStatus == -1 && lgStatus == -1){
       highGain=-500;
@@ -151,22 +143,19 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
       recHit.setFlag(HGCalTBRecHit::kGood);
     }
-    else if(hgStatus == 3 && lgStatus == 3){
-      energy = (highGain<m_highGainADCSaturation) ? highGain : lowGain * m_LG2HG_value.at(iboard);
-      recHit.setFlag(HGCalTBRecHit::kThirdSample);
-    }
     else {
       energy = -500;
     }
-
+    if( rawhit.isUnderSaturationForHighGain() ) recHit.setUnderSaturationForHighGain();
+    if( rawhit.isUnderSaturationForLowGain() ) recHit.setUnderSaturationForLowGain();
 
     recHit.setEnergy(energy);
     recHit.setTime(time);
 
     HGCalTBDetId detid = rawhit.detid();
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), SENSORSIZE );
-    double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + deltaCellBoundary) : (CellCentreXY.first - deltaCellBoundary);
-    double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + deltaCellBoundary) : (CellCentreXY.second - deltaCellBoundary);
+    double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA);
+    double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
     recHit.setCellCenterCoordinate(iux, iuy);
 
     rechits->push_back(recHit);

@@ -27,10 +27,8 @@
 #include "HGCal/Reco/interface/CommonMode.h"
 #include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h" 
-
 #include <iomanip>
 #include <set>
-
 
 #include "HGCal/Reco/interface/PulseFitter.h"
 double parabolicFit(std::vector<double> x, std::vector<double> y) {
@@ -47,9 +45,31 @@ double parabolicFit(std::vector<double> x, std::vector<double> y) {
 }
 
 
-
 #define MAXVERTICES 6
 static const double delta = 0.00001;//Add/subtract delta = 0.00001 to x,y of a cell centre so the TH2Poly::Fill doesnt have a problem at the edges where the centre of a half-hex cell passes through the sennsor boundary line.
+
+struct channelInfo{
+  channelInfo(){;}
+  void init(){
+    for(int i=0; i<NUMBER_OF_TIME_SAMPLES; i++){
+      meanHGMap[i]=0;
+      meanLGMap[i]=0;
+      rmsHGMap[i]=0;
+      rmsLGMap[i]=0;
+      counterHGMap[i]=0;
+      counterLGMap[i]=0;
+    }
+  }
+  int key;
+  float meanHGMap[NUMBER_OF_TIME_SAMPLES];
+  float meanLGMap[NUMBER_OF_TIME_SAMPLES];
+  float rmsHGMap[NUMBER_OF_TIME_SAMPLES];
+  float rmsLGMap[NUMBER_OF_TIME_SAMPLES];
+  int counterHGMap[NUMBER_OF_TIME_SAMPLES];
+  int counterLGMap[NUMBER_OF_TIME_SAMPLES];
+  TH1F* h_adcHigh[NUMBER_OF_TIME_SAMPLES];
+  TH1F* h_adcLow[NUMBER_OF_TIME_SAMPLES];
+};
 
 class RawHitPlotter : public edm::one::EDAnalyzer<edm::one::SharedResources>
 {
@@ -64,6 +84,7 @@ private:
   void InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV);
 
   std::string m_electronicMap;
+
   edm::EDGetTokenT<WireChambers> MWCToken;
   edm::EDGetTokenT<RunData> RunDataToken; 
 
@@ -77,15 +98,11 @@ private:
 
   int m_evtID;
   uint16_t m_numberOfBoards;
-  std::map<int,float> m_meanHGMap;
-  std::map<int,float> m_meanLGMap;
-  std::map<int,float> m_rmsHGMap;
-  std::map<int,float> m_rmsLGMap;
-  std::map<int,int> m_counterHGMap;
-  std::map<int,int> m_counterLGMap;
 
-  std::map<int,TH1F*> m_h_adcHigh;
-  std::map<int,TH1F*> m_h_adcLow;
+  std::map<int,channelInfo*> m_channelMap;
+
+  std::map<int,TH1F*> m_h_cmHigh;
+  std::map<int,TH1F*> m_h_cmLow;
 
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
 
@@ -94,8 +111,7 @@ private:
   std::vector<std::pair<double, double>> CellXY;
   std::pair<double, double> CellCentreXY;
   std::set< std::pair<int,HGCalTBDetId> > setOfConnectedDetId;
-
-
+  
   TTree* recHitsTree;
   int tree_board;
   int tree_skiroc;
@@ -108,7 +124,6 @@ private:
   double tree_hg3_cm, tree_hg0_cm, tree_lg3_cm, tree_lg0_cm;
   double tree_dwc_x_at_0, tree_dwc_y_at_0;
 
-
 };
 
 RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
@@ -116,37 +131,14 @@ RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
   m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
   m_subtractCommonMode(iConfig.getUntrackedParameter<bool>("SubtractCommonMode",false))
-{
-  usesResource("TFileService");
-  edm::Service<TFileService> fs;
-
+  {
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
   MWCToken = consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
   RunDataToken = consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
 
+
   m_evtID=0;
   
-  std::ostringstream os( std::ostringstream::ate );
-  TH1F* htmp1;
-  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
-    for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
-      os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
-      TFileDirectory dir = fs->mkdir( os.str().c_str() );
-      for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
-	for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-	  os.str("");
-	  os << "HighGain_Channel" << ichan << "_TS" << it ;
-	  htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,-500,3500);
-	  m_h_adcHigh.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+ichan*100+it, htmp1) );
-	  os.str("");
-	  os << "LowGain_Channel" << ichan << "_TS" << it ;
-	  htmp1=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,-500,3500);
-	  m_h_adcLow.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+ichan*100+it, htmp1) );
-	}
-      }
-    }
-  }
-
   std::cout << iConfig.dump() << std::endl;
 }
 
@@ -162,10 +154,54 @@ void RawHitPlotter::beginJob()
   edm::FileInPath fip(m_electronicMap);
   if (!io.load(fip.fullPath(), essource_.emap_)) {
     throw cms::Exception("Unable to load electronics map");
-  };  
+  };
 
   usesResource("TFileService");
   edm::Service<TFileService> fs;
+
+  std::ostringstream os( std::ostringstream::ate );
+  TH1F* htmp1;
+  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+    for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){ 
+      os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
+      TFileDirectory dir = fs->mkdir( os.str().c_str() );
+      TFileDirectory adcdir = dir.mkdir( "ADC" );
+      int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*(iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+      for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
+  HGCalTBElectronicsId eid(skiId,ichan);      
+  if( !essource_.emap_.existsEId(eid) ) continue;
+  int key=ib*1000+iski*100+ichan;
+  channelInfo *cif=new channelInfo();
+  cif->key=key;
+  cif->init();
+  for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+    os.str("");
+    os << "HighGain_Channel" << ichan << "_TS" << it ;
+    htmp1=adcdir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
+    cif->h_adcHigh[it]=htmp1;
+
+    os.str("");
+    os << "LowGain_Channel" << ichan << "_TS" << it ;
+    htmp1=adcdir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
+    cif->h_adcLow[it]=htmp1;
+  }
+  m_channelMap.insert( std::pair<int,channelInfo*>(key,cif) );
+      }
+      TFileDirectory cmdir = dir.mkdir( "CommonMode" );
+      for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+  os.str("");
+  os << "HighGain_TS" << it ;
+  htmp1=cmdir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
+  m_h_cmHigh.insert( std::pair<int,TH1F*>(ib*1000+iski*100+it, htmp1) );
+
+  os.str("");
+  os << "LowGain_TS" << it ;
+  htmp1=cmdir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
+  m_h_cmLow.insert( std::pair<int,TH1F*>(ib*1000+iski*100+it, htmp1) );
+      }
+    }
+  }
+
   recHitsTree = fs->make<TTree>("rawHitsTree", "rawHitsTree");
   recHitsTree->Branch("board", &tree_board);
   recHitsTree->Branch("skiroc", &tree_skiroc);
@@ -195,7 +231,6 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   usesResource("TFileService");
   edm::Service<TFileService> fs;
 
-
   edm::Handle<RunData> rd;
   event.getByToken(RunDataToken, rd);
   
@@ -219,7 +254,9 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     tree_dwc_x_at_0 = dwcs->at(0).x;
     tree_dwc_y_at_0 = dwcs->at(0).y;
   }
-  
+
+
+
   edm::Handle<HGCalTBRawHitCollection> hits;
   event.getByToken(m_HGCalTBRawHitCollection, hits);
   if( !hits->size() )
@@ -246,7 +283,19 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   CommonMode cm(essource_.emap_); //default is common mode per chip using the median
   cm.Evaluate( hits );
   std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
+  
 
+  for( std::map<int,commonModeNoise>::iterator it=cmMap.begin(); it!=cmMap.end(); ++it ){
+    int iski=(it->first-1)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    int ilayer=(it->first-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    int key=ilayer*1000+iski*100;
+    for( uint16_t ts=0; ts<NUMBER_OF_TIME_SAMPLES; ts++ ){
+      //m_h_cmHigh[key]->Fill( it->second.fullHG[ts] );
+      //m_h_cmLow[key]->Fill( it->second.fullLG[ts] );
+      key+=1;
+    }
+  }
+  
   for( auto hit : *hits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid) ) continue;
@@ -255,10 +304,11 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     int iski=hit.skiroc();
     std::pair<int,HGCalTBDetId> p( iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan,hit.detid() );
     setOfConnectedDetId.insert(p);
+    channelInfo* cif=m_channelMap[iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan];
     for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       float highGain,lowGain;
       if( m_subtractCommonMode ){
-    
+    iski = eid.iskiroc();
     float subHG(0),subLG(0);
     switch ( hit.detid().cellType() ){
     case 0 : subHG=cmMap[iski].fullHG[it]; subLG=cmMap[iski].fullLG[it]; break;
@@ -274,32 +324,17 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     lowGain=hit.lowGainADC(it);
       }
       iski=hit.skiroc();
-      uint32_t key=iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it;
       if( !hit.isUnderSaturationForHighGain() ){
-  m_h_adcHigh[iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it]->Fill(highGain);
-  if( m_meanHGMap.find(key)==m_meanHGMap.end() ){
-    m_meanHGMap[key]=highGain;
-    m_rmsHGMap[key]=highGain*highGain;
-    m_counterHGMap[key]=1;
-  }
-  else{
-    m_meanHGMap[key]+=highGain;
-    m_rmsHGMap[key]+=highGain*highGain;
-    m_counterHGMap[key]+=1;
-  }
+  cif->h_adcHigh[it]->Fill(highGain);
+  cif->meanHGMap[it]+=highGain;
+  cif->rmsHGMap[it]+=highGain*highGain;
+  cif->counterHGMap[it]+=1;
       }
       if( !hit.isUnderSaturationForLowGain() ){
-  m_h_adcLow[iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it]->Fill(lowGain);
-  if( m_meanLGMap.find(key)==m_meanLGMap.end() ){
-    m_meanLGMap[key]=lowGain;
-    m_rmsLGMap[key]=lowGain*lowGain;
-    m_counterLGMap[key]=1;
-  }
-  else{
-    m_meanLGMap[key]+=lowGain;
-    m_rmsLGMap[key]+=lowGain*lowGain;
-    m_counterLGMap[key]+=1;
-  }
+  cif->h_adcLow[it]->Fill(lowGain);
+  cif->meanLGMap[it]+=lowGain;
+  cif->rmsLGMap[it]+=lowGain*lowGain;
+  cif->counterLGMap[it]+=1;
       }
       if(!m_eventPlotter||!IsCellValid.iu_iv_valid(hit.detid().layer(),hit.detid().sensorIU(),hit.detid().sensorIV(),hit.detid().iu(),hit.detid().iv(),m_sensorsize))  continue;
       CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.detid().layer(),hit.detid().sensorIU(),hit.detid().sensorIV(),hit.detid().iu(),hit.detid().iv(),m_sensorsize);
@@ -311,6 +346,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     if (hit.detid().cellType()==0)  {  //only full cells for now
       std::vector<double> sampleLG, sampleHG, sampleLGCM, sampleHGCM, sampleT;
 
+      
       //seven time samples for fitting
       for (int i=0; i<7; i++) {
         sampleT.push_back(i*25.);
@@ -373,10 +409,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
 
       recHitsTree->Fill();
     }
-
   }
-
-
 }
 
 void RawHitPlotter::InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV)
@@ -390,9 +423,9 @@ void RawHitPlotter::InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int se
       assert(CellXY.size() == 4 || CellXY.size() == 6);
       unsigned int iVertex = 0;
       for(std::vector<std::pair<double, double>>::const_iterator it = CellXY.begin(); it != CellXY.end(); it++) {
-	HexX[iVertex] =  it->first;
-	HexY[iVertex] =  it->second;
-	++iVertex;
+  HexX[iVertex] =  it->first;
+  HexY[iVertex] =  it->second;
+  ++iVertex;
       }
       //Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
       poly.AddBin(CellXY.size(), HexX, HexY);
@@ -461,12 +494,12 @@ void RawHitPlotter::endJob()
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
     double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
     double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
+    channelInfo* cif=m_channelMap[iboard*1000+iski*100+ichan];
     for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      int key=iboard*100000+iski*10000+ichan*100+it;
-      float hgMean=m_meanHGMap[key]/m_counterHGMap[key];
-      float lgMean=m_meanLGMap[key]/m_counterLGMap[key];
-      float hgRMS=std::sqrt(m_rmsHGMap[key]/m_counterHGMap[key]-m_meanHGMap[key]/m_counterHGMap[key]*m_meanHGMap[key]/m_counterHGMap[key]);
-      float lgRMS=std::sqrt(m_rmsLGMap[key]/m_counterLGMap[key]-m_meanLGMap[key]/m_counterLGMap[key]*m_meanLGMap[key]/m_counterLGMap[key]);
+      float hgMean=cif->meanHGMap[it]/cif->counterHGMap[it];
+      float lgMean=cif->meanLGMap[it]/cif->counterLGMap[it];
+      float hgRMS=std::sqrt(cif->rmsHGMap[it]/cif->counterHGMap[it]-cif->meanHGMap[it]/cif->counterHGMap[it]*cif->meanHGMap[it]/cif->counterHGMap[it]);
+      float lgRMS=std::sqrt(cif->rmsLGMap[it]/cif->counterLGMap[it]-cif->meanLGMap[it]/cif->counterLGMap[it]*cif->meanLGMap[it]/cif->counterLGMap[it]);
       hgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgMean );
       lgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgMean );
       hgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgRMS );

@@ -122,11 +122,7 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
   for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
     for(size_t is = 0; is<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; is++) {
       for( size_t ic=0; ic<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ic++ ){
-	int skiId;
-	if( ib%2==0 )//not flipped
-	  skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*ib+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-is)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
-	else
-	  skiId = HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*ib+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-is%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA);
+	int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*ib+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-is)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
 	HGCalTBElectronicsId eid(skiId,ic);      
 	if (!essource_.emap_.existsEId(eid.rawId())) continue;
 	os.str("");
@@ -226,7 +222,7 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
       }
     }
   }
-  getchar();
+  //getchar();
   m_evtID++;
 }
 

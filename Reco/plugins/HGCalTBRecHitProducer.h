@@ -30,8 +30,8 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   std::string m_electronicMap;
   int m_highGainADCSaturation;
   int m_lowGainADCSaturation;
-  bool m_keepOnlyTimeSample3;
-
+  double m_timeSample3ADCCut;
+  
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
   std::vector<double> m_LG2HG_value;
   std::vector<double> m_TOT2LG_value;
