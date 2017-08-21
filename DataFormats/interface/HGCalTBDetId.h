@@ -64,12 +64,12 @@ public:
 	int sensorIU() const
 	{
 		uint32_t v = id_ >> kHGCalTBSensorXOffset;
-		return (v & kHGCalTBSensorXSignMask) ? (-(v & kHGCalTBSensorXMask)) : (v & kHGCalTBSensorXMask);
+		return (v & kHGCalTBSensorXSignMask) ? ((v & kHGCalTBSensorXMask) - kHGCalTBSensorXSignMask) : (v & kHGCalTBSensorXMask);
 	}
 	int sensorIV() const
 	{
 		uint32_t v = id_ >> kHGCalTBSensorVOffset;
-		return (v & kHGCalTBSensorVSignMask) ? (-(v & kHGCalTBSensorVMask)) : (v & kHGCalTBSensorVMask);
+		return (v & kHGCalTBSensorVSignMask) ? ((v & kHGCalTBSensorVMask) - kHGCalTBSensorVSignMask) : (v & kHGCalTBSensorVMask);
 	}
 
 	/// cell type
