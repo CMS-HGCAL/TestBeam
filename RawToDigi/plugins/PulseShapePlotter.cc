@@ -117,21 +117,25 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
   edm::Service<TFileService> fs;
   std::map<int,TH1F*>  hMapHG,hMapLG;
   std::ostringstream os( std::ostringstream::ate );
+  os.str("");
   os << "Event" << event.id().event();
   TFileDirectory dir = fs->mkdir( os.str().c_str() );
   for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
     for(size_t is = 0; is<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; is++) {
+      os.str("");
+      os << "Hexaboard" << ib << "_Skiroc" << is ;
+      TFileDirectory subdir = dir.mkdir( os.str().c_str() );
       for( size_t ic=0; ic<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ic++ ){
 	int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*ib+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-is)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
 	HGCalTBElectronicsId eid(skiId,ic);      
 	if (!essource_.emap_.existsEId(eid.rawId())) continue;
 	os.str("");
-	os<<"HexaBoard"<<ib<<"_Skiroc"<<is<<"_Channel"<<ic<<"_HG";
-	TH1F *hHG=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES,0,NUMBER_OF_TIME_SAMPLES*25);
+	os<<"HighGain_Channel"<<ic;
+	TH1F *hHG=subdir.make<TH1F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES,0,NUMBER_OF_TIME_SAMPLES*25);
 	hMapHG.insert( std::pair<int,TH1F*>(1000*ib+100*is+ic,hHG) );
 	os.str("");
-	os<<"HexaBoard"<<ib<<"_Skiroc"<<is<<"_Channel"<<ic<<"_LG";
-	TH1F* hLG=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES,0,NUMBER_OF_TIME_SAMPLES*25);
+	os<<"LowGain_Channel"<<ic;
+	TH1F* hLG=subdir.make<TH1F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES,0,NUMBER_OF_TIME_SAMPLES*25);
 	hMapLG.insert( std::pair<int,TH1F*>(1000*ib+100*is+ic,hLG) );
       }
     }
@@ -143,7 +147,7 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
   CommonMode cm(essource_.emap_); //default is common mode per chip using the median
   cm.Evaluate( hits );
   std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
-  PulseFitter fitter(1,150);
+  PulseFitter fitter(0,150);
   for( auto hit : *hits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
     if( essource_.emap_.existsEId(eid) ){
@@ -197,7 +201,7 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
       float en4=hit.highGainADC(4)-subHG[4];
       float en6=hit.highGainADC(6)-subHG[6];
       if( en2<en3 && en3>en6 && en4>en6 && en3>20 ){
-	std::cout << iboard << " " << hit.skiroc() << " " << ichan << "\t" << en2 << " " << en3 << " " << en4 << " " << en6 << std::endl;
+	std::cout << iboard << " " << iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA << " " << ichan << "\t" << en2 << " " << en3 << " " << en4 << " " << en6 << std::endl;
 	PulseFitterResult fithg;
 	fitter.run( time,hg,fithg,8. );
 	PulseFitterResult fitlg;
