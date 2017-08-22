@@ -18,7 +18,7 @@ options.register('runNumber',
                  'Input run to process')
 
 options.register('outputFolder',
-                 '/afs/cern.ch/work/a/asteen/public/data/july2017/',
+                 '/afs/cern.ch/work/r/rchatter/TestBeam_July_Fix/CMSSW_8_0_21/src/HGCal/',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output folder where analysis output are stored')
@@ -31,9 +31,10 @@ print options
 if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
 
-electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"
+electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
 pedestalHighGain="pedestalHG_"+str(options.runNumber)+".txt"
 pedestalLowGain="pedestalLG_"+str(options.runNumber)+".txt"
+noisyChannels="HGCal/CondObjects/data/noisyChannels.txt"
 
 ################################
 process = cms.Process("rawhitprod")
@@ -62,19 +63,26 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
                                         ElectronicMap=cms.untracked.string(electronicMap),
                                         SubtractPedestal=cms.untracked.bool(True),
-                                        HighGainPedestalFileName=cms.string(pedestalHighGain),
-                                        LowGainPedestalFileName=cms.string(pedestalLowGain)
+                                        MaskNoisyChannels=cms.untracked.bool(True),
+                                        HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
+                                        LowGainPedestalFileName=cms.untracked.string(pedestalLowGain),
+                                        ChannelsToMaskFileName=cms.untracked.string(noisyChannels)
 )
 
 process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
                                        ElectronicMap=cms.untracked.string(electronicMap),
                                        SensorSize=cms.untracked.int32(128),
-                                       EventPlotter=cms.untracked.bool(False),
+                                       EventPlotter=cms.untracked.bool(True),
                                        SubtractCommonMode=cms.untracked.bool(True)
 )
 
+process.pulseshapeplotter = cms.EDAnalyzer("PulseShapePlotter",
+                                           InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
+                                           ElectronicMap=cms.untracked.string(electronicMap)
+)
 
-process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
+
+process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )#*process.pulseshapeplotter )
 
 process.end = cms.EndPath(process.output)
