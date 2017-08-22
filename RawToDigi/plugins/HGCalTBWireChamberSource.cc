@@ -8,7 +8,7 @@ bool validTimestamp(int ts) {
 }
 
 HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :  edm::ProducerSourceFromFiles(pset, desc, true),
-	rootFile(NULL)
+	syncCounter(3, 0), rootFile(NULL)
 {
 	//find and fill the configured runs
 	outputCollectionName = pset.getParameter<std::string>("OutputCollectionName");
@@ -41,6 +41,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	channels=0;
 	dwc_timestamps=0;
 
+
 }
 
 void HGCalTBWireChamberSource::beginJob() {
@@ -62,7 +63,8 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 			nextFileIndex++;
 			fileCounter = -1;
 			rootFile->Close();
-			std::cout<<"Number of good (DWC) events: "<<goodEventCounter<<" / "<<eventCounter<<std::endl<<std::endl;
+			std::cout<<"Number of good (DWC) events: "<<goodEventCounter<<" / "<<eventCounter<<std::endl;
+			std::cout<<"Number of synchronised events: "<<syncCounter[0]<< " while "<<syncCounter[1]<<" are rejected of which "<<syncCounter[2]<<" with major discrepancy"<<std::endl<<std::endl;
 			ref_time_sync = ref_time_dwc = 0;
 		}
 
@@ -74,6 +76,7 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 		fileCounter = nextFileIndex;
 		rootTreeIndex = 0;
   		eventCounter = goodEventCounter = 0;
+		syncCounter[0] = syncCounter[1] =  syncCounter[2] = 0;
 
 		std::cout<<"Opening "<<fileNames()[fileCounter].c_str()<<std::endl;
 		std::cout<<"Run type "<<runType[fileCounter]<<std::endl;
@@ -273,23 +276,31 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 		double deltaTs = fabs((event_trigger_time[event_candidate_index]-ref_time_sync) - (timeSinceStart - ref_time_dwc));
 
 		#ifdef DEBUG
-			std::cout<<"Event: "<<event_candidate_index<<"  trigger: "<<n_trigger<<": "<<deltaTs<<std::endl;
+			std::cout<<"Event: "<<event_candidate_index<<"  trigger: "<<n_trigger<<": "<<deltaTs<<" = "<<(event_trigger_time[event_candidate_index]-ref_time_sync)<<" - "<<(timeSinceStart - ref_time_dwc)<<std::endl;
 		#endif
 
 		if ((deltaTs < triggerTimeDifferenceTolerance) ||  sumTriggerTimes[fileCounter]==-1){
 			rd->event = event_candidate_index;
+			/*
 			#ifdef DEBUG
 				std::cout<<"good x1: "<<dwc1->goodMeasurement_X<<"   good y1: "<<dwc1->goodMeasurement_Y<<"     good x2: "<<dwc2->goodMeasurement_X<<"   good y2: "<<dwc2->goodMeasurement_Y;
 				std::cout<<"   good x3: "<<dwc3->goodMeasurement_X<<"   good y3: "<<dwc3->goodMeasurement_Y<<"     good x4: "<<dwc4->goodMeasurement_X<<"   good y4: "<<dwc4->goodMeasurement_Y;
 				std::cout<<std::endl;
 			#endif
+			*/
 			if (rd->hasValidMWCMeasurement) goodEventCounter++;
+			syncCounter[0]++;
 		} else {
 			rd->event=-1;
+			syncCounter[1]++;
 		}
 
-		if (deltaTs > 200. && event_candidate_index != 1 && sumTriggerTimes[fileCounter]!=-1) {			//the first line is not used to test synchronisation since a time offset is present for the two streams.
-			throw cms::Exception("EventAsynch") << "Trigger time interval differs by more than 200ms. The files are likely not synchronised. ";
+		if (deltaTs > 200. && deltaTs<100000 && n_trigger != 1 && sumTriggerTimes[fileCounter]!=-1) {			//the first line is not used to test synchronisation since a time offset is present for the two streams.
+			//throw cms::Exception("EventAsynch") << "Trigger time interval differs by more than 200ms. The files are likely not synchronised. ";
+			#ifdef DEBUG
+				std::cout<<std::endl<<std::endl << "Trigger time interval differs by more than 200ms. The files are likely not synchronised. "<<std::endl<<std::endl<<std::endl;
+			#endif
+			syncCounter[2]++;
 		}
 
 		ref_time_sync = event_trigger_time[event_candidate_index]; 
@@ -333,13 +344,14 @@ void HGCalTBWireChamberSource::ReadTimingFile(std::string timingFilePath, bool s
 		}
 	}
 
+	/*
 	#ifdef DEBUG
 		std::map<int, int>::iterator it;
 		for (it=event_trigger_time.begin(); it!=event_trigger_time.end(); it++) {
 			std::cout<<it->first<<"  -  "<<it->second<<std::endl;
 		}
 	#endif
-	
+	*/
 	
 	
 }
