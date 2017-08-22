@@ -361,20 +361,6 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       tree_skiroc = hit.skiroc();
       tree_channel = hit.channel();
       
-      /*
-      tree_lg3 = tree_hg3 = tree_lg3_cms = tree_hg3_cms = 0;
-      for (size_t i=1; i<=3; i++) {
-        tree_lg3 += hit.lowGainADC(i);
-        tree_hg3 += hit.highGainADC(i);
-        tree_lg3_cms += hit.lowGainADC(i)-cmMap[tree_skiroc].fullLG[i];
-        tree_hg3_cms += hit.highGainADC(i)-cmMap[tree_skiroc].fullHG[i];
-      }
-      tree_lg3/=3;
-      tree_hg3/=3;
-      tree_lg3_cms/=3;
-      tree_hg3_cms/=3;
-      */
-
       tree_lg3 = hit.lowGainADC(3);
       tree_hg3 = hit.highGainADC(3);
       tree_lg3_cms = hit.lowGainADC(3)-cmMap[tree_skiroc].fullLG[3];
@@ -386,7 +372,6 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       tree_hg0_cms = hit.highGainADC(0)-cmMap[tree_skiroc].fullHG[0];
     
 
-      /*
       PulseFitter fitter(0,150);
       PulseFitterResult fithg;
       fitter.run(sampleT, sampleHG, fithg);
@@ -401,12 +386,13 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       highGain_fit = fithg.amplitude;
       lowGain_cm_fit = fitlgcm.amplitude;
       highGain_cm_fit = fithgcm.amplitude;
-      */
   
+      /*
       lowGain_fit = parabolicFit(sampleT, sampleLG);
       highGain_fit = parabolicFit(sampleT, sampleHG);
       lowGain_cm_fit = parabolicFit(sampleT, sampleLGCM);
       highGain_cm_fit = parabolicFit(sampleT, sampleHGCM);
+      */
 
       tree_lg3_cm = cmMap[tree_skiroc].fullLG[3];
       tree_hg3_cm = cmMap[tree_skiroc].fullHG[3];
