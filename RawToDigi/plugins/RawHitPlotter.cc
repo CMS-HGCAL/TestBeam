@@ -254,7 +254,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.detid().layer(),hit.detid().sensorIU(),hit.detid().sensorIV(),hit.detid().iu(),hit.detid().iv(),m_sensorsize);
       double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
       double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-      polyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, highGain);
+      polyMap[ 100*iboard+it ]->Fill(iux , iuy, highGain);
     }
   }
 }
@@ -347,10 +347,10 @@ void RawHitPlotter::endJob()
       float lgMean=cif->meanLGMap[it]/cif->counterLGMap[it];
       float hgRMS=std::sqrt(cif->rmsHGMap[it]/cif->counterHGMap[it]-cif->meanHGMap[it]/cif->counterHGMap[it]*cif->meanHGMap[it]/cif->counterHGMap[it]);
       float lgRMS=std::sqrt(cif->rmsLGMap[it]/cif->counterLGMap[it]-cif->meanLGMap[it]/cif->counterLGMap[it]*cif->meanLGMap[it]/cif->counterLGMap[it]);
-      hgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgMean );
-      lgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgMean );
-      hgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgRMS );
-      lgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgRMS );
+      hgMeanMap[ 100*iboard+it ]->Fill(iux , iuy, hgMean );
+      lgMeanMap[ 100*iboard+it ]->Fill(iux , iuy, lgMean );
+      hgRMSMap[ 100*iboard+it ]->Fill(iux , iuy, hgRMS );
+      lgRMSMap[ 100*iboard+it ]->Fill(iux , iuy, lgRMS );
     }
   }
 }

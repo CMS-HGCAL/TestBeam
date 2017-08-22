@@ -56,7 +56,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
     std::vector<double> sampleHG, sampleLG, sampleT;
 
-    float highGain, lowGain, totGain;
+    float highGain = -500, lowGain = -500, totGain;
     int hgStatus = -1;
     int lgStatus = -1;
     float timeHG = 0.;

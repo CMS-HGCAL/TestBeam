@@ -193,8 +193,8 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize);
       double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
       double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
-      polyMapHG[ (eid.iskiroc()-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA ]->Fill(iux/2 , iuy, hit.energyHigh());
-      polyMapLG[ (eid.iskiroc()-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA ]->Fill(iux/2 , iuy, hit.energyLow());
+      polyMapHG[ (eid.iskiroc()-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA ]->Fill(iux , iuy, hit.energyHigh());
+      polyMapLG[ (eid.iskiroc()-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA ]->Fill(iux , iuy, hit.energyLow());
     }
   }
   m_h_hgSum->Fill( energyHighSum );

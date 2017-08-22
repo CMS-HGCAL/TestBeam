@@ -168,7 +168,7 @@ void RawDataPlotter::analyze(const edm::Event& event, const edm::EventSetup& set
 	  CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
 	  double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
 	  double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
-	  polyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, skiroc.ADCHigh(ichan,it) );
+	  polyMap[ 100*iboard+it ]->Fill(iux , iuy, skiroc.ADCHigh(ichan,it) );
 	}
       }
     }
