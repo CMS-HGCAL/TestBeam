@@ -241,7 +241,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
 
   tree_dwc_x_at_0 = -999.;
   tree_dwc_y_at_0 = -999.;
-  if (dwcs->at(0).goodMeasurement && dwcs->at(1).goodMeasurement){
+  if (dwcs->at(0).goodMeasurement && dwcs->at(1).goodMeasurement && rd->run>=1333){
     double x1 = dwcs->at(0).x;
     double x2 = dwcs->at(1).x;
     double y1 = dwcs->at(0).y;
@@ -251,7 +251,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
 
     tree_dwc_x_at_0 = x1 - (x2-x1)/(z2-z1) * z1 ; 
     tree_dwc_y_at_0 = y1 - (y2-y1)/(z2-z1) * z1 ; 
-  } else if (dwcs->at(0).goodMeasurement) {
+  } else if (dwcs->at(0).goodMeasurement && rd->run<1333) {
     tree_dwc_x_at_0 = dwcs->at(0).x;
     tree_dwc_y_at_0 = dwcs->at(0).y;
   }
