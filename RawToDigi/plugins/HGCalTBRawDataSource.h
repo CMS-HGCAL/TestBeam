@@ -68,7 +68,7 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   unsigned int timeStopRun;
   
   unsigned int m_time;
-  unsigned int m_event, m_run, m_spill, m_trigger;
+  unsigned int m_event, m_run, m_spill, m_trigger, m_triggertime, m_triggertime_prev;
   int m_eventSize,m_nevents;
   unsigned int m_fileId;
   

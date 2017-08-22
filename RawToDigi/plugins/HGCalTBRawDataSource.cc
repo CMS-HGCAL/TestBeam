@@ -42,6 +42,8 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
 
   m_timingFiles=pset.getParameter< std::vector<std::string> >("timingFiles");
   
+  m_triggertime_prev = 0;
+
   std::cout << pset << std::endl;
 
 }
@@ -103,6 +105,13 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
     if( ormId != iorm )
       std::cout << "Problem in event trailer : wrong ORM id -> evtTrailer&0xff = " << std::dec << ormId << "\t iorm = " << iorm << std::endl;
     triggerNumber=evtTrailer>>0x8;
+
+    buf[0] = m_buffer[m_nWords*4+4];
+    buf[1] = m_buffer[m_nWords*4+5];
+    buf[2] = m_buffer[m_nWords*4+6];
+    buf[3] = m_buffer[m_nWords*4+7];
+    memcpy(&m_triggertime, &buf, sizeof(m_triggertime));
+  
     std::vector< std::array<uint16_t,1924> > decodedData=decode_raw_32bit(rawData);
     m_decodedData.insert(m_decodedData.end(),decodedData.begin(),decodedData.end());
   }
@@ -232,12 +241,15 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
     skirocs->swap(*emptycol);
   e.put(skirocs, m_outputCollectionName);
 
+  uint32_t trigger_time_diff = (m_triggertime > m_triggertime_prev) ? (m_triggertime - m_triggertime_prev) : (4294967295-m_triggertime_prev) + m_triggertime;
   #ifdef DEBUG
-    std::cout<<"event: "<<m_event<<"   trigger number ? "<<m_trigger<<std::endl;
+    std::cout<<"event: "<<m_event<<"   trigger number ? "<<m_trigger<<"   time: "<<trigger_time_diff<<std::endl;
   #endif
-  if (timingFile.is_open()) timingFile<<m_event<<"   "<<m_trigger<<"   "<<"   0000    0000"<<std::endl;
+  if (timingFile.is_open()) timingFile<<m_event<<"   "<<m_trigger<<"   "<<m_triggertime<<"   "<<trigger_time_diff<<std::endl;
 
   m_event++;
+  m_triggertime_prev = m_triggertime;
+
 
   //set the RunData
   std::auto_ptr<RunData> rd(new RunData);
