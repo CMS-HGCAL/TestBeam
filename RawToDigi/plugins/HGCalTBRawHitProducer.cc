@@ -6,8 +6,10 @@ HGCalTBRawHitProducer::HGCalTBRawHitProducer(const edm::ParameterSet& cfg) :
   m_electronicMap(cfg.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
   m_outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
   m_subtractPedestal(cfg.getUntrackedParameter<bool>("SubtractPedestal",false)),
-  m_pedestalHigh_filename(cfg.getParameter<std::string>("HighGainPedestalFileName")),
-  m_pedestalLow_filename(cfg.getParameter<std::string>("LowGainPedestalFileName")),
+  m_maskNoisyChannels(cfg.getUntrackedParameter<bool>("MaskNoisyChannels",false)),
+  m_pedestalHigh_filename(cfg.getUntrackedParameter<std::string>("HighGainPedestalFileName",std::string("pedestalHG.txt"))),
+  m_pedestalLow_filename(cfg.getUntrackedParameter<std::string>("LowGainPedestalFileName",std::string("pedestalLG.txt"))),
+  m_channelsToMask_filename(cfg.getUntrackedParameter<std::string>("ChannelsToMaskFileName","HGCal/CondObjects/data/noisyChannels.txt")),
   m_underSaturationADC(cfg.getUntrackedParameter<int>("UnderSaturationADC",4)),
   m_maxTimeSampleForSaturation(cfg.getUntrackedParameter<int>("MaxTimeSampleForSaturation",5))
 {
@@ -85,6 +87,29 @@ void HGCalTBRawHitProducer::beginJob()
       fclose (file);
     }
   }
+  
+  if( m_maskNoisyChannels ){
+    FILE* file;
+    char buffer[300];
+    //edm::FileInPath fip();
+    file = fopen (m_channelsToMask_filename.c_str() , "r");
+    if (file == NULL){ perror ("Error opening noisy channels file"); exit(1); }
+    else{
+      while ( ! feof (file) ){
+	if ( fgets (buffer , 300 , file) == NULL ) break;
+	const char* index = buffer;
+	int layer,skiroc,channel,ptr,nval;
+	nval=sscanf( index, "%d %d %d %n",&layer,&skiroc,&channel,&ptr );
+	int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*layer+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-skiroc)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+	if( nval==3 ){
+	  HGCalTBElectronicsId eid(skiId,channel);      
+	  if (essource_.emap_.existsEId(eid.rawId()))
+	    m_noisyChannels.push_back(eid.rawId());
+	}else continue;
+      }
+      fclose (file);
+    }
+  }
 }
 
 void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iSetup)
@@ -105,6 +130,10 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
       int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
       int iskiroc=iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+      int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*iboard+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iskiroc)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+      HGCalTBElectronicsId eid(skiId,ichan);
+      if( !essource_.emap_.existsEId(eid.rawId()) || std::find(m_noisyChannels.begin(),m_noisyChannels.end(),eid.rawId())!=m_noisyChannels.end() )
+	continue;
       unsigned int rawid=skiroc.detid(ichan).rawId();
       std::vector<float> adchigh(NUMBER_OF_SCA,0);
       std::vector<float> adclow(NUMBER_OF_SCA,0);

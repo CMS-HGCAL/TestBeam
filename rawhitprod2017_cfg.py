@@ -34,6 +34,7 @@ if not os.path.isdir(options.dataFolder):
 electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"
 pedestalHighGain="pedestalHG_"+str(options.runNumber)+".txt"
 pedestalLowGain="pedestalLG_"+str(options.runNumber)+".txt"
+noisyChannels="noisyChannels_"+str(options.runNumber)+".txt"
 
 ################################
 process = cms.Process("rawhitprod")
@@ -62,8 +63,10 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
                                         ElectronicMap=cms.untracked.string(electronicMap),
                                         SubtractPedestal=cms.untracked.bool(True),
-                                        HighGainPedestalFileName=cms.string(pedestalHighGain),
-                                        LowGainPedestalFileName=cms.string(pedestalLowGain)
+                                        MaskNoisyChannels=cms.untracked.bool(False),
+                                        HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
+                                        LowGainPedestalFileName=cms.untracked.string(pedestalLowGain),
+                                        ChannelsToMaskFileName=cms.untracked.string(noisyChannels)
 )
 
 process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
@@ -72,6 +75,11 @@ process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        SensorSize=cms.untracked.int32(128),
                                        EventPlotter=cms.untracked.bool(False),
                                        SubtractCommonMode=cms.untracked.bool(True)
+)
+
+process.pulseshapeplotter = cms.EDAnalyzer("PulseShapePlotter",
+                                           InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
+                                           ElectronicMap=cms.untracked.string(electronicMap)
 )
 
 
