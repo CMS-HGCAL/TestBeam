@@ -11,13 +11,14 @@ bool HGCalTBTopology::iu_iv_valid(int layer, int sensor_iu, int sensor_iv, int i
         int aiv = abs(iv);
         int iuc = (iv < 0) ? (-iu) : (iu);
 
-        int aIv = abs(sensor_iv);
-        int Iuc = (sensor_iv < 0)?(-sensor_iu):(sensor_iu);
+	int aIv = sensor_iv;
+        int Iuc = sensor_iu;
 
-        if(layer <= 28) Is_Valid_sensor_iu_iv = (Iuc == 0 && aIv == 0);
+	if(layer <= 4) Is_Valid_sensor_iu_iv = (Iuc == 0 && aIv == 0);
         else{
-                if(aIv == 0) Is_Valid_sensor_iu_iv = (Iuc >= -1 && Iuc <= 1);
-                else if(aIv == 1) Is_Valid_sensor_iu_iv = (Iuc >= -1 && Iuc <= 0);
+                if((Iuc == 1) && (aIv == -1) ) Is_Valid_sensor_iu_iv = 1;
+                else if((Iuc == 0) && (aIv == 0) ) Is_Valid_sensor_iu_iv = 1;
+                else if  ( (Iuc == 0) && (aIv == -1) ) Is_Valid_sensor_iu_iv = 1;
         }
 
 	if(layer <= 40 && Is_Valid_sensor_iu_iv) {
