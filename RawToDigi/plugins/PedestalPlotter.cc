@@ -23,8 +23,6 @@
 #include <iomanip>
 #include <set>
 
-using namespace std;
-
 struct hgcal_channel{
   hgcal_channel() : key(0),
 		    medianHG(0.),
@@ -117,7 +115,6 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
 
 //  if(m_evtID > 10) return;
 
-	cout<<endl<<" Reached Here "<<endl;
   if( !skirocs->size() ) return;
   
   for( size_t iski=0;iski<skirocs->size(); iski++ ){
@@ -306,12 +303,9 @@ void PedestalPlotter::endJob()
     }
     HGCalTBDetId detid=(*it).second;
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
-//    CellCentreXY = TheCell.GetCellCentreCoordinates( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
 	
     double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
     double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
-
-    cout<<endl<<" iboard = "<<iboard<<" IU = "<<detid.sensorIU()<<" IV = "<<detid.sensorIV()<<" iu = "<<detid.iu()<<" iv = "<<detid.iv()<<" X = "<<iux<<" Y = "<<iuy<<endl;
 
     for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
       int key=iboard*100000+iski*10000+ichan*100+it;

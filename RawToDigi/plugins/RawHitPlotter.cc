@@ -182,14 +182,30 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     std::ostringstream os( std::ostringstream::ate );
     os << "Event" << event.id().event();
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
+    int Board_IU = 0;
+    int Board_IV = 0;	
+    int Board_Layer = 0;
     for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+      Board_IU = 0;
+      Board_IV = 0;	
+      if( (ib == 6) || (ib == 9) ){
+	Board_IU = 0;
+	Board_IV = -1;
+      }
+      if( (ib == 5) || (ib == 8) ){
+        Board_IU = 1;
+        Board_IV = -1;
+      }
+      if(ib <= 3) Board_Layer = ib + 1;
+      else if( (ib == 4) || (ib == 5) || (ib == 6) ) Board_Layer = 5;
+      else if( (ib == 7) || (ib == 8) || (ib == 9) ) Board_Layer = 6;
       for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
 	TH2Poly *h=dir.make<TH2Poly>();
 	os.str("");
 	os<<"HexaBoard"<<ib<<"_TimeSample"<<it;
 	h->SetName(os.str().c_str());
 	h->SetTitle(os.str().c_str());
-	InitTH2Poly(*h, (int)ib, 0, 0);
+	InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
 	polyMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
       }
     }
@@ -291,7 +307,23 @@ void RawHitPlotter::endJob()
   std::map<int,TH2Poly*>  lgRMSMap;
   std::ostringstream os( std::ostringstream::ate );
   TH2Poly *h;
+  int Board_IU = 0;
+  int Board_IV = 0;	
+  int Board_Layer = 0;
   for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+    Board_IU = 0;
+    Board_IV = 0;	
+    if( (ib == 6) || (ib == 9) ){
+	Board_IU = 0;
+	Board_IV = -1;
+    }
+    if( (ib == 5) || (ib == 8) ){
+        Board_IU = 1;
+        Board_IV = -1;
+    }
+    if(ib <= 3) Board_Layer = ib + 1;
+    else if( (ib == 4) || (ib == 5) || (ib == 6) ) Board_Layer = 5;
+    else if( (ib == 7) || (ib == 8) || (ib == 9) ) Board_Layer = 6;
     os.str("");
     os << "HexaBoard" << ib ;
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
@@ -305,7 +337,7 @@ void RawHitPlotter::endJob()
       os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, (int)ib, 0, 0);
+      InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
       hgMeanMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
 
       h=lgpdir.make<TH2Poly>();
@@ -313,7 +345,7 @@ void RawHitPlotter::endJob()
       os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, (int)ib, 0, 0);
+      InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
       lgMeanMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
 
       h=hgndir.make<TH2Poly>();
@@ -321,7 +353,7 @@ void RawHitPlotter::endJob()
       os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, (int)ib, 0, 0);
+      InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
       hgRMSMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
 
       h=lgndir.make<TH2Poly>();
@@ -329,7 +361,7 @@ void RawHitPlotter::endJob()
       os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, (int)ib, 0, 0);
+      InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
       lgRMSMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
     }
   }
@@ -347,10 +379,10 @@ void RawHitPlotter::endJob()
       float lgMean=cif->meanLGMap[it]/cif->counterLGMap[it];
       float hgRMS=std::sqrt(cif->rmsHGMap[it]/cif->counterHGMap[it]-cif->meanHGMap[it]/cif->counterHGMap[it]*cif->meanHGMap[it]/cif->counterHGMap[it]);
       float lgRMS=std::sqrt(cif->rmsLGMap[it]/cif->counterLGMap[it]-cif->meanLGMap[it]/cif->counterLGMap[it]*cif->meanLGMap[it]/cif->counterLGMap[it]);
-      hgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgMean );
-      lgMeanMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgMean );
-      hgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, hgRMS );
-      lgRMSMap[ 100*iboard+it ]->Fill(iux/2 , iuy, lgRMS );
+      hgMeanMap[ 100*iboard+it ]->Fill(iux , iuy, hgMean );
+      lgMeanMap[ 100*iboard+it ]->Fill(iux , iuy, lgMean );
+      hgRMSMap[ 100*iboard+it ]->Fill(iux , iuy, hgRMS );
+      lgRMSMap[ 100*iboard+it ]->Fill(iux , iuy, lgRMS );
     }
   }
 }
