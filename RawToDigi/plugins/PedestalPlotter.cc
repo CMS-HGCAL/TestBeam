@@ -60,6 +60,8 @@ private:
   bool m_writePedestalFile;
   std::string m_pedestalHigh_filename;
   std::string m_pedestalLow_filename;
+  bool m_writeNoisyChannelFile;
+  std::string m_noisyChannels_filename;
   std::string m_electronicMap;
 
   int m_evtID;
@@ -80,6 +82,8 @@ PedestalPlotter::PedestalPlotter(const edm::ParameterSet& iConfig) :
   m_writePedestalFile(iConfig.getUntrackedParameter<bool>("WritePedestalFile",false)),
   m_pedestalHigh_filename( iConfig.getUntrackedParameter<std::string>("HighGainPedestalFileName",std::string("pedestalHG.txt")) ),
   m_pedestalLow_filename( iConfig.getUntrackedParameter<std::string>("LowGainPedestalFileName",std::string("pedestalLG.txt")) ),
+  m_writeNoisyChannelFile(iConfig.getUntrackedParameter<bool>("WriteNoisyChannelsFile",false)),
+  m_noisyChannels_filename( iConfig.getUntrackedParameter<std::string>("NoisyChannelsFileName",std::string("noisyChannels.txt")) ),
   m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers.txt"))
 {
   m_HGCalTBSkiroc2CMSCollection = consumes<HGCalTBSkiroc2CMSCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
@@ -286,6 +290,12 @@ void PedestalPlotter::endJob()
     pedestalHG.open(m_pedestalHigh_filename,std::ios::out);
     pedestalLG.open(m_pedestalLow_filename,std::ios::out);
   }
+  std::fstream noisyChannels;
+  if( m_writeNoisyChannelFile )
+    noisyChannels.open(m_noisyChannels_filename,std::ios::out);
+  std::map<int,double> meanNoise;
+  std::map<int,double> rmsNoise;
+  std::map<int,int> countNoise;
   for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
     int iboard=(*it).first/1000;
     int iski=((*it).first%1000)/100;
@@ -324,10 +334,45 @@ void PedestalPlotter::endJob()
       pedestalHG << std::endl;
       pedestalLG << std::endl;
     }
+    if( m_writeNoisyChannelFile ){
+      if( detid.cellType()!=0 && detid.cellType()!=5  && detid.cellType()!=4 )continue;
+      int key=iboard*100000+iski*10000+ichan*100;
+      std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
+      float hgRMS=iter->second.rmsHG;
+      if( meanNoise.find(iboard)==meanNoise.end() ){
+	meanNoise[iboard]=hgRMS;
+	rmsNoise[iboard]=hgRMS*hgRMS;
+	countNoise[iboard]=1;
+      }
+      else{
+	meanNoise[iboard]+=hgRMS;
+	rmsNoise[iboard]+=hgRMS*hgRMS;
+	countNoise[iboard]+=1;
+      }
+    }
   }
   if( m_writePedestalFile ){
     pedestalHG.close();
     pedestalLG.close();
+  }
+  if( m_writeNoisyChannelFile ){
+    for( std::map<int,double>::iterator it=meanNoise.begin(); it!=meanNoise.end(); ++it ){
+      meanNoise[ it->first ] = meanNoise[ it->first ]/countNoise[ it->first ];
+      rmsNoise[ it->first ] = std::sqrt( rmsNoise[ it->first ]/countNoise[ it->first ] - meanNoise[ it->first ]*meanNoise[ it->first ] );
+      std::cout << it->first/10 << " " << it->first%10 << " " << meanNoise[ it->first ] << " " << rmsNoise[ it->first ] << std::endl;
+    }
+    for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
+      HGCalTBDetId detid=(*it).second;
+      if( detid.cellType()!=0 && detid.cellType()!=5  && detid.cellType()!=4 )continue;
+      int iboard=(*it).first/1000;
+      int iski=((*it).first%1000)/100;
+      int ichan=(*it).first%100;
+      int key=iboard*100000+iski*10000+ichan*100;//we use SCA 0
+      std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
+      if( iter->second.rmsHG-meanNoise[iboard]>2*rmsNoise[iboard] )
+	noisyChannels << iboard << " " << iski << " " << ichan << std::endl;
+    }
+    noisyChannels.close();
   }
 }
 
