@@ -114,6 +114,7 @@ private:
   std::set< std::pair<int,HGCalTBDetId> > setOfConnectedDetId;
   
   TTree* recHitsTree;
+  int tree_run;
   int tree_board;
   int tree_skiroc;
   int tree_channel;
@@ -124,6 +125,7 @@ private:
   double lowGain_fit, highGain_fit, lowGain_cm_fit, highGain_cm_fit;
   double tree_hg3_cm, tree_hg0_cm, tree_lg3_cm, tree_lg0_cm;
   double tree_dwc_x_at_0, tree_dwc_y_at_0;
+  double tree_dwc_mx, tree_dwc_bx, tree_dwc_my, tree_dwc_by;
 
 };
 
@@ -204,6 +206,7 @@ void RawHitPlotter::beginJob()
   }
 
   recHitsTree = fs->make<TTree>("rawHitsTree", "rawHitsTree");
+  recHitsTree->Branch("run", &tree_run);
   recHitsTree->Branch("board", &tree_board);
   recHitsTree->Branch("skiroc", &tree_skiroc);
   recHitsTree->Branch("channel", &tree_channel);
@@ -225,6 +228,10 @@ void RawHitPlotter::beginJob()
   recHitsTree->Branch("highGain_cm_fit", &highGain_cm_fit);
   recHitsTree->Branch("dwc_x_at_0", &tree_dwc_x_at_0);
   recHitsTree->Branch("dwc_y_at_0", &tree_dwc_y_at_0);
+  recHitsTree->Branch("dwc_mx", &tree_dwc_mx);
+  recHitsTree->Branch("dwc_bx", &tree_dwc_bx);
+  recHitsTree->Branch("dwc_my", &tree_dwc_my);
+  recHitsTree->Branch("dwc_by", &tree_dwc_by);
 }
 
 void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
@@ -234,14 +241,27 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
 
   edm::Handle<RunData> rd;
   event.getByToken(RunDataToken, rd);
-  
+  tree_run = rd->run;
+
   //get the multi wire chambers
   edm::Handle<WireChambers> dwcs;
   event.getByToken(MWCToken, dwcs);
 
-  tree_dwc_x_at_0 = -999.;
-  tree_dwc_y_at_0 = -999.;
-  if (dwcs->at(0).goodMeasurement && dwcs->at(1).goodMeasurement && rd->run>=1251){
+  tree_dwc_x_at_0 = tree_dwc_y_at_0 = -999.;
+  tree_dwc_mx = tree_dwc_my = -999.;
+  tree_dwc_bx = tree_dwc_by = -999.;
+  
+  if (dwcs->at(0).goodMeasurement) {
+    tree_dwc_mx = tree_dwc_my = 0.;
+    tree_dwc_bx = dwcs->at(0).x;
+    tree_dwc_by = dwcs->at(0).y;
+  } else if (dwcs->at(1).goodMeasurement) {
+    tree_dwc_mx = tree_dwc_my = 0.;
+    tree_dwc_bx = dwcs->at(1).x;
+    tree_dwc_by = dwcs->at(1).y;
+  }
+
+  if (dwcs->at(0).goodMeasurement && dwcs->at(1).goodMeasurement){
     double x1 = dwcs->at(0).x;
     double x2 = dwcs->at(1).x;
     double y1 = dwcs->at(0).y;
@@ -249,12 +269,14 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     double z1 = dwcs->at(0).z;
     double z2 = dwcs->at(1).z;    
 
-    tree_dwc_x_at_0 = x1 - (x2-x1)/(z2-z1) * z1 ; 
-    tree_dwc_y_at_0 = y1 - (y2-y1)/(z2-z1) * z1 ; 
-  } else if (dwcs->at(0).goodMeasurement && rd->run<1251) {
-    tree_dwc_x_at_0 = dwcs->at(0).x;
-    tree_dwc_y_at_0 = dwcs->at(0).y;
-  }
+    tree_dwc_mx = (x2-x1)/(z2-z1);
+    tree_dwc_my = (y2-y1)/(z2-z1);
+    tree_dwc_bx = x1 - tree_dwc_mx * z1 ; 
+    tree_dwc_by = y1 - tree_dwc_my * z1 ; 
+  } 
+
+  tree_dwc_x_at_0 = tree_dwc_bx;
+  tree_dwc_y_at_0 = tree_dwc_by;
 
 
 
@@ -349,7 +371,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
 
       
       //seven time samples for fitting
-      for (int i=2; i<5; i++) {
+      for (int i=0; i<7; i++) {
         sampleT.push_back(i*25.);
         sampleLG.push_back(hit.lowGainADC(i));
         sampleHG.push_back(hit.highGainADC(i));
@@ -371,28 +393,33 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       tree_lg0_cms = hit.lowGainADC(0)-cmMap[tree_skiroc].fullLG[0];
       tree_hg0_cms = hit.highGainADC(0)-cmMap[tree_skiroc].fullHG[0];
     
-
+      //pulse fitting
       PulseFitter fitter(0,150);
-      PulseFitterResult fithg;
-      fitter.run(sampleT, sampleHG, fithg);
-      PulseFitterResult fitlg;
-      fitter.run(sampleT, sampleLG, fitlg);
-      PulseFitterResult fithgcm;
-      fitter.run(sampleT, sampleHGCM, fithgcm);
-      PulseFitterResult fitlgcm;
-      fitter.run(sampleT, sampleLGCM, fitlgcm);
+      lowGain_cm_fit = highGain_cm_fit = lowGain_fit = highGain_fit = 9999.;
       
-      lowGain_fit = fitlg.amplitude;
-      highGain_fit = fithg.amplitude;
-      lowGain_cm_fit = fitlgcm.amplitude;
-      highGain_cm_fit = fithgcm.amplitude;
-  
-      /*
-      lowGain_fit = parabolicFit(sampleT, sampleLG);
-      highGain_fit = parabolicFit(sampleT, sampleHG);
-      lowGain_cm_fit = parabolicFit(sampleT, sampleLGCM);
-      highGain_cm_fit = parabolicFit(sampleT, sampleHGCM);
-      */
+      //high gain fit
+      float en0=hit.highGainADC(0)-cmMap[tree_skiroc].fullHG[0];
+      float en3=hit.highGainADC(3)-cmMap[tree_skiroc].fullHG[3];
+      float en6=hit.highGainADC(6)-cmMap[tree_skiroc].fullHG[6];
+      if( en0<en3 && en3>en6){
+        PulseFitterResult fithgcm;
+        fitter.run(sampleT, sampleHGCM, fithgcm);
+        if (fithgcm.status==0) {
+          highGain_cm_fit = fithgcm.amplitude;
+        }
+      }
+
+      //low gain fit
+      en0=hit.lowGainADC(0)-cmMap[tree_skiroc].fullLG[0];
+      en3=hit.lowGainADC(3)-cmMap[tree_skiroc].fullLG[3];
+      en6=hit.lowGainADC(6)-cmMap[tree_skiroc].fullLG[6];
+      if( en0<en3 && en3>en6){
+        PulseFitterResult fitlgcm;
+        fitter.run(sampleT, sampleLGCM, fitlgcm);
+        if (fitlgcm.status==0) {
+          lowGain_cm_fit = fitlgcm.amplitude;
+        }
+      }
 
       tree_lg3_cm = cmMap[tree_skiroc].fullLG[3];
       tree_hg3_cm = cmMap[tree_skiroc].fullHG[3];
