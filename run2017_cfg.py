@@ -61,9 +61,6 @@ options.output = "cmsswEvents.root"
 options.parseArguments()
 print options
 
-#for the quick check for synchronisation
-if options.chainSequence==2:
-    options.maxEvents = -1
 if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
 
