@@ -61,7 +61,8 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   unsigned int m_eventTrailerSize;
   unsigned int m_nOrmBoards;
   unsigned int m_nSkipEvents;
-  bool m_readTXTForTiming;
+  unsigned int m_dataFormats; //0 when time stamps were save in separated .txt files, 1 since the timestamp are saved in the raw data
+  bool m_readTimeStamps;
   
   unsigned int timeStartRun;
   unsigned int timeStopRun;
@@ -84,6 +85,6 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
     HGCalElectronicsMap emap_;
   } essource_;
 
-  /* float m_meanReadingTime; */
-  /* float m_rmsReadingTime; */
+  void readTimeStampFromTXT();
+  void readTimeStampFromRAW();
 };
