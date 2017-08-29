@@ -97,7 +97,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       sampleHG.push_back(rawhit.highGainADC(it)-subHG[it]);
       sampleLG.push_back(rawhit.lowGainADC(it)-subLG[it]);
-      sampleT.push_back(25*it);
+      sampleT.push_back(25*it+12.5);
     }
     //this is a just try to isolate hits with signal
     float en2=rawhit.highGainADC(2)-subHG[2];
@@ -119,32 +119,32 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       hgStatus = fithg.status;
       lgStatus = fitlg.status;
     }
-    if(hgStatus == -1 && lgStatus == -1){
-      highGain=-500;
-      lowGain=-500;
-    }
+    if(hgStatus != 0)
+      highGain=0;
+    if(lgStatus != 0)
+      lowGain=0;
     
     float energy = -1;
     float time = -1.;
     HGCalTBRecHit recHit(rawhit.detid(), energy, lowGain, highGain, totGain, time);
-    if(highGain < m_highGainADCSaturation && hgStatus == 0){
+    if(rawhit.highGainADC(3) < m_highGainADCSaturation && hgStatus == 0){
       energy = highGain;
       time = timeHG;
       recHit.setFlag(HGCalTBRecHit::kGood);
     }     
-    else if(lowGain < m_lowGainADCSaturation && hgStatus == 0 && lgStatus == 0){
+    else if(rawhit.lowGainADC(3)-subHG[3] < m_lowGainADCSaturation && lgStatus == 0){
       energy = lowGain * m_LG2HG_value.at(iboard);
       time = timeLG;
       recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
       recHit.setFlag(HGCalTBRecHit::kGood);
     }
-    else if(hgStatus == 0 && lgStatus == 0 && totGain > 50){
+    else if(totGain > 50){
       energy = totGain * m_TOT2LG_value.at(iboard) * m_LG2HG_value.at(iboard);
       recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
       recHit.setFlag(HGCalTBRecHit::kGood);
     }
     else {
-      energy = -500;
+      energy = 0;
     }
     if( rawhit.isUnderSaturationForHighGain() ) recHit.setUnderSaturationForHighGain();
     if( rawhit.isUnderSaturationForLowGain() ) recHit.setUnderSaturationForLowGain();

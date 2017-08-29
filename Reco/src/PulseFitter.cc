@@ -1,10 +1,12 @@
 #include <HGCal/Reco/interface/PulseFitter.h>
 
+#include <limits>
+
 #include <Math/Minimizer.h>
 #include <Math/Factory.h>
 #include <Math/Functor.h>
 
-double _time[13],_energy[13];double _maxTime=225.; //seems to be mandatory since we need static function
+double _time[7],_energy[7];double _maxTime=225.; //seems to be mandatory since we need static function
 double _alpha=10.;
 double _trise=50.;
 double _noise=8.;
@@ -16,7 +18,7 @@ double pulseShape_fcn(double t, double tmax, double amp)
 double pulseShape_chi2(const double *x)
 {
   double sum = 0.0;
-  for(size_t i=0; i<13; i++){
+  for(size_t i=0; i<7; i++){
     if( _energy[i]<0 || _time[i]>_maxTime ) continue;
     double zero = _energy[i]-pulseShape_fcn( _time[i],
 					     x[0],x[1] );
@@ -25,7 +27,7 @@ double pulseShape_chi2(const double *x)
   return sum;
 }
 
-PulseFitter::PulseFitter( int printLevel, double maxTime , double alpha , double trise ) : _printLevel(printLevel)
+PulseFitter::PulseFitter( int printLevel, double maxTime , double alpha , double trise ) : m_printLevel(printLevel)
 {							     
   _maxTime=maxTime;
   _alpha=alpha;
@@ -38,35 +40,34 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
     std::cout << "ERROR : we should have the same vector size in PulseFitter::run(std::vector<double> time, std::vector<double> energy, PulseFitterResult fit) -> return without fitting" << std::endl;
     return;
   }
-  if( time.size()>13 ){
+  if( time.size()!=11 ){
     std::cout << "ERROR : we should have less than 13 time sample in PulseFitter::run(std::vector<double> time, std::vector<double> energy, PulseFitterResult fit) -> return without fitting" << std::endl;
     return;
   }
-  for( uint16_t i=0; i<time.size(); i++ ){
+  for( uint16_t i=0; i<7; i++ ){
     _time[i] = time[i];
     _energy[i] = energy[i];
   }
-  for( uint16_t i=time.size(); i<13; i++ )
-    _time[i] = _maxTime+1;
 
   if( noise>0 )
     _noise=noise;
   
   ROOT::Math::Minimizer* m = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
-  m->SetMaxFunctionCalls(100);
-  m->SetMaxIterations(100);
+  m->SetMaxFunctionCalls(m_fitterParameter.nMaxIterations);
+  m->SetMaxIterations(m_fitterParameter.nMaxIterations);
   m->SetTolerance(0.001);
-  //default parameters from tutorials
-  m->SetPrintLevel(_printLevel);
+  m->SetPrintLevel(m_printLevel);
   ROOT::Math::Functor f(&pulseShape_chi2, 2);
 
   m->SetFunction(f);
 
   m->Clear(); // just a precaution
 
-  m->SetVariable(0, "tmax", 100., 0.1);
-  m->SetVariableLimits(0,50,150);
-  m->SetVariable(1, "amp", _energy[3], 0.1);
+  m->SetVariable(0, "tmax", m_fitterParameter.tmax0, 0.001);
+  m->SetVariableLimits(0,
+		       m_fitterParameter.tmaxRangeDown,
+		       m_fitterParameter.tmaxRangeUp);
+  m->SetVariable(1, "amp", _energy[3], 0.001);
   m->SetVariableLimits(1,0,10000);
 
   m->Minimize();
@@ -79,6 +80,7 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   fit.errortmax=errors[0];
   fit.erroramplitude=errors[1];
   fit.chi2=m->MinValue();
-  fit.status=m->Status();
+  fit.status=(fabs(xm[0]-m_fitterParameter.tmaxRangeDown)>std::numeric_limits<double>::epsilon()&&
+	      fabs(xm[0]-m_fitterParameter.tmaxRangeUp)>std::numeric_limits<double>::epsilon()) ? m->Status() : 4;
   fit.ncalls=m->NCalls();
 }

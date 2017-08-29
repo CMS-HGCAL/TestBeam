@@ -49,6 +49,7 @@ private:
   int m_evtID;
   int m_channelID;
   int m_skirocID;
+  int m_layerID;
   float m_hgADC;
   float m_hgTmax;
   float m_hgChi2;
@@ -76,8 +77,9 @@ PulseShapePlotter::PulseShapePlotter(const edm::ParameterSet& iConfig) :
   edm::Service<TFileService> fs;
   m_tree=fs->make<TTree>("tree","Pulse shape fitter results");
   m_tree->Branch("eventID",&m_evtID);
-  m_tree->Branch("skirocID",&m_channelID);
-  m_tree->Branch("channelID",&m_skirocID);
+  m_tree->Branch("skirocID",&m_skirocID);
+  m_tree->Branch("boardID",&m_layerID);
+  m_tree->Branch("channelID",&m_channelID);
   m_tree->Branch("HighGainADC",&m_hgADC);
   m_tree->Branch("HighGainTmax",&m_hgTmax);
   m_tree->Branch("HighGainChi2",&m_hgChi2);
@@ -192,7 +194,7 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
 	lowGain=hit.lowGainADC(it)-subLG[it];
 	hg.push_back(highGain);
 	lg.push_back(lowGain);
-	time.push_back(25*it);
+	time.push_back(25*it+12.5);
 	hMapHG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->Fill(25*it,highGain);
 	hMapLG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->Fill(25*it,lowGain);
       }
@@ -201,13 +203,14 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
       float en4=hit.highGainADC(4)-subHG[4];
       float en6=hit.highGainADC(6)-subHG[6];
       if( en2<en3 && en3>en6 && en4>en6 && en3>20 ){
-	std::cout << iboard << " " << iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA << " " << ichan << "\t" << en2 << " " << en3 << " " << en4 << " " << en6 << std::endl;
+	//std::cout << iboard << " " << iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA << " " << ichan << "\t" << en2 << " " << en3 << " " << en4 << " " << en6 << std::endl;
 	PulseFitterResult fithg;
 	fitter.run( time,hg,fithg,8. );
 	PulseFitterResult fitlg;
 	fitter.run( time,lg,fitlg,2. );
 	m_channelID=ichan;
-	m_skirocID=iski;
+	m_skirocID=iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+	m_layerID=iboard;
 	m_hgADC=fithg.amplitude;
 	m_hgTmax=fithg.tmax;
 	m_hgChi2=fithg.chi2;

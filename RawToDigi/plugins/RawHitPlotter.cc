@@ -130,7 +130,7 @@ void RawHitPlotter::beginJob()
       os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
       TFileDirectory dir = fs->mkdir( os.str().c_str() );
       TFileDirectory adcdir = dir.mkdir( "ADC" );
-      int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*(iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+      int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*ib+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
       for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
 	HGCalTBElectronicsId eid(skiId,ichan);      
 	if( !essource_.emap_.existsEId(eid) ) continue;
@@ -225,7 +225,6 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       key+=1;
     }
   }
-  
   for( auto hit : *hits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid) ) continue;
@@ -270,7 +269,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.detid().layer(),hit.detid().sensorIU(),hit.detid().sensorIV(),hit.detid().iu(),hit.detid().iv(),m_sensorsize);
       double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
       double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-      polyMap[ 100*iboard+it ]->Fill(iux/2 , iuy, highGain);
+      polyMap[ 100*iboard+it ]->Fill(iux , iuy, highGain);
     }
   }
 }
