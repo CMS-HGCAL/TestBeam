@@ -118,10 +118,11 @@ void RecHitPlotter::beginJob()
       TFileDirectory dir = fs->mkdir( os.str().c_str() );
       for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
 	int skiId=ib*HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
-	HGCalTBElectronicsId eid(skiId,ichan);      
+	HGCalTBElectronicsId eid(skiId,ichan);
 	if( !essource_.emap_.existsEId(eid.rawId()) ) continue;
+	HGCalTBDetId detid=essource_.emap_.eid2detId(eid.rawId());
 	channelInfo *chan=new channelInfo();
-	chan->key=ib*1000+iski*100+ichan;
+	chan->key=detid.layer()*10000+skiId*100+ichan;
 	os.str("");
 	os << "HighGain_Channel" << ichan  ;
 	chan->h_adcHigh=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),3600,-100,3500);
@@ -132,6 +133,9 @@ void RecHitPlotter::beginJob()
 	os << "HighGainVsLowGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan;
 	chan->h_high_vs_low=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),360,-100,3500,400,-500,3500);
 	m_channelInfoMap.insert( std::pair<uint32_t,channelInfo*>(chan->key,chan) );
+	std::cout << chan->key << "\t" << detid.layer()<< " " << iski << " " << eid.ichan() << " "
+		  << eid.iskiroc() 
+		  << std::endl;
       }
     }
   }
@@ -151,20 +155,36 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     std::ostringstream os( std::ostringstream::ate );
     os << "Event" << event.id().event();
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
+    int Board_IU = 0;
+    int Board_IV = 0;	
+    int Board_Layer = 0;
     for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+      Board_IU = 0;
+      Board_IV = 0;	
+      if( (ib == 6) || (ib == 9) ){
+	Board_IU = 0;
+	Board_IV = -1;
+      }
+      if( (ib == 5) || (ib == 8) ){
+        Board_IU = 1;
+        Board_IV = -1;
+      }
+      if(ib <= 3) Board_Layer = ib + 1;
+      else if( (ib == 4) || (ib == 5) || (ib == 6) ) Board_Layer = 5;
+      else if( (ib == 7) || (ib == 8) || (ib == 9) ) Board_Layer = 6;
       TH2Poly *h=dir.make<TH2Poly>();
       os.str("");
       os<<"HexaBoard"<<ib<<"_HighGain";
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, (int)ib, 0, 0);
+      InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
       polyMapHG.insert( std::pair<int,TH2Poly*>(ib,h) );
       h=dir.make<TH2Poly>();
       os.str("");
       os<<"HexaBoard"<<ib<<"_LowGain";
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, (int)ib, 0, 0);
+      InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
       polyMapLG.insert( std::pair<int,TH2Poly*>(ib,h) );
     }
   }
@@ -173,10 +193,10 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   for( auto hit : *hits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid( hit.id().rawId() ) );
     int iski=(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-(eid.iskiroc()-1)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-    int key=(hit.id().layer()-1)*1000+iski*100+eid.ichan();
+    int key=hit.id().layer()*10000+eid.iskiroc()*100+eid.ichan();
     if( m_channelInfoMap.find(key)==m_channelInfoMap.end() )
-      std::cout << key << "\t" << hit.id().layer()<< " " << iski << " " << eid.ichan() << " "
-		<< (eid.iskiroc()-1)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA 
+      std::cout << key << "\t" << hit.id().layer()-1<< " " << iski << " " << eid.ichan() << " "
+		<< eid.iskiroc() 
 		<< std::endl;
     if( !hit.isUnderSaturationForHighGain() ) m_channelInfoMap[ key ]->h_adcHigh->Fill( hit.energyHigh() );
     if( !hit.isUnderSaturationForLowGain() ) m_channelInfoMap[ key ]->h_adcLow->Fill( hit.energyLow() );
@@ -193,8 +213,8 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize);
       double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
       double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
-      polyMapHG[ (eid.iskiroc()-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA ]->Fill(iux/2 , iuy, hit.energyHigh());
-      polyMapLG[ (eid.iskiroc()-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA ]->Fill(iux/2 , iuy, hit.energyLow());
+      polyMapHG[ (eid.iskiroc()-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA ]->Fill(iux , iuy, hit.energyHigh());
+      polyMapLG[ (eid.iskiroc()-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA ]->Fill(iux , iuy, hit.energyLow());
     }
   }
   m_h_hgSum->Fill( energyHighSum );
