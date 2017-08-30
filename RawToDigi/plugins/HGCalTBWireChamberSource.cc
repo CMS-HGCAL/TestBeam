@@ -279,7 +279,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 			std::cout<<"Event: "<<event_candidate_index<<"  trigger: "<<n_trigger<<": "<<deltaTs<<" = "<<(event_trigger_time[event_candidate_index]-ref_time_sync)<<" - "<<(timeSinceStart - ref_time_dwc)<<std::endl;
 		#endif
 
-		if ((deltaTs < triggerTimeDifferenceTolerance) ||  sumTriggerTimes[fileCounter]==-1){
+		if ((deltaTs <= triggerTimeDifferenceTolerance) ||  sumTriggerTimes[fileCounter]==-1){
 			rd->event = event_candidate_index;
 			/*
 			#ifdef DEBUG
