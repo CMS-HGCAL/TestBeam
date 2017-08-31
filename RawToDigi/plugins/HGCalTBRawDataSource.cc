@@ -20,16 +20,14 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   m_trailerSize(pset.getUntrackedParameter<unsigned int> ("NumberOfBytesForTheTrailer",4)),
   m_eventTrailerSize(pset.getUntrackedParameter<unsigned int> ("NumberOfBytesForTheEventTrailers",4)),
   m_nSkipEvents(pset.getUntrackedParameter<unsigned int> ("NSkipEvents",0)),
-  m_readTXTForTiming(pset.getUntrackedParameter<bool> ("ReadTXTForTiming",false)),
-  m_timingFilePath(pset.getUntrackedParameter<std::string>("timingFilePath","/eos/user/t/tquast/data/Testbeam/July2017/Timing/HexaData_RunXX_TIMING_RDOUT_ORM0.txt"))
+  m_dataFormats(pset.getUntrackedParameter<unsigned int > ("DataFormats",0)),
+  m_readTimeStamps(pset.getUntrackedParameter<bool> ("ReadTimeStamps",false))
 {
   produces<HGCalTBSkiroc2CMSCollection>(m_outputCollectionName);
   produces<RunData>("RunData");
   
   m_event = 0;
   m_fileId=0;
-  // m_meanReadingTime=0;
-  // m_rmsReadingTime=0;
 
   m_buffer=new char[m_nWords*4];//4 bytes per 32 bits
   m_header=new char[m_headerSize];
@@ -50,8 +48,6 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
 
 bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType)
 {
-  // clock_t start;
-  // start=clock();
   if( m_fileId == fileNames().size() ) return false;
   if (fileNames()[m_fileId] != "file:DUMMY")
     m_fileName = fileNames()[m_fileId];
@@ -71,9 +67,11 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
     memcpy(&aint, &buf1, sizeof(aint));
     m_nOrmBoards=aint & 0xff;
     m_run=aint >> 8 ;
-    timingFile.open(m_timingFilePath.c_str(), std::ios::out);
-    if (timingFile.is_open()) timingFile << "TrigNumber TrigCount TimeStamp TimeDiff" << std::endl;
-    if( m_readTXTForTiming ) fillEventTimingInformations();
+    if( m_readTimeStamps ) fillEventTimingInformations();
+    if( m_dataFormats ){
+      m_input.close();
+      m_input.open(m_fileName.c_str(), std::ios::in|std::ios::binary);
+    }
   }
 
   uint64_t nBytesToSkip=m_headerSize+m_nOrmBoards*m_nSkipEvents*(m_nWords*4+m_eventTrailerSize);
@@ -115,16 +113,11 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
     std::vector< std::array<uint16_t,1924> > decodedData=decode_raw_32bit(rawData);
     m_decodedData.insert(m_decodedData.end(),decodedData.begin(),decodedData.end());
   }
-  if( m_eventTimingInfoMap.find(triggerNumber)==m_eventTimingInfoMap.end() && m_readTXTForTiming ){
+  if( m_eventTimingInfoMap.find(triggerNumber)==m_eventTimingInfoMap.end() && m_readTimeStamps ){
     std::cout << "problem : cannot find trigger " << triggerNumber << " in timing information map -> exit " << std::endl;
     exit(1);
   }
   m_eventTimingInfo=m_eventTimingInfoMap[triggerNumber];
-  // clock_t end;
-  // end=clock();
-  // m_meanReadingTime += (float)(end-start)/CLOCKS_PER_SEC;
-  // m_rmsReadingTime += (float)(end-start)/CLOCKS_PER_SEC*(end-start)/CLOCKS_PER_SEC;
-  
 
   return true;
 }
@@ -153,6 +146,35 @@ std::vector< std::array<uint16_t,1924> > HGCalTBRawDataSource::decode_raw_32bit(
 
 void HGCalTBRawDataSource::fillEventTimingInformations()
 {
+  switch ( m_dataFormats ){
+  case 0 : readTimeStampFromTXT(); break;
+  case 1  :readTimeStampFromRAW(); break;
+  }
+  uint64_t prevTime[m_nOrmBoards];
+  uint64_t timeDiff=0;
+  for(unsigned int ii=0; ii<m_nOrmBoards; ii++) prevTime[ii]=0;
+  for( std::map<uint32_t,EventTimingInformation>::iterator it=m_eventTimingInfoMap.begin(); it!=m_eventTimingInfoMap.end(); ++it ){
+    if( prevTime[0]==0 )
+      for(unsigned int ii=0; ii<m_nOrmBoards; ii++)
+	prevTime[ii]=it->second.triggerTimeStamp(ii);
+    else{
+      timeDiff=it->second.triggerTimeStamp(0)-prevTime[0];
+      prevTime[0]=it->second.triggerTimeStamp(0);
+      for(unsigned int ii=1; ii<m_nOrmBoards; ii++){
+	if( it->second.triggerTimeStamp(ii)-prevTime[ii]!=timeDiff ){
+	  std::cout << "Problem of timing sync in trigger " << it->first << " for rdout board " << ii
+		    << " with time stamp = " << it->second.triggerTimeStamp(ii)
+		    << " time diff : " << it->second.triggerTimeStamp(ii)-prevTime[ii] << " != " << timeDiff << std::endl;
+	}
+	prevTime[ii]=it->second.triggerTimeStamp(ii);
+      }
+      std::cout << "Trigger " << it->first << "\t time stamp = " << prevTime[0] << "\t time diff = " << timeDiff << std::endl;
+    }
+  }
+}
+
+void HGCalTBRawDataSource::readTimeStampFromTXT()
+{
   std::ifstream input;
   std::string tc0,tc1,ts0,ts1;
   if( m_nOrmBoards != m_timingFiles.size() ) {std::cout << "oops " << m_nOrmBoards << " " << m_timingFiles.size() << std::endl; return;}
@@ -180,27 +202,40 @@ void HGCalTBRawDataSource::fillEventTimingInformations()
     }
     input.close();
   }
-  std::cout << m_eventTimingInfoMap.size() << std::endl;
-  uint64_t prevTime[m_nOrmBoards];
-  uint64_t timeDiff=0;
-  for(unsigned int ii=0; ii<m_nOrmBoards; ii++) prevTime[ii]=0;
-  for( std::map<uint32_t,EventTimingInformation>::iterator it=m_eventTimingInfoMap.begin(); it!=m_eventTimingInfoMap.end(); ++it ){
-    if( prevTime[0]==0 )
-      for(unsigned int ii=0; ii<m_nOrmBoards; ii++)
-	prevTime[ii]=it->second.triggerTimeStamp(ii);
-    else{
-      timeDiff=it->second.triggerTimeStamp(0)-prevTime[0];
-      prevTime[0]=it->second.triggerTimeStamp(0);
-      for(unsigned int ii=1; ii<m_nOrmBoards; ii++){
-	if( it->second.triggerTimeStamp(ii)-prevTime[ii]!=timeDiff ){
-	  std::cout << "Problem of timing sync in trigger " << it->first << " for rdout board " << ii
-		    << " with time stamp = " << it->second.triggerTimeStamp(ii)
-		    << " time diff : " << it->second.triggerTimeStamp(ii)-prevTime[ii] << " != " << timeDiff << std::endl;
-	}
-	prevTime[ii]=it->second.triggerTimeStamp(ii);
+}
+
+void HGCalTBRawDataSource::readTimeStampFromRAW()
+{
+  uint64_t nBytesToSkip=m_headerSize+m_nOrmBoards*m_nSkipEvents*(m_nWords*4+m_eventTrailerSize);
+  uint32_t triggerNumber=0;
+  int nevent=0;
+  bool letsbreak=false;
+  while(1){
+    for( uint32_t iorm=0; iorm<m_nOrmBoards; iorm++ ){
+      m_input.seekg( (std::streamoff)nBytesToSkip+(std::streamoff)m_nOrmBoards*nevent*(m_nWords*4+m_eventTrailerSize)+(std::streamoff)iorm*(m_nWords*4+m_eventTrailerSize), std::ios::beg );
+      m_input.read ( m_buffer, m_nWords*4+m_eventTrailerSize );
+      if( !m_input.good() ) {letsbreak=true;break;}
+      uint32_t evtTrailer[3];
+      char buf[] = {m_buffer[m_nWords*4],m_buffer[m_nWords*4+1],m_buffer[m_nWords*4+2],m_buffer[m_nWords*4+3]};
+      memcpy(&evtTrailer[0], &buf, sizeof(evtTrailer[0]));
+      char ts0[] = {m_buffer[m_nWords*4+4],m_buffer[m_nWords*4+5],m_buffer[m_nWords*4+6],m_buffer[m_nWords*4+7]};
+      memcpy(&evtTrailer[1], &ts0, sizeof(evtTrailer[1]));
+      char ts1[] = {m_buffer[m_nWords*4+8],m_buffer[m_nWords*4+9],m_buffer[m_nWords*4+10],m_buffer[m_nWords*4+11]};//event trailer size must be at least 12 when dataformats = 1
+      memcpy(&evtTrailer[2], &ts1, sizeof(evtTrailer[2]));
+    
+      triggerNumber=evtTrailer[0]>>0x8;    
+      uint64_t timeStamp=((uint64_t)evtTrailer[2]<<32)|(uint64_t)evtTrailer[1];
+      if( m_eventTimingInfoMap.find(triggerNumber)==m_eventTimingInfoMap.end() ){
+	EventTimingInformation ETI(triggerNumber);
+	ETI.addTriggerTimeStamp(timeStamp);
+	std::pair<uint32_t,EventTimingInformation> p(triggerNumber,ETI);
+	m_eventTimingInfoMap.insert(p);
       }
-      std::cout << "Trigger " << it->first << "\t time stamp = " << prevTime[0] << "\t time diff = " << timeDiff << std::endl;
+      else
+	m_eventTimingInfoMap[triggerNumber].addTriggerTimeStamp(timeStamp);
     }
+    if( letsbreak ) break;
+    nevent++;
   }
 }
 
@@ -225,7 +260,7 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
     }
     std::vector<uint16_t> vdata;vdata.insert(vdata.end(),m_decodedData.at(iski).begin(),m_decodedData.at(iski).end());
     HGCalTBSkiroc2CMS skiroc;
-    if( m_readTXTForTiming )
+    if( m_readTimeStamps )
       skiroc=HGCalTBSkiroc2CMS( vdata,detids,
 				m_eventTimingInfo.triggerTimeStamp(0),
 				m_eventTimingInfo.triggerCounter());
@@ -279,8 +314,8 @@ void HGCalTBRawDataSource::fillDescriptions(edm::ConfigurationDescriptions& desc
   desc.addUntracked<unsigned int> ("NumberOfBytesForTheTrailer");
   desc.addUntracked<unsigned int> ("NumberOfBytesForTheEventTrailers");
   desc.addUntracked<unsigned int> ("NSkipEvents");
-  desc.addUntracked<bool> ("ReadTXTForTiming");
-  desc.addUntracked<std::string>("timingFilePath");
+  desc.addUntracked<bool> ("ReadTimeStamps");
+  desc.addUntracked<unsigned int> ("DataFormats");
   desc.add<std::vector<std::string> >("timingFiles");
 
   descriptions.add("source", desc);

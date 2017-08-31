@@ -55,8 +55,11 @@ std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int laye
 	double centre_x_tmp = 0., centre_y_tmp = 0.;
 	bool ValidFlag   = Top.iu_iv_valid(layer, sensor_iu, sensor_iv, iu, iv, sensorsize);
 	if(ValidFlag) {    
-		centre_x_tmp = iu * x0 + iv * vx0 + sensor_iu*X0 + sensor_iv*VX0;
-		centre_y_tmp = iv * vy0 + iv * vy0 + sensor_iv*VY0;
+		centre_x_tmp = ( (iu * x0 + iv * vx0) < 0) ? ((iu * x0 + iv * vx0) + delta) : ((iu * x0 + iv * vx0) - delta)  ;
+		centre_y_tmp = ( (iv * vy0) < 0) ? ((iv * vy0) + delta) : ((iv * vy0) - delta);
+		
+		centre_x_tmp += sensor_iu*X0 + sensor_iv*VX0;
+		centre_y_tmp += sensor_iv*VY0;
 		auto point = RotateLayer(std::make_pair(centre_x_tmp, centre_y_tmp), TEST_BEAM_LAYER_ROTATION);
 //		if(flipX==true) point.first = - point.first;
 		return point;

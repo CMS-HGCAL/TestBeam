@@ -96,8 +96,8 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             NumberOfBytesForTheTrailer=cms.untracked.uint32(4),         #for the new headers/trailers from run 1241 onward: 4
                             NumberOfBytesForTheEventTrailers=cms.untracked.uint32(4 if options.runNumber<1241 else 12),   #for the new headers/trailers from run 1241 onward: 12
                             NSkipEvents=cms.untracked.uint32(0),
-                            ReadTXTForTiming=cms.untracked.bool(False),
-                            timingFilePath=cms.untracked.string(options.timingFile),
+                            ReadTimeStamps=cms.untracked.bool(False),
+                            DataFormats=cms.untracked.uint32(1),
                             timingFiles=cms.vstring("%s/HexaData_Run%04d_TIMING_RDOUT_ORM0.txt"%(options.dataFolder,options.runNumber),
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM1.txt"%(options.dataFolder,options.runNumber),
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM2.txt"%(options.dataFolder,options.runNumber))
@@ -139,8 +139,8 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
                                         ElectronicMap=cms.untracked.string(electronicMap),
                                         SubtractPedestal=cms.untracked.bool(True),
-                                        HighGainPedestalFileName=cms.string(pedestalHighGain),
-                                        LowGainPedestalFileName=cms.string(pedestalLowGain)
+                                        HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
+                                        LowGainPedestalFileName=cms.untracked.string(pedestalLowGain)
                                         )
 
 process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",

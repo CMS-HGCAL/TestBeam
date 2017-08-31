@@ -26,8 +26,10 @@ class HGCalTBRawHitProducer : public edm::EDProducer
   std::string m_electronicMap;
   std::string m_outputCollectionName;
   bool m_subtractPedestal;
+  bool m_maskNoisyChannels;
   std::string m_pedestalHigh_filename;
   std::string m_pedestalLow_filename;
+  std::string m_channelsToMask_filename;
   int m_underSaturationADC;
   int m_maxTimeSampleForSaturation;
   
@@ -45,6 +47,6 @@ class HGCalTBRawHitProducer : public edm::EDProducer
     float pedLGRMS[NUMBER_OF_SCA];
   };
   std::map<int,pedestalChannel> m_pedMap; //key=10000*hexa+100*chip+chan
-
+  std::vector<int> m_noisyChannels;//filled with eid
 };
 #endif
