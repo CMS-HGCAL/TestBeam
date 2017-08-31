@@ -23,11 +23,25 @@ options.register('outputFile',
                  VarParsing.VarParsing.varType.string,
                  'Output file where unpacked data is stored')
 
+options.register('beamEnergy',
+                250,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Beam energy.'
+                )
+
+options.register('beamParticlePDGID',
+                "211",
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Beam particles PDG ID.'
+                )
+
 options.register('reportEvery',
                 10000,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
-                 'Path to the file from which the DWCs are read.'
+                 '.'
                 )
 
 options.maxEvents = -1
@@ -71,7 +85,9 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             DataFormats=cms.untracked.uint32(readTimeStampFormat),
                             timingFiles=cms.vstring("%s/HexaData_Run%04d_TIMING_RDOUT_ORM0.txt"%(options.dataFolder,options.runNumber),
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM1.txt"%(options.dataFolder,options.runNumber),
-                                                    "%s/HexaData_Run%04d_TIMING_RDOUT_ORM2.txt"%(options.dataFolder,options.runNumber))
+                                                    "%s/HexaData_Run%04d_TIMING_RDOUT_ORM2.txt"%(options.dataFolder,options.runNumber)),
+                            beamEnergy=cms.untracked.uint32(options.beamEnergy),
+                            beamParticlePDGID=cms.untracked.string(options.beamParticlePDGID)
 )
 
 

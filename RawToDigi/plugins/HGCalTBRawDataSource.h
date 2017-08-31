@@ -64,6 +64,9 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   unsigned int m_nSkipEvents;
   unsigned int m_dataFormats; //0 when time stamps were save in separated .txt files, 1 since the timestamp are saved in the raw data
   bool m_readTimeStamps;
+
+  int m_beamEnergy;
+  std::string m_beamParticlePDGID;
   
   unsigned int timeStartRun;
   unsigned int timeStopRun;
@@ -73,8 +76,7 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   int m_eventSize,m_nevents;
   unsigned int m_fileId;
   
-  std::string m_timingFilePath;
-  std::ofstream timingFile;
+  bool problemDuringReadout;
   
   uint32_t m_skiMask;
   char* m_buffer;

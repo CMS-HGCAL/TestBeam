@@ -21,7 +21,9 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   m_eventTrailerSize(pset.getUntrackedParameter<unsigned int> ("NumberOfBytesForTheEventTrailers",4)),
   m_nSkipEvents(pset.getUntrackedParameter<unsigned int> ("NSkipEvents",0)),
   m_dataFormats(pset.getUntrackedParameter<unsigned int > ("DataFormats",0)),
-  m_readTimeStamps(pset.getUntrackedParameter<bool> ("ReadTimeStamps",false))
+  m_readTimeStamps(pset.getUntrackedParameter<bool> ("ReadTimeStamps",false)),
+  m_beamEnergy(pset.getUntrackedParameter<unsigned int> ("beamEnergy", 250)),
+  m_beamParticlePDGID(pset.getUntrackedParameter<std::string> ("beamParticlePDGID", "211"))
 {
   produces<HGCalTBSkiroc2CMSCollection>(m_outputCollectionName);
   produces<RunData>("RunData");
@@ -48,6 +50,8 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
 
 bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType)
 {
+  problemDuringReadout = false;
+
   if( m_fileId == fileNames().size() ) return false;
   if (fileNames()[m_fileId] != "file:DUMMY")
     m_fileName = fileNames()[m_fileId];
@@ -83,7 +87,6 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
     m_input.read ( m_buffer, m_nWords*4+m_eventTrailerSize );
     if( !m_input.good() ){
       m_input.close();
-      timingFile.close();
       m_fileId++;
       if( (uint32_t)(m_fileId+1)<fileNames().size() )
 	m_event=0;
@@ -100,8 +103,10 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
     memcpy(&evtTrailer, &buf, sizeof(evtTrailer));
     uint32_t ormId=evtTrailer&0xff;
     m_trigger = (evtTrailer>>0x8);
-    if( ormId != iorm )
+    if( ormId != iorm ) {
+      problemDuringReadout = true;
       std::cout << "Problem in event trailer : wrong ORM id -> evtTrailer&0xff = " << std::dec << ormId << "\t iorm = " << iorm << std::endl;
+    }
     triggerNumber=evtTrailer>>0x8;
 
     buf[0] = m_buffer[m_nWords*4+4];
@@ -165,10 +170,11 @@ void HGCalTBRawDataSource::fillEventTimingInformations()
 	  std::cout << "Problem of timing sync in trigger " << it->first << " for rdout board " << ii
 		    << " with time stamp = " << it->second.triggerTimeStamp(ii)
 		    << " time diff : " << it->second.triggerTimeStamp(ii)-prevTime[ii] << " != " << timeDiff << std::endl;
+        problemDuringReadout= false;
 	}
 	prevTime[ii]=it->second.triggerTimeStamp(ii);
       }
-      std::cout << "Trigger " << it->first << "\t time stamp = " << prevTime[0] << "\t time diff = " << timeDiff << std::endl;
+      //std::cout << "Trigger " << it->first << "\t time stamp = " << prevTime[0] << "\t time diff = " << timeDiff << std::endl;
     }
   }
 }
@@ -276,27 +282,25 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
     skirocs->swap(*emptycol);
   e.put(skirocs, m_outputCollectionName);
 
-  uint32_t trigger_time_diff = (m_triggertime > m_triggertime_prev) ? (m_triggertime - m_triggertime_prev) : (4294967295-m_triggertime_prev) + m_triggertime;
-  #ifdef DEBUG
-    std::cout<<"event: "<<m_event<<"   trigger number ? "<<m_trigger<<"   time: "<<trigger_time_diff<<std::endl;
-  #endif
-  if (timingFile.is_open()) timingFile<<m_event<<"   "<<m_trigger<<"   "<<m_triggertime<<"   "<<trigger_time_diff<<std::endl;
 
   m_event++;
-  m_triggertime_prev = m_triggertime;
-
+  
 
   //set the RunData
   std::auto_ptr<RunData> rd(new RunData);
 
 
-  rd->energy = -1;
-  rd->configuration = -1;
-  rd->runType = -1;
+  rd->energy = m_beamEnergy;
+  rd->configuration = 1;
+  rd->runType = m_beamParticlePDGID;
   rd->run = m_run;
   rd->event = m_event;
-  rd->hasDanger = false;
+  rd->hasDanger = problemDuringReadout;
   rd->hasValidMWCMeasurement = false;
+
+  #ifdef DEBUG
+    std::cout<<rd->run<<"  "<<rd->event<<"  "<<rd->energy<<"  "<<rd->configuration<<"  "<<rd->runType<<"  "<<rd->hasDanger<<std::endl;
+  #endif
 
   e.put(std::move(rd), "RunData");
 }
@@ -317,6 +321,8 @@ void HGCalTBRawDataSource::fillDescriptions(edm::ConfigurationDescriptions& desc
   desc.addUntracked<bool> ("ReadTimeStamps");
   desc.addUntracked<unsigned int> ("DataFormats");
   desc.add<std::vector<std::string> >("timingFiles");
+  desc.addUntracked<unsigned int> ("beamEnergy");
+  desc.addUntracked<std::string> ("beamParticlePDGID");
 
   descriptions.add("source", desc);
 }
