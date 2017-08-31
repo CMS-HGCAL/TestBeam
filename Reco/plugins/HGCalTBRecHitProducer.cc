@@ -10,17 +10,19 @@ const static int SENSORSIZE = 128;
 HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) : 
   m_outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
   m_electronicMap(cfg.getUntrackedParameter<std::string>("ElectronicsMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt")),
-  m_highGainADCSaturation(cfg.getUntrackedParameter<double>("HighGainADCSaturation",1800)),
-  m_lowGainADCSaturation(cfg.getUntrackedParameter<double>("LowGainADCSaturation",1800)),
   m_timeSample3ADCCut(cfg.getUntrackedParameter<double>("TimeSample3ADCCut",15))
 {
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
 
   produces <HGCalTBRecHitCollection>(m_outputCollectionName);
   std::vector<double> v0(1,10.);
-  m_LG2HG_value = cfg.getUntrackedParameter<std::vector<double> >("LG2HG",v0);
+  m_highGainADCSaturation = cfg.getUntrackedParameter<std::vector<double> >("HighGainADCSaturation",v0);
   std::vector<double> v1(1,10.);
-  m_TOT2LG_value = cfg.getUntrackedParameter<std::vector<double> >("TOT2LG",v1);
+  m_lowGainADCSaturation = cfg.getUntrackedParameter<std::vector<double> >("LowGainADCSaturation",v1);
+  std::vector<double> v2(1,10.);
+  m_LG2HG_value = cfg.getUntrackedParameter<std::vector<double> >("LG2HG",v2);
+  std::vector<double> v3(1,10.);
+  m_TOT2LG_value = cfg.getUntrackedParameter<std::vector<double> >("TOT2LG",v3);
 
   std::cout << cfg.dump() << std::endl;
 }
@@ -51,8 +53,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid) ) continue;
     int iboard=rawhit.detid().layer()-1;
-    int iski=eid.iskiroc();
-    //std::cout << iboard << " " << iski << std::endl;
+    int iski=rawhit.skiroc();
 
     std::vector<double> sampleHG, sampleLG, sampleT;
 
@@ -127,12 +128,12 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     float energy = -1;
     float time = -1.;
     HGCalTBRecHit recHit(rawhit.detid(), energy, lowGain, highGain, totGain, time);
-    if(rawhit.highGainADC(3) < m_highGainADCSaturation && hgStatus == 0){
+    if(rawhit.highGainADC(3) < m_highGainADCSaturation.at(iboard) && hgStatus == 0){
       energy = highGain;
       time = timeHG;
       recHit.setFlag(HGCalTBRecHit::kGood);
     }     
-    else if(rawhit.lowGainADC(3)-subHG[3] < m_lowGainADCSaturation && lgStatus == 0){
+    else if(rawhit.lowGainADC(3)-subHG[3] < m_lowGainADCSaturation.at(iboard) && lgStatus == 0){
       energy = lowGain * m_LG2HG_value.at(iboard);
       time = timeLG;
       recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);

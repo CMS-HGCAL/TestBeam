@@ -2,7 +2,6 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH2Poly.h"
-#include "TTree.h"
 #include <fstream>
 #include <sstream>
 #include <algorithm>
@@ -25,13 +24,8 @@
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include "HGCal/Reco/interface/CommonMode.h"
-#include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
-#include "HGCal/DataFormats/interface/HGCalTBRunData.h" 
 #include <iomanip>
 #include <set>
-
-#include "HGCal/Reco/interface/PulseFitter.h"
-
 
 #define MAXVERTICES 6
 static const double delta = 0.00001;//Add/subtract delta = 0.00001 to x,y of a cell centre so the TH2Poly::Fill doesnt have a problem at the edges where the centre of a half-hex cell passes through the sennsor boundary line.
@@ -73,9 +67,6 @@ private:
 
   std::string m_electronicMap;
 
-  edm::EDGetTokenT<WireChambers> MWCToken;
-  edm::EDGetTokenT<RunData> RunDataToken; 
-
   struct {
     HGCalElectronicsMap emap_;
   } essource_;
@@ -100,20 +91,6 @@ private:
   std::pair<double, double> CellCentreXY;
   std::set< std::pair<int,HGCalTBDetId> > setOfConnectedDetId;
   
-  TTree* recHitsTree;
-  int tree_run;
-  int tree_board;
-  int tree_skiroc;
-  int tree_channel;
-  double tree_lg3, tree_lg0;
-  double tree_hg3, tree_hg0;
-  double tree_lg3_cms, tree_lg0_cms;
-  double tree_hg3_cms, tree_hg0_cms; 
-  double lowGain_fit, highGain_fit, lowGain_cm_fit, highGain_cm_fit;
-  double tree_hg3_cm, tree_hg0_cm, tree_lg3_cm, tree_lg0_cm;
-  double tree_dwc_x_at_0, tree_dwc_y_at_0;
-  double tree_dwc_mx, tree_dwc_bx, tree_dwc_my, tree_dwc_by;
-
 };
 
 RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
@@ -123,10 +100,7 @@ RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
   m_subtractCommonMode(iConfig.getUntrackedParameter<bool>("SubtractCommonMode",false))
   {
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
-  MWCToken = consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
-  RunDataToken = consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
-
-
+  
   m_evtID=0;
   
   std::cout << iConfig.dump() << std::endl;
@@ -191,81 +165,12 @@ void RawHitPlotter::beginJob()
       }
     }
   }
-
-  recHitsTree = fs->make<TTree>("rawHitsTree", "rawHitsTree");
-  recHitsTree->Branch("run", &tree_run);
-  recHitsTree->Branch("board", &tree_board);
-  recHitsTree->Branch("skiroc", &tree_skiroc);
-  recHitsTree->Branch("channel", &tree_channel);
-  recHitsTree->Branch("lg3", &tree_lg3);
-  recHitsTree->Branch("hg3", &tree_hg3);
-  recHitsTree->Branch("lg0", &tree_lg0);
-  recHitsTree->Branch("hg0", &tree_hg0);
-  recHitsTree->Branch("lg3_cms", &tree_lg3_cms);
-  recHitsTree->Branch("hg3_cms", &tree_hg3_cms);
-  recHitsTree->Branch("lg0_cms", &tree_lg0_cms);
-  recHitsTree->Branch("hg0_cms", &tree_hg0_cms);
-  recHitsTree->Branch("lg3_cm", &tree_lg3_cm);
-  recHitsTree->Branch("hg3_cm", &tree_hg3_cm);
-  recHitsTree->Branch("lg0_cm", &tree_lg0_cm);
-  recHitsTree->Branch("hg0_cm", &tree_hg0_cm);
-  recHitsTree->Branch("lowGain_fit", &lowGain_fit);
-  recHitsTree->Branch("highGain_fit", &highGain_fit);
-  recHitsTree->Branch("lowGain_cm_fit", &lowGain_cm_fit);
-  recHitsTree->Branch("highGain_cm_fit", &highGain_cm_fit);
-  recHitsTree->Branch("dwc_x_at_0", &tree_dwc_x_at_0);
-  recHitsTree->Branch("dwc_y_at_0", &tree_dwc_y_at_0);
-  recHitsTree->Branch("dwc_mx", &tree_dwc_mx);
-  recHitsTree->Branch("dwc_bx", &tree_dwc_bx);
-  recHitsTree->Branch("dwc_my", &tree_dwc_my);
-  recHitsTree->Branch("dwc_by", &tree_dwc_by);
 }
 
 void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 {
   usesResource("TFileService");
   edm::Service<TFileService> fs;
-
-  edm::Handle<RunData> rd;
-  event.getByToken(RunDataToken, rd);
-  tree_run = rd->run;
-
-  //get the multi wire chambers
-  edm::Handle<WireChambers> dwcs;
-  event.getByToken(MWCToken, dwcs);
-
-  tree_dwc_x_at_0 = tree_dwc_y_at_0 = -999.;
-  tree_dwc_mx = tree_dwc_my = -999.;
-  tree_dwc_bx = tree_dwc_by = -999.;
-  
-  if (dwcs->at(0).goodMeasurement) {
-    tree_dwc_mx = tree_dwc_my = 0.;
-    tree_dwc_bx = dwcs->at(0).x;
-    tree_dwc_by = dwcs->at(0).y;
-  } else if (dwcs->at(1).goodMeasurement) {
-    tree_dwc_mx = tree_dwc_my = 0.;
-    tree_dwc_bx = dwcs->at(1).x;
-    tree_dwc_by = dwcs->at(1).y;
-  }
-
-  if (dwcs->at(0).goodMeasurement && dwcs->at(1).goodMeasurement){
-    double x1 = dwcs->at(0).x;
-    double x2 = dwcs->at(1).x;
-    double y1 = dwcs->at(0).y;
-    double y2 = dwcs->at(1).y;
-    double z1 = dwcs->at(0).z;
-    double z2 = dwcs->at(1).z;    
-
-    tree_dwc_mx = (x2-x1)/(z2-z1);
-    tree_dwc_my = (y2-y1)/(z2-z1);
-    tree_dwc_bx = x1 - tree_dwc_mx * z1 ; 
-    tree_dwc_by = y1 - tree_dwc_my * z1 ; 
-  } 
-
-  tree_dwc_x_at_0 = tree_dwc_bx;
-  tree_dwc_y_at_0 = tree_dwc_by;
-
-
 
   edm::Handle<HGCalTBRawHitCollection> hits;
   event.getByToken(m_HGCalTBRawHitCollection, hits);
@@ -278,14 +183,14 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     os << "Event" << event.id().event();
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
     int Board_IU = 0;
-    int Board_IV = 0;	
+    int Board_IV = 0; 
     int Board_Layer = 0;
     for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
       Board_IU = 0;
-      Board_IV = 0;	
+      Board_IV = 0; 
       if( (ib == 6) || (ib == 9) ){
-	Board_IU = 0;
-	Board_IV = -1;
+  Board_IU = 0;
+  Board_IV = -1;
       }
       if( (ib == 5) || (ib == 8) ){
         Board_IU = 1;
@@ -295,15 +200,13 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       else if( (ib == 4) || (ib == 5) || (ib == 6) ) Board_Layer = 5;
       else if( (ib == 7) || (ib == 8) || (ib == 9) ) Board_Layer = 6;
       for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-
-	TH2Poly *h=dir.make<TH2Poly>();
-	os.str("");
-	os<<"HexaBoard"<<ib<<"_TimeSample"<<it;
-	h->SetName(os.str().c_str());
-	h->SetTitle(os.str().c_str());
-	InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
-	polyMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
-
+  TH2Poly *h=dir.make<TH2Poly>();
+  os.str("");
+  os<<"HexaBoard"<<ib<<"_TimeSample"<<it;
+  h->SetName(os.str().c_str());
+  h->SetTitle(os.str().c_str());
+  InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
+  polyMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
       }
     }
   }
@@ -312,14 +215,13 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   cm.Evaluate( hits );
   std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
   
-
   for( std::map<int,commonModeNoise>::iterator it=cmMap.begin(); it!=cmMap.end(); ++it ){
-    int iski=(it->first-1)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-    int ilayer=(it->first-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    int iski=(it->first)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    int ilayer=(it->first)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     int key=ilayer*1000+iski*100;
     for( uint16_t ts=0; ts<NUMBER_OF_TIME_SAMPLES; ts++ ){
-      //m_h_cmHigh[key]->Fill( it->second.fullHG[ts] );
-      //m_h_cmLow[key]->Fill( it->second.fullLG[ts] );
+      m_h_cmHigh[key]->Fill( it->second.fullHG[ts] );
+      m_h_cmLow[key]->Fill( it->second.fullLG[ts] );
       key+=1;
     }
   }
@@ -335,7 +237,6 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       float highGain,lowGain;
       if( m_subtractCommonMode ){
-    iski = eid.iskiroc();
     float subHG(0),subLG(0);
     switch ( hit.detid().cellType() ){
     case 0 : subHG=cmMap[iski].fullHG[it]; subLG=cmMap[iski].fullLG[it]; break;
@@ -368,69 +269,6 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
       double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
       polyMap[ 100*iboard+it ]->Fill(iux , iuy, highGain);
-    }
-
-    if (hit.detid().cellType()==0)  {  //only full cells for now
-      std::vector<double> sampleLG, sampleHG, sampleLGCM, sampleHGCM, sampleT;
-
-      
-      //seven time samples for fitting
-      for (int i=0; i<7; i++) {
-        sampleT.push_back(i*25.);
-        sampleLG.push_back(hit.lowGainADC(i));
-        sampleHG.push_back(hit.highGainADC(i));
-        sampleLGCM.push_back(hit.lowGainADC(i)-cmMap[tree_skiroc].fullHG[i]);
-        sampleHGCM.push_back(hit.highGainADC(i)-cmMap[tree_skiroc].fullHG[i]);
-      }
-
-      tree_board = hit.skiroc()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-      tree_skiroc = hit.skiroc();
-      tree_channel = hit.channel();
-      
-      tree_lg3 = hit.lowGainADC(3);
-      tree_hg3 = hit.highGainADC(3);
-      tree_lg3_cms = hit.lowGainADC(3)-cmMap[tree_skiroc].fullLG[3];
-      tree_hg3_cms = hit.highGainADC(3)-cmMap[tree_skiroc].fullHG[3];
-
-      tree_lg0 = hit.lowGainADC(0);
-      tree_hg0 = hit.highGainADC(0);
-      tree_lg0_cms = hit.lowGainADC(0)-cmMap[tree_skiroc].fullLG[0];
-      tree_hg0_cms = hit.highGainADC(0)-cmMap[tree_skiroc].fullHG[0];
-    
-      //pulse fitting
-      PulseFitter fitter(0,150);
-      lowGain_cm_fit = highGain_cm_fit = lowGain_fit = highGain_fit = 9999.;
-      
-      //high gain fit
-      float en0=hit.highGainADC(0)-cmMap[tree_skiroc].fullHG[0];
-      float en3=hit.highGainADC(3)-cmMap[tree_skiroc].fullHG[3];
-      float en6=hit.highGainADC(6)-cmMap[tree_skiroc].fullHG[6];
-      if( en0<en3 && en3>en6){
-        PulseFitterResult fithgcm;
-        fitter.run(sampleT, sampleHGCM, fithgcm);
-        if (fithgcm.status==0) {
-          highGain_cm_fit = fithgcm.amplitude;
-        }
-      }
-
-      //low gain fit
-      en0=hit.lowGainADC(0)-cmMap[tree_skiroc].fullLG[0];
-      en3=hit.lowGainADC(3)-cmMap[tree_skiroc].fullLG[3];
-      en6=hit.lowGainADC(6)-cmMap[tree_skiroc].fullLG[6];
-      if( en0<en3 && en3>en6){
-        PulseFitterResult fitlgcm;
-        fitter.run(sampleT, sampleLGCM, fitlgcm);
-        if (fitlgcm.status==0) {
-          lowGain_cm_fit = fitlgcm.amplitude;
-        }
-      }
-
-      tree_lg3_cm = cmMap[tree_skiroc].fullLG[3];
-      tree_hg3_cm = cmMap[tree_skiroc].fullHG[3];
-      tree_lg0_cm = cmMap[tree_skiroc].fullLG[0];
-      tree_hg0_cm = cmMap[tree_skiroc].fullHG[0];
-
-      recHitsTree->Fill();
     }
   }
 }
@@ -468,14 +306,14 @@ void RawHitPlotter::endJob()
   std::ostringstream os( std::ostringstream::ate );
   TH2Poly *h;
   int Board_IU = 0;
-  int Board_IV = 0;	
+  int Board_IV = 0; 
   int Board_Layer = 0;
   for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
     Board_IU = 0;
-    Board_IV = 0;	
+    Board_IV = 0; 
     if( (ib == 6) || (ib == 9) ){
-	Board_IU = 0;
-	Board_IV = -1;
+  Board_IU = 0;
+  Board_IV = -1;
     }
     if( (ib == 5) || (ib == 8) ){
         Board_IU = 1;

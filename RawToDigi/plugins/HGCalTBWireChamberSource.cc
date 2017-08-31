@@ -198,7 +198,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc3->res_y = wc_resolution;
 	dwc3->z = dwc_z3;
 	
-	if (n_run>=1194) {	//from run 1195, x-coordinate of DWC A was not connected anymore. TDC channels 14&15 were input by trigger signals.
+	if ((n_run>=1194) && (n_run<=1333)) {//from run 1195, x-coordinate of DWC A was not connected anymore. TDC channels 14 and 15 were input by trigger signals.
 						//also the channels for the y-coordinate of DWCA must have been flipped
 		dwc3->goodMeasurement_X = dwc3->goodMeasurement = false;	
 		dwc3->x = -999;
