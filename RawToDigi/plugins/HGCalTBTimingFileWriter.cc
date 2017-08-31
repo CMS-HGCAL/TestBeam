@@ -70,17 +70,23 @@ void HGCalTBTimingFileWriter::analyze(const edm::Event& event, const edm::EventS
   edm::Handle<HGCalTBSkiroc2CMSCollection> skirocs;
   event.getByToken(m_HGCalTBSkiroc2CMSCollection, skirocs);
 
-  uint64_t triggerTime = skirocs->at(0).triggerTimeStamp();
-  int triggerCount = skirocs->at(0).triggerCounter();
+  uint64_t triggerTime = -1;
+  int triggerCount = -1;
+  
+  if (skirocs->size()>0) {
+    triggerTime = skirocs->at(0).triggerTimeStamp();
+    triggerCount = skirocs->at(0).triggerCounter();
+  }
 
-    if (timingFile.is_open()) {
-      timingFile<<m_event<<"   "<<triggerCount<<"   "<<triggerTime<<"   "<<triggerTime-m_prev_time<<std::endl;
-      #ifdef DEBUG
-        std::cout<<m_event<<"   "<<triggerCount<<"   "<<triggerTime<<"   "<<triggerTime-m_prev_time<<std::endl;
-      #endif
-    }
-
-  m_prev_time = triggerTime;
+  if (timingFile.is_open()) {
+    timingFile<<m_event<<"   "<<triggerCount<<"   "<<triggerTime<<"   "<<triggerTime-m_prev_time<<std::endl;
+    #ifdef DEBUG
+      std::cout<<m_event<<"   "<<triggerCount<<"   "<<triggerTime<<"   "<<triggerTime-m_prev_time<<std::endl;
+    #endif
+  }
+  
+  if (triggerTime != -1)
+    m_prev_time = triggerTime;
 
 }
 
