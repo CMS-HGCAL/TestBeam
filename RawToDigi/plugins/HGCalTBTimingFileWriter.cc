@@ -75,7 +75,9 @@ void HGCalTBTimingFileWriter::analyze(const edm::Event& event, const edm::EventS
 
     if (timingFile.is_open()) {
       timingFile<<m_event<<"   "<<triggerCount<<"   "<<triggerTime<<"   "<<triggerTime-m_prev_time<<std::endl;
-      std::cout<<m_event<<"   "<<triggerCount<<"   "<<triggerTime<<"   "<<triggerTime-m_prev_time<<std::endl;
+      #ifdef DEBUG
+        std::cout<<m_event<<"   "<<triggerCount<<"   "<<triggerTime<<"   "<<triggerTime-m_prev_time<<std::endl;
+      #endif
     }
 
   m_prev_time = triggerTime;
