@@ -70,7 +70,7 @@ void HGCalTBTimingFileWriter::analyze(const edm::Event& event, const edm::EventS
   edm::Handle<HGCalTBSkiroc2CMSCollection> skirocs;
   event.getByToken(m_HGCalTBSkiroc2CMSCollection, skirocs);
 
-  uint64_t triggerTime = -1;
+  uint64_t triggerTime = 0;
   int triggerCount = -1;
   
   if (skirocs->size()>0) {
@@ -85,7 +85,7 @@ void HGCalTBTimingFileWriter::analyze(const edm::Event& event, const edm::EventS
     #endif
   }
   
-  if (triggerTime != -1)
+  if (triggerCount != -1)
     m_prev_time = triggerTime;
 
 }
