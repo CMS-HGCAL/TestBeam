@@ -72,6 +72,11 @@ readTimeStampFormat = 1
 if options.runNumber < 1241:
     readTimeStampFormat = 0
 
+#only read time stamps for beam runs
+ReadTimeStamps = True
+if options.beamParticlePDGID==0:
+    ReadTimeStamps = False
+
 process.source = cms.Source("HGCalTBRawDataSource",
                             ElectronicMap=cms.untracked.string(electronicMap),
                             fileNames=cms.untracked.vstring("file:%s/HexaData_Run%04d.raw"%(options.dataFolder,options.runNumber)),
@@ -82,7 +87,7 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             NumberOfBytesForTheEventTrailers=cms.untracked.uint32(4 if options.runNumber<1241 else 12),   #for the new headers/trailers from run 1241 onward: 12
                             NSkipEvents=cms.untracked.uint32(0),
                             ReadTimeStamps=cms.untracked.bool(True),
-                            DataFormats=cms.untracked.uint32(readTimeStampFormat),
+                            DataFormats=cms.untracked.uint32(ReadTimeStamps),
                             timingFiles=cms.vstring("%s/HexaData_Run%04d_TIMING_RDOUT_ORM0.txt"%(options.dataFolder,options.runNumber),
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM1.txt"%(options.dataFolder,options.runNumber),
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM2.txt"%(options.dataFolder,options.runNumber)),

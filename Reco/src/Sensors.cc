@@ -102,6 +102,8 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit, double ADC_per_MIP) {
 
   if (filterByCellType(ID)) return; //returns false so far
 
+  if (Rechit.checkFlag(HGCalTBRecHit::kLowGainSaturated)) return; //only LG and HG so far
+
   double energy = Rechit.energy() / ADC_per_MIP;  //the LayerSumAnalyzer also energy deposits in MIP units
 
   Hits[uniqueID] = new HitData;

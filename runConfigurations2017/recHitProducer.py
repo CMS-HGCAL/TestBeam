@@ -33,7 +33,7 @@ options.register('reportEvery',
                  'Path to the file from which the DWCs are read.'
                 )
 
-options.maxEvents = -1
+options.maxEvents = 100
 
 options.parseArguments()
 print options

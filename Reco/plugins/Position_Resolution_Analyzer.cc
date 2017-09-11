@@ -44,7 +44,10 @@
 //DUMMY VALUES
 double config1Positions[] = {0.0, 5.35, 10., 15., 20., 25., 30., 35.};    //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
 double config1X0Depths[] = {6.268, 7.0, 9., 9., 10., 11., 12., 13.}; //in radiation lengths, copied from layerSumAnalyzer
-                     
+  
+
+#define DEBUG
+
 class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	public:
 		explicit Position_Resolution_Analyzer(const edm::ParameterSet&);
@@ -94,6 +97,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		int configuration, evId, eventCounter, run, layer; 	//eventCounter: counts the events in this analysis run to match information within ove event to each other
 		double energy;
 		double layerWeight, layerEnergy, layerClusterEnergy, sumFitWeights, sumEnergy, sumClusterEnergy, CM_cells_count, CM_sum;
+		double chi2_x, chi2_y;
 		double x_predicted, x_predicted_err, y_predicted, y_predicted_err, x_true, x_true_err, y_true, y_true_err, deltaX, deltaY;
 		double x_predicted_to_closest_cell, y_predicted_to_closest_cell, x_true_to_closest_cell, y_true_to_closest_cell, layerZ_cm, layerZ_X0, deviation;
 
@@ -102,7 +106,6 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 
 		//dWCs
 		int useMWC;
-		double MWC_x1, MWC_y1, MWC_z1, MWC_x2, MWC_y2, MWC_z2;
 
 		std::pair<int, double> CM_tmp;	//will write the subtract_CM() return values for each layer
 };
@@ -184,13 +187,15 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("y_true_to_closest_cell", &y_true_to_closest_cell, "y_true_to_closest_cell/D");
 	outTree->Branch("y_true_err", &y_true_err, "y_true_err/D");
 	
+	outTree->Branch("chi2_x", &chi2_x, "chi2_x/D");
+	outTree->Branch("chi2_y", &chi2_y, "chi2_y/D");
+
 	outTree->Branch("x_predicted", &x_predicted, "x_predicted/D");
 	outTree->Branch("x_predicted_to_closest_cell", &x_predicted_to_closest_cell, "x_predicted_to_closest_cell/D");
 	outTree->Branch("x_predicted_err", &x_predicted_err, "x_predicted_err/D");
 	outTree->Branch("y_predicted", &y_predicted, "y_predicted/D");
 	outTree->Branch("y_predicted_to_closest_cell", &y_predicted_to_closest_cell, "y_predicted_to_closest_cell/D");
 	outTree->Branch("y_predicted_err", &y_predicted_err, "y_predicted_err/D");
-	
 	
 	outTree->Branch("deltaX", &deltaX, "deltaX/D");
 	outTree->Branch("deltaY", &deltaY, "deltaY/D");
@@ -232,7 +237,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		return;
 	}
 
-	std::cout<<"run: "<<rd->run<<"  energy: "<<rd->energy<<"   eventCounter: "<<rd->event<<std::endl;
 
 	edm::Handle<WireChambers> dwcs;
 	event.getByToken(MWCToken, dwcs);
@@ -268,6 +272,12 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	}
 
 
+	if (!(dwcs->at(0).goodMeasurement&&dwcs->at(1).goodMeasurement&&dwcs->at(3).goodMeasurement)) {
+		return;
+	}
+
+	std::cout<<"run: "<<rd->run<<"  energy: "<<rd->energy<<"  type:" << rd->runType<<"   eventCounter: "<<rd->event<<std::endl;
+	
 	//Possible event selection: sum of energies of all cells(=hits) from RecHits Collection and Clusters
 	sumEnergy = 0.;
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {	
@@ -292,37 +302,39 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	std::cout<<dwcs->at(2).x<<"  "<<dwcs->at(2).y<<"   "<<dwcs->at(2).z<<"  "<<dwcs->at(2).goodMeasurement<<std::endl;
 	std::cout<<dwcs->at(3).x<<"  "<<dwcs->at(3).y<<"   "<<dwcs->at(3).z<<"  "<<dwcs->at(3).goodMeasurement<<std::endl;
 
-	/*
 	//Step 3: add dWCs to the setup if useMWCReference option is set true
 	if (useMWCReference) {
 		useMWC = 1;
+		
 
-		double mwc_resolution = 0.005; //cm
 		Sensors[(nLayers+1)] = new SensorHitMap((nLayers+1));				//attention: This is specifically tailored for the 8-layer setup
 		Sensors[(nLayers+1)]->setLabZ(dwcs->at(0).z, 0.001);
-		Sensors[(nLayers+1)]->setCenterHitPosition(dwcs->at(0).x, dwcs->at(0).y ,mwc_resolution , mwc_resolution);
+		Sensors[(nLayers+1)]->setCenterHitPosition(dwcs->at(0).x/10., dwcs->at(0).y/10., dwcs->at(0).res_x/10. , dwcs->at(0).res_y/10.);
 		Sensors[(nLayers+1)]->setParticleEnergy(energy);
 		Sensors[(nLayers+1)]->setAlignmentParameters(alignmentParameters->getValue(energy, 100*(nLayers+1) + 21), 0.0, 0.0,
 				alignmentParameters->getValue(energy, 100*(nLayers+1) + 11), alignmentParameters->getValue(energy, 100*(nLayers+1) + 12), 0.0);	
-		Sensors[(nLayers+1)]->setResidualResolution(mwc_resolution);	
-		MWC_x1 = Sensors[nLayers+1]->getLabHitPosition().first; //dwcs->at(0).x;
-		MWC_y1 = Sensors[nLayers+1]->getLabHitPosition().second; //dwcs->at(0).y;
-		MWC_z1 = Sensors[nLayers+1]->getLabZ() + Sensors[nLayers+1]->getIntrinsicHitZPosition(); //dwcs->at(0).z;
+		Sensors[(nLayers+1)]->setResidualResolution(dwcs->at(0).res_x/10.);	
 
-		Sensors[(nLayers+2)] = new SensorHitMap((nLayers+2));				//attention: This is specifically tailored for the 8-layer setup
+
+		Sensors[(nLayers+2)] = new SensorHitMap((nLayers+2));				
 		Sensors[(nLayers+2)]->setLabZ(dwcs->at(1).z, 0.001);
-		Sensors[(nLayers+2)]->setCenterHitPosition(dwcs->at(1).x, dwcs->at(1).y ,mwc_resolution , mwc_resolution);
+		Sensors[(nLayers+2)]->setCenterHitPosition(dwcs->at(1).x/10., dwcs->at(1).y/10., dwcs->at(1).res_x/10. , dwcs->at(1).res_y/10.);
 		Sensors[(nLayers+2)]->setParticleEnergy(energy);
 		Sensors[(nLayers+2)]->setAlignmentParameters(alignmentParameters->getValue(energy, 100*(nLayers+2) + 21), 0.0, 0.0,
 				alignmentParameters->getValue(energy, 100*(nLayers+2) + 11), alignmentParameters->getValue(energy, 100*(nLayers+2) + 12), 0.0);	
-		Sensors[(nLayers+2)]->setResidualResolution(mwc_resolution);
-		MWC_x2 = Sensors[nLayers+2]->getLabHitPosition().first; //dwcs->at(1).x;
-		MWC_y2 = Sensors[nLayers+2]->getLabHitPosition().second; //dwcs->at(1).y;
-		MWC_z2 = Sensors[nLayers+2]->getLabZ() + Sensors[nLayers+1]->getIntrinsicHitZPosition(); //dwcs->at(1).z;
+		Sensors[(nLayers+2)]->setResidualResolution(dwcs->at(1).res_x/10.);	
+
+
+		Sensors[(nLayers+3)] = new SensorHitMap((nLayers+3));				
+		Sensors[(nLayers+3)]->setLabZ(dwcs->at(3).z, 0.001);
+		Sensors[(nLayers+3)]->setCenterHitPosition(dwcs->at(3).x/10., dwcs->at(3).y/10., dwcs->at(3).res_x/10. , dwcs->at(3).res_y/10.);
+		Sensors[(nLayers+3)]->setParticleEnergy(energy);
+		Sensors[(nLayers+3)]->setAlignmentParameters(alignmentParameters->getValue(energy, 100*(nLayers+3) + 21), 0.0, 0.0,
+				alignmentParameters->getValue(energy, 100*(nLayers+3) + 11), alignmentParameters->getValue(energy, 100*(nLayers+3) + 12), 0.0);	
+		Sensors[(nLayers+3)]->setResidualResolution(dwcs->at(3).res_x/10.);	
 
 	} else {
 		useMWC = 0;
-		MWC_x1 = MWC_y1 = MWC_z1 = MWC_x2 = MWC_y2 = MWC_z2 = -999;
 	}
 	
 	//step 4: fill particle tracks
@@ -338,7 +350,10 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			if (i==j) continue;
 
 			if (i<=nLayers) {
-				if(useMWCReference && j>nLayers) Tracks[i]->addFitPoint(Sensors[j]);
+				if(useMWCReference && j>nLayers) {
+					std::cout<<"Adding sensor "<<j<<" to track i"<<std::endl;
+					Tracks[i]->addFitPoint(Sensors[j]);
+				}
 				else if(!useMWCReference && j<=nLayers) Tracks[i]->addFitPoint(Sensors[j]);
 			} else {
 				if(useMWCReference && j<=nLayers) 
@@ -347,7 +362,6 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			}
 		}
 
-		Tracks[i]->weightFitPoints(fitPointWeightingMethod);
 		Tracks[i]->fitTrack(fittingMethod);
 	}
 
@@ -371,6 +385,9 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		sum_x_predicted  += x_predicted*layerEnergy;
 		y_predicted = position_predicted.second;
 		sum_y_predicted  += y_predicted*layerEnergy;
+
+		chi2_x = Tracks[layer]->getChi2(1);
+		chi2_y = Tracks[layer]->getChi2(2);
 
 		std::pair<double, double> position_predicted_to_closest_cell = Sensors[layer]->getCenterOfClosestCell(position_predicted);
 		x_predicted_to_closest_cell = position_predicted_to_closest_cell.first;
@@ -404,12 +421,12 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		deviation  = sqrt( pow(deltaX, 2) + pow(deltaY, 2) );
 
 
-		average_x_predicted = layer <= 8 ? sum_x_predicted / sum_energy : -999;
-		average_y_predicted = layer <= 8 ? sum_y_predicted / sum_energy : -999;
-		average_x_true = layer <= 8 ? sum_x_true / sum_energy : -999;
-		average_y_true = layer <= 8 ? sum_y_true / sum_energy : -999;
-		average_deltaX = layer <= 8 ? average_x_true - average_x_predicted : -999;
-		average_deltaY = layer <= 8 ? average_y_true - average_y_predicted : -999;
+		average_x_predicted = layer <= 6 ? sum_x_predicted / sum_energy : -999;
+		average_y_predicted = layer <= 6 ? sum_y_predicted / sum_energy : -999;
+		average_x_true = layer <= 6 ? sum_x_true / sum_energy : -999;
+		average_y_true = layer <= 6 ? sum_y_true / sum_energy : -999;
+		average_deltaX = layer <= 6 ? average_x_true - average_x_predicted : -999;
+		average_deltaY = layer <= 6 ? average_y_true - average_y_predicted : -999;
 		//DEBUG
 		if (deviation > 1000.) {
 			std::cout<<"Event: "<<eventCounter<<std::endl;
@@ -417,9 +434,13 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		}
 		//END OF DEBUG
 		
+		if (layer==1 && chi2_x<10. && chi2_y<10.) {
+			outTree->Fill();
+		}
+
 		//fill the tree
-		outTree->Fill();
 	}
+	/*
 	*/
 	
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {

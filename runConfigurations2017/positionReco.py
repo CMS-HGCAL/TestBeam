@@ -7,13 +7,13 @@ options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, file
 
 
 options.register('dataFile',
-                 '/home/tquast/tb2017/reconstructedFiles/reco_1303.root',
+                 '/home/tquast/tb2017/reconstructedFiles/reco_1305.root',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw input')
 
 options.register('outputFile',
-                 '/home/tquast/tb2017/analysis/positionResolution_1303.root',
+                 '/home/tquast/tb2017/analysis/positionResolution_1305.root',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output folder where analysis output are stored')
@@ -69,7 +69,7 @@ options.register('considerationMethod',
                 )
 
 options.register('weightingMethod',
-                 'logWeighting_3.5_1.0',
+                 'linearWeighting',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Possible arguments are: squaredWeighting, linearWeighting, logWeighting_<a>_1.0, .... '
@@ -78,7 +78,7 @@ options.register('weightingMethod',
 
 
 
-options.maxEvents = 100
+options.maxEvents = -1
 
 
 options.parseArguments()

@@ -329,6 +329,8 @@ void ParticleTrack::analyticalStraightLineFit() {
   chi2 = linefit_x->GetChisquare() + linefit_y->GetChisquare();
   chi2_x = linefit_x->GetChisquare();
   chi2_y = linefit_y->GetChisquare();
+  std::cout<<"chi2_x: "<<chi2_x<<std::endl;
+  std::cout<<"chi2_y: "<<chi2_y<<std::endl;
 
 };
 
