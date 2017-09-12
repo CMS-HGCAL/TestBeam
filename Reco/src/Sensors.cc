@@ -95,9 +95,9 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit, double ADC_per_MIP) {
   int uniqueID = (Rechit.id()).rawId();
 
   CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), 128);
-  double iux = CellCenterXY.first; //Rechit.getCellCenterCartesianCoordinate(0); 
-  double ivy = CellCenterXY.second; //Rechit.getCellCenterCartesianCoordinate(1); 
-  
+  double iux = CellCenterXY.first * 10.; //Rechit.getCellCenterCartesianCoordinate(0);    //conversion to mm
+  double ivy = CellCenterXY.second * 10.; //Rechit.getCellCenterCartesianCoordinate(1);   //conversion to mm
+
   int ID = (Rechit.id()).cellType();
 
   if (filterByCellType(ID)) return; //returns false so far
@@ -517,10 +517,13 @@ void SensorHitMap::poweredWeighting(int exponent) {
   
   numerator_x = numerator_y = totalWeight = 0; 
   for(std::vector<HitData*>::iterator hit=HitsForPositioning.begin(); hit!=HitsForPositioning.end(); hit++){
+    //std::cout<<"Hit intensity: "<<(*hit)->I <<" at position x = "<<(*hit)->x<<" and y = "<<(*hit)->y<<std::endl;
     w = (*hit)->I >= 0.0 ? pow((*hit)->I, exponent) : 0.0;    //0.0 --> not included in the sum
     totalWeight += w;
     numerator_x += w*(*hit)->x;
     numerator_y += w*(*hit)->y;
+    //std::cout<<"numerator_x: "<<numerator_x<<"  numerator_y: "<<numerator_y<<"    totalWeight: "<<totalWeight<<std::endl;
+
   }
 
   //prevent divisions through zero

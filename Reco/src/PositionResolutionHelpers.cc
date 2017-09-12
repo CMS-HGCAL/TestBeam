@@ -99,6 +99,7 @@ void LineFitter::addPoint(double x, double y, double sigma_y) {
 void LineFitter::fit() {
   if (_x.size()==0 || _y.size()==0 || _sigma_y.size()==0) {
     std::cout<<"One of the input vectors has zero dimension!"<<std::endl;
+    return;
   }
   _S_x = _S_xx = _S_y = _S_xy = _S = _Delta = 0.;
 

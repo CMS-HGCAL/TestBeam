@@ -71,11 +71,11 @@ void ParticleTrack::addFitPoint(SensorHitMap* sensor){
 void ParticleTrack::addReferenceSensor(SensorHitMap* sensor) {
   referenceSensor = sensor;
   gblLayers.push_back(gblhelpers::layer(sensor->label(), sensor->getLabZ()+sensor->getIntrinsicHitZPosition(), sensor->getX0(), sensor->getParticleEnergy(), true));
-}
+};
 
 void ParticleTrack::addDummySensor(SensorHitMap* sensor) {
   gblLayers.push_back(gblhelpers::layer(sensor->label(), sensor->getLabZ()+sensor->getIntrinsicHitZPosition(), sensor->getX0(), sensor->getParticleEnergy(), true));
-}
+};
 
 void ParticleTrack::weightFitPoints(FitPointWeightingMethod method) {
   //calculate the sum of all Energies first 
@@ -326,11 +326,14 @@ void ParticleTrack::analyticalStraightLineFit() {
   NDF_x = linefit_x->GetNDF();
   NDF_y = linefit_y->GetNDF();
   
+
   chi2 = linefit_x->GetChisquare() + linefit_y->GetChisquare();
   chi2_x = linefit_x->GetChisquare();
   chi2_y = linefit_y->GetChisquare();
-  std::cout<<"chi2_x: "<<chi2_x<<std::endl;
-  std::cout<<"chi2_y: "<<chi2_y<<std::endl;
+  #ifdef DEBUG
+    std::cout<<"chi2_x: "<<chi2_x<<std::endl;
+    std::cout<<"chi2_y: "<<chi2_y<<std::endl;
+  #endif
 
 };
 

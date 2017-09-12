@@ -49,7 +49,8 @@ options.register('useMWCReference',
                  True,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
-                 'Are the multi wire chamber information used for the exrapolation of referemce impact points?')
+                 'Are the multi wire chamber information used for the exrapolation of referemce impact points?'
+                 )
 
 options.register('fittingMethod',
                 'lineAnalytical',
@@ -62,14 +63,14 @@ options.register('fittingMethod',
 ####################################
 #Specific options for reconstruction of impact positions in the MillepedeBinaryWrite and positionResolutionAnalyzer
 options.register('considerationMethod',
-                 'closest19',
+                 'all',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Possible arguments are: all, closest7, closest19, clusters.'
                 )
 
 options.register('weightingMethod',
-                 'linearWeighting',
+                 'logWeighting_3.5_1.0',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Possible arguments are: squaredWeighting, linearWeighting, logWeighting_<a>_1.0, .... '
