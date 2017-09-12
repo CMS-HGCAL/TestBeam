@@ -84,6 +84,7 @@ private:
 
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
 
+
   HGCalTBTopology IsCellValid;
   HGCalTBCellVertices TheCell;
   std::vector<std::pair<double, double>> CellXY;
@@ -123,6 +124,7 @@ void RawHit_EventDisplay::beginJob()
   edm::Service<TFileService> fs;
 
   std::ostringstream os( std::ostringstream::ate );
+
   for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
     for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){ 
       os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
@@ -224,10 +226,12 @@ void RawHit_EventDisplay::analyze(const edm::Event& event, const edm::EventSetup
       }
 
       if(!m_eventPlotter||!IsCellValid.iu_iv_valid(hit.detid().layer(), hit.detid().sensorIU(), hit.detid().sensorIV(), hit.detid().iu(), hit.detid().iv(), m_sensorsize))  continue;
+
       CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.detid().layer(), hit.detid().sensorIU(), hit.detid().sensorIV(), hit.detid().iu(), hit.detid().iv(), m_sensorsize);
+
       double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
       double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-      polyMap[ 100*( hit.detid().layer() ) + it ]->Fill(iux , iuy, highGain);
+      if(highGain > 30) polyMap[ 100*( hit.detid().layer() ) + it ]->Fill(iux , iuy, highGain);
 //    } // Loop over time samples
     
   } // Loop over Hits
