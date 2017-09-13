@@ -57,7 +57,8 @@ double zdepth4_config1 = 0.;
 double zdepth5_config1 = 0.; 
 double zdepth6_config1 = 0.; 
 
-double config1Positions[] = {z1_config1, z2_config1, z3_config1, z4_config1, z5_config1, z6_config1};    
+//here they must be indicated in cm
+double config1Positions[] = {z1_config1/10., z2_config1/10., z3_config1/10., z4_config1/10., z5_config1/10., z6_config1/10.};    
 double  config1X0Depths[] = {zdepth1_config1, zdepth2_config1, zdepth3_config1, zdepth4_config1, zdepth5_config1, zdepth6_config1}; 
   
 

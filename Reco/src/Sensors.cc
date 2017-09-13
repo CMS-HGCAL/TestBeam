@@ -187,6 +187,7 @@ void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMeth
   switch(weightingMethod){
     case MOSTINTENSIVE:
       SensorHitMap::mostIntensiveHit();
+      break;
     case SQUAREDWEIGHTING:
       SensorHitMap::poweredWeighting(2);
       break;
@@ -514,6 +515,7 @@ void SensorHitMap::considerClusters(int N_considered) {
 }
 
 void SensorHitMap::mostIntensiveHit() {
+  if (mostSignificantHit==NULL) return;
   centralHitPoint.first = mostSignificantHit->x;
   centralHitPoint.second = mostSignificantHit->y;
 }
