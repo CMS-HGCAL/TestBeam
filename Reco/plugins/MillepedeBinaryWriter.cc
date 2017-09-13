@@ -45,7 +45,7 @@
 
 double DWC_x0s[4] = {0.004, 0.25, 0.008, 0.0};
 enum COORDINATE {
-	X = 0,
+	X = 1,
 	Y
 };
 
@@ -139,6 +139,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	edm::Handle<RunData> rd;
  	//get the relevant event information
 	event.getByToken(RunDataToken, rd);
+	
 	if (rd->event>-1)
 		return;
 
@@ -180,9 +181,10 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		N_points++;
 	}
 	
-	if (N_points >= 3) {
+	if (N_points == (int)Layers.size()) {
 		Track->fitTrack(fittingMethod);
-	
+		
+		if (MWCQualityCut&&fabs(Track->getChi2(coordinate)/Track->getNDF(coordinate)) > 30.) return;
 	
 		//step 6: calculate the deviations between each fit missing one layer and exactly that layer's true central position
 		for (size_t l=0; l<Layers.size(); l++) {
@@ -212,7 +214,6 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 				
 			rMeas = _true - _predicted;
 			
-			if (MWCQualityCut&&fabs(rMeas) > 15) continue;
 			//std::cout<<" ---> delta x = "<<rMeas<<"  ";
 			sigma = Sensors[n_layer]->getResidualResolution();
 			mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
@@ -236,102 +237,15 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 				}
 			}
 		}
+		mille->end();
+		tree->Fill();	
 	}
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		delete (*it).second;
 	};	Sensors.clear();
 	delete Track;
 		
-	/*
 
-	//second the y-coordinate
-	int N_points_y = 0;
-	Track = new ParticleTrack();
-	Sensors[nLayers] = new SensorHitMap(nLayers);
-	Sensors[nLayers]->setLabZ(0., 0.003);
-	Sensors[nLayers]->setParticleEnergy(rd->energy);
-	Track->addReferenceSensor(Sensors[nLayers]);
-
-	for (int n_layer=0; n_layer<nLayers; n_layer++) {
-		if (!dwcs->at(n_layer).goodMeasurement_Y) continue;	
-		Sensors[n_layer] = new SensorHitMap(n_layer);				
-		Sensors[n_layer]->setLabZ(dwcs->at(n_layer).z, DWC_x0s[n_layer]);
-		Sensors[n_layer]->setCenterHitPosition(0.0, dwcs->at(n_layer).y , 1.0 , dwcs->at(n_layer).res_y);
-		Sensors[n_layer]->setParticleEnergy(rd->energy);
-		Sensors[n_layer]->setResidualResolution(dwcs->at(n_layer).res_y);	
-
-		Track->addFitPoint(Sensors[n_layer]);
-		N_points_y++;
-	}
-
-
-	if (N_points_y >= 3) {
-		Track->fitTrack(fittingMethod);
-		//double NDF_y = Track->getNDF(2);
-		//double chi2_y = Track->getChi2(2);
-
-		//step 6: calculate the deviations between each fit missing one layer and exactly that layer's true central position
-		for (int n_layer=0; n_layer<nLayers; n_layer++) {
-			if (!dwcs->at(n_layer).goodMeasurement_Y) continue;
-
-			double layer_labZ = Sensors[n_layer]->getLabZ();
-			double intrinsic_z = Sensors[n_layer]->getIntrinsicHitZPosition();	
-			
-			double y_predicted = Track->calculatePositionXY(layer_labZ+intrinsic_z, n_layer).second;
-			double y_true = Sensors[n_layer]->getHitPosition().second;
-			
-			//the y-coordinate
-			derLc[0] = 0.;
-			derLc[1] = 0.;
-			derLc[2] = layer_labZ;
-			derLc[3] = 1.;
-
-			for (int k=0; k<NGL; k++){
-				derGl[k] = 0.;
-			}
-
-			derGl[n_layer*NGLperLayer+0] = 0.;		
-			derGl[n_layer*NGLperLayer+1] = 1.;			
-			//derGl[n_layer*NGLperLayer+2] = 0.;			
-			//derGl[n_layer*NGLperLayer+3] = y_true;			
-
-			rMeas = y_true - y_predicted;
-
-			if (MWCQualityCut&&fabs(rMeas) > 15) continue;
-			//std::cout<<" ---> delta y = "<<rMeas<<std::endl;
-			sigma = Sensors[n_layer]->getResidualResolution();
-			//std::cout<<"Adding rMeas (in y) = "<<rMeas<<std::endl;
-			mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
-
-
-			if (makeTree) {
-				double res_y=y_true - y_predicted;
-				switch(n_layer) {
-					case 0:
-						res1_y=res_y;
-						break;
-					case 1:
-						res2_y=res_y;
-						break;
-					case 2:
-						res3_y=res_y;
-						break;
-					case 3:
-						res4_y=res_y;
-						break;
-				}
-			}
-		}
-	}
-	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
-		delete (*it).second;
-	};	Sensors.clear();
-	delete Track;
-		
-	*/
-
-	mille->end();
-	tree->Fill();	
 	
 }// analyze ends here
 
@@ -349,9 +263,10 @@ void MillepedeBinaryWriter::beginJob() {
 		std::cout<<"Writing to the file: "<<binaryFileName<<std::endl;
 	}
   
-	NLC = 4;
+	NLC = 2;
 	NGLperLayer = 1;	//two translations, no scales, but no rotation
-	NGL = Layers.size()*NGLperLayer;
+	NGL = 4*NGLperLayer;		//hard coded number for four DWCs
+	std::cout<<"Number of global parameters: "<<NGL<<std::endl;
 	rMeas = 0.;
 	sigma = 0.;
 	derLc = new float[NLC];
