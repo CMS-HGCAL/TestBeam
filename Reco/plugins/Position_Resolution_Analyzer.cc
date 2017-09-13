@@ -40,11 +40,27 @@
 #include "TFile.h"
 #include "TTree.h"
   
-//configuration1:
-//DUMMY VALUES
-double config1Positions[] = {0.0, 5.35, 10., 15., 20., 25., 30., 35.};    //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
-double config1X0Depths[] = {6.268, 7.0, 9., 9., 10., 11., 12., 13.}; //in radiation lengths, copied from layerSumAnalyzer
+//configuration1 based on Shilpis plot from 26.07.17: 
+//https://indico.cern.ch/event/656159/contributions/2674177/attachments/1499439/2334623/update_simulation_geom.pdf
+// 2 layers in EE (first one in the graphics was removed) and 4 in FH, indications are in mm
+double z1_config1 = 0. + 156. + 182.7 + 4.9 * 4 + 6.0 * 4 + 0.3 * 7 + 1.2;
+double z2_config1 = z1_config1 + 11.0 + 4.9 * 8 + 0.3 * 16 + 6.0 * 7 + 13.2;
+double z3_config1 = z2_config1 + 1.2 + 6.0 * 3 + 4 * 0.3 + 2 * 4.9 + 54. + 38. + 10. + 78. + 40. + 6. + 1.2;	
+double z4_config1 = z3_config1 + 46.9 + 3 * 40 + 6 + 1.2;
+double z5_config1 = z4_config1 + 26.9 + 40. + 10. + 63. + 10. + 2 * 40. + 6. + 1.2;
+double z6_config1 = z5_config1 + 58.9 + 3 * 40. + 6. + 1.2;
+
+double zdepth1_config1 = 0.;
+double zdepth2_config1 = 0.; 
+double zdepth3_config1 = 0.; 
+double zdepth4_config1 = 0.; 
+double zdepth5_config1 = 0.; 
+double zdepth6_config1 = 0.; 
+
+double config1Positions[] = {z1_config1, z2_config1, z3_config1, z4_config1, z5_config1, z6_config1};    
+double  config1X0Depths[] = {zdepth1_config1, zdepth2_config1, zdepth3_config1, zdepth4_config1, zdepth5_config1, zdepth6_config1}; 
   
+
 
 //#define DEBUG
 
@@ -136,6 +152,8 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 		weightingMethod = LINEARWEIGHTING;
 	else if (methodString == "logWeighting_3.5_1.0")
 		weightingMethod = LOGWEIGHTING_35_10;
+	else if (methodString == "mostIntensive")
+		weightingMethod = MOSTINTENSIVE;
 	else 
 		weightingMethod = DEFAULTWEIGHTING;
 

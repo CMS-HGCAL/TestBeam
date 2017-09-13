@@ -185,6 +185,8 @@ void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMeth
   }
 
   switch(weightingMethod){
+    case MOSTINTENSIVE:
+      SensorHitMap::mostIntensiveHit();
     case SQUAREDWEIGHTING:
       SensorHitMap::poweredWeighting(2);
       break;
@@ -384,7 +386,7 @@ void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMeth
       //SensorHitMap::newWeightingFunction()
       //break;
     default:
-      SensorHitMap::poweredWeighting(2);
+      SensorHitMap::mostIntensiveHit();
   }
 
   //set the displacement in z w.r.t. the rotational angles only
@@ -509,6 +511,11 @@ void SensorHitMap::considerClusters(int N_considered) {
   clusterIndex != clusterIndexes[N_considered].end(); clusterIndex++){
     HitsForPositioning.push_back(Hits[*clusterIndex]);
   }
+}
+
+void SensorHitMap::mostIntensiveHit() {
+  centralHitPoint.first = mostSignificantHit->x;
+  centralHitPoint.second = mostSignificantHit->y;
 }
 
 void SensorHitMap::poweredWeighting(int exponent) {

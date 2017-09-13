@@ -27,6 +27,7 @@ enum ConsiderationMethod {
 
 enum WeightingMethod {
   DEFAULTWEIGHTING,
+  MOSTINTENSIVE,
   SQUAREDWEIGHTING,
   LINEARWEIGHTING,
   LOGWEIGHTING_20_10,
@@ -133,6 +134,7 @@ class SensorHitMap {
     bool filterByCellType(int ID);
     void considerNClosest(int N_considered);
     void considerClusters(int N_considered);
+    void mostIntensiveHit();
     void poweredWeighting(int exponent);
     void logWeighting(double log_a, double log_b);
 
