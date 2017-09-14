@@ -44,6 +44,24 @@ public:
 	float cellCenter_y;
 	float _time;
 
+	int _skiroc;
+	int _channel;
+
+	void setSkiroc(int iski) {
+		_skiroc = iski;
+	}
+
+	void setChannel(int ichan) {
+		_channel = ichan;
+	}
+
+	int skiroc() {
+		return _skiroc;
+	}
+
+	int channel() {
+		return _channel;
+	}
 
 	float energyLow() const
 	{

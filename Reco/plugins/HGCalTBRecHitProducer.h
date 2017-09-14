@@ -19,6 +19,8 @@
 
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
+//#define DEBUG
+
 class HGCalTBRecHitProducer : public edm::EDProducer
 {
  public:
@@ -39,6 +41,10 @@ class HGCalTBRecHitProducer : public edm::EDProducer
 
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;
+
+  #ifdef DEBUG
+    int eventCounter;
+  #endif
 
   struct {
     HGCalElectronicsMap emap_;

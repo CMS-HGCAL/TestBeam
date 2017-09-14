@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+//#define DEBUG
+
 const static int SENSORSIZE = 128;
 
 HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) : 
@@ -34,6 +36,9 @@ void HGCalTBRecHitProducer::beginJob()
   if (!io.load(fip.fullPath(), essource_.emap_)) {
     throw cms::Exception("Unable to load electronics map");
   };
+  #ifdef DEBUG
+    eventCounter=1;
+  #endif
 }
 
 void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iSetup)
@@ -49,11 +54,16 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
   std::vector<std::pair<double, double> > CellXY;
 
+  #ifdef DEBUG
+    std::cout<<"++++++++++++++++++++++  Event: "<<eventCounter<<"   +++++++++++++++++++++"<<std::endl;
+  #endif
+
   for( auto rawhit : *rawhits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid) ) continue;
     int iboard=rawhit.detid().layer()-1;
     int iski=rawhit.skiroc();
+    int ichannel=rawhit.channel();
 
     std::vector<double> sampleHG, sampleLG, sampleT;
 
@@ -152,6 +162,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
     recHit.setEnergy(energy);
     recHit.setTime(time);
+    recHit.setChannel(ichannel);
+    recHit.setSkiroc(iski);
 
     HGCalTBDetId detid = rawhit.detid();
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), SENSORSIZE );
@@ -159,9 +171,22 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
     recHit.setCellCenterCoordinate(iux, iuy);
 
+    #ifdef DEBUG
+      if (totGain>1000) {
+        std::cout<<"Board: "<<iboard+1<<"  and skiroc "<<iski;
+        std::cout<<"  Channel: "<<ichannel<<std::endl;
+        std::cout<<"subHG[3] = "<<subHG[3]<<"   subLG[3] = "<<subLG[3]<<std::endl;
+        std::cout<<"energy: "<<energy<<"   lowGain (pulse): "<<lowGain<<"   sample3 LG: "<<sampleLG[3]<<"  highGain (pulse): "<<highGain<<"   sample3 HG: " <<sampleHG[3]<<"  totGain: "<<totGain<<std::endl<<std::endl;
+      }
+    #endif
+
     rechits->push_back(recHit);
   }
   event.put(rechits, m_outputCollectionName);
+  #ifdef DEBUG
+    std::cout<<std::endl<<std::endl;
+    eventCounter++;
+  #endif
 }
 
 DEFINE_FWK_MODULE(HGCalTBRecHitProducer);
