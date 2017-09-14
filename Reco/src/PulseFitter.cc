@@ -52,7 +52,7 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   if( noise>0 )
     _noise=noise;
   
-  ROOT::Math::Minimizer* m = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
+  ROOT::Math::Minimizer* m = ROOT::Math::Factory::CreateMinimizer("Minuit", "Migrad");
   m->SetMaxFunctionCalls(m_fitterParameter.nMaxIterations);
   m->SetMaxIterations(m_fitterParameter.nMaxIterations);
   m->SetTolerance(0.001);
@@ -83,6 +83,9 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   fit.status=(fabs(xm[0]-m_fitterParameter.tmaxRangeDown)>std::numeric_limits<double>::epsilon()&&
         fabs(xm[0]-m_fitterParameter.tmaxRangeUp)>std::numeric_limits<double>::epsilon()) ? m->Status() : 4;
   fit.ncalls=m->NCalls();
+
+  delete m;
+  
 }
 
 
