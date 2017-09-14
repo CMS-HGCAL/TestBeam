@@ -31,6 +31,7 @@ class HGCalTBRawHitProducer : public edm::EDProducer
   std::string m_pedestalLow_filename;
   std::string m_channelsToMask_filename;
   int m_underSaturationADC;
+  int m_minTimeSampleForSaturation;
   int m_maxTimeSampleForSaturation;
   
   edm::EDGetTokenT<HGCalTBSkiroc2CMSCollection> m_HGCalTBSkiroc2CMSCollection;
