@@ -67,7 +67,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
     std::vector<double> sampleHG, sampleLG, sampleT;
 
-    float highGain, lowGain, totGain;
+    float highGain, lowGain, totGain, toaRise;
     int hgStatus = -1;
     int lgStatus = -1;
     float timeHG = 0.;
@@ -75,6 +75,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     float subHG[NUMBER_OF_TIME_SAMPLES],subLG[NUMBER_OF_TIME_SAMPLES];
 
     totGain = rawhit.totSlow();
+    toaRise = rawhit.toaRise();
 
     for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       subHG[it]=0;
@@ -83,8 +84,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     switch ( rawhit.detid().cellType() ){
     case 0 : 
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-	subHG[it]=cmMap[iski].fullHG[it]; 
-	subLG[it]=cmMap[iski].fullLG[it]; 
+      	subHG[it]=cmMap[iski].fullHG[it]; 
+      	subLG[it]=cmMap[iski].fullLG[it]; 
       }
       break;
     case 2 : 
@@ -95,13 +96,13 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       	break;
     case 3 : 
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-	subHG[it]=cmMap[iski].mouseBiteHG[it]; 
-	subLG[it]=cmMap[iski].mouseBiteLG[it]; 
+      	subHG[it]=cmMap[iski].mouseBiteHG[it]; 
+      	subLG[it]=cmMap[iski].mouseBiteLG[it]; 
       }
       break;
       case 4 : for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-	subHG[it]=cmMap[iski].outerHG[it]; 
-	subLG[it]=cmMap[iski].outerLG[it]; 
+      	subHG[it]=cmMap[iski].outerHG[it]; 
+      	subLG[it]=cmMap[iski].outerLG[it]; 
       }
        	break;
     }
@@ -110,6 +111,11 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       sampleLG.push_back(rawhit.lowGainADC(it)-subLG[it]);
       sampleT.push_back(25*it+12.5);
     }
+
+    //pulse fitting
+    PulseFitter fitter(0,150);
+
+    //first HG
     //this is a just try to isolate hits with signal
     float en2=rawhit.highGainADC(2)-subHG[2];
     float en3=rawhit.highGainADC(3)-subHG[3];
@@ -117,24 +123,35 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     float en6=rawhit.highGainADC(6)-subHG[6];
     
     if( en2<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
-      PulseFitter fitter(0,150);
       PulseFitterResult fithg;
       fitter.run(sampleT, sampleHG, fithg);
-      PulseFitterResult fitlg;
-      fitter.run(sampleT, sampleLG, fitlg);
       
       highGain = fithg.amplitude;
-      lowGain = fitlg.amplitude;
       timeHG = fithg.tmax - fithg.trise;
-      timeLG = fitlg.tmax - fitlg.trise;
       hgStatus = fithg.status;
-      lgStatus = fitlg.status;
     }
     if(hgStatus != 0)
       highGain=0;
+    
+    //second LG
+    //this is a just try to isolate hits with signal
+    en2=rawhit.lowGainADC(2)-subLG[2];
+    en3=rawhit.lowGainADC(3)-subLG[3];
+    en4=rawhit.lowGainADC(4)-subLG[4];
+    en6=rawhit.lowGainADC(6)-subLG[6];
+
+    if( en2<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
+      PulseFitterResult fitlg;
+      fitter.run(sampleT, sampleLG, fitlg);
+      
+      lowGain = fitlg.amplitude;
+      timeLG = fitlg.tmax - fitlg.trise;
+      lgStatus = fitlg.status;
+    }
     if(lgStatus != 0)
       lowGain=0;
     
+
     float energy = -1;
     float time = -1.;
     HGCalTBRecHit recHit(rawhit.detid(), energy, lowGain, highGain, totGain, time);
@@ -149,7 +166,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
       recHit.setFlag(HGCalTBRecHit::kGood);
     }
-    else if(totGain > 50){
+    else if(totGain > 10 && toaRise > 0){
       energy = totGain * m_TOT2LG_value.at(iboard) * m_LG2HG_value.at(iboard);
       recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
       recHit.setFlag(HGCalTBRecHit::kGood);
