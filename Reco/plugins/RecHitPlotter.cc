@@ -133,9 +133,6 @@ void RecHitPlotter::beginJob()
 	os << "HighGainVsLowGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan;
 	chan->h_high_vs_low=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),360,-100,3500,400,-500,3500);
 	m_channelInfoMap.insert( std::pair<uint32_t,channelInfo*>(chan->key,chan) );
-	std::cout << chan->key << "\t" << detid.layer()<< " " << iski << " " << eid.ichan() << " "
-		  << eid.iskiroc() 
-		  << std::endl;
       }
     }
   }
@@ -195,7 +192,7 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     int iski=(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-(eid.iskiroc()-1)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     int key=hit.id().layer()*10000+eid.iskiroc()*100+eid.ichan();
     if( m_channelInfoMap.find(key)==m_channelInfoMap.end() )
-      std::cout << key << "\t" << hit.id().layer()-1<< " " << iski << " " << eid.ichan() << " "
+      std::cout << "Problem the key is not appearing in the channel map : key,layer-1,iski,channel,skiID = " << key << "\t" << hit.id().layer()-1<< " " << iski << " " << eid.ichan() << " "
 		<< eid.iskiroc() 
 		<< std::endl;
     if( !hit.isUnderSaturationForHighGain() ) m_channelInfoMap[ key ]->h_adcHigh->Fill( hit.energyHigh() );
@@ -211,10 +208,8 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     if(m_eventPlotter){
       if(!IsCellValid.iu_iv_valid(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize))  continue;
       CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize);
-      double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA) ;
-      double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
-      polyMapHG[ (eid.iskiroc()-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA ]->Fill(iux , iuy, hit.energyHigh());
-      polyMapLG[ (eid.iskiroc()-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA ]->Fill(iux , iuy, hit.energyLow());
+      polyMapHG[ (eid.iskiroc()-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA ]->Fill(CellCentreXY.first , CellCentreXY.second, hit.energyHigh());
+      polyMapLG[ (eid.iskiroc()-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA ]->Fill(CellCentreXY.first , CellCentreXY.second, hit.energyLow());
     }
   }
   m_h_hgSum->Fill( energyHighSum );
