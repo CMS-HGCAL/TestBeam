@@ -25,6 +25,17 @@ options.register('outputFile',
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
 
+options.register('performPulseFit',
+                 1,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Perform the pulse fits for the rechit reconstruction. Has priority over averaging. ')
+
+options.register('performAveraging',
+                 0,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Perform the averaging for the rechit reconstruction. ')
 
 options.register('reportEvery',
                 10000,
@@ -69,6 +80,8 @@ process.output = cms.OutputModule("PoolOutputModule",
 process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         OutputCollectionName = cms.string('HGCALTBRECHITS'),
                                         InputCollection = cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
+                                        performPulseFit = cms.untracked.bool(bool(options.performPulseFit)),
+                                        performAveraging = cms.untracked.bool(bool(options.performAveraging)),
                                         LG2HG = cms.untracked.vdouble(9.0,9.0,9.0,9.0,9.0,
                                                                       9.0,9.0,9.0,9.0,9.0),
                                         TOT2LG = cms.untracked.vdouble(9.0,9.0,9.0,9.0,9.0,

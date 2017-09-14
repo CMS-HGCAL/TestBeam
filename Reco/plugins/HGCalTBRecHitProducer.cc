@@ -16,6 +16,9 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) :
 {
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
 
+  performPulseFit = cfg.getUntrackedParameter<bool>("performPulseFit", true);
+  performAveraging = cfg.getUntrackedParameter<bool>("performAveraging", false);
+
   produces <HGCalTBRecHitCollection>(m_outputCollectionName);
   std::vector<double> v0(1,10.);
   m_highGainADCSaturation = cfg.getUntrackedParameter<std::vector<double> >("HighGainADCSaturation",v0);
@@ -106,50 +109,83 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       }
        	break;
     }
-    for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      sampleHG.push_back(rawhit.highGainADC(it)-subHG[it]);
-      sampleLG.push_back(rawhit.lowGainADC(it)-subLG[it]);
-      sampleT.push_back(25*it+12.5);
-    }
-
-    //pulse fitting
-    PulseFitter fitter(0,150);
-
-    //first HG
-    //this is a just try to isolate hits with signal
-    float en2=rawhit.highGainADC(2)-subHG[2];
-    float en3=rawhit.highGainADC(3)-subHG[3];
-    float en4=rawhit.highGainADC(4)-subHG[4];
-    float en6=rawhit.highGainADC(6)-subHG[6];
     
-    if( en2<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
-      PulseFitterResult fithg;
-      fitter.run(sampleT, sampleHG, fithg);
-      
-      highGain = fithg.amplitude;
-      timeHG = fithg.tmax - fithg.trise;
-      hgStatus = fithg.status;
-    }
-    if(hgStatus != 0)
-      highGain=0;
-    
-    //second LG
-    //this is a just try to isolate hits with signal
-    en2=rawhit.lowGainADC(2)-subLG[2];
-    en3=rawhit.lowGainADC(3)-subLG[3];
-    en4=rawhit.lowGainADC(4)-subLG[4];
-    en6=rawhit.lowGainADC(6)-subLG[6];
+    if (performPulseFit) {    
+      //pulse fitting
+      for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+        sampleHG.push_back(rawhit.highGainADC(it)-subHG[it]);
+        sampleLG.push_back(rawhit.lowGainADC(it)-subLG[it]);
+        sampleT.push_back(25*it+12.5);
+      }
 
-    if( en2<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
-      PulseFitterResult fitlg;
-      fitter.run(sampleT, sampleLG, fitlg);
+      PulseFitter fitter(0,150);
+
+      //first HG
+      //this is a just try to isolate hits with signal
+      float en2=rawhit.highGainADC(2)-subHG[2];
+      float en3=rawhit.highGainADC(3)-subHG[3];
+      float en4=rawhit.highGainADC(4)-subHG[4];
+      float en6=rawhit.highGainADC(6)-subHG[6];
       
-      lowGain = fitlg.amplitude;
-      timeLG = fitlg.tmax - fitlg.trise;
-      lgStatus = fitlg.status;
+      if( en2<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
+        PulseFitterResult fithg;
+        fitter.run(sampleT, sampleHG, fithg);
+        
+        highGain = fithg.amplitude;
+        timeHG = fithg.tmax - fithg.trise;
+        hgStatus = fithg.status;
+      }
+      if(hgStatus != 0)
+        highGain=0;
+      
+      //second LG
+      //this is a just try to isolate hits with signal
+      en2=rawhit.lowGainADC(2)-subLG[2];
+      en3=rawhit.lowGainADC(3)-subLG[3];
+      en4=rawhit.lowGainADC(4)-subLG[4];
+      en6=rawhit.lowGainADC(6)-subLG[6];
+
+      if( en2<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
+        PulseFitterResult fitlg;
+        fitter.run(sampleT, sampleLG, fitlg);
+        
+        lowGain = fitlg.amplitude;
+        timeLG = fitlg.tmax - fitlg.trise;
+        lgStatus = fitlg.status;
+      }
+      if(lgStatus != 0)
+        lowGain=0;
+
+    } else if (performAveraging) {
+      //averaging of TS2-TS5
+      float en2=rawhit.highGainADC(2)-subHG[2];
+      float en3=rawhit.highGainADC(3)-subHG[3];
+      float en4=rawhit.highGainADC(4)-subHG[4];
+      float en5=rawhit.highGainADC(5)-subHG[5];
+      hgStatus=0;
+      timeHG = 50.;
+      highGain = (en2+en3+en4+en5)/4.;
+
+      en2=rawhit.lowGainADC(2)-subLG[2];
+      en3=rawhit.lowGainADC(3)-subLG[3];
+      en4=rawhit.lowGainADC(4)-subLG[4];
+      en5=rawhit.lowGainADC(5)-subLG[5];
+      lgStatus=0;
+      timeLG = 50.;
+      lowGain = (en2+en3+en4+en5)/4.;
+    } else  {
+      //simply use TS3
+      float en3=rawhit.highGainADC(3)-subHG[3];
+      hgStatus=0;
+      timeHG = 50.;
+      highGain = en3;
+
+
+      en3=rawhit.lowGainADC(3)-subLG[3];
+      lgStatus=0;
+      timeLG = 50.;
+      lowGain = en3;
     }
-    if(lgStatus != 0)
-      lowGain=0;
     
 
     float energy = -1;

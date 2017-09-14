@@ -38,6 +38,8 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   std::vector<double> m_LG2HG_value;
   std::vector<double> m_TOT2LG_value;
 
+  bool performPulseFit;
+  bool performAveraging;
 
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;
