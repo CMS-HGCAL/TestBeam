@@ -56,7 +56,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
     std::vector<double> sampleHG, sampleLG, sampleT;
 
-    float highGain, lowGain, totGain;
+    float highGain(0), lowGain(0), totGain(0);
     int hgStatus = -1;
     int lgStatus = -1;
     float timeHG = 0.;
@@ -100,12 +100,12 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       sampleT.push_back(25*it+12.5);
     }
     //this is a just try to isolate hits with signal
-    float en2=rawhit.highGainADC(2)-subHG[2];
+    float en1=rawhit.highGainADC(1)-subHG[1];
     float en3=rawhit.highGainADC(3)-subHG[3];
     float en4=rawhit.highGainADC(4)-subHG[4];
     float en6=rawhit.highGainADC(6)-subHG[6];
     
-    if( en2<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
+    if( en1<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
       PulseFitter fitter(0,150);
       PulseFitterResult fithg;
       fitter.run(sampleT, sampleHG, fithg);
@@ -118,6 +118,11 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       timeLG = fitlg.tmax - fitlg.trise;
       hgStatus = fithg.status;
       lgStatus = fitlg.status;
+    //  std::cout << rawhit.detid().layer()-1 << " " 
+		//<< rawhit.detid().iu() << " " 
+		//<< rawhit.detid().iv() << " "
+		//<< highGain << " " << hgStatus << " "
+		//<< lowGain << " " << lgStatus << std::endl;
     }
     if(hgStatus != 0)
       highGain=0;
