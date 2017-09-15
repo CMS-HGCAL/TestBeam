@@ -323,9 +323,10 @@ void PedestalPlotter::endJob()
     HGCalTBDetId detid=(*it).second;
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
 
-	  double iux = CellCentreXY.first;
-	  double iuy = CellCentreXY.second;
-    //if(detid.cellType() == 2) std::cout<<endl<<" iboard = "<<iboard<<" IU = "<<detid.sensorIU()<<" IV = "<<detid.sensorIV()<<" iu = "<<detid.iu()<<" iv = "<<detid.iv()<<" X = "<<iux<<" Y = "<<iuy<<endl;
+
+    double iux = CellCentreXY.first;
+    double iuy = CellCentreXY.second;
+
     
     for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
       board = iboard;
@@ -350,14 +351,6 @@ void PedestalPlotter::endJob()
       median_low = lgMean;
       RMS_low = lgRMS;
       pedestalTree->Fill();
-
-      #ifdef DEBUG
-        if (iboard==0 && iski==0 && ichan==0) {
-          std::cout<<"iboard: "<<iboard<<"   iski: "<<iski<<"   ichan: "<<ichan<<"   sca: "<<it<<"  --> "<<std::endl;
-          std::cout<<"hg mean: "<<hgMean<<"   hg RMS: "<<hgRMS<<std::endl;
-          std::cout<<"hg mean: "<<hgMean<<"   hg RMS: "<<hgRMS<<std::endl;
-        }
-      #endif
 
 
       if( m_writePedestalFile ){

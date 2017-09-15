@@ -24,10 +24,10 @@ PulseFitterResult() : tmax(0.), amplitude(0.),
 };
 
 struct fitterParameter{
-fitterParameter():tmax0(87.5),
+fitterParameter():tmax0(90),
     tmaxRangeUp(120),
-    tmaxRangeDown(70),
-    nMaxIterations(75)
+    tmaxRangeDown(65),
+    nMaxIterations(100)
   {;}
   double tmax0;
   double tmaxRangeUp;

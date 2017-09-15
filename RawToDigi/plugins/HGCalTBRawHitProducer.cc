@@ -11,7 +11,8 @@ HGCalTBRawHitProducer::HGCalTBRawHitProducer(const edm::ParameterSet& cfg) :
   m_pedestalLow_filename(cfg.getUntrackedParameter<std::string>("LowGainPedestalFileName",std::string("pedestalLG.txt"))),
   m_channelsToMask_filename(cfg.getUntrackedParameter<std::string>("ChannelsToMaskFileName","HGCal/CondObjects/data/noisyChannels.txt")),
   m_underSaturationADC(cfg.getUntrackedParameter<int>("UnderSaturationADC",4)),
-  m_maxTimeSampleForSaturation(cfg.getUntrackedParameter<int>("MaxTimeSampleForSaturation",5))
+  m_minTimeSampleForSaturation(cfg.getUntrackedParameter<int>("MinTimeSampleForSaturation",2)),
+  m_maxTimeSampleForSaturation(cfg.getUntrackedParameter<int>("MaxTimeSampleForSaturation",4))
 {
   m_HGCalTBSkiroc2CMSCollection = consumes<HGCalTBSkiroc2CMSCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
   produces <HGCalTBRawHitCollection>(m_outputCollectionName);
@@ -140,8 +141,8 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       std::vector<int> rollpositions=skiroc.rollPositions();
       bool hgSat(false),lgSat(false);
       for( int it=0; it<NUMBER_OF_SCA; it++ ){
-	if( it<m_maxTimeSampleForSaturation && skiroc.ADCHigh(ichan,it)==m_underSaturationADC ) hgSat=true;
-	if( it<m_maxTimeSampleForSaturation && skiroc.ADCLow(ichan,it)==m_underSaturationADC ) lgSat=true;
+	if( it>=m_minTimeSampleForSaturation && it<=m_maxTimeSampleForSaturation && skiroc.ADCHigh(ichan,it)==m_underSaturationADC ) hgSat=true;
+	if( it>=m_minTimeSampleForSaturation && it<=m_maxTimeSampleForSaturation && skiroc.ADCLow(ichan,it)==m_underSaturationADC ) lgSat=true;
 	if( m_subtractPedestal ){
 	  adchigh.at( rollpositions[it] ) = skiroc.ADCHigh(ichan,it)-m_pedMap[10000*iboard+100*iskiroc+ichan].pedHGMean[it] ;
 	  adclow.at( rollpositions[it] ) = skiroc.ADCLow(ichan,it)-m_pedMap[10000*iboard+100*iskiroc+ichan].pedLGMean[it] ;

@@ -70,7 +70,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
     std::vector<double> sampleHG, sampleLG, sampleT;
 
-    float highGain, lowGain, totGain, toaRise;
+    float highGain(0), lowGain(0), totGain(0), toaRise(0);
+
     int hgStatus = -1;
     int lgStatus = -1;
     float timeHG = 0.;
@@ -109,6 +110,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       }
        	break;
     }
+
     
     if (performPulseFit) {    
       //pulse fitting
@@ -122,12 +124,12 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
       //first HG
       //this is a just try to isolate hits with signal
-      float en2=rawhit.highGainADC(2)-subHG[2];
+      float en1=rawhit.highGainADC(1)-subHG[1];
       float en3=rawhit.highGainADC(3)-subHG[3];
       float en4=rawhit.highGainADC(4)-subHG[4];
       float en6=rawhit.highGainADC(6)-subHG[6];
       
-      if( en2<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
+      if( en1<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
         PulseFitterResult fithg;
         fitter.run(sampleT, sampleHG, fithg);
         
@@ -138,14 +140,15 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       if(hgStatus != 0)
         highGain=0;
       
+
       //second LG
       //this is a just try to isolate hits with signal
-      en2=rawhit.lowGainADC(2)-subLG[2];
+      en1=rawhit.lowGainADC(1)-subLG[1];
       en3=rawhit.lowGainADC(3)-subLG[3];
       en4=rawhit.lowGainADC(4)-subLG[4];
       en6=rawhit.lowGainADC(6)-subLG[6];
 
-      if( en2<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
+      if( en1<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
         PulseFitterResult fitlg;
         fitter.run(sampleT, sampleLG, fitlg);
         
@@ -185,6 +188,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       lgStatus=0;
       timeLG = 50.;
       lowGain = en3;
+
     }
     
 
@@ -228,12 +232,12 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     recHit.setCellCenterCoordinate(iux, iuy);
 
     #ifdef DEBUG
-      if (totGain>1000) {
-        std::cout<<"Board: "<<iboard+1<<"  and skiroc "<<iski;
-        std::cout<<"  Channel: "<<ichannel<<std::endl;
-        std::cout<<"subHG[3] = "<<subHG[3]<<"   subLG[3] = "<<subLG[3]<<std::endl;
-        std::cout<<"energy: "<<energy<<"   lowGain (pulse): "<<lowGain<<"   sample3 LG: "<<sampleLG[3]<<"  highGain (pulse): "<<highGain<<"   sample3 HG: " <<sampleHG[3]<<"  totGain: "<<totGain<<std::endl<<std::endl;
-      }
+      
+      std::cout<<"Board: "<<iboard+1<<"  and skiroc "<<iski;
+      std::cout<<"  Channel: "<<ichannel<<"  layer: "<<detid.layer()<<"  sensiorIU: "<<detid.sensorIU()<<"   sensorIV: "<<detid.sensorIV()<<"   iu: "<<detid.iu()<<"   iv: "<<detid.iv()<<std::endl;
+      std::cout<<"subHG[3] = "<<subHG[3]<<"   subLG[3] = "<<subLG[3]<<std::endl;
+      std::cout<<"energy: "<<energy<<"   lowGain (pulse): "<<lowGain<<"   sample3 LG: "<<sampleLG[3]<<"  highGain (pulse): "<<highGain<<"   sample3 HG: " <<sampleHG[3]<<"  totGain: "<<totGain<<std::endl<<std::endl;
+      
     #endif
 
     rechits->push_back(recHit);

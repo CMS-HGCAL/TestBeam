@@ -81,7 +81,8 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   fit.erroramplitude=errors[1];
   fit.chi2=m->MinValue();
   fit.status=(fabs(xm[0]-m_fitterParameter.tmaxRangeDown)>std::numeric_limits<double>::epsilon()&&
-        fabs(xm[0]-m_fitterParameter.tmaxRangeUp)>std::numeric_limits<double>::epsilon()) ? m->Status() : 4;
+	      fabs(xm[0]-m_fitterParameter.tmaxRangeUp)>std::numeric_limits<double>::epsilon()) ? m->Status() : 6;
+
   fit.ncalls=m->NCalls();
 
   delete m;
