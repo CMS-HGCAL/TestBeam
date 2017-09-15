@@ -215,8 +215,11 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
     recHit.setEnergy(energy);
     recHit.setTime(time);
-    recHit.setChannel(ichannel);
+    
+    //channel information
+    recHit.setBoard(iboard);
     recHit.setSkiroc(iski);
+    recHit.setChannel(ichannel);
 
     HGCalTBDetId detid = rawhit.detid();
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), SENSORSIZE );

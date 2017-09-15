@@ -44,8 +44,13 @@ public:
 	float cellCenter_y;
 	float _time;
 
+	int _board;
 	int _skiroc;
 	int _channel;
+
+	void setBoard(int iboard) {
+		_board = iboard;
+	}
 
 	void setSkiroc(int iski) {
 		_skiroc = iski;
@@ -53,6 +58,10 @@ public:
 
 	void setChannel(int ichan) {
 		_channel = ichan;
+	}
+
+	int board() {
+		return _board;
 	}
 
 	int skiroc() {
