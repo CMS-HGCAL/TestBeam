@@ -102,7 +102,7 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 	TH2F* htmp2;
 	TH1F* htmp1;
 	std::ostringstream os( std::ostringstream::ate );
-	for(size_t ib = 1; ib<=HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+	for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
 		for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
 			os.str("");
 			os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
@@ -195,13 +195,11 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	
 	//fill the rechits:
 	for(auto Rechit : *Rechits) {	
-		int layer = (Rechit.id()).layer();
-		//int board = Rechit.board();
+		int board = Rechit.board();
 		int skiroc = Rechit.skiroc() % 4;
 		int channel = Rechit.channel();
   		double energyHG = Rechit.energyHigh();
-  		int key = layer*1000+skiroc*100+channel;
-  		//int key = board*1000+skiroc*100+channel;
+  		int key = board*1000+skiroc*100+channel;
   		
   		m_h_rechitEnergyPerDWCE[key]->Fill(DWCE_x, DWCE_y, energyHG);
   		m_h_rechitEnergy[key]->Fill(energyHG);
