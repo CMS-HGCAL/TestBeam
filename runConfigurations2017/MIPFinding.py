@@ -18,11 +18,11 @@ options.register('outputFile',
                  VarParsing.VarParsing.varType.string,
                  'Output file where analysis output are stored')
 
-options.register('pathToMIPWindowFile',
+options.register('pathsToMIPWindowFiles',
                  '',
-                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.multiplicity.list,
                  VarParsing.VarParsing.varType.string,
-                 'Path to the file containing the corresponding cuts on the reconstructed impact positions on DWC E.'
+                 'Paths to the file containing the corresponding cuts on the reconstructed impact positions on DWC E.'
                 )
 
 options.register('NBins',
@@ -84,7 +84,7 @@ process.mipfindinganalysis = cms.EDAnalyzer("MIPFinder",
                                 n_bins_DWCE = cms.int32(options.NBins),
                                 max_dim_x_DWCE = cms.double(options.DimXDWCE),
                                 max_dim_y_DWCE = cms.double(options.DimYDWCE),
-                                pathToMIPWindowFile = cms.string(options.pathToMIPWindowFile)
+                                pathsToMIPWindowFiles = cms.vstring(options.pathsToMIPWindowFiles)
 
                               )
 
