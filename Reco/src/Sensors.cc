@@ -518,6 +518,7 @@ void SensorHitMap::mostIntensiveHit() {
   if (mostSignificantHit==NULL) return;
   centralHitPoint.first = mostSignificantHit->x;
   centralHitPoint.second = mostSignificantHit->y;
+  totalWeight = mostSignificantHit->I;
 }
 
 void SensorHitMap::poweredWeighting(int exponent) {

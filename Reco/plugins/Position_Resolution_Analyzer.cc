@@ -4,7 +4,7 @@
 
 /**
 	@Author: Thorben Quast <tquast>
-		20 Febr 2017
+		14 September 2017
 		thorben.quast@cern.ch / thorben.quast@rwth-aachen.de
 */
 
@@ -126,7 +126,6 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		//dWCs
 		int useMWC;
 
-		std::pair<int, double> CM_tmp;	//will write the subtract_CM() return values for each layer
 };
 
 Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterSet& iConfig) {	
@@ -322,7 +321,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	}
 
 	#ifdef DEBUG
-		std::cout<<dwcs->at(i).x<<"  "<<dwcs->at(0).y<<"   "<<dwcs->at(0).z<<"  "<<dwcs->at(0).goodMeasurement<<std::endl;
+		std::cout<<dwcs->at(0).x<<"  "<<dwcs->at(0).y<<"   "<<dwcs->at(0).z<<"  "<<dwcs->at(0).goodMeasurement<<std::endl;
 		std::cout<<dwcs->at(1).x<<"  "<<dwcs->at(1).y<<"   "<<dwcs->at(1).z<<"  "<<dwcs->at(1).goodMeasurement<<std::endl;
 		std::cout<<dwcs->at(2).x<<"  "<<dwcs->at(2).y<<"   "<<dwcs->at(2).z<<"  "<<dwcs->at(2).goodMeasurement<<std::endl;
 		std::cout<<dwcs->at(3).x<<"  "<<dwcs->at(3).y<<"   "<<dwcs->at(3).z<<"  "<<dwcs->at(3).goodMeasurement<<std::endl;
