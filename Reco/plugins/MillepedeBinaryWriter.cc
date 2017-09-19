@@ -202,8 +202,6 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			//the x-coordinate								
 			derLc[0] = layer_labZ;
 			derLc[1] = 1.;
-			derLc[2] = 0.;
-			derLc[3] = 0.;
 			
 			//std::cout<<"x_predicted: "<<x_predicted<<"   y_predicted: "<<y_predicted<<"     x_true: "<<x_true<<"   y_true: "<<y_true<<std::endl;
 			for (int k=0; k<NGL; k++){
