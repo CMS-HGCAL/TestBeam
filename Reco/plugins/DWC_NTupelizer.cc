@@ -52,24 +52,24 @@ class DWC_NTupelizer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		edm::Service<TFileService> fs;
 		bool writeMinimal;
 
-	  	int run, runType, n_event, goodDWC_Measurement;
-	  	double time_DWC1, time_DWC2, time_DWC3, time_DWC4;
+  	int run, runType, n_event, goodDWC_Measurement;
+  	double time_DWC1, time_DWC2, time_DWC3, time_DWC4;
 		double reco1_x, reco1_y, reco2_x, reco2_y, reco3_x, reco3_y, reco4_x, reco4_y;
 		double res1_x, res1_y, res2_x, res2_y, res3_x, res3_y, res4_x, res4_y;
 		double z1, z2, z3, z4;
-	  	int dwc1_z, dwc2_z, dwc3_z, dwc4_z;
-	  	double x1_m_x2, x1_m_x3, x1_m_x4, x2_m_x3, x2_m_x4, x3_m_x4;
-	  	double y1_m_y2, y1_m_y3, y1_m_y4, y2_m_y3, y2_m_y4, y3_m_y4;
-	  	int dwc1_Ntimestamps, dwc2_Ntimestamps, dwc3_Ntimestamps, dwc4_Ntimestamps;
-	  	int dwc1_goodMeasurement, dwc2_goodMeasurement, dwc3_goodMeasurement, dwc4_goodMeasurement; 
-	  	int dwc1_goodMeasurementX, dwc2_goodMeasurementX, dwc3_goodMeasurementX, dwc4_goodMeasurementX; 
-	  	int dwc1_goodMeasurementY, dwc2_goodMeasurementY, dwc3_goodMeasurementY, dwc4_goodMeasurementY; 
-	  	int N_goodMeasurements, N_goodMeasurements_X, N_goodMeasurements_Y;
-	  	double residual1_x, residual1_y, residual2_x, residual2_y, residual3_x, residual3_y, residual4_x, residual4_y; 
+  	int dwc1_z, dwc2_z, dwc3_z, dwc4_z;
+  	double x1_m_x2, x1_m_x3, x1_m_x4, x2_m_x3, x2_m_x4, x3_m_x4;
+  	double y1_m_y2, y1_m_y3, y1_m_y4, y2_m_y3, y2_m_y4, y3_m_y4;
+  	int dwc1_Ntimestamps, dwc2_Ntimestamps, dwc3_Ntimestamps, dwc4_Ntimestamps;
+  	int dwc1_goodMeasurement, dwc2_goodMeasurement, dwc3_goodMeasurement, dwc4_goodMeasurement; 
+  	int dwc1_goodMeasurementX, dwc2_goodMeasurementX, dwc3_goodMeasurementX, dwc4_goodMeasurementX; 
+  	int dwc1_goodMeasurementY, dwc2_goodMeasurementY, dwc3_goodMeasurementY, dwc4_goodMeasurementY; 
+  	int N_goodMeasurements, N_goodMeasurements_X, N_goodMeasurements_Y;
+  	double residual1_x, residual1_y, residual2_x, residual2_y, residual3_x, residual3_y, residual4_x, residual4_y; 
 
 
-	  	int NDF_x; double chi2_x, referenceError_x;
-	  	int NDF_y; double chi2_y, referenceError_y;
+  	int NDF_x; double chi2_x, referenceError_x;
+  	int NDF_y; double chi2_y, referenceError_y;
 		std::map<int, SensorHitMap*> Sensors;
 		ParticleTrack* Track;  		
 		TTree* tree;
@@ -226,9 +226,9 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 			delete Track;
 		} else {
 			NDF_x = 0;
-			chi2_x = -1;
-			referenceError_x = -1;
-			residual1_x = residual2_x = residual3_x = residual4_x = -1.;
+			chi2_x = -999;
+			referenceError_x = -999;
+			residual1_x = residual2_x = residual3_x = residual4_x = -999;
 		}
 
 		//fit for y
@@ -268,9 +268,9 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 
 		} else {
 			NDF_y = 0;
-			chi2_y = -1;
-			referenceError_y = -1;
-			residual1_y = residual2_y = residual3_y = residual4_y = -1.;
+			chi2_y = -999;
+			referenceError_y = -999;
+			residual1_y = residual2_y = residual3_y = residual4_y = -999;
 		}
 
 
