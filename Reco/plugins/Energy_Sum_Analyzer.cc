@@ -71,6 +71,7 @@ class Energy_Sum_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResource
 		int SensorSize;
 		int nLayers;
 
+		double MIP_cut;
 
 		//helper variables that are set within the event loop, i.e. are defined per event
 		std::map<int, SensorHitMap*> Sensors;
@@ -102,6 +103,8 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 	nLayers = iConfig.getParameter<int>("nLayers");
 	ADC_per_MIP = iConfig.getParameter<std::vector<double> >("ADC_per_MIP");
 
+	MIP_cut = 4.;		//todo: make as configuration
+	MIP_cut *= 50.;	//50 HG ADC counts are one MIP --> cell must at least have that value in order to be summed.
 
 	//initialize tree and set Branch addresses
 	outTree = fs->make<TTree>("energySums", "energySums");
@@ -176,7 +179,9 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 		}
 
 //		Sensors[layer]->addHit(Rechit, ADC_per_MIP[skiroc]);		//with MIP calibration
-		Sensors[layer]->addHit(Rechit, 1.);		//without MIP calibration
+		
+		if (Rechit.energy() > MIP_cut)	//only add if energy is higher than the MIP cut
+			Sensors[layer]->addHit(Rechit, 1.);		//without MIP calibration
 	}
 
 	#ifdef DEBUG
