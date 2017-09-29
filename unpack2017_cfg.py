@@ -23,6 +23,12 @@ options.register('outputFolder',
                  VarParsing.VarParsing.varType.string,
                  'Output folder where analysis output are stored')
 
+options.register('dataFormat',
+                 0,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Data formats int -> important for parameter setting')
+
 options.maxEvents = -1
 options.output = "cmsswEvents.root"
 
@@ -45,17 +51,25 @@ process.maxEvents = cms.untracked.PSet(
 
 ####################################
 
+if options.dataFormat==0 :
+    numberOfBytesForTheHeader=8
+    numberOfBytesForTheTrailer=4
+    numberOfBytesForTheEventTrailers=4
+elif options.dataFormat==1 :
+    numberOfBytesForTheHeader=12
+    numberOfBytesForTheTrailer=4
+    numberOfBytesForTheEventTrailers=12
 process.source = cms.Source("HGCalTBRawDataSource",
                             ElectronicMap=cms.untracked.string(electronicMap),
                             fileNames=cms.untracked.vstring("file:%s/HexaData_Run%04d.raw"%(options.dataFolder,options.runNumber)),
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
                             NumberOf32BitsWordsPerReadOut=cms.untracked.uint32(30787),
-                            NumberOfBytesForTheHeader=cms.untracked.uint32(8),
-                            NumberOfBytesForTheTrailer=cms.untracked.uint32(4),
-                            NumberOfBytesForTheEventTrailers=cms.untracked.uint32(4),
+                            NumberOfBytesForTheHeader=cms.untracked.uint32(numberOfBytesForTheHeader),
+                            NumberOfBytesForTheTrailer=cms.untracked.uint32(numberOfBytesForTheTrailer),
+                            NumberOfBytesForTheEventTrailers=cms.untracked.uint32(numberOfBytesForTheEventTrailers),
                             NSkipEvents=cms.untracked.uint32(0),
                             ReadTimeStamps=cms.untracked.bool(True),
-                            DataFormats=cms.untracked.uint32(1),
+                            DataFormats=cms.untracked.uint32(options.dataFormat),
                             timingFiles=cms.vstring("%s/HexaData_Run%04d_TIMING_RDOUT_ORM0.txt"%(options.dataFolder,options.runNumber),
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM1.txt"%(options.dataFolder,options.runNumber),
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM2.txt"%(options.dataFolder,options.runNumber))
