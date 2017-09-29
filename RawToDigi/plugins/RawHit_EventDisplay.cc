@@ -184,8 +184,6 @@ void RawHit_EventDisplay::analyze(const edm::Event& event, const edm::EventSetup
   for( auto hit : *hits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid) ) continue;
-    int iboard=hit.skiroc()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-    int ichan=hit.channel();
     int iski=hit.skiroc();
 //    for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       size_t it = 3;    
