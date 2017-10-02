@@ -61,12 +61,12 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 
 		double wc_resolution;
 
-		int triggerTimeDifferenceTolerance;
+		int triggerTimeDifferenceTolerance;	//indicated in ms
 
 		bool performAlignment;
-	  	std::vector<std::string> alignmentParamaterFiles;
+	  std::vector<std::string> alignmentParamaterFiles;
 		
-	  	std::map<std::pair<int, int> ,std::map<int, double> >loadedAlignmentParameters;
+	  std::map<std::pair<int, int> ,std::map<int, double> >loadedAlignmentParameters;
 		std::map<int, double> currentAlignmentParameters;
 
 		std::vector<std::string> timingFileNames;
@@ -74,6 +74,9 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		std::vector<int> skipFirstNEvents;
 		std::vector<int> triggerCountOffsets;
 		std::vector<std::string> runType;
+		std::vector<int> triggerTimingFormat; 	//default: ms, 1: micro seconds
+		std::vector<int> hitsPerChannelStored; 	//default: 0, 1: hits per Channel are Stored and in principle a more sophisticated analysis can be run
+
 		std::map<int, int> trigger_to_event_table;
 		std::map<int, int> event_trigger_time;
 
@@ -84,21 +87,22 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		std::vector<int> syncCounter;
 
 		TFile *rootFile;
-	  	TTree *tree;   //!pointer to the analyzed TTree or TChain
+  	TTree *tree;   //!pointer to the analyzed TTree or TChain
 
-	  	unsigned int n_run; unsigned int n_trigger; 
-	  	std::vector<int> *channels;
-	  	std::vector<int> *dwc_timestamps;
-	  	int timeSinceStart;
-	 
-	  	int ref_time_sync, ref_time_dwc;
+  	unsigned int n_run; unsigned int n_trigger; 
+  	std::vector<int> *channels;
+  	std::vector<int> *dwc_timestamps;
+  	int timeSinceStart;
+  	Long64_t timeSinceStart_long;
+ 
+  	double ref_time_sync, ref_time_dwc;
 
 
-	  	TBranch                   *b_run;   
-	  	TBranch                   *b_trigger;   
-	  	TBranch                   *b_channels;   
-	  	TBranch                   *b_dwc_timestamps;   
-	  	TBranch                   *b_timeSinceStart;   
+  	TBranch                   *b_run;   
+  	TBranch                   *b_trigger;   
+  	TBranch                   *b_channels;   
+  	TBranch                   *b_dwc_timestamps;   
+  	TBranch                   *b_timeSinceStart;   
 
 
 	public:

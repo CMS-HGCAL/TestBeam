@@ -13,8 +13,9 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	//find and fill the configured runs
 	outputCollectionName = pset.getParameter<std::string>("OutputCollectionName");
 
-  	std::vector<double> v0(4, 0.2/40);		//0.2mm/ns and TDC binning is 25ps
-	triggerTimeDifferenceTolerance = pset.getUntrackedParameter<int>("triggerTimeDifferenceTolerance", 2);
+  std::vector<double> v0(4, 0.2/40);		//0.2mm/ns and TDC binning is 25ps
+	triggerTimeDifferenceTolerance = pset.getUntrackedParameter<int>("triggerTimeDifferenceTolerance", 2);		//given in ms
+
 	
 	slope_x = pset.getUntrackedParameter<std::vector<double> >("slope_x", v0);
 	slope_y = pset.getUntrackedParameter<std::vector<double> >("slope_y", v0);
@@ -28,6 +29,8 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	triggerCountOffsets = pset.getParameter<std::vector<int> >("triggerCountOffsets");
 	skipFirstNEvents = pset.getParameter<std::vector<int> >("skipFirstNEvents");
 	runType = pset.getParameter<std::vector<std::string> >("runType");
+	triggerTimingFormat = pset.getParameter<std::vector<int> >("triggerTimingFormat");
+	hitsPerChannelStored = pset.getParameter<std::vector<int> >("hitsPerChannelStored"); 
 
 
 	produces<WireChambers>(outputCollectionName);
@@ -75,7 +78,7 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 		//set the root file
 		fileCounter = nextFileIndex;
 		rootTreeIndex = 0;
-  		eventCounter = goodEventCounter = 0;
+  	eventCounter = goodEventCounter = 0;
 		syncCounter[0] = syncCounter[1] =  syncCounter[2] = 0;
 
 		std::cout<<"Opening "<<fileNames()[fileCounter].c_str()<<std::endl;
@@ -87,7 +90,12 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 		tree->SetBranchAddress("event", &n_trigger, &b_trigger);
 		tree->SetBranchAddress("channels", &channels, &b_channels);
 		tree->SetBranchAddress("dwc_timestamps", &dwc_timestamps, &b_dwc_timestamps);
-		tree->SetBranchAddress("timeSinceStart", &timeSinceStart, &b_timeSinceStart);
+		
+		if (triggerTimingFormat[fileCounter]==0) {
+			tree->SetBranchAddress("timeSinceStart", &timeSinceStart, &b_timeSinceStart);
+		} else {
+			tree->SetBranchAddress("timeSinceStart", &timeSinceStart_long, &b_timeSinceStart);
+		}
 
 		ReadTimingFile(timingFileNames[fileCounter], sumTriggerTimes[fileCounter]);
 	}
@@ -273,10 +281,13 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	} else {
 		int event_candidate_index = trigger_to_event_table[n_trigger_corrected];
 
-		double deltaTs = fabs((event_trigger_time[event_candidate_index]-ref_time_sync) - (timeSinceStart - ref_time_dwc));
+		double timeSinceStart_ms = timeSinceStart;
+		if (triggerTimingFormat[fileCounter]==1) timeSinceStart_ms = timeSinceStart_long / 1000.;
+
+		double deltaTs = fabs((event_trigger_time[event_candidate_index]-ref_time_sync) - (timeSinceStart_ms - ref_time_dwc));
 
 		#ifdef DEBUG
-			std::cout<<"Event: "<<event_candidate_index<<"  trigger: "<<n_trigger<<": "<<deltaTs<<" = "<<(event_trigger_time[event_candidate_index]-ref_time_sync)<<" - "<<(timeSinceStart - ref_time_dwc)<<std::endl;
+			std::cout<<"Event: "<<event_candidate_index<<"  trigger: "<<n_trigger<<": "<<deltaTs<<" = "<<(event_trigger_time[event_candidate_index]-ref_time_sync)<<" - "<<(timeSinceStart_ms - ref_time_dwc)<<std::endl;
 		#endif
 
 		if ((deltaTs <= triggerTimeDifferenceTolerance) ||  sumTriggerTimes[fileCounter]==-1){
@@ -304,7 +315,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 		}
 
 		ref_time_sync = event_trigger_time[event_candidate_index]; 
-		ref_time_dwc = timeSinceStart;	
+		ref_time_dwc = timeSinceStart_ms;	
 	
 		eventCounter++;
 	}
