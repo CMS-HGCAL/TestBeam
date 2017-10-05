@@ -140,9 +140,6 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
  	//get the relevant event information
 	event.getByToken(RunDataToken, rd);
 	
-	if (rd->event>-1)
-		return;
-
 	eventCounter++;
 
 	//get the multi wire chambers
@@ -168,19 +165,32 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	for (size_t l=0; l<Layers.size(); l++) {
 		int n_layer = Layers[l];
 
-		if (coordinate==X&&!dwcs->at(n_layer).goodMeasurement_X) continue;	
-		if (coordinate==Y&&!dwcs->at(n_layer).goodMeasurement_Y) continue;	
+		if (!dwcs->at(n_layer).goodMeasurement) return;
 		
 		Sensors[n_layer] = new SensorHitMap(n_layer);				
 		Sensors[n_layer]->setLabZ(dwcs->at(n_layer).z, DWC_x0s[n_layer]);
 		Sensors[n_layer]->setCenterHitPosition(dwcs->at(n_layer).x, dwcs->at(n_layer).y , dwcs->at(n_layer).res_x , dwcs->at(n_layer).res_y);
 		Sensors[n_layer]->setParticleEnergy(rd->energy);
-		Sensors[n_layer]->setResidualResolution(dwcs->at(n_layer).res_x);	
+		//Sensors[n_layer]->setResidualResolution(dwcs->at(n_layer).res_x);	
+		Sensors[n_layer]->setResidualResolution(3.);	
 
 		Track->addFitPoint(Sensors[n_layer]);
 		N_points++;
 	}
 	
+	//quality cut to remove unphysical events:
+	double _c0 = coordinate==X ? Sensors[0]->getHitPosition().first : Sensors[0]->getHitPosition().second;
+	double _c1 = coordinate==X ? Sensors[1]->getHitPosition().first : Sensors[1]->getHitPosition().second;
+	double _c2 = coordinate==X ? Sensors[2]->getHitPosition().first : Sensors[2]->getHitPosition().second;
+	double _c3 = coordinate==X ? Sensors[3]->getHitPosition().first : Sensors[3]->getHitPosition().second;
+	if (fabs(_c0-_c1)>10.) return;
+	if (fabs(_c0-_c2)>50.) return;
+	if (fabs(_c0-_c3)>50.) return;
+	if (fabs(_c1-_c2)>50.) return;
+	if (fabs(_c1-_c3)>50.) return;
+	if (fabs(_c2-_c3)>10.) return;
+
+
 	if (N_points == (int)Layers.size()) {
 		Track->fitTrack(fittingMethod);
 		
@@ -189,10 +199,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		//step 6: calculate the deviations between each fit missing one layer and exactly that layer's true central position
 		for (size_t l=0; l<Layers.size(); l++) {
 			int n_layer = Layers[l];
-
-			if (coordinate==X&&!dwcs->at(n_layer).goodMeasurement_X) continue;	
-			if (coordinate==Y&&!dwcs->at(n_layer).goodMeasurement_Y) continue;	
-		
+			
 			double layer_labZ = Sensors[n_layer]->getLabZ();
 			double intrinsic_z = Sensors[n_layer]->getIntrinsicHitZPosition();	
 			
@@ -222,6 +229,12 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 				switch(n_layer) {
 					case 0:
 						res1=res;
+						if (fabs(res1)>30.) {
+							std::cout<<"Layer 1: "<<Sensors[0]->getHitPosition().first<<"   "<<Sensors[0]->getHitPosition().second<<std::endl;
+							std::cout<<"Layer 2: "<<Sensors[1]->getHitPosition().first<<"   "<<Sensors[1]->getHitPosition().second<<std::endl;
+							std::cout<<"Layer 3: "<<Sensors[2]->getHitPosition().first<<"   "<<Sensors[2]->getHitPosition().second<<std::endl;
+							std::cout<<"Layer 4: "<<Sensors[3]->getHitPosition().first<<"   "<<Sensors[3]->getHitPosition().second<<std::endl;
+						}
 						break;
 					case 1:
 						res2=res;

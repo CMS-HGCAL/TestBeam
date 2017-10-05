@@ -146,13 +146,11 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 	dwc1->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC1_LEFT)) && validTimestamp(dwc_timestamps->at(DWC1_RIGHT));
 	dwc1->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC1_DOWN)) && validTimestamp(dwc_timestamps->at(DWC1_UP));
-	dwc1->goodMeasurement = (dwc1->goodMeasurement_X && dwc1->goodMeasurement_Y);
-	dwc1->x = dwc1->goodMeasurement_X ? slope_x.at(0) * (dwc_timestamps->at(DWC1_LEFT)-dwc_timestamps->at(DWC1_RIGHT))-currentAlignmentParameters[11]: -999;
+	dwc1->x = dwc1->goodMeasurement_X ? slope_x.at(0) * (dwc_timestamps->at(DWC1_LEFT)-dwc_timestamps->at(DWC1_RIGHT)): -999;
 	dwc1->res_x = wc_resolution;
-	dwc1->y = dwc1->goodMeasurement_Y ? slope_y.at(0) * (dwc_timestamps->at(DWC1_DOWN)-dwc_timestamps->at(DWC1_UP))-currentAlignmentParameters[12]: -999;
+	dwc1->y = dwc1->goodMeasurement_Y ? slope_y.at(0) * (dwc_timestamps->at(DWC1_DOWN)-dwc_timestamps->at(DWC1_UP)): -999;
 	dwc1->res_y = wc_resolution;
 	dwc1->z = dwc_z1;
-	N_DWC_points = dwc1->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
 
 
 	//DWC 2
@@ -172,13 +170,11 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 	dwc2->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC2_LEFT)) && validTimestamp(dwc_timestamps->at(DWC2_RIGHT));
 	dwc2->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC2_DOWN)) && validTimestamp(dwc_timestamps->at(DWC2_UP));
-	dwc2->goodMeasurement = (dwc2->goodMeasurement_X && dwc2->goodMeasurement_Y);
-	dwc2->x = dwc2->goodMeasurement_X ? slope_x.at(1) * (dwc_timestamps->at(DWC2_LEFT)-dwc_timestamps->at(DWC2_RIGHT))-currentAlignmentParameters[111]: -999;
+	dwc2->x = dwc2->goodMeasurement_X ? slope_x.at(1) * (dwc_timestamps->at(DWC2_LEFT)-dwc_timestamps->at(DWC2_RIGHT)): -999;
 	dwc2->res_x = wc_resolution;
-	dwc2->y = dwc2->goodMeasurement_Y ? slope_y.at(1) * (dwc_timestamps->at(DWC2_DOWN)-dwc_timestamps->at(DWC2_UP))-currentAlignmentParameters[112]: -999;
+	dwc2->y = dwc2->goodMeasurement_Y ? slope_y.at(1) * (dwc_timestamps->at(DWC2_DOWN)-dwc_timestamps->at(DWC2_UP)): -999;
 	dwc2->res_y = wc_resolution;
 	dwc2->z = dwc_z2;
-	N_DWC_points = dwc2->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
 
 
 	//DWC 3
@@ -198,10 +194,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 	dwc3->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC3_LEFT)) && validTimestamp(dwc_timestamps->at(DWC3_RIGHT));
 	dwc3->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC3_DOWN)) && validTimestamp(dwc_timestamps->at(DWC3_UP));
-	dwc3->goodMeasurement = (dwc3->goodMeasurement_X && dwc3->goodMeasurement_Y);
-	dwc3->x = dwc3->goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC3_LEFT)-dwc_timestamps->at(DWC3_RIGHT))-currentAlignmentParameters[211]: -999;
+	dwc3->x = dwc3->goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC3_LEFT)-dwc_timestamps->at(DWC3_RIGHT)): -999;
 	dwc3->res_x = wc_resolution;
-	dwc3->y = dwc3->goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC3_DOWN)-dwc_timestamps->at(DWC3_UP))-currentAlignmentParameters[212]: -999;
+	dwc3->y = dwc3->goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC3_DOWN)-dwc_timestamps->at(DWC3_UP)): -999;
 	dwc3->res_y = wc_resolution;
 	dwc3->z = dwc_z3;
 	
@@ -212,7 +207,6 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 		dwc3->y = -dwc3->y;
 	} 
 
-	N_DWC_points = dwc3->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
 
 
 	//DWC 4
@@ -232,14 +226,32 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	
 	dwc4->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC4_LEFT)) && validTimestamp(dwc_timestamps->at(DWC4_RIGHT));
 	dwc4->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC4_DOWN)) && validTimestamp(dwc_timestamps->at(DWC4_UP));
-	dwc4->goodMeasurement = (dwc4->goodMeasurement_X && dwc4->goodMeasurement_Y);
-	dwc4->x = dwc4->goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC4_LEFT)-dwc_timestamps->at(DWC4_RIGHT))-currentAlignmentParameters[311]: -999;
+	dwc4->x = dwc4->goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC4_LEFT)-dwc_timestamps->at(DWC4_RIGHT)): -999;
 	dwc4->res_x = wc_resolution;
-	dwc4->y = dwc4->goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC4_DOWN)-dwc_timestamps->at(DWC4_UP))-currentAlignmentParameters[312]: -999;
+	dwc4->y = dwc4->goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC4_DOWN)-dwc_timestamps->at(DWC4_UP)): -999;
 	dwc4->res_y = wc_resolution;
 	dwc4->z = dwc_z4;
-	N_DWC_points = dwc4->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
 
+
+	//perform alignment
+	if (fabs(dwc1->x) <= 50.) dwc1->x = dwc1->x - currentAlignmentParameters[11]; else dwc1->goodMeasurement_X=false;
+	if (fabs(dwc1->y) <= 50.) dwc1->y = dwc1->y - currentAlignmentParameters[12]; else dwc1->goodMeasurement_Y=false;
+	if (fabs(dwc2->x) <= 50.) dwc2->x = dwc2->x - currentAlignmentParameters[111]; else dwc2->goodMeasurement_X=false;
+	if (fabs(dwc2->y) <= 50.) dwc2->y = dwc2->y - currentAlignmentParameters[112]; else dwc2->goodMeasurement_Y=false;
+	if (fabs(dwc3->x) <= 50.) dwc3->x = dwc3->x - currentAlignmentParameters[211]; else dwc3->goodMeasurement_X=false;
+	if (fabs(dwc3->y) <= 50.) dwc3->y = dwc3->y - currentAlignmentParameters[212]; else dwc3->goodMeasurement_Y=false;
+	if (fabs(dwc4->x) <= 50.) dwc4->x = dwc4->x - currentAlignmentParameters[311]; else dwc4->goodMeasurement_X=false;
+	if (fabs(dwc4->y) <= 50.) dwc4->y = dwc4->y - currentAlignmentParameters[312]; else dwc4->goodMeasurement_Y=false;
+
+	//set the good measurement flags
+	dwc1->goodMeasurement = (dwc1->goodMeasurement_X && dwc1->goodMeasurement_Y);
+	N_DWC_points = dwc1->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
+	dwc2->goodMeasurement = (dwc2->goodMeasurement_X && dwc2->goodMeasurement_Y);
+	N_DWC_points = dwc2->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
+	dwc3->goodMeasurement = (dwc3->goodMeasurement_X && dwc3->goodMeasurement_Y);
+	N_DWC_points = dwc3->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
+	dwc4->goodMeasurement = (dwc4->goodMeasurement_X && dwc4->goodMeasurement_Y);
+	N_DWC_points = dwc4->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
 
 
 	mwcs->push_back(*dwc1);
