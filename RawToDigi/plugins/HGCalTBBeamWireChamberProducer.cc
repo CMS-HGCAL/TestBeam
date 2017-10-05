@@ -8,6 +8,7 @@ HGCalTBBeamWireChamberProducer::HGCalTBBeamWireChamberProducer(const edm::Parame
     outputCollectionName = cfg.getParameter<std::string>("OutputCollectionName");
 
     produces<WireChambers>(outputCollectionName);
+    produces<RunData>("FullRunData");
 }
 
 void HGCalTBBeamWireChamberProducer::beginJob() {
@@ -17,6 +18,7 @@ void HGCalTBBeamWireChamberProducer::beginJob() {
 	tree->SetBranchAddress("run", &run, &b_run);
     tree->SetBranchAddress("event", &eventId ,&b_event);   
     tree->SetBranchAddress("goodDWC_Measurement", &goodDWC_Measurement ,&b_goodDWC_Measurement);   
+    tree->SetBranchAddress("triggerTimeDifference", &triggerTimeDiff ,&b_triggerTimeDiff);   
     tree->SetBranchAddress("reco1_x", &reco1_x ,&b_reco1_x);   
     tree->SetBranchAddress("res1_x", &res1_x ,&b_res1_x);   
     tree->SetBranchAddress("reco1_y", &reco1_y ,&b_reco1_y);   
@@ -57,15 +59,32 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
     WireChamberData* dwc3 = new WireChamberData();
     WireChamberData* dwc4 = new WireChamberData();
 
+    //set the RunData
+    std::auto_ptr<RunData> rd_full(new RunData);
+
+    rd_full->configuration = rd->configuration;
+    rd_full->run = rd->run;
+    rd_full->trigger = rd->trigger;
+    rd_full->event = rd->event;
+    rd_full->energy = rd->energy;
+    rd_full->runType = rd->runType;
+    rd_full->hasDanger = rd->hasDanger;
+    rd_full->trueEnergy = rd->trueEnergy;
+
     if (reco1_x_loaded.count(rd->event)==0) {
         dwc1->goodMeasurement = dwc2->goodMeasurement = dwc3->goodMeasurement = dwc4->goodMeasurement = false;
+        rd_full->hasValidMWCMeasurement = false;
+        rd_full->triggerDeltaT_to_TDC = -999.;
     } else {
     	//cross-check
         int event_nr = rd->event;
 
     	#ifdef DEBUG
-    		std::cout<<"Run: "<<rd->run<<"   Event: "<<event_nr<<std::endl;
-    		std::cout<<"reco1_x: "<<reco1_x_loaded[event_nr]<<std::endl;
+
+            std::cout<<"Run: "<<rd->run<<"   Event: "<<event_nr<<std::endl;
+            std::cout<<"GoodDWC: "<<goodDWC_Measurement_loaded[event_nr]<<"   triggerTimeDifference: "<<triggerTimeDiff_loaded[event_nr]<<std::endl;
+    		
+            std::cout<<"reco1_x: "<<reco1_x_loaded[event_nr]<<std::endl;
     		std::cout<<"reco1_y: "<<reco1_y_loaded[event_nr]<<std::endl;
             std::cout<<"res1_x: "<<res1_x_loaded[event_nr]<<std::endl;
             std::cout<<"res1_y: "<<res1_y_loaded[event_nr]<<std::endl;
@@ -133,6 +152,10 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
         dwc4->y = reco4_y_loaded[event_nr];
         dwc4->res_y = res4_y_loaded[event_nr];
         dwc4->z = z4_loaded[event_nr];
+
+
+        rd_full->hasValidMWCMeasurement = goodDWC_Measurement_loaded[event_nr];
+        rd_full->triggerDeltaT_to_TDC = triggerTimeDiff_loaded[event_nr];
     }
 
     dwcs->push_back(*dwc1);
@@ -141,7 +164,14 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
     dwcs->push_back(*dwc4);
 
     event.put(std::move(dwcs), "DelayWireChambers");
-     
+
+
+    #ifdef DEBUG
+    std::cout<<rd_full->run<<"  "<<rd_full->event<<"  "<<rd_full->energy<<"  "<<rd_full->configuration<<"  "<<rd_full->runType<<"  "<<rd_full->hasDanger<<"   "<<rd_full->hasValidMWCMeasurement<<"   "<<rd_full->triggerDeltaT_to_TDC<<std::endl;
+    #endif
+
+    event.put(std::move(rd_full), "FullRunData");
+
 }
 
 void HGCalTBBeamWireChamberProducer::loadRun(int loading_run) {
@@ -160,9 +190,12 @@ void HGCalTBBeamWireChamberProducer::loadRun(int loading_run) {
         tree->GetEntry(i);
         if (run!=loading_run) continue;
 
-        #ifdef DEBUG
-            std::cout<<"Added event: "<<eventId<<std::endl;
-    	#endif
+        //#ifdef DEBUG
+        //    std::cout<<"Added event: "<<eventId<<std::endl;
+    	//#endif
+
+        goodDWC_Measurement_loaded[eventId] = goodDWC_Measurement;
+        triggerTimeDiff_loaded[eventId] = triggerTimeDiff;
 
         reco1_x_loaded[eventId] = reco1_x;
     	res1_x_loaded[eventId] = res1_x;

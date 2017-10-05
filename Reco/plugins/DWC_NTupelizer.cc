@@ -53,6 +53,7 @@ class DWC_NTupelizer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		bool writeMinimal;
 
   	int run, runType, n_event, goodDWC_Measurement;
+  	double triggerTimeDiff;
   	double time_DWC1, time_DWC2, time_DWC3, time_DWC4;
 		double reco1_x, reco1_y, reco2_x, reco2_y, reco3_x, reco3_y, reco4_x, reco4_y;
 		double res1_x, res1_y, res2_x, res2_y, res3_x, res3_y, res4_x, res4_y;
@@ -108,6 +109,7 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 	runType = std::atoi((rd->runType).c_str());
 	n_event = rd->event;
 	goodDWC_Measurement = rd->hasValidMWCMeasurement ? 1 : 0;
+	triggerTimeDiff = rd->triggerDeltaT_to_TDC;
 
 	reco1_x = dwcs->at(0).x;
 	reco1_y = dwcs->at(0).y;
@@ -289,6 +291,7 @@ void DWC_NTupelizer::beginJob() {
 	tree->Branch("run", &run);
 	tree->Branch("runType", &runType);
 	tree->Branch("event", &n_event);
+	tree->Branch("triggerTimeDifference", &triggerTimeDiff);
 	tree->Branch("goodDWC_Measurement", &goodDWC_Measurement);
 	tree->Branch("reco1_x", &reco1_x);
 	tree->Branch("reco1_y", &reco1_y);

@@ -9,6 +9,7 @@ struct RunData {
   int run;
   int trigger;
   int event;
+  double triggerDeltaT_to_TDC;
   double energy;
   std::string runType;
   bool hasValidMWCMeasurement;

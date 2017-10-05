@@ -68,7 +68,7 @@ process.energy_sum_analyzer = cms.EDAnalyzer("Energy_Sum_Analyzer",
                                 ADC_per_MIP = cms.vdouble([1.]*4*10),
                                 nLayers = cms.int32(6),
                                 SensorSize = cms.int32(133),
-                                RUNDATA = cms.InputTag("source","RunData" ), 
+                                RUNDATA = cms.InputTag("wirechamberproducer","FullRunData" ), 
                                 HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
                               )
 

@@ -1,6 +1,6 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBWireChamberSource.h"
 
-#define DEBUG
+//#define DEBUG
 
 
 bool validTimestamp(int ts) {
@@ -283,8 +283,11 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 		double timeSinceStart_ms = timeSinceStart;
 		if (triggerTimingFormat[fileCounter]==1) timeSinceStart_ms = timeSinceStart_long / 1000.;
 
-		double deltaTs = fabs((event_trigger_time[event_candidate_index]-ref_time_sync) - (timeSinceStart_ms - ref_time_dwc));
-
+		double deltaTs = (event_trigger_time[event_candidate_index]-ref_time_sync) - (timeSinceStart_ms - ref_time_dwc);
+		rd->triggerDeltaT_to_TDC = deltaTs;
+		
+		//use absolute value
+		deltaTs = fabs(deltaTs);
 		#ifdef DEBUG
 			std::cout<<"Event: "<<event_candidate_index<<"  trigger: "<<n_trigger<<": "<<deltaTs<<" = "<<(event_trigger_time[event_candidate_index]-ref_time_sync)<<" - "<<(timeSinceStart_ms - ref_time_dwc)<<std::endl;
 		#endif

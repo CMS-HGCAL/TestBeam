@@ -35,10 +35,12 @@ class HGCalTBBeamWireChamberProducer : public edm::EDProducer{
 
 
     int run, eventId, goodDWC_Measurement;
+    double triggerTimeDiff;
     double reco1_x, reco1_y, res1_x, res1_y, z1, reco2_x, reco2_y, res2_x, res2_y, z2, reco3_x, reco3_y, res3_x, res3_y, z3, reco4_x, reco4_y, res4_x, res4_y, z4;    
     TBranch                   *b_run;   
     TBranch                   *b_event;   
     TBranch                   *b_goodDWC_Measurement;   
+    TBranch                   *b_triggerTimeDiff;
     TBranch                   *b_reco1_x;   
     TBranch                   *b_res1_x;   
     TBranch                   *b_reco1_y;   
@@ -62,6 +64,9 @@ class HGCalTBBeamWireChamberProducer : public edm::EDProducer{
 
 
     int loaded_run;
+    std::map<int, int> goodDWC_Measurement_loaded;
+    std::map<int, double> triggerTimeDiff_loaded;
+
     std::map<int, double> reco1_x_loaded;
     std::map<int, double> res1_x_loaded;
     std::map<int, double> reco1_y_loaded;

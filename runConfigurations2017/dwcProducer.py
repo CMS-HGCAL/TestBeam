@@ -64,9 +64,12 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 
 
 process.output = cms.OutputModule("PoolOutputModule",
-                                  fileName = cms.untracked.string(options.processedFile)
+                                  fileName = cms.untracked.string(options.processedFile),                                  
+                                  outputCommands = cms.untracked.vstring('drop *',
+                                                                         'keep *_*_HGCALTBRECHITS_*',
+                                                                         'keep *_*_DelayWireChambers_*',
+                                                                         'keep *_*_FullRunData_*')
 )
-
 
 #Wire chamber producer
 process.wirechamberproducer.OutputCollectionName = cms.string("DelayWireChambers") 

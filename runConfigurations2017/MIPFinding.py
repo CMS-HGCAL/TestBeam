@@ -78,7 +78,7 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(options
 
 
 process.mipfindinganalysis = cms.EDAnalyzer("MIPFinder",
-                                RUNDATA = cms.InputTag("source","RunData" ), 
+                                RUNDATA = cms.InputTag("wirechamberproducer", "FullRunData" ), 
                                 MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
                                 HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
                                 n_bins_DWCE = cms.int32(options.NBins),
