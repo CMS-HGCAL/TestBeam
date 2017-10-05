@@ -1,6 +1,6 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBWireChamberSource.h"
 
-//#define DEBUG
+#define DEBUG
 
 
 bool validTimestamp(int ts) {
@@ -16,7 +16,6 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
   std::vector<double> v0(4, 0.2/40);		//0.2mm/ns and TDC binning is 25ps
 	triggerTimeDifferenceTolerance = pset.getUntrackedParameter<int>("triggerTimeDifferenceTolerance", 2);		//given in ms
 
-	
 	slope_x = pset.getUntrackedParameter<std::vector<double> >("slope_x", v0);
 	slope_y = pset.getUntrackedParameter<std::vector<double> >("slope_y", v0);
 	wc_resolution = pset.getUntrackedParameter<double>("wc_resolution", 0.5);
@@ -292,13 +291,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 		if ((deltaTs <= triggerTimeDifferenceTolerance) ||  sumTriggerTimes[fileCounter]==-1){
 			rd->event = event_candidate_index;
-			/*
-			#ifdef DEBUG
-				std::cout<<"good x1: "<<dwc1->goodMeasurement_X<<"   good y1: "<<dwc1->goodMeasurement_Y<<"     good x2: "<<dwc2->goodMeasurement_X<<"   good y2: "<<dwc2->goodMeasurement_Y;
-				std::cout<<"   good x3: "<<dwc3->goodMeasurement_X<<"   good y3: "<<dwc3->goodMeasurement_Y<<"     good x4: "<<dwc4->goodMeasurement_X<<"   good y4: "<<dwc4->goodMeasurement_Y;
-				std::cout<<std::endl;
-			#endif
-			*/
+
 			if (rd->hasValidMWCMeasurement) goodEventCounter++;
 			syncCounter[0]++;
 		} else {
@@ -335,7 +328,7 @@ void HGCalTBWireChamberSource::ReadTimingFile(std::string timingFilePath, bool s
 
 	file.open(timingFilePath.c_str(), std::fstream::in);
 
-	int time_sinceStart = 0;
+	double time_sinceStart = 0;
 
 	std::cout<<"Reading file "<<timingFilePath<<" -open: "<<file.is_open()<<std::endl;
 	while (file.is_open() && !file.eof()) {
