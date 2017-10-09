@@ -32,7 +32,7 @@ options.register('configuration',
                  1,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 '1 is the July setup'
+                 '1 is the July setup; 2 is the late September setup'
                  )
 
 
@@ -62,11 +62,15 @@ process.source = cms.Source("PoolSource",
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
 
+nLayers = 6
+if int(options.configuration)==2:
+    nLayers=17
+
 ####################################
 process.energy_sum_analyzer = cms.EDAnalyzer("Energy_Sum_Analyzer",
                                 layers_config  = cms.int32(1),
                                 ADC_per_MIP = cms.vdouble([1.]*4*10),
-                                nLayers = cms.int32(6),
+                                nLayers = cms.int32(nLayers),
                                 SensorSize = cms.int32(133),
                                 RUNDATA = cms.InputTag("wirechamberproducer","FullRunData" ), 
                                 HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),

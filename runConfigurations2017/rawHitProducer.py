@@ -13,6 +13,12 @@ options.register('dataFile',
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw input')
 
+options.register('DWCFile',
+                 '/eos/user/t/tquast/outputs/Testbeam/July2017/reconstructed_DWC_data_full.root',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'path to the reconstructed DWC file.')
+
 options.register('processedFile',
                  '/eos/user/t/tquast/outputs/Testbeam/July2017/rawhits/RAWHITS_1303.root',
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -83,6 +89,12 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
 ####################################
 
+####################################
+# Load the standard sequences
+process.load('HGCal.StandardSequences.LocalReco_cff')
+process.load('HGCal.StandardSequences.RawToDigi_cff')
+####################################
+
 process.source = cms.Source("PoolSource",
                             fileNames=cms.untracked.vstring("file:%s"%options.dataFile)
 )
@@ -92,10 +104,16 @@ process.TFileService = cms.Service("TFileService",
 )
 process.output = cms.OutputModule("PoolOutputModule",
                                   fileName = cms.untracked.string(options.processedFile),
-                                  outputCommands = cms.untracked.vstring('drop *_*_skiroc2cmsdata_*',
-                                                                         'keep *_*_HGCALTBRAWHITS_*', 
-                                                                         'keep *_*_RunData_*')
+                                  outputCommands = cms.untracked.vstring('drop *',
+                                                                         'keep *_*_HGCALTBRAWHITS_*',
+                                                                         'keep *_*_DelayWireChambers_*',
+                                                                         'keep *_*_FullRunData_*')
 )
+
+#Wire chamber producer
+process.wirechamberproducer.OutputCollectionName = cms.string("DelayWireChambers") 
+process.wirechamberproducer.RUNDATA = cms.InputTag("source","RunData")
+process.wirechamberproducer.inputFile = cms.string(options.DWCFile)
 
 process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata"),
@@ -117,6 +135,6 @@ process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
 )
 
 
-process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
+process.p = cms.Path( process.wirechamberproducer*process.rawhitproducer*process.rawhitplotter )
 
 process.end = cms.EndPath(process.output)

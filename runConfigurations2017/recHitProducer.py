@@ -70,11 +70,13 @@ process.source = cms.Source("PoolSource",
 process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string(options.outputFile)
 )
+
 process.output = cms.OutputModule("PoolOutputModule",
-                                  fileName = cms.untracked.string(options.processedFile),
+                                  fileName = cms.untracked.string(options.processedFile),                                  
                                   outputCommands = cms.untracked.vstring('drop *',
                                                                          'keep *_*_HGCALTBRECHITS_*',
-                                                                         'keep *_*_RunData_*')
+                                                                         'keep *_*_DelayWireChambers_*',
+                                                                         'keep *_*_FullRunData_*')
 )
 
 process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
