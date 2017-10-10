@@ -104,7 +104,7 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 	ADC_per_MIP = iConfig.getParameter<std::vector<double> >("ADC_per_MIP");
 
 	MIP_cut = 4.;		//todo: make as configuration
-	MIP_cut *= 50.;	//50 HG ADC counts are one MIP --> cell must at least have that value in order to be summed.
+	MIP_cut *= 49.3;	//50 HG ADC counts are one MIP --> cell must at least have that value in order to be summed.
 
 	//initialize tree and set Branch addresses
 	outTree = fs->make<TTree>("energySums", "energySums");
@@ -180,13 +180,14 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 
 //		Sensors[layer]->addHit(Rechit, ADC_per_MIP[skiroc]);		//with MIP calibration
 		
-		if (Rechit.energyHigh() > MIP_cut)	//only add if energy is higher than the MIP cut
+		if (Rechit.energyLow() > MIP_cut)	//only add if energy is higher than the MIP cut
 			Sensors[layer]->addHit(Rechit, 1.);		//without MIP calibration
 	}
 
 	#ifdef DEBUG
 		std::cout<<"run: "<<rd->run<<"  energy: "<<rd->energy<<"  type:" << rd->runType<<"   eventCounter: "<<rd->event<<std::endl;
 	#endif
+		
 	
 	//Possible event selection: sum of energies of all cells(=hits) from RecHits Collection and Clusters
 	//sumEnergy = 0.;
