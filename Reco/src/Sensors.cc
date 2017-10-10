@@ -106,6 +106,7 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit, double ADC_per_MIP) {
 
   double energy = Rechit.energy() / ADC_per_MIP;  //the LayerSumAnalyzer also energy deposits in MIP units
 
+
   Hits[uniqueID] = new HitData;
   Hits[uniqueID]->ID = ID;
   Hits[uniqueID]->x = iux;
@@ -163,11 +164,9 @@ void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMeth
       SensorHitMap::considerNClosest(-1);
       break;
     case CONSIDERSEVEN:
-      //analogous to the LayerSumAnalyzer (25.11.16)
       SensorHitMap::considerNClosest(7); 
       break;
     case CONSIDERNINETEEN:
-      //analogous to the LayerSumAnalyzer (25.11.16)
       SensorHitMap::considerNClosest(19); 
       break;
     case CONSIDERCLUSTERSALL:
@@ -490,13 +489,13 @@ void SensorHitMap::considerNClosest(int N_considered) {
   );
 
   double maxDist = 0;
-  if (N_considered == 7) maxDist = (0.5 + sqrt(3)) * HGCAL_TB_CELL::FULL_CELL_SIDE;
-  else if (N_considered == 7) maxDist = (0.5 + sqrt(3) * 2.) * HGCAL_TB_CELL::FULL_CELL_SIDE;
+  if (N_considered == 7) maxDist = (0.5 + sqrt(3)) * 10. * HGCAL_TB_CELL::FULL_CELL_SIDE;
+  else if (N_considered == 19) maxDist = (0.5 + sqrt(3) * 2.) * 10. * HGCAL_TB_CELL::FULL_CELL_SIDE;
 
   int considerCounter = 0;
   for (std::vector<std::pair<double, HitData*>>::iterator sorted_hit = to_sort.begin(); 
     sorted_hit != to_sort.end(); sorted_hit++) {
-    if ((*sorted_hit).first > maxDist && considerCounter >= N_considered){ //fill at least Nconsider but also mind radial distance
+    if ((*sorted_hit).first > maxDist || considerCounter >= N_considered){ //fill at least Nconsider but also mind radial distance
       break;
     }
     considerCounter++;
