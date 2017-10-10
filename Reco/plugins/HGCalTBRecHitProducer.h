@@ -19,6 +19,12 @@
 
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "TH2F.h"
+#include <sstream>
+
+
 //#define DEBUG
 
 class HGCalTBRecHitProducer : public edm::EDProducer
@@ -40,6 +46,10 @@ class HGCalTBRecHitProducer : public edm::EDProducer
 
   bool performPulseFit;
   bool performAveraging;
+  bool investigatePulseShape;
+
+  std::map<int, TH2F*> shapesLG;
+  std::map<int, TH2F*> shapesHG;
 
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;

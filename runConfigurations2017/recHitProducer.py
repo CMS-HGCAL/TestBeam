@@ -93,7 +93,8 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         LowGainADCSaturation = cms.untracked.vdouble(4000.,4000.,4000.,4000.,4000.,
                                                                        4000.,4000.,4000.,4000.,4000.),
                                         ElectronicsMap = cms.untracked.string(electronicMap),
-                                        TimeSample3ADCCut = cms.untracked.double(15.)
+                                        TimeSample3ADCCut = cms.untracked.double(15.),
+                                        investigatePulseShape = cms.untracked.bool(True)
 )
 
 process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",

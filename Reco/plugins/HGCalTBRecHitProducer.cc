@@ -5,8 +5,6 @@
 
 #include <iostream>
 
-//#define DEBUG
-
 const static int SENSORSIZE = 128;
 
 HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) : 
@@ -29,6 +27,7 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) :
   std::vector<double> v3(1,10.);
   m_TOT2LG_value = cfg.getUntrackedParameter<std::vector<double> >("TOT2LG",v3);
 
+  investigatePulseShape = cfg.getUntrackedParameter<bool>("investigatePulseShape", false);
   std::cout << cfg.dump() << std::endl;
 }
 
@@ -42,6 +41,29 @@ void HGCalTBRecHitProducer::beginJob()
   #ifdef DEBUG
     eventCounter=1;
   #endif
+
+
+  //usesResource("TFileService");
+  edm::Service<TFileService> fs;
+
+  std::ostringstream os( std::ostringstream::ate );
+  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+    for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
+      os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
+      TFileDirectory dir = fs->mkdir( os.str().c_str() );
+      for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
+      if ((ichan % 2) == 1) continue;
+
+      int key = ib * 10000 + iski * 100 + ichan;
+
+      //std::cout<<"Creating key: "<<key<<std::endl;
+      os.str("");os<<"Channel"<<ichan<<"__LGShape";
+      shapesLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 0, 225, 100, -0.2, 1.);
+      os.str("");os<<"Channel"<<ichan<<"__HGShape";
+      shapesHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 0, 225, 100, -0.2, 1.);
+      }
+    }
+  }
 }
 
 void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iSetup)
@@ -57,15 +79,12 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
   std::vector<std::pair<double, double> > CellXY;
 
-  #ifdef DEBUG
-    std::cout<<"++++++++++++++++++++++  Event: "<<eventCounter<<"   +++++++++++++++++++++"<<std::endl;
-  #endif
 
   for( auto rawhit : *rawhits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid) ) continue;
-    int iboard=rawhit.detid().layer()-1;
     int iski=rawhit.skiroc();
+    int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     int ichannel=rawhit.channel();
 
     std::vector<double> sampleHG, sampleLG, sampleT;
@@ -112,14 +131,14 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     }
 
     
+    for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+      sampleHG.push_back(rawhit.highGainADC(it)-subHG[it]);
+      sampleLG.push_back(rawhit.lowGainADC(it)-subLG[it]);
+      sampleT.push_back(25*it+12.5);
+    }
+    
     if (performPulseFit) {    
       //pulse fitting
-      for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-        sampleHG.push_back(rawhit.highGainADC(it)-subHG[it]);
-        sampleLG.push_back(rawhit.lowGainADC(it)-subLG[it]);
-        sampleT.push_back(25*it+12.5);
-      }
-
       PulseFitter fitter(0,150);
 
       //first HG
@@ -129,17 +148,24 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       float en4=rawhit.highGainADC(4)-subHG[4];
       float en6=rawhit.highGainADC(6)-subHG[6];
       
+      PulseFitterResult fithg;
       if( en1<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
-        PulseFitterResult fithg;
         fitter.run(sampleT, sampleHG, fithg);
         
         highGain = fithg.amplitude;
         timeHG = fithg.tmax - fithg.trise;
         hgStatus = fithg.status;
       }
-      if(hgStatus != 0)
+      if(hgStatus != 0) {
         highGain=0;
-      
+        timeHG=-1;
+      } else if (investigatePulseShape) {
+        int key = iboard * 10000 + (iski % 4) * 100 + ichannel;
+        //std::cout<<"Filling HG key: "<<key<<std::endl;
+        for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) 
+          shapesHG[key]->Fill(25*it+12.5-(fithg.tmax - fithg.trise), (rawhit.highGainADC(it)-subHG[it])/fithg.amplitude);
+      }
+
 
       //second LG
       //this is a just try to isolate hits with signal
@@ -148,16 +174,24 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       en4=rawhit.lowGainADC(4)-subLG[4];
       en6=rawhit.lowGainADC(6)-subLG[6];
 
+      PulseFitterResult fitlg;
       if( en1<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
-        PulseFitterResult fitlg;
         fitter.run(sampleT, sampleLG, fitlg);
         
         lowGain = fitlg.amplitude;
         timeLG = fitlg.tmax - fitlg.trise;
         lgStatus = fitlg.status;
       }
-      if(lgStatus != 0)
+
+      if(lgStatus != 0) {
         lowGain=0;
+        timeLG=-1;
+      } else if (investigatePulseShape) {
+        int key = iboard * 10000 + (iski % 4) * 100 + ichannel;
+        //std::cout<<"Filling LG key: "<<key<<std::endl;
+        for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) 
+          shapesLG[key]->Fill(25*it+12.5-(fitlg.tmax - fitlg.trise), (rawhit.lowGainADC(it)-subLG[it])/fitlg.amplitude);
+      }
 
     } else if (performAveraging) {
       //averaging of TS2-TS5
@@ -178,19 +212,16 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       lowGain = (en2+en3+en4+en5)/4.;
     } else  {
       //simply use TS3
-      float en3=rawhit.highGainADC(3)-subHG[3];
       hgStatus=0;
       timeHG = 50.;
-      highGain = en3;
+      highGain = rawhit.highGainADC(3)-subHG[3];
 
-
-      en3=rawhit.lowGainADC(3)-subLG[3];
       lgStatus=0;
       timeLG = 50.;
-      lowGain = en3;
+      lowGain = rawhit.lowGainADC(3)-subLG[3];
 
     }
-    
+
 
     float energy = -1;
     float time = -1.;
@@ -207,6 +238,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       recHit.setFlag(HGCalTBRecHit::kGood);
     }
     else if(totGain > 10 && toaRise > 0){
+      //std::cout<<"Setting totGain: "<<totGain<<std::endl;
       energy = totGain * m_TOT2LG_value.at(iboard) * m_LG2HG_value.at(iboard);
       recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
       recHit.setFlag(HGCalTBRecHit::kGood);
@@ -230,21 +262,32 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA);
     double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
     recHit.setCellCenterCoordinate(iux, iuy);
-
+    
     #ifdef DEBUG
-      
-      std::cout<<"Board: "<<iboard+1<<"  and skiroc "<<iski;
-      std::cout<<"  Channel: "<<ichannel<<"  layer: "<<detid.layer()<<"  sensiorIU: "<<detid.sensorIU()<<"   sensorIV: "<<detid.sensorIV()<<"   iu: "<<detid.iu()<<"   iv: "<<detid.iv()<<std::endl;
-      std::cout<<"subHG[3] = "<<subHG[3]<<"   subLG[3] = "<<subLG[3]<<std::endl;
-      std::cout<<"energy: "<<energy<<"   lowGain (pulse): "<<lowGain<<"   sample3 LG: "<<sampleLG[3]<<"  highGain (pulse): "<<highGain<<"   sample3 HG: " <<sampleHG[3]<<"  totGain: "<<totGain<<std::endl<<std::endl;
+      if ((energy > 1000. ) && (iboard==0 || iboard==1)) {
+        std::cout<< "Event: "<<eventCounter<<std::endl;
+        std::cout<<"iboard: "<<iboard<<"  iski: "<<iski<<"   ichannel: "<<ichannel<<"   LG3: "<<rawhit.lowGainADC(3)<<"  - "<<subLG[3]<<"    HG3: "<<rawhit.highGainADC(3)<<"  - "<<subHG[3]<<std::endl;
+      }
+    #endif
+    
+    /*
+    #ifdef DEBUG
+      if ((totGain>500)&&(iboard==1)) {
+        std::cout<<"++++++++++++++++++++++  Event: "<<eventCounter<<"   +++++++++++++++++++++"<<std::endl;
+
+        std::cout<<"Board: "<<iboard+1<<"  and skiroc "<<iski;
+        std::cout<<"  Channel: "<<ichannel<<"  layer: "<<detid.layer()<<"  sensiorIU: "<<detid.sensorIU()<<"   sensorIV: "<<detid.sensorIV()<<"   iu: "<<detid.iu()<<"   iv: "<<detid.iv()<<std::endl;
+        std::cout<<"subHG[3] = "<<subHG[3]<<"   subLG[3] = "<<subLG[3]<<std::endl;
+        std::cout<<"energy: "<<energy<<"   lowGain (pulse): "<<lowGain<<"   sample3 LG: "<<sampleLG[3]<<"  highGain (pulse): "<<highGain<<"   sample3 HG: " <<sampleHG[3]<<"  totGain: "<<totGain<<std::endl<<std::endl;
+        std::cout<<std::endl<<std::endl;
+      }
       
     #endif
-
+    */
     rechits->push_back(recHit);
   }
   event.put(rechits, m_outputCollectionName);
   #ifdef DEBUG
-    std::cout<<std::endl<<std::endl;
     eventCounter++;
   #endif
 }
