@@ -180,7 +180,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 
 //		Sensors[layer]->addHit(Rechit, ADC_per_MIP[skiroc]);		//with MIP calibration
 		
-		if (Rechit.energyLow() > MIP_cut)	//only add if energy is higher than the MIP cut
+		if (Rechit.energy() > MIP_cut)	//only add if energy is higher than the MIP cut
 			Sensors[layer]->addHit(Rechit, 1.);		//without MIP calibration
 	}
 
