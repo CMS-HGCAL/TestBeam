@@ -37,6 +37,12 @@ options.register('beamParticlePDGID',
                  'Beam particles PDG ID.'
                 )
 
+options.register('dataFormat',
+                 0,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Data formats int -> important for parameter setting')
+
 options.register('reportEvery',
                 10000,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -68,26 +74,34 @@ process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
 
 ####################################
 
-readTimeStampFormat = 1
-if options.runNumber < 1241:
-    readTimeStampFormat = 0
-
 #only read time stamps for beam runs
-ReadTimeStamps = True
+readTimeStamps = True
 if options.beamParticlePDGID==0:
-    ReadTimeStamps = False
+    readTimeStamps = False
+
+if options.dataFormat==0 :
+    numberOfBytesForTheHeader=8
+    numberOfBytesForTheTrailer=4
+    numberOfBytesForTheEventTrailers=4
+    readTimeStampFormat = 0     #from the txt file
+elif options.dataFormat==1 :
+    numberOfBytesForTheHeader=12
+    numberOfBytesForTheTrailer=4
+    numberOfBytesForTheEventTrailers=12
+    readTimeStampFormat = 1 #from the raw file
+
 
 process.source = cms.Source("HGCalTBRawDataSource",
                             ElectronicMap=cms.untracked.string(electronicMap),
                             fileNames=cms.untracked.vstring("file:%s/HexaData_Run%04d.raw"%(options.dataFolder,options.runNumber)),
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
                             NumberOf32BitsWordsPerReadOut=cms.untracked.uint32(30787),
-                            NumberOfBytesForTheHeader=cms.untracked.uint32(8 if options.runNumber<1241 else 12),          #for the new headers/trailers from run 1241 onward: 12
+                            NumberOfBytesForTheHeader=cms.untracked.uint32(numberOfBytesForTheHeader),          #for the new headers/trailers from run 1241 onward: 12
                             NumberOfBytesForTheTrailer=cms.untracked.uint32(4),         #for the new headers/trailers from run 1241 onward: 4
-                            NumberOfBytesForTheEventTrailers=cms.untracked.uint32(4 if options.runNumber<1241 else 12),   #for the new headers/trailers from run 1241 onward: 12
+                            NumberOfBytesForTheEventTrailers=cms.untracked.uint32(numberOfBytesForTheEventTrailers),   #for the new headers/trailers from run 1241 onward: 12
                             NSkipEvents=cms.untracked.uint32(0),
-                            ReadTimeStamps=cms.untracked.bool(True),
-                            DataFormats=cms.untracked.uint32(ReadTimeStamps),
+                            ReadTimeStamps=cms.untracked.bool(readTimeStamps),
+                            DataFormats=cms.untracked.uint32(readTimeStampFormat),
                             timingFiles=cms.vstring("%s/HexaData_Run%04d_TIMING_RDOUT_ORM0.txt"%(options.dataFolder,options.runNumber),
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM1.txt"%(options.dataFolder,options.runNumber),
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM2.txt"%(options.dataFolder,options.runNumber)),
