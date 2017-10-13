@@ -73,10 +73,7 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		TrackFittingMethod fittingMethod;		
 		
 		std::vector<int> Layers;
-		std::string coordinateString;
-		COORDINATE coordinate;
 		
-		bool MWCQualityCut;
 		double energy;
 
 		//helper variables that are set within the event loop, i.e. are defined per event
@@ -93,7 +90,8 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		int *label;
 
 		bool makeTree;
-		double res1, res2, res3, res4;
+		double res_x_0, res_x_1, res_x_2, res_x_3;
+		double res_y_0, res_y_1, res_y_2, res_y_3;
 		
 		TTree* tree;
 };
@@ -114,13 +112,6 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 
 	Layers = iConfig.getParameter<std::vector<int> >("Layers");
 	
-	coordinateString = iConfig.getParameter<std::string>("Coordinate");
-	std::cout<<"CoordinateString: "<<coordinateString<<std::endl;
-	if (coordinateString == "x") coordinate = X;
-	else if (coordinateString == "y") coordinate = Y;
-	else coordinate = X;
-
-	MWCQualityCut = iConfig.getParameter<bool>("MWCQualityCut");
 
 	binaryFileName = iConfig.getParameter<std::string>("binaryFile");
 
@@ -150,7 +141,8 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	for (int k=0; k<NGL; k++){
 		derGl[k] = 0.;
 	}
-	res1 = res2 = res3 = res4 = -999;
+	res_x_0 = res_x_1 = res_x_2 = res_x_3 = -999;
+	res_y_0 = res_y_1 = res_y_2 = res_y_3 = -999;
 
 
 	//Step 4: add dWCs to the setup if useMWCReference option is set true
@@ -161,7 +153,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	Sensors[100]->setParticleEnergy(rd->energy);
 	Track->addReferenceSensor(Sensors[100]);
 	
-	//first the 
+
 	for (size_t l=0; l<Layers.size(); l++) {
 		int n_layer = Layers[l];
 
@@ -179,23 +171,19 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	}
 	
 	//quality cut to remove unphysical events:
-	double _c0 = coordinate==X ? Sensors[0]->getHitPosition().first : Sensors[0]->getHitPosition().second;
-	double _c1 = coordinate==X ? Sensors[1]->getHitPosition().first : Sensors[1]->getHitPosition().second;
-	double _c2 = coordinate==X ? Sensors[2]->getHitPosition().first : Sensors[2]->getHitPosition().second;
-	double _c3 = coordinate==X ? Sensors[3]->getHitPosition().first : Sensors[3]->getHitPosition().second;
-	if (fabs(_c0-_c1)>10.) return;
-	if (fabs(_c0-_c2)>50.) return;
-	if (fabs(_c0-_c3)>50.) return;
-	if (fabs(_c1-_c2)>50.) return;
-	if (fabs(_c1-_c3)>50.) return;
-	if (fabs(_c2-_c3)>10.) return;
+	for (size_t i=0; i<=1; i++) for (size_t j=2; j<=3; j++) {
+		if (fabs(Sensors[i]->getHitPosition().first - Sensors[j]->getHitPosition().first) > 50.) return;
+		if (fabs(Sensors[i]->getHitPosition().second - Sensors[j]->getHitPosition().second) > 50.) return;
+	}
+	for (size_t i=0; i<=2; i+=2) {
+		if (fabs(Sensors[i]->getHitPosition().first - Sensors[i+1]->getHitPosition().first) > 10.) return;
+		if (fabs(Sensors[i]->getHitPosition().second - Sensors[i+1]->getHitPosition().second) > 10.) return;
+	}
 
 
 	if (N_points == (int)Layers.size()) {
 		Track->fitTrack(fittingMethod);
 		
-		if (MWCQualityCut&&fabs(Track->getChi2(coordinate)/Track->getNDF(coordinate)) > 30.) return;
-	
 		//step 6: calculate the deviations between each fit missing one layer and exactly that layer's true central position
 		for (size_t l=0; l<Layers.size(); l++) {
 			int n_layer = Layers[l];
@@ -203,12 +191,16 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			double layer_labZ = Sensors[n_layer]->getLabZ();
 			double intrinsic_z = Sensors[n_layer]->getIntrinsicHitZPosition();	
 			
-			double _predicted = coordinate==X ? Track->calculatePositionXY(layer_labZ+intrinsic_z, n_layer).first : Track->calculatePositionXY(layer_labZ+intrinsic_z, n_layer).second;
-			double _true = coordinate==X ? Sensors[n_layer]->getHitPosition().first : Sensors[n_layer]->getHitPosition().second;
+			double x_p = Track->calculatePositionXY(layer_labZ+intrinsic_z, n_layer).first;
+			double y_p = Track->calculatePositionXY(layer_labZ+intrinsic_z, n_layer).second;
+			double x_t = Sensors[n_layer]->getHitPosition().first;
+			double y_t = Sensors[n_layer]->getHitPosition().second;
 			
-			//the x-coordinate								
+			//1. the x-coordinate								
 			derLc[0] = layer_labZ;
 			derLc[1] = 1.;
+			derLc[2] = 0.;
+			derLc[3] = 0.;
 			
 			//std::cout<<"x_predicted: "<<x_predicted<<"   y_predicted: "<<y_predicted<<"     x_true: "<<x_true<<"   y_true: "<<y_true<<std::endl;
 			for (int k=0; k<NGL; k++){
@@ -216,34 +208,56 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 			}
 
 			derGl[n_layer*NGLperLayer+0] = 1.;		
+			derGl[n_layer*NGLperLayer+1] = 0.;		
+			derGl[n_layer*NGLperLayer+2] = y_t;		
 				
-			rMeas = _true - _predicted;
-			
-			//std::cout<<" ---> delta x = "<<rMeas<<"  ";
+			rMeas = x_t - x_p;
+		
 			sigma = Sensors[n_layer]->getResidualResolution();
 			mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
-			//std::cout<<"Adding rMeas (in x) = "<<rMeas<<std::endl;
+			
+
+			//2. the y-coordinate								
+			derLc[0] = 0.;
+			derLc[1] = 0.;
+			derLc[2] = layer_labZ;
+			derLc[3] = 1.;
+			
+			//std::cout<<"x_predicted: "<<x_predicted<<"   y_predicted: "<<y_predicted<<"     x_true: "<<x_true<<"   y_true: "<<y_true<<std::endl;
+			for (int k=0; k<NGL; k++){
+				derGl[k] = 0.;
+			}
+
+			derGl[n_layer*NGLperLayer+0] = 0.;		
+			derGl[n_layer*NGLperLayer+1] = 1.;		
+			derGl[n_layer*NGLperLayer+2] = -x_t;		
+				
+			rMeas = y_t - y_p;
+		
+			sigma = Sensors[n_layer]->getResidualResolution();
+			mille->mille(NLC, derLc, NGL, derGl, label, rMeas, sigma);
+
+
 
 			if (makeTree) {
-				double res=_true - _predicted;
+				double res_x = x_t - x_p;
+				double res_y = y_t - y_p;
 				switch(n_layer) {
 					case 0:
-						res1=res;
-						if (fabs(res1)>30.) {
-							std::cout<<"Layer 1: "<<Sensors[0]->getHitPosition().first<<"   "<<Sensors[0]->getHitPosition().second<<std::endl;
-							std::cout<<"Layer 2: "<<Sensors[1]->getHitPosition().first<<"   "<<Sensors[1]->getHitPosition().second<<std::endl;
-							std::cout<<"Layer 3: "<<Sensors[2]->getHitPosition().first<<"   "<<Sensors[2]->getHitPosition().second<<std::endl;
-							std::cout<<"Layer 4: "<<Sensors[3]->getHitPosition().first<<"   "<<Sensors[3]->getHitPosition().second<<std::endl;
-						}
+						res_x_0=res_x;
+						res_y_0=res_y;
 						break;
 					case 1:
-						res2=res;
+						res_x_1=res_x;
+						res_y_1=res_y;
 						break;
 					case 2:
-						res3=res;
+						res_x_2=res_x;
+						res_y_2=res_y;
 						break;
 					case 3:
-						res4=res;
+						res_x_3=res_x;
+						res_y_3=res_y;
 						break;
 				}
 			}
@@ -274,8 +288,8 @@ void MillepedeBinaryWriter::beginJob() {
 		std::cout<<"Writing to the file: "<<binaryFileName<<std::endl;
 	}
   
-	NLC = 2;
-	NGLperLayer = 1;	//two translations, no scales, but no rotation
+	NLC = 4;
+	NGLperLayer = 3;	//two translations, no scales, and one rotation
 	NGL = 4*NGLperLayer;		//hard coded number for four DWCs
 	std::cout<<"Number of global parameters: "<<NGL<<std::endl;
 	rMeas = 0.;
@@ -286,15 +300,21 @@ void MillepedeBinaryWriter::beginJob() {
 
 	for (size_t l=0; l<Layers.size(); l++) {
 		int layer = Layers[l];
-		label[layer*NGLperLayer + 0] = (layer)*100 + (coordinate==X ? 11 : 12);
+		label[layer*NGLperLayer + 0] = (layer)*100 + 11;
+		label[layer*NGLperLayer + 1] = (layer)*100 + 12;
+		label[layer*NGLperLayer + 2] = (layer)*100 + 21;
 	}
 
 	if (makeTree) {
 		tree = fs->make<TTree>("dwc_residuals", "dwc_residuals");
-		tree->Branch((std::string("res1_")+std::string(coordinate==X?"x":"y")).c_str(), &res1);
-		tree->Branch((std::string("res2_")+std::string(coordinate==X?"x":"y")).c_str(), &res2);
-		tree->Branch((std::string("res3_")+std::string(coordinate==X?"x":"y")).c_str(), &res3);
-		tree->Branch((std::string("res4_")+std::string(coordinate==X?"x":"y")).c_str(), &res4);
+		tree->Branch("res_x_0", &res_x_0);
+		tree->Branch("res_x_1", &res_x_1);
+		tree->Branch("res_x_2", &res_x_2);
+		tree->Branch("res_x_3", &res_x_3);
+		tree->Branch("res_y_0", &res_y_0);
+		tree->Branch("res_y_1", &res_y_1);
+		tree->Branch("res_y_2", &res_y_2);
+		tree->Branch("res_y_3", &res_y_3);
 	}
 }
 

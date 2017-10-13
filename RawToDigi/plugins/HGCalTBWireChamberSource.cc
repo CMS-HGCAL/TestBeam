@@ -234,14 +234,14 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 
 	//perform alignment
-	if (fabs(dwc1->x) <= 50.) dwc1->x = dwc1->x - currentAlignmentParameters[11]; else dwc1->goodMeasurement_X=false;
-	if (fabs(dwc1->y) <= 50.) dwc1->y = dwc1->y - currentAlignmentParameters[12]; else dwc1->goodMeasurement_Y=false;
-	if (fabs(dwc2->x) <= 50.) dwc2->x = dwc2->x - currentAlignmentParameters[111]; else dwc2->goodMeasurement_X=false;
-	if (fabs(dwc2->y) <= 50.) dwc2->y = dwc2->y - currentAlignmentParameters[112]; else dwc2->goodMeasurement_Y=false;
-	if (fabs(dwc3->x) <= 50.) dwc3->x = dwc3->x - currentAlignmentParameters[211]; else dwc3->goodMeasurement_X=false;
-	if (fabs(dwc3->y) <= 50.) dwc3->y = dwc3->y - currentAlignmentParameters[212]; else dwc3->goodMeasurement_Y=false;
-	if (fabs(dwc4->x) <= 50.) dwc4->x = dwc4->x - currentAlignmentParameters[311]; else dwc4->goodMeasurement_X=false;
-	if (fabs(dwc4->y) <= 50.) dwc4->y = dwc4->y - currentAlignmentParameters[312]; else dwc4->goodMeasurement_Y=false;
+	if (fabs(dwc1->x) <= 50.) dwc1->x = dwc1->x - currentAlignmentParameters[11] - dwc1->y*currentAlignmentParameters[21]; else dwc1->goodMeasurement_X=false;
+	if (fabs(dwc1->y) <= 50.) dwc1->y = dwc1->y - currentAlignmentParameters[12] +  dwc1->x*currentAlignmentParameters[21]; else dwc1->goodMeasurement_Y=false;
+	if (fabs(dwc2->x) <= 50.) dwc2->x = dwc2->x - currentAlignmentParameters[111] - dwc2->y*currentAlignmentParameters[121]; else dwc2->goodMeasurement_X=false;
+	if (fabs(dwc2->y) <= 50.) dwc2->y = dwc2->y - currentAlignmentParameters[112] +  dwc2->x*currentAlignmentParameters[121]; else dwc2->goodMeasurement_Y=false;
+	if (fabs(dwc3->x) <= 50.) dwc3->x = dwc3->x - currentAlignmentParameters[211] - dwc3->y*currentAlignmentParameters[221]; else dwc3->goodMeasurement_X=false;
+	if (fabs(dwc3->y) <= 50.) dwc3->y = dwc3->y - currentAlignmentParameters[212] +  dwc3->x*currentAlignmentParameters[221]; else dwc3->goodMeasurement_Y=false;
+	if (fabs(dwc4->x) <= 50.) dwc4->x = dwc4->x - currentAlignmentParameters[311] - dwc4->y*currentAlignmentParameters[321]; else dwc4->goodMeasurement_X=false;
+	if (fabs(dwc4->y) <= 50.) dwc4->y = dwc4->y - currentAlignmentParameters[312] +  dwc4->x*currentAlignmentParameters[321]; else dwc4->goodMeasurement_Y=false;
 
 	//set the good measurement flags
 	dwc1->goodMeasurement = (dwc1->goodMeasurement_X && dwc1->goodMeasurement_Y);
@@ -388,8 +388,7 @@ void HGCalTBWireChamberSource::ReadAlignmentParameters(int fileIndex) {
 		for (int i=0; i< 4; i++) {
 		  _parameters[i*100+11] = 0.;
 		  _parameters[i*100+12] = 0.;
-		  _parameters[i*100+21] = 1.;
-		  _parameters[i*100+22] = 1.;
+		  _parameters[i*100+21] = 0.;
 		}
 	}	
 
