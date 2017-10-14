@@ -16,6 +16,12 @@ options.register('outputFile',
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
 
+options.register('electronicMap',
+                 'map_CERN_Hexaboard_July_6Layers.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Name of the electronic map file in HGCal/CondObjects/data/')
+
 options.register('pedestalHighGainFile',
                  '/home/tquast/tb2017/pedestals/pedestalHG.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -46,7 +52,8 @@ options.maxEvents = -1
 options.parseArguments()
 print options
 
-electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
+
+electronicMap="HGCal/CondObjects/data/%s" % options.electronicMap
 
 
 process = cms.Process("pedestals")

@@ -23,6 +23,12 @@ options.register('outputFile',
                  VarParsing.VarParsing.varType.string,
                  'Output file where unpacked data is stored')
 
+options.register('electronicMap',
+                 'map_CERN_Hexaboard_July_6Layers.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Name of the electronic map file in HGCal/CondObjects/data/')
+
 options.register('beamEnergy',
                 250,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -57,8 +63,7 @@ print options
 if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
 
-#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"
-electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
+electronicMap="HGCal/CondObjects/data/%s" % options.electronicMap
 
 ################################
 process = cms.Process("Unpack")

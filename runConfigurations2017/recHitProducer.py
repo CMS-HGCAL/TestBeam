@@ -25,6 +25,12 @@ options.register('outputFile',
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
 
+options.register('electronicMap',
+                 'map_CERN_Hexaboard_July_6Layers.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Name of the electronic map file in HGCal/CondObjects/data/')
+
 options.register('performPulseFit',
                  1,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -44,13 +50,14 @@ options.register('reportEvery',
                  'Path to the file from which the DWCs are read.'
                 )
 
+
 options.maxEvents = -1
 
 options.parseArguments()
 print options
 
 
-electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
+electronicMap="HGCal/CondObjects/data/%s" % options.electronicMap
 
 ################################
 process = cms.Process("rechitproducer")
@@ -85,13 +92,21 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         performPulseFit = cms.untracked.bool(bool(options.performPulseFit)),
                                         performAveraging = cms.untracked.bool(bool(options.performAveraging)),
                                         LG2HG = cms.untracked.vdouble(8.2,9.0,8.6,9.4,8.0,
-                                                                      8.0,8.0,8.0,8.0,8.0),
+                                                                      8.0,8.0,8.0,8.0,8.0,
+                                                                      8.0,8.0,8.0,8.0,8.0,
+                                                                      8.0,8.0,8.0,8.0),
                                         TOT2LG = cms.untracked.vdouble(10.0,10.0,10.0,10.0,10.0,
-                                                                       10.0,10.0,10.0,10.0,10.0),
+                                                                       10.0,10.0,10.0,10.0,10.0,
+                                                                       10.0,10.0,10.0,10.0,10.0,
+                                                                       10.0,10.0),
                                         HighGainADCSaturation = cms.untracked.vdouble(1500.,1500.,1500.,1500.,1500.,
-                                                                       1500.,1500.,1500.,1500.,1500.),
+                                                                       1500.,1500.,1500.,1500.,1500.,
+                                                                       1500.,1500.,1500.,1500.,1500.,
+                                                                       1500.,1500.),
                                         LowGainADCSaturation = cms.untracked.vdouble(4000.,4000.,4000.,4000.,4000.,
-                                                                       4000.,4000.,4000.,4000.,4000.),
+                                                                       4000.,4000.,4000.,4000.,4000.,
+                                                                       4000.,4000.,4000.,4000.,4000.,
+                                                                       4000.,4000.),
                                         ElectronicsMap = cms.untracked.string(electronicMap),
                                         TimeSample3ADCCut = cms.untracked.double(15.),
                                         investigatePulseShape = cms.untracked.bool(True)
