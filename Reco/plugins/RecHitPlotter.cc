@@ -31,7 +31,9 @@ struct channelInfo{
   int key;
   TH1F* h_adcHigh;
   TH1F* h_adcLow;
+  TH1F* h_tot;
   TH2F* h_high_vs_low;
+  TH2F* h_low_vs_tot;
 };
 
 class RecHitPlotter : public edm::one::EDAnalyzer<edm::one::SharedResources>
@@ -130,8 +132,14 @@ void RecHitPlotter::beginJob()
 	os << "LowGain_Channel" << ichan ;
 	chan->h_adcLow=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),3600,-100,3500);
 	os.str("");
+  os << "TOT_Channel" << ichan ;
+  chan->h_tot=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),3600,-100,3500);
+  os.str("");
 	os << "HighGainVsLowGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan;
 	chan->h_high_vs_low=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),360,-100,3500,400,-500,3500);
+  os.str("");
+  os << "LowGainVsTOT_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan;
+  chan->h_low_vs_tot=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),360,-100,3500,400,-500,3500);
 	m_channelInfoMap.insert( std::pair<uint32_t,channelInfo*>(chan->key,chan) );
       }
     }
@@ -197,8 +205,10 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
 		<< std::endl;
     if( !hit.isUnderSaturationForHighGain() ) m_channelInfoMap[ key ]->h_adcHigh->Fill( hit.energyHigh() );
     if( !hit.isUnderSaturationForLowGain() ) m_channelInfoMap[ key ]->h_adcLow->Fill( hit.energyLow() );
+    else m_channelInfoMap[ key ]->h_tot->Fill( hit.energyTot() );
     if( hit.energyHigh()>m_noiseThreshold && !hit.isUnderSaturationForLowGain() && !hit.isUnderSaturationForHighGain() ){
       m_channelInfoMap[ key ]->h_high_vs_low->Fill( hit.energyLow(), hit.energyHigh() );
+      m_channelInfoMap[ key ]->h_low_vs_tot->Fill( hit.energyLow(), hit.energyTot() );
       energyHighSum+=hit.energyHigh();
       energyLowSum+=hit.energyLow();
       energySum+=hit.energy();

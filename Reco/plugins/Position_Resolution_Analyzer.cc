@@ -59,9 +59,12 @@ double zdepth6_config1 = 0.;
 
 //here they must be indicated in cm
 double config1Positions[] = {z1_config1/10., z2_config1/10., z3_config1/10., z4_config1/10., z5_config1/10., z6_config1/10.};    
-double  config1X0Depths[] = {zdepth1_config1, zdepth2_config1, zdepth3_config1, zdepth4_config1, zdepth5_config1, zdepth6_config1}; 
+double config1X0Depths[] = {zdepth1_config1, zdepth2_config1, zdepth3_config1, zdepth4_config1, zdepth5_config1, zdepth6_config1}; 
   
 
+//needs to be fixed!
+double config2Positions[] = {z1_config1/10., z2_config1/10., z3_config1/10., z4_config1/10., z5_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10.};    
+double config2X0Depths[] = {zdepth1_config1, zdepth2_config1, zdepth3_config1, zdepth4_config1, zdepth5_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1}; 
 
 //#define DEBUG
 
@@ -243,7 +246,9 @@ Position_Resolution_Analyzer::~Position_Resolution_Analyzer() {
 
 // ------------ method called for each event  ------------
 void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setup) {
-
+	#ifdef DEBUG
+		std::cout<<"In the event..."<<std::endl;
+	#endif
 	edm::Handle<RunData> rd;
  	//get the relevant event information
 	event.getByToken(RunDataToken, rd);
@@ -275,13 +280,32 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_Token, Rechits);
 
-
+	#ifdef DEBUG
+		std::cout<<"Event: "<<rd->event<<std::endl;
+	#endif
 	//step 1: Reduce the information to energy deposits/hits in x,y per sensor/layer 
 	//fill the rechits:
+	for (int _l=1; _l<=nLayers; _l++) {
+		Sensors[_l] = new SensorHitMap(_l);
+		Sensors[_l]->setLabZ(Layer_Z_Positions[_l-1], Layer_Z_X0s[_l-1]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
+
+		Sensors[_l]->setAlignmentParameters(alignmentParameters->getValue(run, 100*_l + 21), 0.0, 0.0,
+			alignmentParameters->getValue(run, 100*_l + 11), alignmentParameters->getValue(run, 100*_l + 12), 0.0);	
+		Sensors[_l]->setSensorSize(SensorSize);
+
+		double X0sum = 0;
+		for (int _x = 0; _x<(int)layer; _x++) X0sum += Layer_Z_X0s[_x];
+		Sensors[_l]->setParticleEnergy(energy - gblhelpers::computeEnergyLoss(X0sum, energy));
+
+	}
+
 	for(auto Rechit : *Rechits) {	
 		layer = (Rechit.id()).layer();
-  
+		if (layer>nLayers) continue;
+
+		/*
 		if ( Sensors.find(layer) == Sensors.end() ) {
+  			std::cout<<layer<<std::endl;
 			Sensors[layer] = new SensorHitMap(layer);
 			Sensors[layer]->setLabZ(Layer_Z_Positions[layer-1], Layer_Z_X0s[layer-1]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
 
@@ -293,7 +317,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			for (int _x = 0; _x<(int)layer; _x++) X0sum += Layer_Z_X0s[_x];
 			Sensors[layer]->setParticleEnergy(energy - gblhelpers::computeEnergyLoss(X0sum, energy));
 		}
-
+		*/
 		Sensors[layer]->addHit(Rechit, 1.0);		
 	}
 
