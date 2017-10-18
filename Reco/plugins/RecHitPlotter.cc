@@ -208,7 +208,7 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     else m_channelInfoMap[ key ]->h_tot->Fill( hit.energyTot() );
     if( hit.energyHigh()>m_noiseThreshold && !hit.isUnderSaturationForLowGain() && !hit.isUnderSaturationForHighGain() ){
       m_channelInfoMap[ key ]->h_high_vs_low->Fill( hit.energyLow(), hit.energyHigh() );
-      m_channelInfoMap[ key ]->h_low_vs_tot->Fill( hit.energyLow(), hit.energyTot() );
+      m_channelInfoMap[ key ]->h_low_vs_tot->Fill( hit.energyTot(), hit.energyLow() );
       energyHighSum+=hit.energyHigh();
       energyLowSum+=hit.energyLow();
       energySum+=hit.energy();
