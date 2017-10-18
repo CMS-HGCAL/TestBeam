@@ -177,7 +177,11 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	if (LayersConfig == 1) {
 		Layer_Z_Positions = std::vector<double>(config1Positions, config1Positions + sizeof(config1Positions)/sizeof(double));
 		Layer_Z_X0s 			= std::vector<double>(config1X0Depths, config1X0Depths + sizeof(config1X0Depths)/sizeof(double));
-	} else {
+	} else if (LayersConfig == 2){
+		Layer_Z_Positions = std::vector<double>(config2Positions, config2Positions + sizeof(config2Positions)/sizeof(double));
+		Layer_Z_X0s 			= std::vector<double>(config2X0Depths, config2X0Depths + sizeof(config2X0Depths)/sizeof(double));
+	}
+	 else {
 		Layer_Z_Positions = std::vector<double>(config1Positions, config1Positions + sizeof(config1Positions)/sizeof(double));
 		Layer_Z_X0s 			= std::vector<double>(config1X0Depths, config1X0Depths + sizeof(config1X0Depths)/sizeof(double));
 	}

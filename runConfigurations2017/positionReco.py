@@ -31,7 +31,7 @@ options.register('reportEvery',
 options.register('configuration',
                  1,
                  VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
+                 VarParsing.VarParsing.varType.int,
                  '1 is the July setup'
                  )
 
@@ -110,7 +110,7 @@ process.position_resolution_analyzer = cms.EDAnalyzer("Position_Resolution_Analy
                                 considerationMethod = cms.string(options.considerationMethod),
                                 weightingMethod = cms.string(options.weightingMethod),
                                 fittingMethod = cms.string(options.fittingMethod),
-                                layers_config  = cms.int32(2),
+                                layers_config  = cms.int32(options.configuration),
                                 ADC_per_MIP = cms.vdouble([1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.]),
                                 nLayers = cms.int32(17),
                                 SensorSize = cms.int32(133),
