@@ -168,7 +168,7 @@ process.source = cms.Source("HGCalTBWireChamberSource",
     runType = cms.vstring([runType for runType in options.runTypes]),
     triggerTimingFormat = cms.vint32([triggerTimingFormat for triggerTimingFormat in options.triggerTimingFormats]),
     hitsPerChannelStored = cms.vint32([hitsPerChannelStored for hitsPerChannelStored in options.hitsPerChannelStoreds]),
-    wc_resolution = cms.untracked.double(0.6),
+    wc_resolutions = cms.untracked.vdouble([1.5, 1.5, 1.0, 1.0]),
     performAlignment = cms.untracked.bool(bool(options.performAlignment)),
     alignmentParamaterFiles = cms.vstring(options.alignmentFiles) 
 )

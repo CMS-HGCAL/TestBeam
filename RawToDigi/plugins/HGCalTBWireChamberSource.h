@@ -59,7 +59,7 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		std::vector<double> slope_x;
 		std::vector<double> slope_y;
 
-		double wc_resolution;
+		std::vector<double> wc_resolutions;
 
 		int triggerTimeDifferenceTolerance;	//indicated in ms
 

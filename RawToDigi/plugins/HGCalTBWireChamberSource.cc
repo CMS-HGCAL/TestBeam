@@ -13,12 +13,13 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	//find and fill the configured runs
 	outputCollectionName = pset.getParameter<std::string>("OutputCollectionName");
 
-  std::vector<double> v0(4, 0.2/40);		//0.2mm/ns and TDC binning is 25ps
 	triggerTimeDifferenceTolerance = pset.getUntrackedParameter<int>("triggerTimeDifferenceTolerance", 2);		//given in ms
 
+  	std::vector<double> v0(4, 0.2/40);		//0.2mm/ns and TDC binning is 25ps
 	slope_x = pset.getUntrackedParameter<std::vector<double> >("slope_x", v0);
 	slope_y = pset.getUntrackedParameter<std::vector<double> >("slope_y", v0);
-	wc_resolution = pset.getUntrackedParameter<double>("wc_resolution", 0.5);
+  	std::vector<double> v1(4, 1.0);
+	wc_resolutions = pset.getUntrackedParameter<std::vector<double> >("wc_resolutions", v1);
 
 	performAlignment = pset.getUntrackedParameter<bool>("performAlignment", false);
 	alignmentParamaterFiles = pset.getParameter<std::vector<std::string> >("alignmentParamaterFiles");
@@ -147,9 +148,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc1->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC1_LEFT)) && validTimestamp(dwc_timestamps->at(DWC1_RIGHT));
 	dwc1->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC1_DOWN)) && validTimestamp(dwc_timestamps->at(DWC1_UP));
 	dwc1->x = dwc1->goodMeasurement_X ? slope_x.at(0) * (dwc_timestamps->at(DWC1_LEFT)-dwc_timestamps->at(DWC1_RIGHT)): -999;
-	dwc1->res_x = wc_resolution;
+	dwc1->res_x = wc_resolutions[0];
 	dwc1->y = dwc1->goodMeasurement_Y ? slope_y.at(0) * (dwc_timestamps->at(DWC1_DOWN)-dwc_timestamps->at(DWC1_UP)): -999;
-	dwc1->res_y = wc_resolution;
+	dwc1->res_y = wc_resolutions[0];
 	dwc1->z = dwc_z1;
 
 
@@ -171,9 +172,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc2->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC2_LEFT)) && validTimestamp(dwc_timestamps->at(DWC2_RIGHT));
 	dwc2->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC2_DOWN)) && validTimestamp(dwc_timestamps->at(DWC2_UP));
 	dwc2->x = dwc2->goodMeasurement_X ? slope_x.at(1) * (dwc_timestamps->at(DWC2_LEFT)-dwc_timestamps->at(DWC2_RIGHT)): -999;
-	dwc2->res_x = wc_resolution;
+	dwc2->res_x = wc_resolutions[1];
 	dwc2->y = dwc2->goodMeasurement_Y ? slope_y.at(1) * (dwc_timestamps->at(DWC2_DOWN)-dwc_timestamps->at(DWC2_UP)): -999;
-	dwc2->res_y = wc_resolution;
+	dwc2->res_y = wc_resolutions[1];
 	dwc2->z = dwc_z2;
 
 
@@ -195,9 +196,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc3->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC3_LEFT)) && validTimestamp(dwc_timestamps->at(DWC3_RIGHT));
 	dwc3->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC3_DOWN)) && validTimestamp(dwc_timestamps->at(DWC3_UP));
 	dwc3->x = dwc3->goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC3_LEFT)-dwc_timestamps->at(DWC3_RIGHT)): -999;
-	dwc3->res_x = wc_resolution;
+	dwc3->res_x = wc_resolutions[2];
 	dwc3->y = dwc3->goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC3_DOWN)-dwc_timestamps->at(DWC3_UP)): -999;
-	dwc3->res_y = wc_resolution;
+	dwc3->res_y = wc_resolutions[2];
 	dwc3->z = dwc_z3;
 	
 	if ((n_run>=1195) && (n_run<=1333)) {//from run 1195, x-coordinate of DWC A was not connected anymore. TDC channels 14 and 15 were input by trigger signals.
@@ -227,9 +228,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc4->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC4_LEFT)) && validTimestamp(dwc_timestamps->at(DWC4_RIGHT));
 	dwc4->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC4_DOWN)) && validTimestamp(dwc_timestamps->at(DWC4_UP));
 	dwc4->x = dwc4->goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC4_LEFT)-dwc_timestamps->at(DWC4_RIGHT)): -999;
-	dwc4->res_x = wc_resolution;
+	dwc4->res_x = wc_resolutions[3];
 	dwc4->y = dwc4->goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC4_DOWN)-dwc_timestamps->at(DWC4_UP)): -999;
-	dwc4->res_y = wc_resolution;
+	dwc4->res_y = wc_resolutions[3];
 	dwc4->z = dwc_z4;
 
 
