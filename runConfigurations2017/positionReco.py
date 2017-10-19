@@ -32,7 +32,7 @@ options.register('configuration',
                  1,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
-                 '1 is the July setup'
+                 '1 is the July setup (6 layers), 2 is the September setup (17 layers)'
                  )
 
 

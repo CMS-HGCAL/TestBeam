@@ -31,8 +31,8 @@ options.register('reportEvery',
 options.register('configuration',
                  1,
                  VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 '1 is the July setup; 2 is the late September setup'
+                 VarParsing.VarParsing.varType.int,
+                 '1 is the July setup (6 layers), 2 is the September setup (17 layers)'
                  )
 
 
@@ -68,7 +68,7 @@ if int(options.configuration)==2:
 
 ####################################
 process.energy_sum_analyzer = cms.EDAnalyzer("Energy_Sum_Analyzer",
-                                layers_config  = cms.int32(1),
+                                layers_config  = cms.int32(options.configuration),
                                 ADC_per_MIP = cms.vdouble([1.]*4*10),
                                 nLayers = cms.int32(nLayers),
                                 SensorSize = cms.int32(133),
