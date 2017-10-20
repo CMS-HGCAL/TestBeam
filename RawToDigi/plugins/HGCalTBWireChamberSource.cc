@@ -1,6 +1,6 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBWireChamberSource.h"
 
-//#define DEBUG
+#define DEBUG
 
 
 bool validTimestamp(int ts) {
@@ -13,7 +13,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	//find and fill the configured runs
 	outputCollectionName = pset.getParameter<std::string>("OutputCollectionName");
 
-	triggerTimeDifferenceTolerance = pset.getUntrackedParameter<int>("triggerTimeDifferenceTolerance", 2);		//given in ms
+	triggerTimeDifferenceTolerance = pset.getUntrackedParameter<double>("triggerTimeDifferenceTolerance", 0.2);		//given in ms
 
   	std::vector<double> v0(4, 0.2/40);		//0.2mm/ns and TDC binning is 25ps
 	slope_x = pset.getUntrackedParameter<std::vector<double> >("slope_x", v0);
@@ -40,7 +40,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 
 	//values from the 
 	n_run=0;
-	n_trigger=0;
+	n_trigger_tdc=n_trigger_orm=0;
 	channels=0;
 	dwc_timestamps=0;
 
@@ -78,7 +78,7 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 		//set the root file
 		fileCounter = nextFileIndex;
 		rootTreeIndex = 0;
-  	eventCounter = goodEventCounter = 0;
+  		eventCounter = goodEventCounter = 0;
 		syncCounter[0] = syncCounter[1] =  syncCounter[2] = 0;
 
 		std::cout<<"Opening "<<fileNames()[fileCounter].c_str()<<std::endl;
@@ -87,7 +87,7 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 		tree = (TTree*)rootFile->Get("DelayWireChambers");
 
 		tree->SetBranchAddress("run", &n_run, &b_run);
-		tree->SetBranchAddress("event", &n_trigger, &b_trigger);
+		tree->SetBranchAddress("event", &n_trigger_tdc, &b_trigger);
 		tree->SetBranchAddress("channels", &channels, &b_channels);
 		tree->SetBranchAddress("dwc_timestamps", &dwc_timestamps, &b_dwc_timestamps);
 		
@@ -96,7 +96,7 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 		} else {
 			tree->SetBranchAddress("timeSinceStart", &timeSinceStart_long, &b_timeSinceStart);
 		}
-
+		skippedTDCTriggers = 0;
 		ReadTimingFile(timingFileNames[fileCounter], sumTriggerTimes[fileCounter]);
 	}
 
@@ -262,12 +262,18 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 	event.put(std::move(mwcs), outputCollectionName);		
 
+	bool oneHit = false;
+	for (size_t index=0; index<16; index++)
+		oneHit = oneHit || validTimestamp(dwc_timestamps->at(index));
 
+	if (!oneHit) {
+		std::cout<<"!!!!!!!!!!!!!!!"<<std::endl;
+	}
 
 	//add the RunData
 	std::auto_ptr<RunData> rd(new RunData);
 
-	int n_trigger_corrected = n_trigger-skipFirstNEvents[fileCounter];
+	int n_trigger_orm = n_trigger_tdc-skipFirstNEvents[fileCounter]+skippedTDCTriggers;
 
 	rd->configuration = -1;
 	rd->runType = runType[fileCounter];
@@ -283,15 +289,15 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 
 	rd->run = n_run;
-	rd->trigger = n_trigger_corrected;
+	rd->trigger = n_trigger_orm;
 	rd->hasDanger = false;
 	rd->hasValidMWCMeasurement = (N_DWC_points>=3);		//need two points for track extrapolation
 	
 	//do the matching to the HGCal events
-	if (trigger_to_event_table.count(n_trigger_corrected)==0) {
+	if (trigger_to_event_table.count(n_trigger_orm)==0) {
 		rd->event=-1;
 	} else {
-		int event_candidate_index = trigger_to_event_table[n_trigger_corrected];
+		int event_candidate_index = trigger_to_event_table[n_trigger_orm];
 
 		double timeSinceStart_ms = timeSinceStart;
 		if (triggerTimingFormat[fileCounter]==1) timeSinceStart_ms = timeSinceStart_long / 1000.;
@@ -299,11 +305,17 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 		double deltaTs = (event_trigger_time[event_candidate_index]-ref_time_sync) - (timeSinceStart_ms - ref_time_dwc);
 		rd->triggerDeltaT_to_TDC = deltaTs;
 		
-		//use absolute value
-		deltaTs = fabs(deltaTs);
+		if (deltaTs<-15.) {		
+		//average time in between two events is around 20ms given by the sync board. So cutting on -15. is reasonable for this configuration (20 Oct 2017 in H6A)
+			skippedTDCTriggers+=1;
+		}
+
 		#ifdef DEBUG
-			std::cout<<"Event: "<<event_candidate_index<<"  trigger: "<<n_trigger<<": "<<deltaTs<<" = "<<(event_trigger_time[event_candidate_index]-ref_time_sync)<<" - "<<(timeSinceStart_ms - ref_time_dwc)<<std::endl;
+			std::cout<<"Event: "<<event_candidate_index<<"  tdc trigger: "<<n_trigger_tdc<<"  orm trigger: "<<n_trigger_orm<<": "<<deltaTs<<" = "<<(event_trigger_time[event_candidate_index]-ref_time_sync)<<" - "<<(timeSinceStart_ms - ref_time_dwc)<<std::endl;
 		#endif
+
+		//use absolute value for comparison
+		deltaTs = fabs(deltaTs);
 
 		if ((deltaTs <= triggerTimeDifferenceTolerance) ||  sumTriggerTimes[fileCounter]==-1){
 			rd->event = event_candidate_index;
@@ -315,16 +327,16 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 			syncCounter[1]++;
 		}
 
-		if (deltaTs > 200. && deltaTs<100000 && n_trigger != 1 && sumTriggerTimes[fileCounter]!=-1) {			//the first line is not used to test synchronisation since a time offset is present for the two streams.
+		if (deltaTs > 200. && deltaTs<100000 && eventCounter != 0 && sumTriggerTimes[fileCounter]!=-1) {			//the first line is not used to test synchronisation since a time offset is present for the two streams.
 			//throw cms::Exception("EventAsynch") << "Trigger time interval differs by more than 200ms. The files are likely not synchronised. ";
 			#ifdef DEBUG
 				std::cout<<std::endl<<std::endl << "Trigger time interval differs by more than 200ms. The files are likely not synchronised. "<<std::endl<<std::endl<<std::endl;
 			#endif
 			syncCounter[2]++;
+		} else {			
+			ref_time_sync = event_trigger_time[event_candidate_index]; 
+			ref_time_dwc = timeSinceStart_ms;	
 		}
-
-		ref_time_sync = event_trigger_time[event_candidate_index]; 
-		ref_time_dwc = timeSinceStart_ms;	
 	
 		eventCounter++;
 	}

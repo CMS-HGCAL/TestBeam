@@ -61,12 +61,12 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 
 		std::vector<double> wc_resolutions;
 
-		int triggerTimeDifferenceTolerance;	//indicated in ms
+		double triggerTimeDifferenceTolerance;	//indicated in ms
 
 		bool performAlignment;
-	  std::vector<std::string> alignmentParamaterFiles;
+	  	std::vector<std::string> alignmentParamaterFiles;
 		
-	  std::map<std::pair<int, int> ,std::map<int, double> >loadedAlignmentParameters;
+	  	std::map<std::pair<int, int> ,std::map<int, double> >loadedAlignmentParameters;
 		std::map<int, double> currentAlignmentParameters;
 
 		std::vector<std::string> timingFileNames;
@@ -89,7 +89,7 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		TFile *rootFile;
   	TTree *tree;   //!pointer to the analyzed TTree or TChain
 
-  	unsigned int n_run; unsigned int n_trigger; 
+  	unsigned int n_run; unsigned int n_trigger_tdc; unsigned int n_trigger_orm; unsigned int skippedTDCTriggers;
   	std::vector<int> *channels;
   	std::vector<int> *dwc_timestamps;
   	int timeSinceStart;
