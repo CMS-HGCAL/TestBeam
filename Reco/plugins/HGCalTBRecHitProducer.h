@@ -50,6 +50,12 @@ class HGCalTBRecHitProducer : public edm::EDProducer
 
   std::map<int, TH2F*> shapesLG;
   std::map<int, TH2F*> shapesHG;
+  std::map<int, TH2F*> ToARisevsTMaxLG;
+  std::map<int, TH2F*> ToARisevsTMaxHG;
+  std::map<int, TH2F*> ToAFallvsTMaxLG;
+  std::map<int, TH2F*> ToAFallvsTMaxHG;
+  std::map<int, TH2F*> TMaxHGvsTMaxLG;
+
 
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;

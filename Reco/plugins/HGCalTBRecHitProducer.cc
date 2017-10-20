@@ -61,6 +61,20 @@ void HGCalTBRecHitProducer::beginJob()
       shapesLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 0, 225, 100, -0.2, 1.);
       os.str("");os<<"Channel"<<ichan<<"__HGShape";
       shapesHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 0, 225, 100, -0.2, 1.);
+      
+      os.str("");os<<"Channel"<<ichan<<"__ToARiseVsTMaxLG";
+      ToARisevsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
+      os.str("");os<<"Channel"<<ichan<<"__ToARiseVsTMaxHG";
+      ToARisevsTMaxHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
+
+      os.str("");os<<"Channel"<<ichan<<"__ToAFallVsTMaxLG";
+      ToAFallvsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
+      os.str("");os<<"Channel"<<ichan<<"__ToAFallVsTMaxHG";
+      ToAFallvsTMaxHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
+      
+      
+      os.str("");os<<"Channel"<<ichan<<"__TMaxHGVsTMaxLG";
+      TMaxHGvsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 4, 3500., 100, 4., 3500.);
       }
     }
   }
@@ -86,10 +100,11 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     int iski=rawhit.skiroc();
     int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     int ichannel=rawhit.channel();
+    int key = iboard * 10000 + (iski % 4) * 100 + ichannel;
 
     std::vector<double> sampleHG, sampleLG, sampleT;
 
-    float highGain(0), lowGain(0), totGain(0), toaRise(0);
+    float highGain(0), lowGain(0), totGain(0), toaRise(0), toaFall(0);
 
     int hgStatus = -1;
     int lgStatus = -1;
@@ -99,6 +114,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
     totGain = rawhit.totSlow();
     toaRise = rawhit.toaRise();
+    toaFall = rawhit.toaFall();
+
 
     for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       subHG[it]=0;
@@ -164,8 +181,11 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
         //std::cout<<"Filling HG key: "<<key<<std::endl;
         for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) 
           shapesHG[key]->Fill(25*it+12.5-(fithg.tmax - fithg.trise), (rawhit.highGainADC(it)-subHG[it])/fithg.amplitude);
-      }
 
+        ToARisevsTMaxHG[key]->Fill(fithg.tmax, toaRise);
+        ToAFallvsTMaxHG[key]->Fill(fithg.tmax, toaFall);
+
+      }
 
       //second LG
       //this is a just try to isolate hits with signal
@@ -187,11 +207,16 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
         lowGain=0;
         timeLG=-1;
       } else if (investigatePulseShape) {
-        int key = iboard * 10000 + (iski % 4) * 100 + ichannel;
         //std::cout<<"Filling LG key: "<<key<<std::endl;
         for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) 
           shapesLG[key]->Fill(25*it+12.5-(fitlg.tmax - fitlg.trise), (rawhit.lowGainADC(it)-subLG[it])/fitlg.amplitude);
+        
+        ToARisevsTMaxLG[key]->Fill(fitlg.tmax, toaRise);
+        ToAFallvsTMaxLG[key]->Fill(fitlg.tmax, toaFall);
       }
+
+      if (lgStatus != 0 && hgStatus != 0 && investigatePulseShape)
+        TMaxHGvsTMaxLG[key]->Fill(fithg.tmax, fitlg.tmax);
 
     } else if (performAveraging) {
       //averaging of TS2-TS5
