@@ -51,7 +51,7 @@ options.register('reportEvery',
                 )
 
 
-options.maxEvents = -1
+options.maxEvents = 100
 
 options.parseArguments()
 print options
@@ -83,6 +83,7 @@ process.output = cms.OutputModule("PoolOutputModule",
                                   outputCommands = cms.untracked.vstring('drop *',
                                                                          'keep *_*_HGCALTBRECHITS_*',
                                                                          'keep *_*_DelayWireChambers_*',
+                                                                         'keep *_*_HGCalTBDWCTracks_*',
                                                                          'keep *_*_FullRunData_*')
 )
 
@@ -121,7 +122,11 @@ process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",
                                        NoiseThreshold=cms.untracked.double(20)
 )
 
+process.dwctrackproducer = cms.EDProducer("DWCTrackProducer",
+                                        MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
+                                        OutputCollectionName=cms.string("HGCalTBDWCTracks")
+)
 
-process.p = cms.Path( process.rechitproducer*process.rechitplotter )
+process.p = cms.Path( process.rechitproducer*process.rechitplotter*process.dwctrackproducer )
 
 process.end = cms.EndPath(process.output)

@@ -10,6 +10,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
 #include "HGCal/DataFormats/interface/HGCalTBTrackCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"
+#include "HGCal/DataFormats/interface/HGCalTBDWCTrack.h"
 #include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
 
 #include "DataFormats/Common/interface/RefProd.h"
@@ -43,6 +44,9 @@ struct dictionary {
 
 	RunData _aRunData;
 	edm::Wrapper<RunData> _aRunDataWrapper;
+
+	HGCalTBDWCTrack _aHGCalTBDWCTrack;
+	edm::Wrapper<HGCalTBDWCTrack> _aHGCalTBDWCTrackWrapper;
 
 	WireChamberData _aWireChamberData;
 	std::vector<WireChamberData> _aWireChamberDataVector;

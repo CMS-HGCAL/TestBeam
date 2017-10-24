@@ -32,6 +32,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
+#include "HGCal/DataFormats/interface/HGCalTBDWCTrack.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 
@@ -66,22 +67,23 @@ class MIPFinder : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		edm::Service<TFileService> fs;
 		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;	 	
 		edm::EDGetTokenT<RunData> RunDataToken;	
-		edm::EDGetTokenT<WireChambers> MWCToken;		
+		edm::EDGetTokenT<WireChambers> DWCToken;		
+		edm::EDGetTokenT<HGCalTBDWCTrack> DWCTrackToken;		
 
 		std::vector<std::string> pathsToMIPWindowFiles;
 	  	std::map<std::pair<int, int> ,WindowMap  >loadedDWCWindows;
 		WindowMap currentDWCWindows;
 
 
-		std::map<int,TH2F*> m_h_rechitEnergyPerDWCE;
+		std::map<int,TH2F*> m_h_rechitEnergyPerDUT;
 		std::map<int,TH1F*> m_h_rechitEnergy;
-		std::map<int,TH2F*> m_h_rechitEnergyPerDWCE_selected;
+		std::map<int,TH2F*> m_h_rechitEnergyPerDUT_selected;
 		std::map<int,TH1F*> m_h_rechitEnergy_selected;
-		TH2F* h_DWCE_occupancy;
+		TH2F* h_DUT_occupancy;
 
 		int n_bins_DWCE;
-		double max_dim_x_DWCE;
-		double max_dim_y_DWCE;
+		double max_dim_x_DUT;
+		double max_dim_y_DUT;
 };
 
 MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {	
@@ -89,15 +91,16 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 	usesResource("TFileService");
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
-	MWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
+	DWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
+	DWCTrackToken= consumes<HGCalTBDWCTrack>(iConfig.getParameter<edm::InputTag>("DWCTRACKS"));
 
 	//read the configuration
 	pathsToMIPWindowFiles = iConfig.getParameter<std::vector<std::string> >("pathsToMIPWindowFiles");
 	n_bins_DWCE = iConfig.getParameter<int>("n_bins_DWCE");
-	max_dim_x_DWCE = iConfig.getParameter<double>("max_dim_x_DWCE");
-	max_dim_y_DWCE = iConfig.getParameter<double>("max_dim_y_DWCE");
+	max_dim_x_DUT = iConfig.getParameter<double>("max_dim_x_DUT");
+	max_dim_y_DUT = iConfig.getParameter<double>("max_dim_y_DUT");
 
-	h_DWCE_occupancy = fs->make<TH2F>("DWC_E_Occupancy", "DWC_E_Occupancy", n_bins_DWCE, -max_dim_x_DWCE, max_dim_x_DWCE, n_bins_DWCE, -max_dim_y_DWCE, max_dim_y_DWCE);		//DWC dimension and binning to be configured
+	h_DUT_occupancy = fs->make<TH2F>("DUT_Occupancy", "DUT_Occupancy", n_bins_DWCE, -max_dim_x_DUT, max_dim_x_DUT, n_bins_DWCE, -max_dim_y_DUT, max_dim_y_DUT);		//DWC dimension and binning to be configured
 
 	TH2F* htmp2;
 	TH1F* htmp1;
@@ -116,9 +119,9 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 				TFileDirectory channel_dir = chip_dir.mkdir( os.str().c_str() );
 				
 				os.str("");
-				os << "EnergyVsDWCE_board_"<<ib<<"_chip_"<<iski<<"_channel_"<<ichan;
-				htmp2=channel_dir.make<TH2F>("RechitEnergyVsDWCE", os.str().c_str(), n_bins_DWCE, -max_dim_x_DWCE, max_dim_x_DWCE, n_bins_DWCE, -max_dim_y_DWCE, max_dim_y_DWCE);
-				m_h_rechitEnergyPerDWCE.insert( std::pair<int,TH2F*>(key, htmp2) );
+				os << "EnergyVsDUT_board_"<<ib<<"_chip_"<<iski<<"_channel_"<<ichan;
+				htmp2=channel_dir.make<TH2F>("RechitEnergyVsDUT", os.str().c_str(), n_bins_DWCE, -max_dim_x_DUT, max_dim_x_DUT, n_bins_DWCE, -max_dim_y_DUT, max_dim_y_DUT);
+				m_h_rechitEnergyPerDUT.insert( std::pair<int,TH2F*>(key, htmp2) );
 		
 				os.str("");
 				os << "Energy_board_"<<ib<<"_chip_"<<iski<<"_channel_"<<ichan;
@@ -127,9 +130,9 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 
 
 				os.str("");
-				os << "EnergyVsDWCE_selected_board_"<<ib<<"_chip_"<<iski<<"_channel_"<<ichan;
-				htmp2=channel_dir.make<TH2F>("RechitEnergyVsDWCE_selected", os.str().c_str(), n_bins_DWCE, -max_dim_x_DWCE, max_dim_x_DWCE, n_bins_DWCE, -max_dim_y_DWCE, max_dim_y_DWCE);
-				m_h_rechitEnergyPerDWCE_selected.insert( std::pair<int,TH2F*>(key, htmp2) );
+				os << "EnergyVsDUT_selected_board_"<<ib<<"_chip_"<<iski<<"_channel_"<<ichan;
+				htmp2=channel_dir.make<TH2F>("RechitEnergyVsDUT_selected", os.str().c_str(), n_bins_DWCE, -max_dim_x_DUT, max_dim_x_DUT, n_bins_DWCE, -max_dim_y_DUT, max_dim_y_DUT);
+				m_h_rechitEnergyPerDUT_selected.insert( std::pair<int,TH2F*>(key, htmp2) );
 		
 				os.str("");
 				os << "Energy_selected_board_"<<ib<<"_chip_"<<iski<<"_channel_"<<ichan;
@@ -163,30 +166,59 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 		return;
 	}
 
-	if (pdgID != 13) {
-		std::cout<<"Run is not a dedicated muon run."<<std::endl;
-		return;
-	}
+	#ifndef DEBUG
+		if (pdgID != 13) {
+			std::cout<<"Run is not a dedicated muon run."<<std::endl;
+			return;
+		}
+	#endif
+
 	#ifdef DEBUG
 		int eventCounter = rd->event;
 		std::cout<<"run: "<<run<<"  energy: "<<energy<<"  pdgID:" << pdgID<<"   eventCounter: "<<eventCounter<<std::endl;
+		std::cout<<rd->doubleUserRecords.has("triggerDeltaT_to_TDC")<<"   "<<rd->booleanUserRecords.has("hasValidMWCMeasurement")<<"   "<<rd->booleanUserRecords.has("hasDanger")<<std::endl;
 	#endif
 
 	ReadCurrentDWCWindows(run);
 
+
+	//obtain the track information
+	edm::Handle<HGCalTBDWCTrack> dwctrack;
+	event.getByToken(DWCTrackToken, dwctrack);
 	//Obtain the wire chamber information
 	edm::Handle<WireChambers> dwcs;
-	event.getByToken(MWCToken, dwcs);
-		
-	if (!dwcs->at(0).goodMeasurement) {
+	event.getByToken(DWCToken, dwcs);
+	double DUT_x = 0.;
+	double DUT_y = 0.;
+
+	if (dwctrack->valid) {
+		std::pair<double, double> dwc_xy_z0 = dwctrack->DWCExtrapolation_XY(0.);
+		if ((dwctrack->referenceType==15) && (dwctrack->chi2_x<=10.) && (dwctrack->chi2_y<=10.)) {	//all
+			DUT_x = dwc_xy_z0.first;
+			DUT_y = dwc_xy_z0.second;
+		}
+		else if ((dwctrack->referenceType==13) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) {	//all
+			DUT_x = dwc_xy_z0.first;
+			DUT_y = dwc_xy_z0.second;
+		}
+		else if ((dwctrack->referenceType==14) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) {	//all
+			DUT_x = dwc_xy_z0.first;
+			DUT_y = dwc_xy_z0.second;
+		}	
+	}
+	else if (dwcs->at(0).goodMeasurement) {
+		DUT_x = dwcs->at(0).x;
+		DUT_y = dwcs->at(0).y;
+	}
+	else if (dwcs->at(1).goodMeasurement) {
+		DUT_x = dwcs->at(1).x;
+		DUT_y = dwcs->at(1).y;		
+	}
+	else {
 		return;
 	}
-	double DWCE_x = dwcs->at(0).x;
-	double DWCE_y = dwcs->at(0).y;
-	#ifdef DEBUG
-		std::cout<<dwcs->at(0).x<<"  "<<dwcs->at(0).y<<"   "<<dwcs->at(0).z<<"  "<<dwcs->at(0).goodMeasurement<<std::endl;
-	#endif
-	h_DWCE_occupancy->Fill(DWCE_x, DWCE_y);
+
+	h_DUT_occupancy->Fill(DUT_x, DUT_y);
 
 	//opening Rechits
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
@@ -201,14 +233,14 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
   		double energyHG = Rechit.energyHigh();
   		int key = board*1000+skiroc*100+channel;
   		
-  		m_h_rechitEnergyPerDWCE[key]->Fill(DWCE_x, DWCE_y, energyHG);
+  		m_h_rechitEnergyPerDUT[key]->Fill(DUT_x, DUT_y, energyHG);
   		m_h_rechitEnergy[key]->Fill(energyHG);
 
  		if (currentDWCWindows.find(key) == currentDWCWindows.end())	continue;	
-		if (DWCE_x < currentDWCWindows[key][0] || DWCE_x > currentDWCWindows[key][1]) continue;
-		if (DWCE_y < currentDWCWindows[key][2] || DWCE_y > currentDWCWindows[key][3]) continue;
+		if (DUT_x < currentDWCWindows[key][0] || DUT_x > currentDWCWindows[key][1]) continue;
+		if (DUT_y < currentDWCWindows[key][2] || DUT_y > currentDWCWindows[key][3]) continue;
 
-  		m_h_rechitEnergyPerDWCE_selected[key]->Fill(DWCE_x, DWCE_y, energyHG);
+  		m_h_rechitEnergyPerDUT_selected[key]->Fill(DUT_x, DUT_y, energyHG);
   		m_h_rechitEnergy_selected[key]->Fill(energyHG);
 	}
 	

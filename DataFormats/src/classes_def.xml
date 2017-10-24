@@ -17,6 +17,9 @@
   <class name="RunData"/>
   <class name="edm::Wrapper<RunData>"/>
 
+  <class name="HGCalTBDWCTrack"/>
+  <class name="edm::Wrapper<HGCalTBDWCTrack>"/>
+
   <class name="edm::reftobase::Holder<CaloRecHit, edm::Ref<edm::SortedCollection<HGCalTBRecHit, edm::StrictWeakOrdering<HGCalTBRecHit> >, HGCalTBRecHit, edm::refhelper::FindUsingAdvance<edm::SortedCollection<HGCalTBRecHit, edm::StrictWeakOrdering<HGCalTBRecHit> >, HGCalTBRecHit> > >" />
   <class name="reco::HGCalTBCluster"/>
   <class name="reco::HGCalTBClusterCollection"/>

@@ -32,14 +32,14 @@ options.register('NBins',
                  'Bins for the DWC search window.'
                 )
 
-options.register('DimXDWCE',
+options.register('DimXDUT',
                 30.,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.float,
                  'MIP search window on DWCE in x-coordinate [mm].'
                 )
 
-options.register('DimYDWCE',
+options.register('DimYDUT',
                 30.,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.float,
@@ -80,10 +80,11 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(options
 process.mipfindinganalysis = cms.EDAnalyzer("MIPFinder",
                                 RUNDATA = cms.InputTag("wirechamberproducer", "FullRunData" ), 
                                 MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
+                                DWCTRACKS = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" ), 
                                 HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
                                 n_bins_DWCE = cms.int32(options.NBins),
-                                max_dim_x_DWCE = cms.double(options.DimXDWCE),
-                                max_dim_y_DWCE = cms.double(options.DimYDWCE),
+                                max_dim_x_DUT = cms.double(options.DimXDUT),
+                                max_dim_y_DUT = cms.double(options.DimYDUT),
                                 pathsToMIPWindowFiles = cms.vstring(options.pathsToMIPWindowFiles)
 
                               )
