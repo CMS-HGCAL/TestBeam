@@ -249,7 +249,7 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
 {
   std::auto_ptr<HGCalTBSkiroc2CMSCollection> skirocs(new HGCalTBSkiroc2CMSCollection);
   std::auto_ptr<HGCalTBSkiroc2CMSCollection> emptycol(new HGCalTBSkiroc2CMSCollection);
-  bool correctEvent=true;
+  //bool correctEvent=true;
   for( size_t iski=0; iski<m_decodedData.size(); iski++){
     std::vector<HGCalTBDetId> detids;
     for (size_t ichan = 0; ichan < HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++) {
@@ -274,12 +274,13 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
     if(skiroc.check())
       skirocs->push_back(skiroc);
     else{
-      correctEvent=false;
-      break;
+      std::cout<<"Skiroc info: "<<iski<<"  "<<iski/4<<std::endl;
+      //correctEvent=false;
+      //break;
     }
   }
-  if( !correctEvent )
-    skirocs->swap(*emptycol);
+  //if( !correctEvent )
+    //skirocs->swap(*emptycol);
   e.put(skirocs, m_outputCollectionName);
 
 
