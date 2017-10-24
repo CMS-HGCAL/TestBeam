@@ -263,7 +263,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	eventCounter = rd->event;
 	energy = rd->energy;
 	
-	if (rd->hasDanger) {
+	if (rd->booleanUserRecords.has("hasDanger")&&rd->booleanUserRecords.get("hasDanger")) {
 		std::cout<<"Event "<<evId<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because somthing went wrong"<<std::endl;
 		return;
 	}

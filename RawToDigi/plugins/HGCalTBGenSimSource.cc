@@ -233,15 +233,15 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	rd->runType = (*fileIterator).runType;
 	rd->run = (*fileIterator).index;
 	rd->event = eventCounter;
-	rd->hasDanger = false;
-	rd->trueEnergy = beamP;						//energy as truely simulated
+	rd->booleanUserRecords.add("hasDanger", false);
+	rd->doubleUserRecords.add("trueEnergy", beamP);
 
 	bool _hasValidMWCMeasurement = true;
 	_hasValidMWCMeasurement = (x1_mc != -99.9) && _hasValidMWCMeasurement;
 	_hasValidMWCMeasurement = (y1_mc != -99.9) && _hasValidMWCMeasurement;
 	_hasValidMWCMeasurement = (x2_mc != -99.9) && _hasValidMWCMeasurement;
 	_hasValidMWCMeasurement = (y2_mc != -99.9) && _hasValidMWCMeasurement;
-	rd->hasValidMWCMeasurement = _hasValidMWCMeasurement;
+	rd->booleanUserRecords.add("hasValidMWCMeasurement", _hasValidMWCMeasurement);
 
 	event.put(std::move(rd), "RunData");	
 

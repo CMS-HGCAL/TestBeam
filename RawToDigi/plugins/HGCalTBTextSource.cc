@@ -284,8 +284,8 @@ void HGCalTBTextSource::produce(edm::Event & event){
 		eventsPerRun[m_run].second = EventMultiWireChambers.size();
 	}
 	eventsPerRun[m_run].first++;
-	rd->hasDanger = _hasDanger;
-	rd->hasValidMWCMeasurement = _hasValidMWCMeasurement;
+	rd->booleanUserRecords.add("hasDanger", _hasDanger);
+	rd->booleanUserRecords.add("hasValidMWCMeasurement", _hasValidMWCMeasurement);
 
 	event.put(std::move(rd), "RunData");	
 }

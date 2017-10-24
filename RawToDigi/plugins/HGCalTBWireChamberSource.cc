@@ -292,8 +292,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 	rd->run = n_run;
 	rd->trigger = n_trigger_orm;
-	rd->hasDanger = false;
-	rd->hasValidMWCMeasurement = (N_DWC_points>=3);		//need two points for track extrapolation
+	rd->booleanUserRecords.add("hasValidMWCMeasurement", (N_DWC_points>=3));		//need two points for track extrapolation
 	
 	//do the matching to the HGCal events
 	if (trigger_to_event_table.count(n_trigger_orm)==0) {
@@ -305,8 +304,8 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 		if (triggerTimingFormat[fileCounter]==1) timeSinceStart_ms = timeSinceStart_long / 1000.;
 
 		double deltaTs = (event_trigger_time[event_candidate_index]-ref_time_sync) - (timeSinceStart_ms - ref_time_dwc);
-		rd->triggerDeltaT_to_TDC = deltaTs;
-		
+		rd->doubleUserRecords.add("triggerDeltaT_to_TDC", deltaTs);
+
 		if (deltaTs<-15.) {		
 		//average time in between two events is around 20ms given by the sync board. So cutting on -15. is reasonable for this configuration (20 Oct 2017 in H6A)
 			skippedTDCTriggers+=1;
@@ -322,7 +321,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 		if ((deltaTs <= triggerTimeDifferenceTolerance) ||  sumTriggerTimes[fileCounter]==-1){
 			rd->event = event_candidate_index;
 
-			if (rd->hasValidMWCMeasurement) goodEventCounter++;
+			if (rd->booleanUserRecords.has("hasValidMWCMeasurement")&&rd->booleanUserRecords.get("hasValidMWCMeasurement")) goodEventCounter++;
 			syncCounter[0]++;
 		} else {
 			rd->event=-1;

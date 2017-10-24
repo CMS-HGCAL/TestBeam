@@ -296,11 +296,10 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
   rd->runType = m_beamParticlePDGID;
   rd->run = m_run;
   rd->event = m_event;
-  rd->hasDanger = problemDuringReadout;
-  rd->hasValidMWCMeasurement = false;
+  rd->booleanUserRecords.add("hasDanger", problemDuringReadout);
 
   #ifdef DEBUG
-    std::cout<<rd->run<<"  "<<rd->event<<"  "<<rd->energy<<"  "<<rd->configuration<<"  "<<rd->runType<<"  "<<rd->hasDanger<<std::endl;
+    std::cout<<rd->run<<"  "<<rd->event<<"  "<<rd->energy<<"  "<<rd->configuration<<"  "<<rd->runType<<"  "<<rd->booleanUserRecords.get("hasDanger")<<std::endl;
   #endif
 
   e.put(std::move(rd), "RunData");

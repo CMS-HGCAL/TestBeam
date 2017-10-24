@@ -38,12 +38,15 @@ struct dictionary {
 	SKIROC2DigiCollection _SR2DC;
 	edm::Wrapper<SKIROC2DigiCollection> _theSR2DC;
 
-  RunData _aRunData;
-  edm::Wrapper<RunData> _aRunDataWrapper;
+	UserRecords<bool> _aBooleanUserRecord;
+	UserRecords<double> _aDoubleUserRecord;
 
-  WireChamberData _aWireChamberData;
-  std::vector<WireChamberData> _aWireChamberDataVector;
-  edm::Wrapper<WireChamberData> __aWireChamberDataWrapper;
+	RunData _aRunData;
+	edm::Wrapper<RunData> _aRunDataWrapper;
+
+	WireChamberData _aWireChamberData;
+	std::vector<WireChamberData> _aWireChamberDataVector;
+	edm::Wrapper<WireChamberData> __aWireChamberDataWrapper;
 
 	HGCalTBTrack _aTrack;
 	std::vector<HGCalTBTrack> _HGCTBTRackVect;

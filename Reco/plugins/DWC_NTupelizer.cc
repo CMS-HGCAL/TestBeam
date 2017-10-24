@@ -123,8 +123,9 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 	run = rd->run;
 	runType = std::atoi((rd->runType).c_str());
 	n_event = rd->event;
-	goodDWC_Measurement = rd->hasValidMWCMeasurement ? 1 : 0;
-	triggerTimeDiff = rd->triggerDeltaT_to_TDC;
+	goodDWC_Measurement = (rd->booleanUserRecords.has("hasValidMWCMeasurement")&&rd->booleanUserRecords.get("hasValidMWCMeasurement")) ? 1 : 0;
+	
+	triggerTimeDiff = rd->doubleUserRecords.has("triggerDeltaT_to_TDC") ? rd->doubleUserRecords.get("triggerDeltaT_to_TDC") : -1;
 
 	for (size_t i=0; i<4; i++) {
 		reco_x[i] = dwcs->at(i).x;

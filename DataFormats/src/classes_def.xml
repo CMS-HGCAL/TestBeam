@@ -12,6 +12,8 @@
   <class name="SKIROC2DigiCollection"/>
   <class name="edm::Wrapper<SKIROC2DigiCollection>"/>  
 
+  <class name="UserRecords<double>"/>
+  <class name="UserRecords<bool>"/>
   <class name="RunData"/>
   <class name="edm::Wrapper<RunData>"/>
 

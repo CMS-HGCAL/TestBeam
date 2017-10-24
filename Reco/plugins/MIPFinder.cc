@@ -158,7 +158,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	int pdgID = std::atoi( (rd->runType).c_str() );
 	double energy = rd->energy;
 	
-	if (rd->hasDanger) {
+	if (rd->booleanUserRecords.has("hasDanger")&&rd->booleanUserRecords.get("hasDanger")) {
 		std::cout<<"Event "<<evId<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because somthing went wrong"<<std::endl;
 		return;
 	}

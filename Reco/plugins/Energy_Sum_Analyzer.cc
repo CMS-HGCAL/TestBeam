@@ -152,7 +152,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	eventCounter = rd->event;
 	beamEnergy = rd->energy;
 	
-	if (rd->hasDanger) {
+	if (rd->booleanUserRecords.has("hasDanger")&&rd->booleanUserRecords.get("hasDanger")) {
 		std::cout<<"Event "<<evId<<" of run "<<run<<" ("<<beamEnergy<<"GeV)  is skipped because somthing went wrong"<<std::endl;
 		return;
 	}

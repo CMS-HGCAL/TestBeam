@@ -68,13 +68,15 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
     rd_full->event = rd->event;
     rd_full->energy = rd->energy;
     rd_full->runType = rd->runType;
-    rd_full->hasDanger = rd->hasDanger;
-    rd_full->trueEnergy = rd->trueEnergy;
+    
+    if (rd->booleanUserRecords.has("hasDanger")) rd_full->booleanUserRecords.add("hasDanger", rd->booleanUserRecords.get("hasDanger"));
+    
+    if (rd->doubleUserRecords.has("trueEnergy")) rd_full->doubleUserRecords.add("trueEnergy", rd->doubleUserRecords.get("trueEnergy"));
 
     if (reco1_x_loaded.count(rd->event)==0) {
         dwc1->goodMeasurement = dwc2->goodMeasurement = dwc3->goodMeasurement = dwc4->goodMeasurement = false;
-        rd_full->hasValidMWCMeasurement = false;
-        rd_full->triggerDeltaT_to_TDC = -999.;
+        rd_full->booleanUserRecords.add("hasValidMWCMeasurement", false);
+        rd_full->doubleUserRecords.add("triggerDeltaT_to_TDC", -999.);
     } else {
     	//cross-check
         int event_nr = rd->event;
@@ -154,8 +156,8 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
         dwc4->z = z4_loaded[event_nr];
 
 
-        rd_full->hasValidMWCMeasurement = goodDWC_Measurement_loaded[event_nr];
-        rd_full->triggerDeltaT_to_TDC = triggerTimeDiff_loaded[event_nr];
+        rd_full->booleanUserRecords.add("hasValidMWCMeasurement", (bool)goodDWC_Measurement_loaded[event_nr]);
+        rd_full->doubleUserRecords.add("triggerDeltaT_to_TDC", triggerTimeDiff_loaded[event_nr]);
     }
 
     dwcs->push_back(*dwc1);

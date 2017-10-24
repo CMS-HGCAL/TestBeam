@@ -363,7 +363,7 @@ void MillepedeBinaryWriter_2016::analyze(const edm::Event& event, const edm::Eve
 	run = rd->run;
 	energy = rd->energy;
 
-	if (rd->hasDanger) {
+	if (rd->booleanUserRecords.has("hasDanger")&&rd->booleanUserRecords.get("hasDanger")) {
 		std::cout<<"Event "<<event.id().event()<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has DANGER=true"<<std::endl;
 		return;
 	}
@@ -373,7 +373,7 @@ void MillepedeBinaryWriter_2016::analyze(const edm::Event& event, const edm::Eve
 
 	if (useMWCReference) {
 		event.getByToken(MWCToken, mwcs);
-	  if (!rd->hasValidMWCMeasurement) return;	
+	  if (rd->booleanUserRecords.has("hasValidMWCMeasurement")&&!rd->booleanUserRecords.get("hasValidMWCMeasurement")) return;	
 		if (MWCQualityCut) {
 			double delta_x12 = mwcs->at(0).x - mwcs->at(1).x;
 			double delta_y12 = mwcs->at(0).y - mwcs->at(1).y;
