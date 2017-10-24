@@ -71,6 +71,9 @@ private:
   struct {
     HGCalElectronicsMap emap_;
   } essource_;
+
+  int m_NHexaBoards;
+
   int m_sensorsize;
   bool m_eventPlotter;
   bool m_subtractCommonMode;
@@ -111,6 +114,7 @@ private:
 
 RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
   m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
+  m_NHexaBoards(iConfig.getUntrackedParameter<int>("NHexaBoards", 10)), 
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
   m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
   m_subtractCommonMode(iConfig.getUntrackedParameter<bool>("SubtractCommonMode",false))
@@ -142,7 +146,7 @@ void RawHitPlotter::beginJob()
   std::ostringstream os( std::ostringstream::ate );
   TH1F* htmp1;
   TH2F* htmp2;
-  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+  for(int ib = 0; ib<m_NHexaBoards; ib++) {
     for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){ 
       os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
       TFileDirectory dir = fs->mkdir( os.str().c_str() );
@@ -221,7 +225,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     int Board_IU = 0;
     int Board_IV = 0; 
     int Board_Layer = 0;
-    for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+    for(int ib = 0; ib<m_NHexaBoards; ib++) {
       Board_IU = 0;
       Board_IV = 0; 
       if( (ib == 6) || (ib == 9) ){
@@ -271,8 +275,8 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     m_tree->Fill();
   }
 
-  int nhitUnderSat[HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD*HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA];
-  for( int i=0; i<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD*HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; i++ ) nhitUnderSat[i]=0;
+  int nhitUnderSat[m_NHexaBoards*HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA];
+  for( int i=0; i<m_NHexaBoards*HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; i++ ) nhitUnderSat[i]=0;
   for( auto hit : *hits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid) ) continue;
@@ -319,9 +323,9 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     }
   }
   int ntot=0;
-  int nhitUnderZeroPerLayer[HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD];
-  for( int i=0; i<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; i++ ) nhitUnderZeroPerLayer[i]=0;
-  for( int i=0; i<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD*HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; i++ ) {
+  int nhitUnderZeroPerLayer[m_NHexaBoards];
+  for( int i=0; i<m_NHexaBoards; i++ ) nhitUnderZeroPerLayer[i]=0;
+  for( int i=0; i<m_NHexaBoards*HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; i++ ) {
     int iboard=i/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     int iskiroc=i%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     ntot+=nhitUnderSat[i];
@@ -331,7 +335,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   }
   m_h_nhitUnderSat->Fill(ntot);
   int eeq(0),fhq(0),centerq(0),fullq(0);
-  for( int i=0; i<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; i++ ){
+  for( int i=0; i<m_NHexaBoards; i++ ){
     if( nhitUnderZeroPerLayer[i]<32 )
       continue;
     fullq++;
@@ -386,7 +390,7 @@ void RawHitPlotter::endJob()
   int Board_IU = 0;
   int Board_IV = 0; 
   int Board_Layer = 0;
-  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+  for(int ib = 0; ib<m_NHexaBoards; ib++) {
     Board_IU = 0;
     Board_IV = 0; 
     if( (ib == 6) || (ib == 9) ){

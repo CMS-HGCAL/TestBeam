@@ -54,6 +54,8 @@ private:
     HGCalElectronicsMap emap_;
   } essource_;
 
+  int m_NHexaBoards;
+
   int m_sensorsize;
   bool m_eventPlotter;
   int m_evtID;
@@ -76,6 +78,7 @@ private:
 
 RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig) :
   m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt")),
+  m_NHexaBoards(iConfig.getUntrackedParameter<int>("NHexaBoards", 10)), 
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
   m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
   m_mipThreshold(iConfig.getUntrackedParameter<double>("MipThreshold",200.)),
@@ -114,7 +117,7 @@ void RecHitPlotter::beginJob()
   m_h_enSum=fs->make<TH1F>("EnergySum","EnergySum",5000,0,50000);
 
   std::ostringstream os( std::ostringstream::ate );
-  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+  for(int ib = 0; ib<m_NHexaBoards; ib++) {
     for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
       os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
       TFileDirectory dir = fs->mkdir( os.str().c_str() );

@@ -25,6 +25,13 @@ options.register('outputFile',
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
 
+options.register('NHexaBoards',
+                10,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Number of hexaboards for analysis.'
+                )
+
 options.register('electronicMap',
                  'map_CERN_Hexaboard_July_6Layers.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -51,7 +58,7 @@ options.register('reportEvery',
                 )
 
 
-options.maxEvents = 100
+options.maxEvents = -1
 
 options.parseArguments()
 print options
@@ -109,6 +116,7 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                                                        4000.,4000.,4000.,4000.,4000.,
                                                                        4000.,4000.),
                                         ElectronicsMap = cms.untracked.string(electronicMap),
+                                        NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                         TimeSample3ADCCut = cms.untracked.double(15.),
                                         investigatePulseShape = cms.untracked.bool(True)
 )
@@ -116,6 +124,7 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
 process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",
                                        InputCollection=cms.InputTag("rechitproducer","HGCALTBRECHITS"),
                                        ElectronicMap=cms.untracked.string(electronicMap),
+                                       NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                        SensorSize=cms.untracked.int32(128),
                                        EventPlotter=cms.untracked.bool(False),
                                        MipThreshold=cms.untracked.double(200),

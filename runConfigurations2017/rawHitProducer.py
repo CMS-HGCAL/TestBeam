@@ -37,6 +37,13 @@ options.register('electronicMap',
                  VarParsing.VarParsing.varType.string,
                  'Name of the electronic map file in HGCal/CondObjects/data/')
 
+options.register('NHexaBoards',
+                10,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Number of hexaboards for analysis.'
+                )
+
 options.register('pedestalHighGainFile',
                  '/home/tquast/tb2017/pedestals/pedestalHG.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -135,6 +142,7 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
 process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
                                        ElectronicMap=cms.untracked.string(electronicMap),
+                                       NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                        SensorSize=cms.untracked.int32(128),
                                        EventPlotter=cms.untracked.bool(False),
                                        SubtractCommonMode=cms.untracked.bool(True)

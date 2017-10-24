@@ -70,6 +70,8 @@ class MIPFinder : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		edm::EDGetTokenT<WireChambers> DWCToken;		
 		edm::EDGetTokenT<HGCalTBDWCTrack> DWCTrackToken;		
 
+		int m_NHexaBoards;
+
 		std::vector<std::string> pathsToMIPWindowFiles;
 	  	std::map<std::pair<int, int> ,WindowMap  >loadedDWCWindows;
 		WindowMap currentDWCWindows;
@@ -93,6 +95,7 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
 	DWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
 	DWCTrackToken= consumes<HGCalTBDWCTrack>(iConfig.getParameter<edm::InputTag>("DWCTRACKS"));
+	m_NHexaBoards= iConfig.getUntrackedParameter<int>("NHexaBoards", 10);
 
 	//read the configuration
 	pathsToMIPWindowFiles = iConfig.getParameter<std::vector<std::string> >("pathsToMIPWindowFiles");
@@ -105,7 +108,7 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 	TH2F* htmp2;
 	TH1F* htmp1;
 	std::ostringstream os( std::ostringstream::ate );
-	for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+	for(int ib = 0; ib<m_NHexaBoards; ib++) {
 		for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
 			os.str("");
 			os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;

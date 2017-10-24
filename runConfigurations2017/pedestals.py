@@ -22,6 +22,13 @@ options.register('electronicMap',
                  VarParsing.VarParsing.varType.string,
                  'Name of the electronic map file in HGCal/CondObjects/data/')
 
+options.register('NHexaBoards',
+                10,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Number of hexaboards for analysis.'
+                )
+
 options.register('pedestalHighGainFile',
                  '/home/tquast/tb2017/pedestals/pedestalHG.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -91,6 +98,7 @@ process.TFileService = cms.Service("TFileService", fileName=cms.string(options.o
 process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         SensorSize=cms.untracked.int32(128),
                                         EventPlotter=cms.untracked.bool(False),
+                                        NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata")
 )
 

@@ -25,6 +25,13 @@ options.register('pathsToMIPWindowFiles',
                  'Paths to the file containing the corresponding cuts on the reconstructed impact positions on DWC E.'
                 )
 
+options.register('NHexaBoards',
+                10,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Number of hexaboards for analysis.'
+                )
+
 options.register('NBins',
                 60,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -82,6 +89,7 @@ process.mipfindinganalysis = cms.EDAnalyzer("MIPFinder",
                                 MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
                                 DWCTRACKS = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" ), 
                                 HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
+                                NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                 n_bins_DWCE = cms.int32(options.NBins),
                                 max_dim_x_DUT = cms.double(options.DimXDUT),
                                 max_dim_y_DUT = cms.double(options.DimYDUT),
