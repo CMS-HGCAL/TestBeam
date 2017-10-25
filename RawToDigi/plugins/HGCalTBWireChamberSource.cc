@@ -306,7 +306,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 		double deltaTs = (event_trigger_time[event_candidate_index]-ref_time_sync) - (timeSinceStart_ms - ref_time_dwc);
 		rd->doubleUserRecords.add("triggerDeltaT_to_TDC", deltaTs);
 
-		if (deltaTs<-15.) {		
+		if ((deltaTs<-15.)&&(fabs(delta_T_priorDWCTrigger+deltaTs)>2.)) {		
 		//average time in between two events is around 20ms given by the sync board. So cutting on -15. is reasonable for this configuration (20 Oct 2017 in H6A)
 			skippedTDCTriggers+=1;
 		}
@@ -339,6 +339,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 			ref_time_dwc = timeSinceStart_ms;	
 		}
 	
+		delta_T_priorDWCTrigger = deltaTs;
 		eventCounter++;
 	}
 	

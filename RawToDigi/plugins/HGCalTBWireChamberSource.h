@@ -87,22 +87,22 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		std::vector<int> syncCounter;
 
 		TFile *rootFile;
-  	TTree *tree;   //!pointer to the analyzed TTree or TChain
+	  	TTree *tree;   //!pointer to the analyzed TTree or TChain
 
-  	unsigned int n_run; unsigned int n_trigger_tdc; unsigned int n_trigger_orm; unsigned int skippedTDCTriggers;
-  	std::vector<int> *channels;
-  	std::vector<int> *dwc_timestamps;
-  	int timeSinceStart;
-  	Long64_t timeSinceStart_long;
- 
-  	double ref_time_sync, ref_time_dwc;
+	  	unsigned int n_run; unsigned int n_trigger_tdc; unsigned int n_trigger_orm; unsigned int skippedTDCTriggers;
+	  	std::vector<int> *channels;
+	  	std::vector<int> *dwc_timestamps;
+	  	int timeSinceStart;
+	  	Long64_t timeSinceStart_long;
+	 
+	  	double ref_time_sync, ref_time_dwc, delta_T_priorDWCTrigger;
 
 
-  	TBranch                   *b_run;   
-  	TBranch                   *b_trigger;   
-  	TBranch                   *b_channels;   
-  	TBranch                   *b_dwc_timestamps;   
-  	TBranch                   *b_timeSinceStart;   
+	  	TBranch                   *b_run;   
+	  	TBranch                   *b_trigger;   
+	  	TBranch                   *b_channels;   
+	  	TBranch                   *b_dwc_timestamps;   
+	  	TBranch                   *b_timeSinceStart;   
 
 
 	public:
