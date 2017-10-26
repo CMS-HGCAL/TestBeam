@@ -65,6 +65,20 @@ options.register('timingFiles',
                  'Paths to the timing files.'
                 )
 
+options.register('triggerTimeDifferenceTolerance',
+                1,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.float,
+                 'Accepted tolerance in trigger time stamp difference for the synchronisation.'
+                )
+
+options.register('TDCTriggerTimeStampConversionToMs',
+                1,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.float,
+                 'Conversion from TDC trigger time stamp to ms'
+                )
+
 options.register('sumTriggerTimeStamps',
                 [],
                  VarParsing.VarParsing.multiplicity.list,
@@ -155,7 +169,6 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 ####################################
 
 
-
 ####################################
 # Initialize the data read-in plugins
 process.source = cms.Source("HGCalTBWireChamberSource",
@@ -165,6 +178,8 @@ process.source = cms.Source("HGCalTBWireChamberSource",
     sumTriggerTimes = cms.vint32([sumTrigger for sumTrigger in options.sumTriggerTimeStamps]),
     skipFirstNEvents = cms.vint32([skipFirstNEvents for skipFirstNEvents in options.skipFirstNEvents]),
     triggerCountOffsets = cms.vint32([triggerCountOffset for triggerCountOffset in options.triggerCountOffsets]),
+    triggerTimeDifferenceTolerance = cms.untracked.double(options.triggerTimeDifferenceTolerance),
+    TDCTriggerTimeStampConversionToMs = cms.untracked.double(options.TDCTriggerTimeStampConversionToMs),
     runType = cms.vstring([runType for runType in options.runTypes]),
     triggerTimingFormat = cms.vint32([triggerTimingFormat for triggerTimingFormat in options.triggerTimingFormats]),
     hitsPerChannelStored = cms.vint32([hitsPerChannelStored for hitsPerChannelStored in options.hitsPerChannelStoreds]),

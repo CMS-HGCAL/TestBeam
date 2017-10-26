@@ -62,6 +62,7 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		std::vector<double> wc_resolutions;
 
 		double triggerTimeDifferenceTolerance;	//indicated in ms
+		double TDCTriggerTimeStampConversionToMs; //conversion from TDC trigger time stamp to ms
 
 		bool performAlignment;
 	  	std::vector<std::string> alignmentParamaterFiles;

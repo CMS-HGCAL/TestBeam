@@ -14,6 +14,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	outputCollectionName = pset.getParameter<std::string>("OutputCollectionName");
 
 	triggerTimeDifferenceTolerance = pset.getUntrackedParameter<double>("triggerTimeDifferenceTolerance", 0.2);		//given in ms
+	TDCTriggerTimeStampConversionToMs = pset.getUntrackedParameter<double>("TDCTriggerTimeStampConversionToMs", 1.0/1000);		//given in ms
 
   	std::vector<double> v0(4, 0.2/40);		//0.2mm/ns and TDC binning is 25ps
 	slope_x = pset.getUntrackedParameter<std::vector<double> >("slope_x", v0);
@@ -301,12 +302,12 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 		int event_candidate_index = trigger_to_event_table[n_trigger_orm];
 
 		double timeSinceStart_ms = timeSinceStart;
-		if (triggerTimingFormat[fileCounter]==1) timeSinceStart_ms = timeSinceStart_long / 1000.;
+		if (triggerTimingFormat[fileCounter]==1) timeSinceStart_ms = timeSinceStart_long * TDCTriggerTimeStampConversionToMs;
 
 		double deltaTs = (event_trigger_time[event_candidate_index]-ref_time_sync) - (timeSinceStart_ms - ref_time_dwc);
 		rd->doubleUserRecords.add("triggerDeltaT_to_TDC", deltaTs);
 
-		if ((deltaTs<-15.)&&(fabs(delta_T_priorDWCTrigger+deltaTs)>2.)) {		
+		if ((deltaTs>-100.)&&(deltaTs<-15.)&&(fabs(delta_T_priorDWCTrigger+deltaTs)>2.)) {		
 		//average time in between two events is around 20ms given by the sync board. So cutting on -15. is reasonable for this configuration (20 Oct 2017 in H6A)
 			skippedTDCTriggers+=1;
 		}
