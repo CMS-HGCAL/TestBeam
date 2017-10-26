@@ -280,7 +280,7 @@ void PedestalPlotter::endJob()
       pedestalLG << iboard << " " << iski << " " << ichan ;
     }
     HGCalTBDetId detid=(*it).second;
-    CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
+    CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), 0, 0, detid.iu(), detid.iv(), m_sensorsize );
 
     double iux = CellCentreXY.first;
     double iuy = CellCentreXY.second;
@@ -335,13 +335,13 @@ void PedestalPlotter::endJob()
     }
     for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
       HGCalTBDetId detid=(*it).second;
-      if( detid.cellType()!=0 && detid.cellType()!=5  && detid.cellType()!=4 )continue;
+      if( detid.cellType()!=0 && detid.cellType()!=4 )continue;
       int iboard=(*it).first/1000;
       int iski=((*it).first%1000)/100;
       int ichan=(*it).first%100;
       int key=iboard*100000+iski*10000+ichan*100;//we use SCA 0
       std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
-      if( iter->second.rmsHG-meanNoise[iboard]>2.5*rmsNoise[iboard] )
+      if( iter->second.rmsHG-meanNoise[iboard]>3*rmsNoise[iboard] )
 	noisyChannels << iboard << " " << iski << " " << ichan << std::endl;
     }
     noisyChannels.close();

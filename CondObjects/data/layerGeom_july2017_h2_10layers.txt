@@ -1,0 +1,14 @@
+# LAYER_ID | EE/FH | SENSOR_IX | SENSOR_IV | MODULE_ID 
+0 0.0 EE 0 0 0 
+1 1.0 EE 0 0 62 
+#
+2 2.0 FH 0 0 48
+3 3.0 FH 0 0 38
+#
+4 4.0 FH 0 0 42
+4 4.0 FH 0 -1 59
+4 4.0 FH 1 -1 39
+#
+5 5.0 FH 0 0 45
+5 5.0 FH 0 -1 43
+5 5.0 FH 1 -1 46
