@@ -227,8 +227,6 @@ void HGCalTBRawDataSource::readTimeStampFromRAW()
 void HGCalTBRawDataSource::produce(edm::Event & e)
 {
   std::auto_ptr<HGCalTBSkiroc2CMSCollection> skirocs(new HGCalTBSkiroc2CMSCollection);
-  std::auto_ptr<HGCalTBSkiroc2CMSCollection> emptycol(new HGCalTBSkiroc2CMSCollection);
-  bool correctEvent=true;
   for( size_t iski=0; iski<m_decodedData.size(); iski++){
     std::vector<HGCalTBDetId> detids;
     for (size_t ichan = 0; ichan < HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++) {
@@ -250,15 +248,8 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
 				m_eventTimingInfo.triggerTimeStamp(0),
 				m_eventTimingInfo.triggerCounter());
     else skiroc=HGCalTBSkiroc2CMS( vdata,detids );
-    if(skiroc.check())
-      skirocs->push_back(skiroc);
-    else{
-      correctEvent=false;
-      break;
-    }
+    skirocs->push_back(skiroc);
   }
-  if( !correctEvent )
-    skirocs->swap(*emptycol);
   e.put(skirocs, m_outputCollectionName);
   m_event++;
 }

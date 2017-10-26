@@ -50,7 +50,7 @@ class HGCalTBSkiroc2CMS
   uint64_t triggerTimeStamp()const{ return m_triggerTimeStamp; }
   uint32_t triggerCounter()const{ return m_triggerCounter; }
   int skirocId()const{ return (m_data.at(SKIROC_DATA_SIZE-1) & MASK_ID); }
-  bool check();
+  bool check(bool printErrors=false);
 
   HGCalTBDetId detid( int chan ) const
   {
