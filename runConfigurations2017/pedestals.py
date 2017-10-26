@@ -22,6 +22,13 @@ options.register('electronicMap',
                  VarParsing.VarParsing.varType.string,
                  'Name of the electronic map file in HGCal/CondObjects/data/')
 
+options.register('NTSForPedestalComputation',
+                1,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Number of time samples used for pedestal computation.'
+                )
+
 options.register('NHexaBoards',
                 10,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -107,6 +114,7 @@ process.pedestalplotter = cms.EDAnalyzer("PedestalPlotter",
                                          WritePedestalFile=cms.untracked.bool(True),
                                          InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                          ElectronicMap=cms.untracked.string(electronicMap),
+                                         NTSForPedestalComputation=cms.untracked.int32(options.NTSForPedestalComputation)
                                          HighGainPedestalFileName=cms.untracked.string(options.pedestalHighGainFile),
                                          LowGainPedestalFileName=cms.untracked.string(options.pedestalLowGainFile),
                                          WriteNoisyChannelsFile=cms.untracked.bool(True),

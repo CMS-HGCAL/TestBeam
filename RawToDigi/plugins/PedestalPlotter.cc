@@ -64,12 +64,14 @@ private:
   bool m_writeNoisyChannelFile;
   std::string m_noisyChannels_filename;
   std::string m_electronicMap;
+  int m_NTSForPedestalComputation;
 
   int m_evtID;
   uint16_t m_numberOfBoards;
   std::map<int,hgcal_channel> m_channelMap;
 
   edm::EDGetTokenT<HGCalTBSkiroc2CMSCollection> m_HGCalTBSkiroc2CMSCollection;
+
 
   HGCalTBTopology IsCellValid;
   HGCalTBCellVertices TheCell;
@@ -85,7 +87,9 @@ PedestalPlotter::PedestalPlotter(const edm::ParameterSet& iConfig) :
   m_pedestalLow_filename( iConfig.getUntrackedParameter<std::string>("LowGainPedestalFileName",std::string("pedestalLG.txt")) ),
   m_writeNoisyChannelFile(iConfig.getUntrackedParameter<bool>("WriteNoisyChannelsFile",false)),
   m_noisyChannels_filename( iConfig.getUntrackedParameter<std::string>("NoisyChannelsFileName",std::string("noisyChannels.txt")) ),
-  m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers.txt"))
+  m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers.txt")),
+  m_NTSForPedestalComputation(iConfig.getUntrackedParameter<int>("NTSForPedestalComputation",1))    
+
 {
   m_HGCalTBSkiroc2CMSCollection = consumes<HGCalTBSkiroc2CMSCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
 
@@ -134,7 +138,7 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
       else continue;
 
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-	if( rollpositions[it]<2 ){ //keep only 2 first time sample for pedestal evaluation
+	if( rollpositions[it]<=m_NTSForPedestalComputation ){ //consider only a certain number of time samples for pedestal subtraction
 	  uint32_t key=iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it;
 	  std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
 	  if( iter==m_channelMap.end() ){
