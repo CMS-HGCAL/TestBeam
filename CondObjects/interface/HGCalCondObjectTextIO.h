@@ -4,6 +4,7 @@
 #include <string>
 #include "HGCal/CondObjects/interface/HGCalCondObjectContainer.h"
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
+#include "HGCal/CondObjects/interface/HGCalTBDetectorLayout.h"
 
 /** \class HGCalCondObjectTextIO
   *
@@ -22,6 +23,8 @@ public:
 
 	bool load(const std::string& filename, HGCalElectronicsMap&);
 	bool store(const std::string& filename, const HGCalElectronicsMap&);
+
+	bool load(const std::string& filename, HGCalTBDetectorLayout& hgcalGeom);
 private:
 	const HGCalCondObjectNumberingScheme* p_scheme;
 };

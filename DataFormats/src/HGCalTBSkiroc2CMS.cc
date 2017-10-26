@@ -20,28 +20,28 @@ uint16_t HGCalTBSkiroc2CMS::gray_to_brady(const uint16_t gray) const
 }
 
 
-bool HGCalTBSkiroc2CMS::check()
+bool HGCalTBSkiroc2CMS::check(bool printErrors)
 {
   for( size_t j=0; j<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; j++ ){
     uint16_t head=(m_data.at(j)&MASK_HEAD)>>4*3;
     if(head!=8&&head!=9){
-      std::cout << "ISSUE : we expected 8(1000) or 9(1001) for the adc header and I find " << head << std::endl;
+      if( printErrors ) std::cout << "ISSUE : we expected 8(1000) or 9(1001) for the adc header and I find " << head << std::endl;
       return false;
     }
     for( size_t k=0; k<NUMBER_OF_SCA+1; k++){
       if( ((m_data.at(j+SCA_SHIFT*k)&MASK_HEAD)>>4*3)!=head ){
-	std::cout << "\n We have a major issue (LG)-> " << head << " should be the same as " << ((m_data.at(j+SCA_SHIFT*k)&MASK_HEAD)>>4*3) << std::endl;
+	if( printErrors ) std::cout << "\n We have a major issue (LG)-> " << head << " should be the same as " << ((m_data.at(j+SCA_SHIFT*k)&MASK_HEAD)>>4*3) << std::endl;
 	return false;
       }
     }
     head=(m_data.at(j+HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC)&MASK_HEAD)>>4*3;
     if(head!=8&&head!=9){
-      std::cout << "ISSUE : we expected 8(1000) or 9(1001) for the adc header and I find " << head << std::endl;
+      if( printErrors ) std::cout << "ISSUE : we expected 8(1000) or 9(1001) for the adc header and I find " << head << std::endl;
       return false;
     }
     for( size_t k=0; k<NUMBER_OF_SCA+1; k++){
       if( ((m_data.at(j+SCA_SHIFT*k+HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC)&MASK_HEAD)>>4*3)!=head ){
-	std::cout << "\n We have a major issue (HG)-> " << head << " should be the same as " << ((m_data.at(j+SCA_SHIFT*k+HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC)&MASK_HEAD)>>4*3) << std::endl;
+	if( printErrors ) std::cout << "\n We have a major issue (HG)-> " << head << " should be the same as " << ((m_data.at(j+SCA_SHIFT*k+HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC)&MASK_HEAD)>>4*3) << std::endl;
 	return false;
       }
     }
