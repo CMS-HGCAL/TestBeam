@@ -38,7 +38,10 @@ if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
 
 #electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"
-electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
+#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
+#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_September_17Sensors_7EELayers_10FHLayers_V0.txt" # end of september
+#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_October_17Sensors_5EELayers_6FHLayers_V0.txt" # october 18-22, 1st conf
+electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_October_20Sensors_5EELayers_7FHLayers_V0.txt" # october 18-22, 2nd conf
 pedestalHighGain=options.outputFolder+"/pedestalHG_"+str(options.runNumber)+".txt"
 pedestalLowGain=options.outputFolder+"/pedestalLG_"+str(options.runNumber)+".txt"
 noisyChannels=options.outputFolder+"/noisyChannels_"+str(options.runNumber)+".txt"
@@ -101,7 +104,7 @@ process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata")
 )
 
-process.p = cms.Path( process.rawdataplotter*process.pedestalplotter )
+process.p = cms.Path( process.pedestalplotter )
 
 process.end = cms.EndPath(process.output)
 
