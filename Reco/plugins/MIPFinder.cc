@@ -83,6 +83,11 @@ class MIPFinder : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		std::map<int,TH1F*> m_h_rechitEnergy_selected;
 		TH2F* h_DUT_occupancy;
 
+		std::map<int,TH2F*> m_h_DUT_occupancy_forCells;		
+		std::map<int,TH2F*> m_h_rechitEfficiencyPerDUT;		
+
+
+
 		int n_bins_DWCE;
 		double max_dim_x_DUT;
 		double max_dim_y_DUT;
@@ -109,6 +114,11 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 	TH1F* htmp1;
 	std::ostringstream os( std::ostringstream::ate );
 	for(int ib = 0; ib<m_NHexaBoards; ib++) {
+		os.str("");
+		os << "DUT_Occupancy_PerBoard"<<ib;
+		htmp2=fs->make<TH2F>(os.str().c_str(), os.str().c_str(), n_bins_DWCE, -max_dim_x_DUT, max_dim_x_DUT, n_bins_DWCE, -max_dim_y_DUT, max_dim_y_DUT);
+		m_h_DUT_occupancy_forCells.insert( std::pair<int,TH2F*>(ib, htmp2) );
+
 		for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
 			os.str("");
 			os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
@@ -141,6 +151,13 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 				os << "Energy_selected_board_"<<ib<<"_chip_"<<iski<<"_channel_"<<ichan;
 				htmp1=channel_dir.make<TH1F>("RechitEnergy_selected",os.str().c_str(), 33, 1., 100.);
 				m_h_rechitEnergy_selected.insert( std::pair<int,TH1F*>(key, htmp1) );		
+
+
+				os.str("");
+				os << "HGRechitEfficiencyPerDUT"<<ib<<"_chip_"<<iski<<"_channel_"<<ichan;
+				htmp2=channel_dir.make<TH2F>("HGRechitEfficiency", os.str().c_str(), n_bins_DWCE, -max_dim_x_DUT, max_dim_x_DUT, n_bins_DWCE, -max_dim_y_DUT, max_dim_y_DUT);
+				m_h_rechitEfficiencyPerDUT.insert( std::pair<int,TH2F*>(key, htmp2) );	
+
 			}
 		}
 	}
@@ -223,6 +240,18 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 
 	h_DUT_occupancy->Fill(DUT_x, DUT_y);
 
+	//loops over all windows in that board to also assess fake rates
+	for(int ib = 0; ib<m_NHexaBoards; ib++) for( size_t _iskiroc=0; _iskiroc<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; _iskiroc++ ) for( size_t _ch=0; _ch<=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; _ch++ ){
+		if (_ch%2==1) continue;
+
+		int _key = ib*1000+_iskiroc*100+_ch;
+		
+		if ((currentDWCWindows.find(_key) != currentDWCWindows.end()) && (DUT_x > currentDWCWindows[_key][0]) && (DUT_x < currentDWCWindows[_key][1]) && (DUT_y > currentDWCWindows[_key][2]) && (DUT_y < currentDWCWindows[_key][3])) {
+			m_h_DUT_occupancy_forCells[ib]->Fill(DUT_x, DUT_y, 1.);
+			break;
+		}
+	}
+
 	//opening Rechits
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_Token, Rechits);
@@ -233,11 +262,26 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 		int board = Rechit.board();
 		int skiroc = Rechit.skiroc() % 4;
 		int channel = Rechit.channel();
-  		double energyHG = Rechit.energyHigh();
   		int key = board*1000+skiroc*100+channel;
-  		
+  		double energyHG = Rechit.energyHigh();
+		
   		m_h_rechitEnergyPerDUT[key]->Fill(DUT_x, DUT_y, energyHG);
   		m_h_rechitEnergy[key]->Fill(energyHG);
+
+
+		//asses some efficiency for that cell
+		//loops over all windows in that board to also assess fake rates
+		for( size_t _iskiroc=0; _iskiroc<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; _iskiroc++ ) for( size_t _ch=0; _ch<=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; _ch++ ){
+			if (_ch%2==1) continue;
+			int _key = board*1000+_iskiroc*100+_ch;
+			
+			if ((currentDWCWindows.find(_key) != currentDWCWindows.end()) && (DUT_x > currentDWCWindows[_key][0]) && (DUT_x < currentDWCWindows[_key][1]) && (DUT_y > currentDWCWindows[_key][2]) && (DUT_y < currentDWCWindows[_key][3])) {
+  				int hit = (energyHG > 0) ? 1: 0;
+				m_h_rechitEfficiencyPerDUT[key]->Fill(DUT_x, DUT_y, hit);
+				break;
+			}
+		}
+
 
  		if (currentDWCWindows.find(key) == currentDWCWindows.end())	continue;	
 		if (DUT_x < currentDWCWindows[key][0] || DUT_x > currentDWCWindows[key][1]) continue;
