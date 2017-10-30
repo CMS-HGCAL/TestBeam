@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <map>
 #include <math.h>
+#include "TH2Poly.h"
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
@@ -33,6 +34,10 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
+#include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
+#include "HGCal/Geometry/interface/HGCalTBTopology.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
+
 #include "HGCal/Reco/interface/PositionResolutionHelpers.h"
 #include "HGCal/Reco/interface/Sensors.h"
 
@@ -43,7 +48,7 @@
 //https://indico.cern.ch/event/656159/contributions/2674177/attachments/1499439/2334623/update_simulation_geom.pdf
 // 2 layers in EE (first one in the graphics was removed) and 4 in FH, indications are in mm
 
-
+#define MAXVERTICES 6
 //#define DEBUG
 
 class Energy_Sum_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
@@ -56,6 +61,7 @@ class Energy_Sum_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResource
 		virtual void beginJob() override;
 		void analyze(const edm::Event& , const edm::EventSetup&) override;
 		virtual void endJob() override;
+		void InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV);
 
 
 		// ----------member data ---------------------------
@@ -82,9 +88,20 @@ class Energy_Sum_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResource
 		double beamEnergy;		//energy of the beam particle
 
 		double energyAll_tot, energyE1_tot, energyE7_tot, energyE19_tot;
+		std::vector<int> cellID_mostIntense_layer;
 		std::vector<double> energyAll_layer, energyE1_layer, energyE7_layer, energyE19_layer;
 		
+		//quantitites for investigator wit event displays
+		HGCalTBTopology IsCellValid;
+		HGCalTBCellVertices TheCell;
+		std::vector<std::pair<double, double>> CellXY;
+		std::pair<double, double> CellCentreXY;
 
+		std::vector<TH2Poly*> h_RecHit_MostIntense_layer;
+		std::vector<TH2Poly*> h_RecHit_First7_layer;
+		std::vector<TH2Poly*> h_RecHit_First19_layer;
+		std::vector<TH2Poly*> h_RecHit_Occupancy_layer;
+		std::vector<TH2Poly*> h_RecHit_Energy_layer;
 };
 
 Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {	
@@ -120,18 +137,58 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 	outTree->Branch("energyE19_tot", &energyE19_tot, "energyE19_tot/D");
 
 	for (int l=1; l<=nLayers; l++) {
+		cellID_mostIntense_layer.push_back(0);
 		energyAll_layer.push_back(0.);
 		energyE1_layer.push_back(0.);
 		energyE7_layer.push_back(0.);
 		energyE19_layer.push_back(0.);
 	}
 	for (int l=1; l<=nLayers; l++) {
+		outTree->Branch(("cellID_mostIntense_layer"+std::to_string(l)).c_str(), &cellID_mostIntense_layer[l-1], ("cellID_mostIntense_layer"+std::to_string(l)+"/I").c_str());
 		outTree->Branch(("energyAll_layer"+std::to_string(l)).c_str(), &energyAll_layer[l-1], ("energyAll_layer"+std::to_string(l)+"/D").c_str());
 		outTree->Branch(("energyE1_layer"+std::to_string(l)).c_str(), &energyE1_layer[l-1], ("energyE1_layer"+std::to_string(l)+"/D").c_str());
 		outTree->Branch(("energyE7_layer"+std::to_string(l)).c_str(), &energyE7_layer[l-1], ("energyE7_layer"+std::to_string(l)+"/D").c_str());
 		outTree->Branch(("energyE19_layer"+std::to_string(l)).c_str(), &energyE19_layer[l-1], ("energyE19_layer"+std::to_string(l)+"/D").c_str());
 	}
 	
+	std::ostringstream os( std::ostringstream::ate );
+
+	for( int ilayer=0; ilayer<nLayers; ilayer++ ){
+		os.str("");
+		os << "MostIntense_Layer" << ilayer;
+		h_RecHit_MostIntense_layer.push_back(fs->make<TH2Poly>());
+		h_RecHit_MostIntense_layer[ilayer]->SetName( os.str().c_str() );
+		h_RecHit_MostIntense_layer[ilayer]->SetTitle( os.str().c_str() );
+		InitTH2Poly(*h_RecHit_MostIntense_layer[ilayer],ilayer,0,0);
+
+		os.str("");
+		os << "First7_Layer" << ilayer;
+		h_RecHit_First7_layer.push_back(fs->make<TH2Poly>());
+		h_RecHit_First7_layer[ilayer]->SetName( os.str().c_str() );
+		h_RecHit_First7_layer[ilayer]->SetTitle( os.str().c_str() );
+		InitTH2Poly(*h_RecHit_First7_layer[ilayer],ilayer,0,0);
+
+		os.str("");
+		os << "First19_Layer" << ilayer;
+		h_RecHit_First19_layer.push_back(fs->make<TH2Poly>());
+		h_RecHit_First19_layer[ilayer]->SetName( os.str().c_str() );
+		h_RecHit_First19_layer[ilayer]->SetTitle( os.str().c_str() );
+		InitTH2Poly(*h_RecHit_First19_layer[ilayer],ilayer,0,0);   
+
+		os.str("");
+		os << "Occupancy_Layer" << ilayer;
+		h_RecHit_Occupancy_layer.push_back(fs->make<TH2Poly>());
+		h_RecHit_Occupancy_layer[ilayer]->SetName( os.str().c_str() );
+		h_RecHit_Occupancy_layer[ilayer]->SetTitle( os.str().c_str() );
+		InitTH2Poly(*h_RecHit_Occupancy_layer[ilayer],ilayer,0,0);   
+
+		os.str("");
+		os << "Energy_Layer" << ilayer;
+		h_RecHit_Energy_layer.push_back(fs->make<TH2Poly>());
+		h_RecHit_Energy_layer[ilayer]->SetName( os.str().c_str() );
+		h_RecHit_Energy_layer[ilayer]->SetTitle( os.str().c_str() );
+		InitTH2Poly(*h_RecHit_Energy_layer[ilayer],ilayer,0,0);  
+	}
 
 }//constructor ends here
 
@@ -172,16 +229,21 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	//fill the rechits:
 	for(auto Rechit : *Rechits) {	
 		int layer = (Rechit.id()).layer();
-		//int skiroc = Rechit.skiroc()+(layer-1)*4;  
+		int skiroc = Rechit.skiroc()+(layer-1)*4;  
+		double iux = Rechit.getCellCenterCartesianCoordinate(0);
+		double ivy = Rechit.getCellCenterCartesianCoordinate(1);
 		if ( Sensors.find(layer) == Sensors.end() ) {
 			Sensors[layer] = new SensorHitMap(layer);
 			Sensors[layer]->setSensorSize(SensorSize);
 		}
 
 //		Sensors[layer]->addHit(Rechit, ADC_per_MIP[skiroc]);		//with MIP calibration
-		
-		if (Rechit.energy() > MIP_cut)	//only add if energy is higher than the MIP cut
-			Sensors[layer]->addHit(Rechit, 1.);		//without MIP calibration
+
+		if (Rechit.energyHigh() > MIP_cut)	{//only add if energy is higher than the MIP cut
+			Sensors[layer]->addHit(Rechit, ADC_per_MIP[skiroc]);		//without MIP calibration
+			h_RecHit_Occupancy_layer[layer-1]->Fill(iux, ivy);
+			h_RecHit_Energy_layer[layer-1]->Fill(iux, ivy, Rechit.energyLow());
+		}
 	}
 
 	#ifdef DEBUG
@@ -203,6 +265,8 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 
 	//step 2: sum of all cells in a layer
 	energyAll_tot = 0.;
+	std::vector<std::pair<double, double> > relevantHitPositions;
+
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		//now calculate the center positions for each layer
 		it->second->calculateCenterPosition(CONSIDERALL, LINEARWEIGHTING);
@@ -214,9 +278,17 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	energyE1_tot = 0.;
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		//now calculate the center positions for each layer
+
 		it->second->calculateCenterPosition(CONSIDERALL, MOSTINTENSIVE);
+		cellID_mostIntense_layer[it->first-1] = it->second->getMostIntensiveHit();
 		energyE1_tot += it->second->getTotalWeight();
 		energyE1_layer[it->first-1] = it->second->getTotalWeight();
+
+		relevantHitPositions = it->second->getHitPositionsForPositioning();
+		for (size_t i=0; i<relevantHitPositions.size(); i++) {
+			h_RecHit_MostIntense_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
+		}
+		relevantHitPositions.clear();
 	}
 
 	//step 4: sum of cells with highest intensity + one ring in a layer
@@ -226,6 +298,12 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 		it->second->calculateCenterPosition(CONSIDERSEVEN, LINEARWEIGHTING);
 		energyE7_tot += it->second->getTotalWeight();
 		energyE7_layer[it->first-1] = it->second->getTotalWeight();
+
+		relevantHitPositions = it->second->getHitPositionsForPositioning();
+		for (size_t i=0; i<relevantHitPositions.size(); i++) {
+			h_RecHit_First7_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
+		}
+		relevantHitPositions.clear();
 	}
 
 	//step 5: sum of cells with highest intensity + two rings in a layer
@@ -235,9 +313,12 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 		it->second->calculateCenterPosition(CONSIDERNINETEEN, LINEARWEIGHTING);
 		energyE19_tot += it->second->getTotalWeight();
 		energyE19_layer[it->first-1] = it->second->getTotalWeight();
-		#ifdef DEBUG
-			std::cout<<"Roll position: "<<(it->first-1)<<" energyE19_layer = "<<energyE19_layer[it->first-1]<<std::endl;
-		#endif
+
+		relevantHitPositions = it->second->getHitPositionsForPositioning();
+		for (size_t i=0; i<relevantHitPositions.size(); i++) {
+			h_RecHit_First19_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
+		}
+		relevantHitPositions.clear();
 	}
 
 	outTree->Fill();
@@ -259,6 +340,28 @@ void Energy_Sum_Analyzer::beginJob() {
 
 void Energy_Sum_Analyzer::endJob() {
 	
+}
+
+void Energy_Sum_Analyzer::InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV)
+{
+  double HexX[MAXVERTICES] = {0.};
+  double HexY[MAXVERTICES] = {0.};
+
+  for(int iv = -7; iv < 8; iv++) {
+    for(int iu = -7; iu < 8; iu++) {
+      if(!IsCellValid.iu_iv_valid(layerID, sensorIU, sensorIV, iu, iv, 128)) continue;
+      CellXY = TheCell.GetCellCoordinatesForPlots(layerID, sensorIU, sensorIV, iu, iv, 128);
+      assert(CellXY.size() == 4 || CellXY.size() == 6);
+      unsigned int iVertex = 0;
+      for(std::vector<std::pair<double, double>>::const_iterator it = CellXY.begin(); it != CellXY.end(); it++) {
+	HexX[iVertex] =  it->first;
+	HexY[iVertex] =  it->second;
+	++iVertex;
+      }
+      //Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
+      poly.AddBin(CellXY.size(), HexX, HexY);
+    }//loop over iu
+  }//loop over iv
 }
 
 void Energy_Sum_Analyzer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {

@@ -14,6 +14,7 @@
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h" //e.g. to get the cell's dimensions
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
+//#define DEBUG
 
 enum ConsiderationMethod {
   CONSIDERALL,
@@ -99,7 +100,8 @@ struct HitData {
   double x; double y; 
   double I; //intensity that is input to the weight calculation
   double E; //actual energy of the hit
-  int ID;   //the ID corresponds to the cell ID, it is necessary for the pedestal subtraction
+  int cellType;   
+  int geoID;    //iboard*1000 + iskiroc*100 + channel
 };
 
 
@@ -167,6 +169,10 @@ class SensorHitMap {
     std::pair<double, double> getHitPositionError(); //calculated via RMS
     std::pair<double, double> getCenterOfClosestCell(std::pair<double, double> X_ref);
     
+    int getMostIntensiveHit();
+    std::vector<std::pair<double, double> > getHitPositionsForPositioning();
+
+
     //debug
     void printHits();
 };

@@ -69,7 +69,7 @@ if int(options.configuration)==2:
 ####################################
 process.energy_sum_analyzer = cms.EDAnalyzer("Energy_Sum_Analyzer",
                                 layers_config  = cms.int32(options.configuration),
-                                ADC_per_MIP = cms.vdouble([1.]*4*10),
+                                ADC_per_MIP = cms.vdouble([1.]*20*4),
                                 nLayers = cms.int32(nLayers),
                                 SensorSize = cms.int32(133),
                                 RUNDATA = cms.InputTag("wirechamberproducer","FullRunData" ), 
