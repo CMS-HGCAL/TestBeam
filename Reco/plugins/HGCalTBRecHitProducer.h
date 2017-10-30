@@ -36,6 +36,8 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   virtual void beginJob() override;
   std::string m_outputCollectionName;
   std::string m_electronicMap;
+  bool m_maskNoisyChannels;
+  std::string m_channelsToMask_filename;
   int m_NHexaBoards;
   std::vector<double> m_highGainADCSaturation;
   std::vector<double> m_lowGainADCSaturation;
@@ -57,6 +59,7 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   std::map<int, TH2F*> ToAFallvsTMaxHG;
   std::map<int, TH2F*> TMaxHGvsTMaxLG;
 
+  std::vector<int> m_noisyChannels;
 
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;

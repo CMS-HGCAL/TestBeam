@@ -38,6 +38,19 @@ options.register('electronicMap',
                  VarParsing.VarParsing.varType.string,
                  'Name of the electronic map file in HGCal/CondObjects/data/')
 
+options.register('noisyChannelsFile',
+                 '/home/tquast/tb2017/pedestals/noisyChannels.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Output file where pedestal histograms are stored')
+
+options.register('MaskNoisyChannels',
+                1,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Path to the file from which the DWCs are read.'
+                )
+
 options.register('performPulseFit',
                  1,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -116,6 +129,8 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                                                        4000.,4000.,4000.,4000.,4000.,
                                                                        4000.,4000.),
                                         ElectronicsMap = cms.untracked.string(electronicMap),
+                                        MaskNoisyChannels=cms.untracked.bool(bool(options.MaskNoisyChannels)),
+                                        ChannelsToMaskFileName=cms.untracked.string(options.noisyChannelsFile),
                                         NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                         TimeSample3ADCCut = cms.untracked.double(15.),
                                         investigatePulseShape = cms.untracked.bool(True)

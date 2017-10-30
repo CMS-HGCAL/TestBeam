@@ -10,6 +10,8 @@ const static int SENSORSIZE = 128;
 HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) : 
   m_outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
   m_electronicMap(cfg.getUntrackedParameter<std::string>("ElectronicsMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt")),
+  m_maskNoisyChannels(cfg.getUntrackedParameter<bool>("MaskNoisyChannels",false)),
+  m_channelsToMask_filename(cfg.getUntrackedParameter<std::string>("ChannelsToMaskFileName","HGCal/CondObjects/data/noisyChannels.txt")),
   m_NHexaBoards(cfg.getUntrackedParameter<int>("NHexaBoards", 10)), 
   m_timeSample3ADCCut(cfg.getUntrackedParameter<double>("TimeSample3ADCCut",15))
 {
@@ -79,6 +81,32 @@ void HGCalTBRecHitProducer::beginJob()
       }
     }
   }
+
+
+  if( m_maskNoisyChannels ){
+    FILE* file;
+    char buffer[300];
+    //edm::FileInPath fip();
+    file = fopen (m_channelsToMask_filename.c_str() , "r");
+    if (file == NULL){
+      perror ("Error opening noisy channels file"); exit(1); 
+    } else{
+    
+      while ( ! feof (file) ){
+        if ( fgets (buffer , 300 , file) == NULL ) break;
+        const char* index = buffer;
+        int layer,skiroc,channel,ptr,nval;
+        nval=sscanf( index, "%d %d %d %n",&layer,&skiroc,&channel,&ptr );
+        int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*layer+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-skiroc)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+        if( nval==3 ){
+          HGCalTBElectronicsId eid(skiId,channel);      
+          if (essource_.emap_.existsEId(eid.rawId()))
+            m_noisyChannels.push_back(eid.rawId());
+        } else continue;
+      }
+    }
+    fclose (file);
+  }
 }
 
 void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iSetup)
@@ -102,6 +130,9 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     int ichannel=rawhit.channel();
     int key = iboard * 10000 + (iski % 4) * 100 + ichannel;
+
+    if( !essource_.emap_.existsEId(eid.rawId()) || std::find(m_noisyChannels.begin(),m_noisyChannels.end(),eid.rawId())!=m_noisyChannels.end() )
+      continue;
 
     std::vector<double> sampleHG, sampleLG, sampleT;
 
