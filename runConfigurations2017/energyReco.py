@@ -65,6 +65,11 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(options
 nLayers = 6
 if int(options.configuration)==2:
     nLayers=17
+elif int(options.configuration)==3:
+    nLayers=10      #number to be fixed
+elif int(options.configuration)==4: 
+    nLayers=10      #number to be fixed
+
 
 ####################################
 process.energy_sum_analyzer = cms.EDAnalyzer("Energy_Sum_Analyzer",

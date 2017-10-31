@@ -106,6 +106,9 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit, double ADC_per_MIP) {
   //if (Rechit.checkFlag(HGCalTBRecHit::kLowGainSaturated)) return; //only LG and HG so far
 
   double energy = Rechit.energyLow() / ADC_per_MIP * 9.3;  //the LayerSumAnalyzer also energy deposits in MIP units
+  //scale outer calibration pads:
+  if (cellType==4) energy*=9./8;
+
 
   Hits[uniqueID] = new HitData;
   Hits[uniqueID]->cellType = cellType;
@@ -458,7 +461,7 @@ bool SensorHitMap::filterByCellType(int ID) {
   ID = 5 : merged cell
   */
   
-  if (ID!=0 )  //we only want to consider the main cells in the middle for first estimation
+  if (ID==1 || ID==2 || ID==3 || ID==4|| ID==5)  //we only want to consider the main cells in the middle for first estimation
     return true;      
   
   return false;

@@ -155,35 +155,35 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 
 	for( int ilayer=0; ilayer<nLayers; ilayer++ ){
 		os.str("");
-		os << "MostIntense_Layer" << ilayer;
+		os << "MostIntense_Layer" << (ilayer+1);
 		h_RecHit_MostIntense_layer.push_back(fs->make<TH2Poly>());
 		h_RecHit_MostIntense_layer[ilayer]->SetName( os.str().c_str() );
 		h_RecHit_MostIntense_layer[ilayer]->SetTitle( os.str().c_str() );
 		InitTH2Poly(*h_RecHit_MostIntense_layer[ilayer],ilayer,0,0);
 
 		os.str("");
-		os << "First7_Layer" << ilayer;
+		os << "First7_Layer" << (ilayer+1);
 		h_RecHit_First7_layer.push_back(fs->make<TH2Poly>());
 		h_RecHit_First7_layer[ilayer]->SetName( os.str().c_str() );
 		h_RecHit_First7_layer[ilayer]->SetTitle( os.str().c_str() );
 		InitTH2Poly(*h_RecHit_First7_layer[ilayer],ilayer,0,0);
 
 		os.str("");
-		os << "First19_Layer" << ilayer;
+		os << "First19_Layer" << (ilayer+1);
 		h_RecHit_First19_layer.push_back(fs->make<TH2Poly>());
 		h_RecHit_First19_layer[ilayer]->SetName( os.str().c_str() );
 		h_RecHit_First19_layer[ilayer]->SetTitle( os.str().c_str() );
 		InitTH2Poly(*h_RecHit_First19_layer[ilayer],ilayer,0,0);   
 
 		os.str("");
-		os << "Occupancy_Layer" << ilayer;
+		os << "Occupancy_Layer" << (ilayer+1);
 		h_RecHit_Occupancy_layer.push_back(fs->make<TH2Poly>());
 		h_RecHit_Occupancy_layer[ilayer]->SetName( os.str().c_str() );
 		h_RecHit_Occupancy_layer[ilayer]->SetTitle( os.str().c_str() );
 		InitTH2Poly(*h_RecHit_Occupancy_layer[ilayer],ilayer,0,0);   
 
 		os.str("");
-		os << "Energy_Layer" << ilayer;
+		os << "Energy_Layer" << (ilayer+1);
 		h_RecHit_Energy_layer.push_back(fs->make<TH2Poly>());
 		h_RecHit_Energy_layer[ilayer]->SetName( os.str().c_str() );
 		h_RecHit_Energy_layer[ilayer]->SetTitle( os.str().c_str() );

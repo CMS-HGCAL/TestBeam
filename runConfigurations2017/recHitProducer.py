@@ -42,13 +42,13 @@ options.register('noisyChannelsFile',
                  '/home/tquast/tb2017/pedestals/noisyChannels.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'Output file where pedestal histograms are stored')
+                 'Channels which are noisy and excluded from the reconstruction')
 
 options.register('MaskNoisyChannels',
                 1,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
-                 'Path to the file from which the DWCs are read.'
+                 'Ignore noisy channels in the reconstruction.'
                 )
 
 options.register('performPulseFit',
@@ -115,16 +115,20 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         LG2HG = cms.untracked.vdouble(8.2,9.0,8.6,9.4,8.0,
                                                                       8.0,8.0,8.0,8.0,8.0,
                                                                       8.0,8.0,8.0,8.0,8.0,
-                                                                      8.0,8.0,8.0,8.0),
+                                                                      8.0,8.0,8.0,8.0,8.0,
+                                                                      8.0,8.0,8.0,8.0,8.0),
                                         TOT2LG = cms.untracked.vdouble(10.0,10.0,10.0,10.0,10.0,
+                                                                       10.0,10.0,10.0,10.0,10.0,
                                                                        10.0,10.0,10.0,10.0,10.0,
                                                                        10.0,10.0,10.0,10.0,10.0,
                                                                        10.0,10.0),
                                         HighGainADCSaturation = cms.untracked.vdouble(1500.,1500.,1500.,1500.,1500.,
                                                                        1500.,1500.,1500.,1500.,1500.,
                                                                        1500.,1500.,1500.,1500.,1500.,
+                                                                       1500.,1500.,1500.,1500.,1500.,
                                                                        1500.,1500.),
                                         LowGainADCSaturation = cms.untracked.vdouble(4000.,4000.,4000.,4000.,4000.,
+                                                                       4000.,4000.,4000.,4000.,4000.,
                                                                        4000.,4000.,4000.,4000.,4000.,
                                                                        4000.,4000.,4000.,4000.,4000.,
                                                                        4000.,4000.),
