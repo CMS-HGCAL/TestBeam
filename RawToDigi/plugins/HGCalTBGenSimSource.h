@@ -8,10 +8,11 @@
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"
-#include "HGCal/DataFormats/interface/HGCalTBMultiWireChamberData.h"
+#include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalWaferGeometry.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
@@ -33,7 +34,7 @@
  *
  *
 **/
-double ADCtoMIP_CERN[16] =  {17.31, 17.12, 16.37, 17.45, 17.31, 16.98, 16.45, 16.19, 17.55, 17.19, 16.99, 17.92, 15.95, 16.64, 16.79, 15.66};
+
 double MIP2GeV_sim = 51.91e-06; //mpv muon EMM pysics list
 
 //must be a globally available variable, otherwise a segmentation fault is thrown  
@@ -58,12 +59,31 @@ private:
 	void fillConfiguredRuns(std::fstream& map_file);
 	bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&);
 	virtual void produce(edm::Event & e);
+  	virtual void beginJob() override;
   	virtual void endJob() override;
+	void makeRecHit(int, int, double, std::auto_ptr<HGCalTBRecHitCollection>&);
 	
-	std::string outputCollectionName;
+	std::string RechitOutputCollectionName;
+	std::string DWCOutputCollectionName;
+	std::string RunDataOutputCollectionName;
 
-	std::string runEnergyMapFile;
-	std::string inputPathFormat;
+	bool m_maskNoisyChannels;
+	std::string m_channelsToMask_filename;
+	std::vector<int> m_noisyChannels;
+
+	double energyNoise;
+	double energyNoiseResolution;
+	std::vector<double> wc_resolutions;
+
+
+  	unsigned int beamEnergy;
+  	std::string beamParticlePDGID;
+  	unsigned int setupConfiguration;
+  	double GeVToMip;
+	std::string areaSpecification;
+
+	std::vector<double> dwc_zPositions;		//filled by area specification
+
 	
 	std::vector<FileInfo> _fileNames;
 	std::vector<FileInfo>::iterator fileIterator;
@@ -76,13 +96,22 @@ private:
   	TTree *tree;   //!pointer to the analyzed TTree or TChain
   	TDirectory *dir;
 
-  	std::vector<unsigned int> *simHitCellIdE;
-  	std::vector<float>        *simHitCellEnE;
+  	std::vector<unsigned int> *simHitCellIdEE;
+  	std::vector<unsigned int> *simHitCellIdFH;
+  	std::vector<unsigned int> *simHitCellIdBH;
+  	std::vector<float>        *simHitCellEnEE;
+  	std::vector<float>        *simHitCellEnFH;
+  	std::vector<float>        *simHitCellEnBH;
   	double					  beamX;
   	double					  beamY;
   	double					  beamP;
-  	TBranch                   *b_simHitCellIdE;   
-  	TBranch                   *b_simHitCellEnE;   
+
+  	TBranch                   *b_simHitCellIdEE;   
+  	TBranch                   *b_simHitCellEnEE;   
+   	TBranch                   *b_simHitCellIdFH;   
+  	TBranch                   *b_simHitCellEnFH;   
+   	TBranch                   *b_simHitCellIdBH;   
+  	TBranch                   *b_simHitCellEnBH;   
   	TBranch                   *b_beamX;   
   	TBranch                   *b_beamY;   
   	TBranch                   *b_beamP;   
@@ -94,9 +123,15 @@ private:
 	HexGeometry* geomc;
 
 	TRandom* randgen;
-	double energyNoise;
-	double energyNoiseResolution;
-	double smearingResolution;
+
+	int N_layers_EE, N_layers_FH, N_layers_BH;
+
+	double MIP_to_HG;
+	double HG_to_LG;
+	double LG_to_TOT;
+	double highGainADCSaturation;
+	double lowGainADCSaturation;
+
 
 public:
 	explicit HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc);

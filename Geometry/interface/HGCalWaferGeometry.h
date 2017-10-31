@@ -1,3 +1,6 @@
+#include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
+  
+
 #include <algorithm>
 #include <cmath>
 #include <iomanip>
@@ -5,27 +8,23 @@
 #include <fstream>
 #include <string>
 #include <vector>
-
-#include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
   
-
-//this code patches the fact that the digitization step of the simulation is not implemented yet
-//it serves as a map of simulated hits to the actual x-y positions
-
 class HexGeometry {
 
 public :
   HexGeometry(bool fine);
-  ~HexGeometry();
+  virtual ~HexGeometry() {}
 
-  std::pair<double,double> position(const int cell);
+  void initCellGeom(bool fine);
+  void initWaferGeom();
+  
+  std::pair<double,double> position_cell(const int cell);
   int cellType(const int cell);
-
+  std::pair<double,double> position_wafer(const int wafer);
 
 private :
-  std::vector<std::pair<double,double> > xypos;
-  std::vector<int> types;
+  std::vector<std::pair<double,double> > xypos_cell;
+  std::vector<int> types_cell;
+  std::vector<std::pair<double,double> > xypos_wafer;
 
 };
-
-void testGeometry(); 

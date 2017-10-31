@@ -86,7 +86,7 @@ void HGCalTBGenSimSource_Only::produce(edm::Event & event)
 		int layer = ((simHitCellIdE->at(icell)>>19)&0x7F);
 		
 		int cellno = (simHitCellIdE->at(icell)>>0)&0xFF;
-		std::pair<double,double> xy = geomc->position(cellno);
+		std::pair<double,double> xy = geomc->position_cell(cellno);
 		double x = xy.first / 10.;		//values are converted from mm to cm
 		double y =  xy.second / 10.;	//values are converted from mm to cm
 		int cellType = geomc->cellType(cellno);
