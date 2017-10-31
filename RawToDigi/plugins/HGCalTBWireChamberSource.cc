@@ -33,6 +33,17 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	triggerTimingFormat = pset.getParameter<std::vector<int> >("triggerTimingFormat");
 	hitsPerChannelStored = pset.getParameter<std::vector<int> >("hitsPerChannelStored"); 
 
+	areaSpecification = pset.getUntrackedParameter<std::string>("areaSpecification", "H2");
+
+	if (areaSpecification=="H6A") {
+		dwc_z1 = dwc_z1_H6A;
+		dwc_z2 = dwc_z3 = dwc_z4 = -1.;
+	} else {
+		dwc_z1 = dwc_z1_H2;
+		dwc_z2 = dwc_z2_H2;
+		dwc_z3 = dwc_z3_H2;
+		dwc_z4 = dwc_z4_H2;
+	}
 
 	produces<WireChambers>(outputCollectionName);
 	produces<RunData>("RunData");

@@ -40,11 +40,14 @@ enum DWC_to_TDC_MAP {
 	DWC4_UP = 8
 };
 
-//numbers to be validated through more precise measurements
-double dwc_z1 = -109.;	//z=0 is the HGCal table, unit is cm
-double dwc_z2 = -235.;
-double dwc_z3 = -1509.;
-double dwc_z4 = -1769.;
+
+double dwc_z1_H2 = -109.;	//z=0 is the HGCal table, unit is cm
+double dwc_z2_H2 = -235.;
+double dwc_z3_H2 = -1509.;
+double dwc_z4_H2 = -1769.;
+
+double dwc_z1_H6A = -500.;	//z=0 is the HGCal table, unit is cm
+
 
 //to the EDM::Event via auxiliary information
 class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
@@ -78,8 +81,12 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		std::vector<int> triggerTimingFormat; 	//default: ms, 1: micro seconds
 		std::vector<int> hitsPerChannelStored; 	//default: 0, 1: hits per Channel are Stored and in principle a more sophisticated analysis can be run
 
+		std::string areaSpecification;
+
 		std::map<int, int> trigger_to_event_table;
 		std::map<int, double> event_trigger_time;
+
+		double dwc_z1, dwc_z2, dwc_z3, dwc_z4;
 
 		int rootTreeIndex;
 		int fileCounter;

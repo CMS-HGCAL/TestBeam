@@ -121,6 +121,12 @@ options.register('hitsPerChannelStoreds',
                  'Are the hits per channel stored (=1) or not (default).'
                 )
 
+options.register('areaSpecification',
+                "H2",
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Run types (e.g. 1: 100 GeV pions).'
+                )
 
 #Alignment specific:
 options.register('Layers',
@@ -183,6 +189,7 @@ process.source = cms.Source("HGCalTBWireChamberSource",
     runType = cms.vstring([runType for runType in options.runTypes]),
     triggerTimingFormat = cms.vint32([triggerTimingFormat for triggerTimingFormat in options.triggerTimingFormats]),
     hitsPerChannelStored = cms.vint32([hitsPerChannelStored for hitsPerChannelStored in options.hitsPerChannelStoreds]),
+    areaSpecification = cms.untracked.string(options.areaSpecification),
     wc_resolutions = cms.untracked.vdouble([1.5, 1.5, 1.0, 1.0]),
     performAlignment = cms.untracked.bool(bool(options.performAlignment)),
     alignmentParamaterFiles = cms.vstring(options.alignmentFiles) 
