@@ -43,6 +43,13 @@ options.register('beamParticlePDGID',
                  'Beam particles PDG ID.'
                 )
 
+options.register('setupConfiguration',
+                1,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'setupConfiguration (1: July - 4: 20 Layers in October in H6A".'
+                )
+
 options.register('dataFormat',
                  0,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -111,7 +118,8 @@ process.source = cms.Source("HGCalTBRawDataSource",
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM1.txt"%(options.dataFolder,options.runNumber),
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM2.txt"%(options.dataFolder,options.runNumber)),
                             beamEnergy=cms.untracked.uint32(options.beamEnergy),
-                            beamParticlePDGID=cms.untracked.string(options.beamParticlePDGID)
+                            beamParticlePDGID=cms.untracked.string(options.beamParticlePDGID),
+                            setupConfiguration=cms.untracked.uint32(options.setupConfiguration)
 )
 
 
