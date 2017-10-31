@@ -76,15 +76,20 @@ options.register('reportEvery',
                  'Path to the file from which the DWCs are read.'
                 )
 
-
-options.register('outputFile',
-                 '/home/tquast/tb2017/analysis/energyReco_simTest.root',
+options.register('stopAtEvent',
+                10000,
                  VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 'Output folder where analysis output are stored')
+                 VarParsing.VarParsing.varType.int,
+                 'Stop processing after this event.'
+                )
+
+#options.register('outputFile',
+#                 '/home/tquast/tb2017/analysis/energyReco_simTest.root',
+#                 VarParsing.VarParsing.multiplicity.singleton,
+#                 VarParsing.VarParsing.varType.string,
+#                 'Output folder where analysis output are stored')
 
 
-options.maxEvents = 9000
 
 options.parseArguments()
 print options
@@ -96,7 +101,7 @@ electronicMap="HGCal/CondObjects/data/%s" % options.electronicMap
 ################################
 process = cms.Process("rechitproducer")
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(options.maxEvents)
+    input = cms.untracked.int32(options.stopAtEvent)
 )
 ####################################
 # Reduces the frequency of event count couts
@@ -106,9 +111,9 @@ process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
 
 
 
-process.TFileService = cms.Service("TFileService",
-                                   fileName = cms.string(options.outputFile)
-)
+#process.TFileService = cms.Service("TFileService",
+#                                   fileName = cms.string(options.outputFile)
+#)
 
 process.output = cms.OutputModule("PoolOutputModule",
                                   fileName = cms.untracked.string(options.processedFile),                                  
@@ -146,6 +151,7 @@ process.dwctrackproducer = cms.EDProducer("DWCTrackProducer",
 
 
 ####################################
+'''
 process.energy_sum_analyzer = cms.EDAnalyzer("Energy_Sum_Analyzer",
                                 layers_config  = cms.int32(options.setupConfiguration),
                                 ADC_per_MIP = cms.vdouble([1.]*20*4),
@@ -154,7 +160,9 @@ process.energy_sum_analyzer = cms.EDAnalyzer("Energy_Sum_Analyzer",
                                 RUNDATA = cms.InputTag("source","FullRunData" ), 
                                 HGCALTBRECHITS = cms.InputTag("source","HGCALTBRECHITS" ),
                               )
+'''
 
-process.p = cms.Path( process.dwctrackproducer * process.energy_sum_analyzer)
+process.p = cms.Path( process.dwctrackproducer )
+
 
 process.end = cms.EndPath(process.output)
