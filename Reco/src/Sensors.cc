@@ -103,9 +103,11 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit, double ADC_per_MIP) {
 
   if (filterByCellType(cellType)) return; //returns false so far
 
-  //if (Rechit.checkFlag(HGCalTBRecHit::kLowGainSaturated)) return; //only LG and HG so far
+  double energy = Rechit.energy() / ADC_per_MIP;
+  if (Rechit.checkFlag(HGCalTBRecHit::kLowGainSaturated)) {
+    energy = Rechit.energyLow() * 8. / ADC_per_MIP ;  //the LayerSumAnalyzer also energy deposits in MIP units
+  }
 
-  double energy = Rechit.energyLow() * 9. / ADC_per_MIP ;  //the LayerSumAnalyzer also energy deposits in MIP units
   //scale outer calibration pads:
   if (cellType==4) energy*=9./8;
 

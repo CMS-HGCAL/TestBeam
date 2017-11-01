@@ -137,7 +137,7 @@ process.source = cms.Source("HGCalTBGenSimSource",
                         energyNoise=cms.untracked.double(0.0),  
                         setupConfiguration=cms.untracked.uint32(options.setupConfiguration),
                         energyNoiseResolution=cms.untracked.double(0.0),
-                        GeVToMip=cms.untracked.double(1./(86.5*pow(10.,-6)*4./3.)),   #apply an overall scaling of the recorded intensities in the cells
+                        GeVToMip=cms.untracked.double(1./(86.5*pow(10.,-6)*1.7)),   #apply an overall scaling of the recorded intensities in the cells
                         areaSpecification = cms.untracked.string(options.areaSpecification),
                         wc_resolutions = cms.untracked.vdouble([1.5, 1.5, 1.0, 1.0])
                         )

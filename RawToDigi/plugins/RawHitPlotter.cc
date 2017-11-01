@@ -252,7 +252,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   }
   
   m_evtID+=1;
-  CommonMode cm(essource_.emap_); //default is common mode per chip using the median
+  CommonMode cm(essource_.emap_, true, true, -1.);
   cm.Evaluate( hits );
   std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
   for( std::map<int,commonModeNoise>::iterator it=cmMap.begin(); it!=cmMap.end(); ++it ){

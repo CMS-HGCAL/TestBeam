@@ -116,7 +116,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   edm::Handle<HGCalTBRawHitCollection> rawhits;
   event.getByToken(m_HGCalTBRawHitCollection, rawhits);
 
-  CommonMode cm(essource_.emap_); //default is common mode per chip using the median
+  CommonMode cm(essource_.emap_, true, true, -1); //default is common mode per chip using the median
   cm.Evaluate( rawhits );
   std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
 
@@ -283,20 +283,20 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     float energy = -1;
     float time = -1.;
     HGCalTBRecHit recHit(rawhit.detid(), energy, lowGain, highGain, totGain, time);
-    if(rawhit.highGainADC(3) < m_highGainADCSaturation.at(iboard) && hgStatus == 0){
+    if(rawhit.highGainADC(3) < m_highGainADCSaturation.at(iski) && hgStatus == 0){
       energy = highGain;
       time = timeHG;
       recHit.setFlag(HGCalTBRecHit::kGood);
     }     
-    else if(rawhit.lowGainADC(3)-subHG[3] < m_lowGainADCSaturation.at(iboard) && lgStatus == 0){
-      energy = lowGain * m_LG2HG_value.at(iboard);
+    else if(rawhit.lowGainADC(3)-subHG[3] < m_lowGainADCSaturation.at(iski) && lgStatus == 0){
+      energy = lowGain * m_LG2HG_value.at(iski);
       time = timeLG;
       recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
       recHit.setFlag(HGCalTBRecHit::kGood);
     }
     else if(totGain > 10 && toaRise > 0){
       //std::cout<<"Setting totGain: "<<totGain<<std::endl;
-      energy = totGain * m_TOT2LG_value.at(iboard) * m_LG2HG_value.at(iboard);
+      energy = totGain * m_TOT2LG_value.at(iski) * m_LG2HG_value.at(iski);
       recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
       recHit.setFlag(HGCalTBRecHit::kGood);
     }

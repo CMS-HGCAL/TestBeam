@@ -7,8 +7,8 @@ CommonMode::CommonMode( HGCalElectronicsMap &emap, bool useMedian, bool cmPerChi
 {
   _emap=emap;
 
-  thresholdHG = -1.;
-  thresholdLG = -1.;
+  thresholdHG = _threshold;
+  thresholdLG = thresholdHG/8.;
 
 }
 

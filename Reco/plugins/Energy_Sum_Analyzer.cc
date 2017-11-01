@@ -353,18 +353,13 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	for(auto Rechit : *Rechits) {	
 		int layer = (Rechit.id()).layer();
 		int skiroc = Rechit.skiroc()+(layer-1)*4;  
-		double iux = Rechit.getCellCenterCartesianCoordinate(0);
-		double ivy = Rechit.getCellCenterCartesianCoordinate(1);
 		if ( Sensors.find(layer) == Sensors.end() ) {
 			Sensors[layer] = new SensorHitMap(layer);
 			Sensors[layer]->setSensorSize(SensorSize);
 		}
 
-		
 		if (Rechit.energyHigh() > MIP_cut*ADC_per_MIP[skiroc])	{//only add if energy is higher than the MIP cut
 			Sensors[layer]->addHit(Rechit, ADC_per_MIP[skiroc]);		//without MIP calibration
-			h_RecHit_Occupancy_layer[layer-1]->Fill(iux, ivy);
-			h_RecHit_Energy_layer[layer-1]->Fill(iux, ivy, Rechit.energyLow());
 		}
 	}
 
@@ -384,23 +379,15 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	//	considerationMethod = CONSIDERNINETEEN;
 	//	weightingMethod = LINEARWEIGHTING;
 	//	weightingMethod = MOSTINTENSIVE;
-
-	//step 2: sum of all cells in a layer
-	energyAll_tot = 0.;
 	std::vector<std::pair<double, double> > relevantHitPositions;
 
-	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
-		//now calculate the center positions for each layer
-		it->second->calculateCenterPosition(CONSIDERALL, LINEARWEIGHTING);
-		energyAll_tot += it->second->getTotalWeight();
-		energyAll_layer[it->first-1] = it->second->getTotalWeight();
 
-		relevantHitPositions = it->second->getHitPositionsForPositioning();
-		NAll_layer[it->first-1] = (int)relevantHitPositions.size();
-	}
-
-	//step 3: sum of cells with highest intensity in a layer
+	//step 2: sum of cells with highest intensity in a layer
 	energyE1_tot = 0.;
+	energyE7_tot = 0.;
+	energyE19_tot = 0.;
+	energyAll_tot = 0.;
+	
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		//now calculate the center positions for each layer
 
@@ -411,42 +398,51 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
 		NE1_layer[it->first-1] = (int)relevantHitPositions.size();
-		for (size_t i=0; i<relevantHitPositions.size(); i++) {
-			h_RecHit_MostIntense_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
+		if ((cellID_mostIntense_layer[it->first-1] % 1000) == 236) {	
+			for (size_t i=0; i<relevantHitPositions.size(); i++) {
+				h_RecHit_MostIntense_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
+			}
 		}
 		relevantHitPositions.clear();
-	}
+	
 
-	//step 4: sum of cells with highest intensity + one ring in a layer
-	energyE7_tot = 0.;
-	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
-		//now calculate the center positions for each layer
+		//step 3: sum of cells with highest intensity + one ring in a layer
 		it->second->calculateCenterPosition(CONSIDERSEVEN, LINEARWEIGHTING);
 		energyE7_tot += it->second->getTotalWeight();
 		energyE7_layer[it->first-1] = it->second->getTotalWeight();
 
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
 		NE7_layer[it->first-1] = (int)relevantHitPositions.size();
-		for (size_t i=0; i<relevantHitPositions.size(); i++) {
-			h_RecHit_First7_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
+		if ((cellID_mostIntense_layer[it->first-1] % 1000) == 236) {
+			for (size_t i=0; i<relevantHitPositions.size(); i++) {
+				h_RecHit_First7_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
+			}
 		}
 		relevantHitPositions.clear();
-	}
+	
 
-	//step 5: sum of cells with highest intensity + two rings in a layer
-	energyE19_tot = 0.;
-	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
-		//now calculate the center positions for each layer
+		//step 4: sum of cells with highest intensity + two rings in a layer
 		it->second->calculateCenterPosition(CONSIDERNINETEEN, LINEARWEIGHTING);
 		energyE19_tot += it->second->getTotalWeight();
 		energyE19_layer[it->first-1] = it->second->getTotalWeight();
 
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
 		NE19_layer[it->first-1] = (int)relevantHitPositions.size();
-		for (size_t i=0; i<relevantHitPositions.size(); i++) {
-			h_RecHit_First19_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
+		if ((cellID_mostIntense_layer[it->first-1] % 1000) == 236) {
+			for (size_t i=0; i<relevantHitPositions.size(); i++) {
+				h_RecHit_First19_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
+			}
 		}
 		relevantHitPositions.clear();
+	
+
+		//step 5: sum of all cells in a layer
+		it->second->calculateCenterPosition(CONSIDERALL, LINEARWEIGHTING);
+		energyAll_tot += it->second->getTotalWeight();
+		energyAll_layer[it->first-1] = it->second->getTotalWeight();
+
+		relevantHitPositions = it->second->getHitPositionsForPositioning();
+		NAll_layer[it->first-1] = (int)relevantHitPositions.size();
 	}
 
 	//fill the histograms here
@@ -457,7 +453,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	h_energyE19_tot->Fill(energyE19_tot);
 
 	for (int l=0; l<nLayers; l++) {
-
+		if ((cellID_mostIntense_layer[l] % 1000) != 236) continue;
 		h_energyAll_layer[l]->Fill(energyAll_layer[l]);
 		h_energyE1_layer[l]->Fill(energyE1_layer[l]);
 		h_energyE7_layer[l]->Fill(energyE7_layer[l]);
@@ -478,8 +474,26 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 		h_energyE19perAll_layer[l]->Fill( energyE19_layer[l] / energyAll_layer[l]);
 		
 	}
-
 	
+	//fill occupancy plots
+	for(auto Rechit : *Rechits) {	
+		int layer = (Rechit.id()).layer();
+		double iux = Rechit.getCellCenterCartesianCoordinate(0);
+		double ivy = Rechit.getCellCenterCartesianCoordinate(1);
+		int skiroc = Rechit.skiroc()+(layer-1)*4;  
+
+		if ((cellID_mostIntense_layer[layer-1] % 1000) != 236) continue;
+		if (Rechit.energyHigh() <= MIP_cut*ADC_per_MIP[skiroc]) continue;
+		if ((Rechit.id()).cellType() != 0) continue;
+		h_RecHit_Occupancy_layer[layer-1]->Fill(iux, ivy);
+		double _energy = Rechit.energy() / ADC_per_MIP[skiroc];
+  		if (Rechit.checkFlag(HGCalTBRecHit::kLowGainSaturated)) {
+    		_energy = Rechit.energyLow() * 8. / ADC_per_MIP[skiroc] ;  
+  		}
+		h_RecHit_Energy_layer[layer-1]->Fill(iux, ivy, _energy);
+	}
+
+
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		delete (*it).second;
 	};	Sensors.clear();
@@ -508,9 +522,9 @@ void Energy_Sum_Analyzer::InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, 
       assert(CellXY.size() == 4 || CellXY.size() == 6);
       unsigned int iVertex = 0;
       for(std::vector<std::pair<double, double>>::const_iterator it = CellXY.begin(); it != CellXY.end(); it++) {
-	HexX[iVertex] =  it->first;
-	HexY[iVertex] =  it->second;
-	++iVertex;
+		HexX[iVertex] =  it->first;
+		HexY[iVertex] =  it->second;
+		++iVertex;
       }
       //Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
       poly.AddBin(CellXY.size(), HexX, HexY);
