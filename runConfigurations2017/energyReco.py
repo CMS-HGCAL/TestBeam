@@ -25,6 +25,12 @@ options.register('reportEvery',
                  'Path to the file from which the DWCs are read.'
                 )
 
+options.register('simulation',
+                 1,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 '1=Analysis is run on simulated samples'
+                 )
 
 ####################################
 # Options related to the experimental setup
@@ -56,6 +62,8 @@ process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
 ####################################
 
+
+
 process.source = cms.Source("PoolSource",
                             fileNames=cms.untracked.vstring("file:%s"%options.dataFile)
 )
@@ -71,15 +79,23 @@ elif int(options.configuration)==4:
     nLayers=10      #number to be fixed
 
 
+if options.simulation==1:
+    rundata_tag = cms.InputTag("source", "FullRunData", "rechitproducer") 
+    rechit_tag = cms.InputTag("source", "HGCALTBRECHITS", "rechitproducer")
+else:
+    rundata_tag = cms.InputTag("wirechamberproducer","FullRunData")
+    rechit_tag = cms.InputTag("rechitproducer","HGCALTBRECHITS" )
+
 ####################################
 process.energy_sum_analyzer = cms.EDAnalyzer("Energy_Sum_Analyzer",
                                 layers_config  = cms.int32(options.configuration),
-                                ADC_per_MIP = cms.vdouble([1.]*20*4),
+                                ADC_per_MIP = cms.vdouble([49.3]*20*4),
                                 nLayers = cms.int32(nLayers),
                                 SensorSize = cms.int32(133),
-                                RUNDATA = cms.InputTag("wirechamberproducer","FullRunData" ), 
-                                HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
+                                RUNDATA = rundata_tag,
+                                HGCALTBRECHITS = rechit_tag
                               )
+
 
 
 ####################################

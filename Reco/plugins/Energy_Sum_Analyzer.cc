@@ -83,13 +83,10 @@ class Energy_Sum_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResource
 		std::map<int, SensorHitMap*> Sensors;
 
 		//stuff to be written to the tree
-		TTree* outTree;
+
 		int configuration, evId, eventCounter, run, pdgID; 	//eventCounter: counts the events in this analysis run to match information within ove event to each other
 		double beamEnergy;		//energy of the beam particle
 
-		double energyAll_tot, energyE1_tot, energyE7_tot, energyE19_tot;
-		std::vector<int> cellID_mostIntense_layer;
-		std::vector<double> energyAll_layer, energyE1_layer, energyE7_layer, energyE19_layer;
 		
 		//quantitites for investigator wit event displays
 		HGCalTBTopology IsCellValid;
@@ -97,6 +94,34 @@ class Energy_Sum_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResource
 		std::vector<std::pair<double, double>> CellXY;
 		std::pair<double, double> CellCentreXY;
 
+
+		double energyAll_tot, energyE1_tot, energyE7_tot, energyE19_tot;
+		std::vector<int> cellID_mostIntense_layer;
+		std::vector<double> energyAll_layer, energyE1_layer, energyE7_layer, energyE19_layer;
+		std::vector<int> NAll_layer, NE1_layer, NE7_layer, NE19_layer;
+
+		TH1F* h_energyAll_tot;
+		TH1F* h_energyE1_tot;
+		TH1F* h_energyE7_tot;
+		TH1F* h_energyE19_tot;
+
+		std::vector<TH1F*> h_energyAll_layer;
+		std::vector<TH1F*> h_energyE1_layer;
+		std::vector<TH1F*> h_energyE7_layer;
+		std::vector<TH1F*> h_energyE19_layer;
+		
+		std::vector<TH1F*> h_NAll_layer;
+		std::vector<TH1F*> h_NE1_layer;
+		std::vector<TH1F*> h_NE7_layer;
+		std::vector<TH1F*> h_NE19_layer;	
+
+		std::vector<TH1F*> h_energyE1perE7_layer;
+		std::vector<TH1F*> h_energyE1perE19_layer;
+		std::vector<TH1F*> h_energyE1perAll_layer;
+		std::vector<TH1F*> h_energyE7perE19_layer;
+		std::vector<TH1F*> h_energyE7perAll_layer;
+		std::vector<TH1F*> h_energyE19perAll_layer;
+		
 		std::vector<TH2Poly*> h_RecHit_MostIntense_layer;
 		std::vector<TH2Poly*> h_RecHit_First7_layer;
 		std::vector<TH2Poly*> h_RecHit_First19_layer;
@@ -120,71 +145,170 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 	nLayers = iConfig.getParameter<int>("nLayers");
 	ADC_per_MIP = iConfig.getParameter<std::vector<double> >("ADC_per_MIP");
 
-	MIP_cut = 4.;		//todo: make as configuration
-	MIP_cut *= 49.3;	//50 HG ADC counts are one MIP --> cell must at least have that value in order to be summed.
+	MIP_cut = 4.;		
+	
+	std::ostringstream os( std::ostringstream::ate );
 
-	//initialize tree and set Branch addresses
-	outTree = fs->make<TTree>("energySums", "energySums");
-	outTree->Branch("configuration", &configuration, "configuration/I");
-	outTree->Branch("eventId", &evId, "eventId/I");	//event ID as it comes from the reader, as it is stored in the txt files
-	outTree->Branch("eventCounter", &eventCounter, "eventCounter/I");	//event counter, current iteration, indexing occurs chronologically in the readin plugins
-	outTree->Branch("run", &run, "run/I");
-	outTree->Branch("pdgID", &pdgID, "pdgID/I");
-	outTree->Branch("beamEnergy", &beamEnergy, "beamEnergy/D");	//electron energy in GeV
-	outTree->Branch("energyAll_tot", &energyAll_tot, "energyAll_tot/D");
-	outTree->Branch("energyE1_tot", &energyE1_tot, "energyE1_tot/D");
-	outTree->Branch("energyE7_tot", &energyE7_tot, "energyE7_tot/D");
-	outTree->Branch("energyE19_tot", &energyE19_tot, "energyE19_tot/D");
+	os.str("");
+	os << "EnergyAll";
+	h_energyAll_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 2500.);
+	h_energyAll_tot->SetName(os.str().c_str());
+	h_energyAll_tot->SetTitle(os.str().c_str());
+	os.str("");
+	os << "EnergyE1";
+	h_energyE1_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 1000.);
+	h_energyE1_tot->SetName(os.str().c_str());
+	h_energyE1_tot->SetTitle(os.str().c_str());
+	os.str("");
+	os << "EnergyE7";
+	h_energyE7_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 2000.);
+	h_energyE7_tot->SetName(os.str().c_str());
+	h_energyE7_tot->SetTitle(os.str().c_str());
+	os.str("");
+	os << "EnergyE19";
+	h_energyE19_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 2500.);
+	h_energyE19_tot->SetName(os.str().c_str());
+	h_energyE19_tot->SetTitle(os.str().c_str());
 
-	for (int l=1; l<=nLayers; l++) {
+	
+	for( int ilayer=0; ilayer<nLayers; ilayer++ ){
 		cellID_mostIntense_layer.push_back(0);
 		energyAll_layer.push_back(0.);
 		energyE1_layer.push_back(0.);
 		energyE7_layer.push_back(0.);
 		energyE19_layer.push_back(0.);
-	}
-	for (int l=1; l<=nLayers; l++) {
-		outTree->Branch(("cellID_mostIntense_layer"+std::to_string(l)).c_str(), &cellID_mostIntense_layer[l-1], ("cellID_mostIntense_layer"+std::to_string(l)+"/I").c_str());
-		outTree->Branch(("energyAll_layer"+std::to_string(l)).c_str(), &energyAll_layer[l-1], ("energyAll_layer"+std::to_string(l)+"/D").c_str());
-		outTree->Branch(("energyE1_layer"+std::to_string(l)).c_str(), &energyE1_layer[l-1], ("energyE1_layer"+std::to_string(l)+"/D").c_str());
-		outTree->Branch(("energyE7_layer"+std::to_string(l)).c_str(), &energyE7_layer[l-1], ("energyE7_layer"+std::to_string(l)+"/D").c_str());
-		outTree->Branch(("energyE19_layer"+std::to_string(l)).c_str(), &energyE19_layer[l-1], ("energyE19_layer"+std::to_string(l)+"/D").c_str());
-	}
-	
-	std::ostringstream os( std::ostringstream::ate );
+		NAll_layer.push_back(0);
+		NE1_layer.push_back(0);
+		NE7_layer.push_back(0);
+		NE19_layer.push_back(0);
+		
+		os.str("");
+		os << "Layer" << (ilayer+1);
+		TFileDirectory layer_dir = fs->mkdir( os.str().c_str() );
 
-	for( int ilayer=0; ilayer<nLayers; ilayer++ ){
+
+		os.str("");
+		os << "EnergyE1_Layer" << (ilayer+1);
+		h_energyE1_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 200.));
+		h_energyE1_layer[ilayer]->SetName(os.str().c_str());
+		h_energyE1_layer[ilayer]->SetTitle(os.str().c_str());
+
+		os.str("");
+		os << "EnergyE7_Layer" << (ilayer+1);
+		h_energyE7_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 400.));
+		h_energyE7_layer[ilayer]->SetName(os.str().c_str());
+		h_energyE7_layer[ilayer]->SetTitle(os.str().c_str());
+		
+
+		os.str("");
+		os << "EnergyE19_Layer" << (ilayer+1);
+		h_energyE19_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 500.));
+		h_energyE19_layer[ilayer]->SetName(os.str().c_str());
+		h_energyE19_layer[ilayer]->SetTitle(os.str().c_str());
+
+		os.str("");
+		os << "EnergyAll_Layer" << (ilayer+1);
+		h_energyAll_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 500.));
+		h_energyAll_layer[ilayer]->SetName(os.str().c_str());
+		h_energyAll_layer[ilayer]->SetTitle(os.str().c_str());
+
+
+
+		os.str("");
+		os << "NE1_Layer" << (ilayer+1);
+		h_NE1_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 2, -0.5, 1.5));
+		h_NE1_layer[ilayer]->SetName(os.str().c_str());
+		h_NE1_layer[ilayer]->SetTitle(os.str().c_str());
+
+		os.str("");
+		os << "NE7_Layer" << (ilayer+1);
+		h_NE7_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 8, -0.5, 7.5));
+		h_NE7_layer[ilayer]->SetName(os.str().c_str());
+		h_NE7_layer[ilayer]->SetTitle(os.str().c_str());
+		
+
+		os.str("");
+		os << "NE19_Layer" << (ilayer+1);
+		h_NE19_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 20, -0.5, 19.5));
+		h_NE19_layer[ilayer]->SetName(os.str().c_str());
+		h_NE19_layer[ilayer]->SetTitle(os.str().c_str());
+
+		os.str("");
+		os << "NAll_Layer" << (ilayer+1);
+		h_NAll_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 31, -0.5, 30.5));
+		h_NAll_layer[ilayer]->SetName(os.str().c_str());
+		h_NAll_layer[ilayer]->SetTitle(os.str().c_str());
+
+
+
+		os.str("");
+		os << "EnergyE1perE7_Layer" << (ilayer+1);
+		h_energyE1perE7_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 1.));
+		h_energyE1perE7_layer[ilayer]->SetName(os.str().c_str());
+		h_energyE1perE7_layer[ilayer]->SetTitle(os.str().c_str());
+		
+		os.str("");
+		os << "EnergyE1perE19_Layer" << (ilayer+1);
+		h_energyE1perE19_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 1.));
+		h_energyE1perE19_layer[ilayer]->SetName(os.str().c_str());
+		h_energyE1perE19_layer[ilayer]->SetTitle(os.str().c_str());
+
+		os.str("");
+		os << "EnergyE1perAll_Layer" << (ilayer+1);
+		h_energyE1perAll_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 1.));
+		h_energyE1perAll_layer[ilayer]->SetName(os.str().c_str());
+		h_energyE1perAll_layer[ilayer]->SetTitle(os.str().c_str());
+
+		os.str("");
+		os << "EnergyE7perE19_Layer" << (ilayer+1);
+		h_energyE7perE19_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 1.));
+		h_energyE7perE19_layer[ilayer]->SetName(os.str().c_str());
+		h_energyE7perE19_layer[ilayer]->SetTitle(os.str().c_str());
+
+		os.str("");
+		os << "EnergyE7perAll_Layer" << (ilayer+1);
+		h_energyE7perAll_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 1.));
+		h_energyE7perAll_layer[ilayer]->SetName(os.str().c_str());
+		h_energyE7perAll_layer[ilayer]->SetTitle(os.str().c_str());
+
+		os.str("");
+		os << "EnergyE19perAll_Layer" << (ilayer+1);
+		h_energyE19perAll_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 1.));
+		h_energyE19perAll_layer[ilayer]->SetName(os.str().c_str());
+		h_energyE19perAll_layer[ilayer]->SetTitle(os.str().c_str());
+
+	
 		os.str("");
 		os << "MostIntense_Layer" << (ilayer+1);
-		h_RecHit_MostIntense_layer.push_back(fs->make<TH2Poly>());
+		h_RecHit_MostIntense_layer.push_back(layer_dir.make<TH2Poly>());
 		h_RecHit_MostIntense_layer[ilayer]->SetName( os.str().c_str() );
 		h_RecHit_MostIntense_layer[ilayer]->SetTitle( os.str().c_str() );
 		InitTH2Poly(*h_RecHit_MostIntense_layer[ilayer],ilayer,0,0);
 
 		os.str("");
 		os << "First7_Layer" << (ilayer+1);
-		h_RecHit_First7_layer.push_back(fs->make<TH2Poly>());
+		h_RecHit_First7_layer.push_back(layer_dir.make<TH2Poly>());
 		h_RecHit_First7_layer[ilayer]->SetName( os.str().c_str() );
 		h_RecHit_First7_layer[ilayer]->SetTitle( os.str().c_str() );
 		InitTH2Poly(*h_RecHit_First7_layer[ilayer],ilayer,0,0);
 
 		os.str("");
 		os << "First19_Layer" << (ilayer+1);
-		h_RecHit_First19_layer.push_back(fs->make<TH2Poly>());
+		h_RecHit_First19_layer.push_back(layer_dir.make<TH2Poly>());
 		h_RecHit_First19_layer[ilayer]->SetName( os.str().c_str() );
 		h_RecHit_First19_layer[ilayer]->SetTitle( os.str().c_str() );
 		InitTH2Poly(*h_RecHit_First19_layer[ilayer],ilayer,0,0);   
 
 		os.str("");
 		os << "Occupancy_Layer" << (ilayer+1);
-		h_RecHit_Occupancy_layer.push_back(fs->make<TH2Poly>());
+		h_RecHit_Occupancy_layer.push_back(layer_dir.make<TH2Poly>());
 		h_RecHit_Occupancy_layer[ilayer]->SetName( os.str().c_str() );
 		h_RecHit_Occupancy_layer[ilayer]->SetTitle( os.str().c_str() );
 		InitTH2Poly(*h_RecHit_Occupancy_layer[ilayer],ilayer,0,0);   
 
 		os.str("");
 		os << "Energy_Layer" << (ilayer+1);
-		h_RecHit_Energy_layer.push_back(fs->make<TH2Poly>());
+		h_RecHit_Energy_layer.push_back(layer_dir.make<TH2Poly>());
 		h_RecHit_Energy_layer[ilayer]->SetName( os.str().c_str() );
 		h_RecHit_Energy_layer[ilayer]->SetTitle( os.str().c_str() );
 		InitTH2Poly(*h_RecHit_Energy_layer[ilayer],ilayer,0,0);  
@@ -219,7 +343,6 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 		return;
 	}
 
-
 	//opening Rechits
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_Token, Rechits);
@@ -237,9 +360,8 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 			Sensors[layer]->setSensorSize(SensorSize);
 		}
 
-//		Sensors[layer]->addHit(Rechit, ADC_per_MIP[skiroc]);		//with MIP calibration
-
-		if (Rechit.energyHigh() > MIP_cut)	{//only add if energy is higher than the MIP cut
+		
+		if (Rechit.energyHigh() > MIP_cut*ADC_per_MIP[skiroc])	{//only add if energy is higher than the MIP cut
 			Sensors[layer]->addHit(Rechit, ADC_per_MIP[skiroc]);		//without MIP calibration
 			h_RecHit_Occupancy_layer[layer-1]->Fill(iux, ivy);
 			h_RecHit_Energy_layer[layer-1]->Fill(iux, ivy, Rechit.energyLow());
@@ -272,6 +394,9 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 		it->second->calculateCenterPosition(CONSIDERALL, LINEARWEIGHTING);
 		energyAll_tot += it->second->getTotalWeight();
 		energyAll_layer[it->first-1] = it->second->getTotalWeight();
+
+		relevantHitPositions = it->second->getHitPositionsForPositioning();
+		NAll_layer[it->first-1] = (int)relevantHitPositions.size();
 	}
 
 	//step 3: sum of cells with highest intensity in a layer
@@ -285,6 +410,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 		energyE1_layer[it->first-1] = it->second->getTotalWeight();
 
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
+		NE1_layer[it->first-1] = (int)relevantHitPositions.size();
 		for (size_t i=0; i<relevantHitPositions.size(); i++) {
 			h_RecHit_MostIntense_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
 		}
@@ -300,6 +426,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 		energyE7_layer[it->first-1] = it->second->getTotalWeight();
 
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
+		NE7_layer[it->first-1] = (int)relevantHitPositions.size();
 		for (size_t i=0; i<relevantHitPositions.size(); i++) {
 			h_RecHit_First7_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
 		}
@@ -315,15 +442,42 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 		energyE19_layer[it->first-1] = it->second->getTotalWeight();
 
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
+		NE19_layer[it->first-1] = (int)relevantHitPositions.size();
 		for (size_t i=0; i<relevantHitPositions.size(); i++) {
 			h_RecHit_First19_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
 		}
 		relevantHitPositions.clear();
 	}
 
-	outTree->Fill();
-	//fill the tree
+	//fill the histograms here
 
+	h_energyAll_tot->Fill(energyAll_tot);
+	h_energyE1_tot->Fill(energyE1_tot);
+	h_energyE7_tot->Fill(energyE7_tot);
+	h_energyE19_tot->Fill(energyE19_tot);
+
+	for (int l=0; l<nLayers; l++) {
+
+		h_energyAll_layer[l]->Fill(energyAll_layer[l]);
+		h_energyE1_layer[l]->Fill(energyE1_layer[l]);
+		h_energyE7_layer[l]->Fill(energyE7_layer[l]);
+		h_energyE19_layer[l]->Fill(energyE19_layer[l]);
+	
+		h_NAll_layer[l]->Fill(NAll_layer[l]);
+		h_NE1_layer[l]->Fill(NE1_layer[l]);
+		h_NE7_layer[l]->Fill(NE7_layer[l]);
+		h_NE19_layer[l]->Fill(NE19_layer[l]);
+
+
+		if (NE1_layer[l]==0) continue;	//only fill ratios if here are rings to be computed
+		h_energyE1perE7_layer[l]->Fill( energyE1_layer[l] / energyE7_layer[l]);
+		h_energyE1perE19_layer[l]->Fill( energyE1_layer[l] / energyE19_layer[l]);
+		h_energyE1perAll_layer[l]->Fill( energyE1_layer[l] / energyAll_layer[l]);
+		h_energyE7perE19_layer[l]->Fill( energyE7_layer[l] / energyE19_layer[l]);
+		h_energyE7perAll_layer[l]->Fill( energyE7_layer[l] / energyAll_layer[l]);
+		h_energyE19perAll_layer[l]->Fill( energyE19_layer[l] / energyAll_layer[l]);
+		
+	}
 
 	
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
