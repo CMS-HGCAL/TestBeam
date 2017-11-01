@@ -1,5 +1,6 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBGenSimSource.h"
 
+
 using namespace std;
 
 //#define DEBUG
@@ -117,6 +118,16 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 	if (currentRun == -1) {		//initial loading of a file
 		currentRun = (*fileIterator).index;
 		currentEvent = 0;
+		
+		std::string fileName = (*fileIterator).name;
+		std::string filePrefix = "file:";
+		fileName.replace(fileName.find(filePrefix), filePrefix.size(), "");
+		if (access( (fileName).c_str(), F_OK ) == -1) {
+			std::cout<<fileName<<" does not exist and is skipped"<<std::endl;
+			fileIterator++;
+			currentRun = -1;
+			setRunAndEventInfo(id, time, evType);
+		}
 		/*
 		if (rootFile != NULL)
 			delete rootFile;
