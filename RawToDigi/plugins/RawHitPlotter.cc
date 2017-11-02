@@ -92,6 +92,9 @@ private:
 
   std::map<int,channelInfo*> m_channelMap;
 
+  std::map<int, TH2F*> m_h_HighVsLowGainTS3;
+  std::map<int, TH2F*> m_h_LowGainVsTOTTS3;
+
   std::map<int,TH1F*> m_h_cmHigh;
   std::map<int,TH1F*> m_h_cmLow;
   std::map<int,TH2F*> m_h_cmHighTime;
@@ -190,6 +193,14 @@ void RawHitPlotter::beginJob()
   htmp1=cmdir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
   m_h_cmLow.insert( std::pair<int,TH1F*>(ib*1000+iski*100+it, htmp1) );
       }
+    
+      TFileDirectory gaindir = dir.mkdir( "Gains" );
+      htmp2=gaindir.make<TH2F>("HighGainVsLowGainTS3","HighGainVsLowGainTS3",200,-500.,1500,200,-500.,3500);
+      m_h_HighVsLowGainTS3.insert( std::pair<int,TH2F*>(ib*10+iski, htmp2) );   
+
+      htmp2=gaindir.make<TH2F>("LowGainVsTOTTS3","LowGainVsTOTTS3",150, 0.,1500,175,-500.,3000);
+      m_h_LowGainVsTOTTS3.insert( std::pair<int,TH2F*>(ib*10+iski, htmp2) );   
+      
     }
   }
   m_h_nhitUnderSat=fs->make<TH1F>("Nhit_With_Negative_Saturation","Nhit_With_Negative_Saturation",1200,0,1200);
@@ -283,6 +294,10 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     int iboard=hit.skiroc()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     int ichan=hit.channel();
     int iski=hit.skiroc();
+    
+    m_h_HighVsLowGainTS3[10*iboard+(iski%4)]->Fill(hit.lowGainADC(3), hit.highGainADC(3));
+    m_h_LowGainVsTOTTS3[10*iboard+(iski%4)]->Fill(hit.totSlow(), hit.lowGainADC(3));
+
     std::pair<int,HGCalTBDetId> p( iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan,hit.detid() );
     setOfConnectedDetId.insert(p);
     channelInfo* cif=m_channelMap[iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan];
