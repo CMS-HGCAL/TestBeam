@@ -29,6 +29,8 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	sumTriggerTimes = pset.getParameter<std::vector<int> >("sumTriggerTimes");
 	triggerCountOffsets = pset.getParameter<std::vector<int> >("triggerCountOffsets");
 	skipFirstNEvents = pset.getParameter<std::vector<int> >("skipFirstNEvents");
+	allowForTDCEventSkipping = pset.getParameter<std::vector<int> >("allowForTDCEventSkipping");
+
 	setupIDs = pset.getParameter<std::vector<int> >("setupIDs");
 	pdgIDs = pset.getParameter<std::vector<int> >("pdgIDs");
 	beamEnergies = pset.getParameter<std::vector<double> >("beamEnergies");
@@ -312,7 +314,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 		double deltaTs = (event_trigger_time[event_candidate_index]-ref_time_sync) - (timeSinceStart_ms - ref_time_dwc);
 		rd->doubleUserRecords.add("triggerDeltaT_to_TDC", deltaTs);
 
-		if ((deltaTs>-100.)&&(deltaTs<-15.)&&(fabs(delta_T_priorDWCTrigger+deltaTs)>2.)) {		
+		if (allowForTDCEventSkipping[fileCounter]&&(deltaTs>-100.)&&(deltaTs<-15.)&&(fabs(delta_T_priorDWCTrigger+deltaTs)>2.)) {		
 		//average time in between two events is around 20ms given by the sync board. So cutting on -15. is reasonable for this configuration (20 Oct 2017 in H6A)
 			skippedTDCTriggers+=1;
 		}

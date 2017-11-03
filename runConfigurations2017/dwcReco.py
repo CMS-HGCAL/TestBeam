@@ -100,6 +100,13 @@ options.register('triggerCountOffsets',
                  'Indicate where the trigger count starts in the timing file.'
                 )
 
+options.register('skipTDCTriggers',
+                [],
+                 VarParsing.VarParsing.multiplicity.list,
+                 VarParsing.VarParsing.varType.int,
+                 'Can events in the TDC be skipped?.'
+                )
+
 options.register('setupIDs',
                 [],
                  VarParsing.VarParsing.multiplicity.list,
@@ -200,6 +207,7 @@ process.source = cms.Source("HGCalTBWireChamberSource",
     triggerCountOffsets = cms.vint32([triggerCountOffset for triggerCountOffset in options.triggerCountOffsets]),
     triggerTimeDifferenceTolerance = cms.untracked.double(options.triggerTimeDifferenceTolerance),
     TDCTriggerTimeStampConversionToMs = cms.untracked.double(options.TDCTriggerTimeStampConversionToMs),
+    allowForTDCEventSkipping = cms.vint32([skipTDCTrigger for skipTDCTrigger in options.skipTDCTriggers]),
     setupIDs = cms.vint32([setupID for setupID in options.setupIDs]),
     pdgIDs = cms.vint32([pdgID for pdgID in options.pdgIDs]),
     beamEnergies = cms.vdouble([energies for energies in options.beamEnergies]),

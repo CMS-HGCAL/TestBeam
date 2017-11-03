@@ -77,6 +77,7 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		std::vector<int> sumTriggerTimes;
 		std::vector<int> skipFirstNEvents;
 		std::vector<int> triggerCountOffsets;
+		std::vector<int> allowForTDCEventSkipping;
 		std::vector<int> setupIDs;
 		std::vector<int> pdgIDs;
 		std::vector<double> beamEnergies;
