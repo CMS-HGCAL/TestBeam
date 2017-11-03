@@ -32,14 +32,14 @@ options.register('electronicMap',
 options.register('beamEnergy',
                 250,
                  VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.int,
+                 VarParsing.VarParsing.varType.float,
                  'Beam energy.'
                 )
 
 options.register('beamParticlePDGID',
                 211,
                  VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.float,
+                 VarParsing.VarParsing.varType.int,
                  'Beam particles PDG ID.'
                 )
 
@@ -117,8 +117,8 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             timingFiles=cms.vstring("%s/HexaData_Run%04d_TIMING_RDOUT_ORM0.txt"%(options.dataFolder,options.runNumber),
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM1.txt"%(options.dataFolder,options.runNumber),
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM2.txt"%(options.dataFolder,options.runNumber)),
-                            beamEnergy=cms.untracked.uint32(options.beamEnergy),
-                            beamParticlePDGID=cms.untracked.double(options.beamParticlePDGID),
+                            beamEnergy=cms.untracked.double(options.beamEnergy),
+                            beamParticlePDGID=cms.untracked.int32(options.beamParticlePDGID),
                             setupConfiguration=cms.untracked.uint32(options.setupConfiguration)
 )
 
