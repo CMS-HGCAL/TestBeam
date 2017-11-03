@@ -73,7 +73,6 @@ class Energy_Sum_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResource
 		
 				
 		std::vector<double> ADC_per_MIP;		//one value per skiroc
-		int LayersConfig;
 		int SensorSize;
 		int nLayers;
 
@@ -127,17 +126,17 @@ class Energy_Sum_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResource
 		std::vector<TH2Poly*> h_RecHit_First19_layer;
 		std::vector<TH2Poly*> h_RecHit_Occupancy_layer;
 		std::vector<TH2Poly*> h_RecHit_Energy_layer;
+
+		//for debugging data vs. simulation
+		int cellIDToFocusOn;
 };
 
 Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {	
-	
+	cellIDToFocusOn = -1;
+
 	usesResource("TFileService");
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
-	
-	//read the layer configuration
-	LayersConfig = iConfig.getParameter<int>("layers_config");
-
 
 	eventCounter = 0;
 
@@ -151,22 +150,22 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 
 	os.str("");
 	os << "EnergyAll";
-	h_energyAll_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 2500.);
+	h_energyAll_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 2500.*nLayers/6);
 	h_energyAll_tot->SetName(os.str().c_str());
 	h_energyAll_tot->SetTitle(os.str().c_str());
 	os.str("");
 	os << "EnergyE1";
-	h_energyE1_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 1000.);
+	h_energyE1_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 1000.*nLayers/6);
 	h_energyE1_tot->SetName(os.str().c_str());
 	h_energyE1_tot->SetTitle(os.str().c_str());
 	os.str("");
 	os << "EnergyE7";
-	h_energyE7_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 2000.);
+	h_energyE7_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 2000.*nLayers/6);
 	h_energyE7_tot->SetName(os.str().c_str());
 	h_energyE7_tot->SetTitle(os.str().c_str());
 	os.str("");
 	os << "EnergyE19";
-	h_energyE19_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 2500.);
+	h_energyE19_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 2500.*nLayers/6);
 	h_energyE19_tot->SetName(os.str().c_str());
 	h_energyE19_tot->SetTitle(os.str().c_str());
 
@@ -185,7 +184,6 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 		os.str("");
 		os << "Layer" << (ilayer+1);
 		TFileDirectory layer_dir = fs->mkdir( os.str().c_str() );
-
 
 		os.str("");
 		os << "EnergyE1_Layer" << (ilayer+1);
@@ -212,8 +210,6 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 		h_energyAll_layer[ilayer]->SetName(os.str().c_str());
 		h_energyAll_layer[ilayer]->SetTitle(os.str().c_str());
 
-
-
 		os.str("");
 		os << "NE1_Layer" << (ilayer+1);
 		h_NE1_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 2, -0.5, 1.5));
@@ -225,7 +221,6 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 		h_NE7_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 8, -0.5, 7.5));
 		h_NE7_layer[ilayer]->SetName(os.str().c_str());
 		h_NE7_layer[ilayer]->SetTitle(os.str().c_str());
-		
 
 		os.str("");
 		os << "NE19_Layer" << (ilayer+1);
@@ -238,8 +233,6 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 		h_NAll_layer.push_back(layer_dir.make<TH1F>(os.str().c_str(), os.str().c_str(), 31, -0.5, 30.5));
 		h_NAll_layer[ilayer]->SetName(os.str().c_str());
 		h_NAll_layer[ilayer]->SetTitle(os.str().c_str());
-
-
 
 		os.str("");
 		os << "EnergyE1perE7_Layer" << (ilayer+1);
@@ -277,7 +270,6 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 		h_energyE19perAll_layer[ilayer]->SetName(os.str().c_str());
 		h_energyE19perAll_layer[ilayer]->SetTitle(os.str().c_str());
 
-	
 		os.str("");
 		os << "MostIntense_Layer" << (ilayer+1);
 		h_RecHit_MostIntense_layer.push_back(layer_dir.make<TH2Poly>());
@@ -347,7 +339,6 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_Token, Rechits);
 
-
 	//step 1: Reduce the information to energy deposits/hits in x,y per sensor/layer 
 	//fill the rechits:
 	for(auto Rechit : *Rechits) {	
@@ -366,19 +357,8 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	#ifdef DEBUG
 		std::cout<<"run: "<<rd->run<<"  energy: "<<rd->energy<<"  type:" << rd->runType<<"   eventCounter: "<<rd->event<<std::endl;
 	#endif
-		
-	
-	//Possible event selection: sum of energies of all cells(=hits) from RecHits Collection and Clusters
-	//sumEnergy = 0.;
-	//for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {	
-	//	sumEnergy += it->second->getTotalEnergy();
-	//}
 
-	//	considerationMethod = CONSIDERALL;
-	//	considerationMethod = CONSIDERSEVEN;
-	//	considerationMethod = CONSIDERNINETEEN;
-	//	weightingMethod = LINEARWEIGHTING;
-	//	weightingMethod = MOSTINTENSIVE;
+	
 	std::vector<std::pair<double, double> > relevantHitPositions;
 
 
@@ -398,7 +378,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
 		NE1_layer[it->first-1] = (int)relevantHitPositions.size();
-		if ((cellID_mostIntense_layer[it->first-1] % 1000) == 236) {	
+		if (cellIDToFocusOn!=-1 && (cellID_mostIntense_layer[it->first-1] % 1000) == cellIDToFocusOn) {	
 			for (size_t i=0; i<relevantHitPositions.size(); i++) {
 				h_RecHit_MostIntense_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
 			}
@@ -413,7 +393,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
 		NE7_layer[it->first-1] = (int)relevantHitPositions.size();
-		if ((cellID_mostIntense_layer[it->first-1] % 1000) == 236) {
+		if (cellIDToFocusOn!=-1 && (cellID_mostIntense_layer[it->first-1] % 1000) == cellIDToFocusOn) {
 			for (size_t i=0; i<relevantHitPositions.size(); i++) {
 				h_RecHit_First7_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
 			}
@@ -428,7 +408,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
 		NE19_layer[it->first-1] = (int)relevantHitPositions.size();
-		if ((cellID_mostIntense_layer[it->first-1] % 1000) == 236) {
+		if (cellIDToFocusOn!=-1 && (cellID_mostIntense_layer[it->first-1] % 1000) == cellIDToFocusOn) {
 			for (size_t i=0; i<relevantHitPositions.size(); i++) {
 				h_RecHit_First19_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
 			}
@@ -453,7 +433,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	h_energyE19_tot->Fill(energyE19_tot);
 
 	for (int l=0; l<nLayers; l++) {
-		if ((cellID_mostIntense_layer[l] % 1000) != 236) continue;
+		if (cellIDToFocusOn!=-1 && (cellID_mostIntense_layer[l] % 1000) != 236) continue;
 		h_energyAll_layer[l]->Fill(energyAll_layer[l]);
 		h_energyE1_layer[l]->Fill(energyE1_layer[l]);
 		h_energyE7_layer[l]->Fill(energyE7_layer[l]);

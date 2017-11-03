@@ -38,7 +38,7 @@ options.register('configuration',
                  1,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
-                 '1 is the July setup (6 layers), 2 is the September setup (17 layers)'
+                 '1 is the July setup (6 layers), 2 is the September setup (17 layers), 3 is the October setup (20 layers)'
                  )
 
 
@@ -63,7 +63,6 @@ process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
 ####################################
 
 
-
 process.source = cms.Source("PoolSource",
                             fileNames=cms.untracked.vstring("file:%s"%options.dataFile)
 )
@@ -71,12 +70,12 @@ process.source = cms.Source("PoolSource",
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
 
 nLayers = 6
-if int(options.configuration)==2:
+if int(options.configuration)==1:
+    nLayers = 6
+elif int(options.configuration)==2:
     nLayers=17
 elif int(options.configuration)==3:
-    nLayers=10      #number to be fixed
-elif int(options.configuration)==4: 
-    nLayers=10      #number to be fixed
+    nLayers=12      
 
 
 if options.simulation==1:
@@ -88,15 +87,12 @@ else:
 
 ####################################
 process.energy_sum_analyzer = cms.EDAnalyzer("Energy_Sum_Analyzer",
-                                layers_config  = cms.int32(options.configuration),
                                 ADC_per_MIP = cms.vdouble([49.3]*20*4),
                                 nLayers = cms.int32(nLayers),
                                 SensorSize = cms.int32(133),
                                 RUNDATA = rundata_tag,
                                 HGCALTBRECHITS = rechit_tag
                               )
-
-
 
 ####################################
 # Load the standard sequences
