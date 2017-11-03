@@ -182,7 +182,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     
     for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       sampleHG.push_back(rawhit.highGainADC(it)-subHG[it]);
-      sampleLG.push_back(rawhit.lowGainADC(it)-subLG[it]);
+      sampleLG.push_back((rawhit.lowGainADC(it)-subLG[it]) * m_LG2HG_value.at(iski));
       sampleT.push_back(25*it+12.5);
     }
     
@@ -221,10 +221,10 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
       //second LG
       //this is a just try to isolate hits with signal
-      en1=rawhit.lowGainADC(1)-subLG[1];
-      en3=rawhit.lowGainADC(3)-subLG[3];
-      en4=rawhit.lowGainADC(4)-subLG[4];
-      en6=rawhit.lowGainADC(6)-subLG[6];
+      en1=(rawhit.lowGainADC(1)-subLG[1]);
+      en3=(rawhit.lowGainADC(3)-subLG[3]);
+      en4=(rawhit.lowGainADC(4)-subLG[4]);
+      en6=(rawhit.lowGainADC(6)-subLG[6]);
 
       PulseFitterResult fitlg;
       if( en1<en3 && en3>en6 && en4>en6 && en3>m_timeSample3ADCCut){
@@ -239,9 +239,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
         lowGain=0;
         timeLG=-1;
       } else if (investigatePulseShape) {
-        //std::cout<<"Filling LG key: "<<key<<std::endl;
         for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) 
-          shapesLG[key]->Fill(25*it+12.5-(fitlg.tmax - fitlg.trise), (rawhit.lowGainADC(it)-subLG[it])/fitlg.amplitude);
+          shapesLG[key]->Fill(25*it+12.5-(fitlg.tmax - fitlg.trise), (rawhit.lowGainADC(it)-subLG[it])*m_LG2HG_value.at(iski)/fitlg.amplitude);
         
         ToARisevsTMaxLG[key]->Fill(fitlg.tmax, toaRise);
         ToAFallvsTMaxLG[key]->Fill(fitlg.tmax, toaFall);
@@ -289,7 +288,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       recHit.setFlag(HGCalTBRecHit::kGood);
     }     
     else if(rawhit.lowGainADC(3)-subHG[3] < m_lowGainADCSaturation.at(iski) && lgStatus == 0){
-      energy = lowGain * m_LG2HG_value.at(iski);
+      energy = lowGain;
       time = timeLG;
       recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
       recHit.setFlag(HGCalTBRecHit::kGood);
