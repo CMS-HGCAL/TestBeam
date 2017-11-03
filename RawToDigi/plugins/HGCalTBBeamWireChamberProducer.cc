@@ -68,6 +68,7 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
     rd_full->event = rd->event;
     rd_full->energy = rd->energy;
     rd_full->runType = rd->runType;
+    rd_full->pdgID = rd->pdgID;
     
     if (rd->booleanUserRecords.has("hasDanger")) rd_full->booleanUserRecords.add("hasDanger", rd->booleanUserRecords.get("hasDanger"));
     
@@ -169,7 +170,7 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
 
 
     #ifdef DEBUG
-    std::cout<<rd_full->run<<"  "<<rd_full->event<<"  "<<rd_full->energy<<"  "<<rd_full->configuration<<"  "<<rd_full->runType<<"  "<<rd_full->hasDanger<<"   "<<rd_full->hasValidMWCMeasurement<<"   "<<rd_full->triggerDeltaT_to_TDC<<std::endl;
+    std::cout<<rd_full->run<<"  "<<rd_full->event<<"  "<<rd_full->energy<<"  "<<rd_full->configuration<<"  "<<rd_full->runType"  "<<rd_full->pdgID<<"  "<<rd_full->hasDanger<<"   "<<rd_full->hasValidMWCMeasurement<<"   "<<rd_full->triggerDeltaT_to_TDC<<std::endl;
     #endif
 
     event.put(std::move(rd_full), "FullRunData");

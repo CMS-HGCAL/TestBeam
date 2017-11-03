@@ -47,7 +47,7 @@ struct {
 struct FileInfo {
 	int index;
 	double energy;
-	std::string runType;
+	int pdgID;
 	int config;
 	std::string name;
 };
@@ -78,7 +78,7 @@ private:
 
 
   	unsigned int beamEnergy;
-  	std::string beamParticlePDGID;
+  	int beamParticlePDGID;
   	unsigned int setupConfiguration;
   	double GeVToMip;
 	std::string areaSpecification;

@@ -26,7 +26,7 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 
 
   	beamEnergy = pset.getUntrackedParameter<unsigned int> ("beamEnergy", 250);
-  	beamParticlePDGID = pset.getUntrackedParameter<std::string> ("beamParticlePDGID", "211");
+  	beamParticlePDGID = pset.getUntrackedParameter<int> ("beamParticlePDGID", 211);
   	setupConfiguration = pset.getUntrackedParameter<unsigned int> ("setupConfiguration", 1);
 
   	switch(setupConfiguration) {
@@ -75,7 +75,7 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 			FileInfo fInfo;
 			fInfo.index = i;
 			fInfo.energy = beamEnergy;
-			fInfo.runType = beamParticlePDGID;
+			fInfo.pdgID = beamParticlePDGID;
 			fInfo.config = setupConfiguration;
 			fInfo.name = fileNames()[i];
 			_fileNames.push_back(fInfo);
@@ -239,7 +239,8 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	std::auto_ptr<RunData> rd(new RunData);
 	rd->energy = (*fileIterator).energy;		//mean energy of the beam configuration
 	rd->configuration = (*fileIterator).config;
-	rd->runType = (*fileIterator).runType;
+	rd->pdgID = (*fileIterator).pdgID;
+	rd->runType = "HGCal_Sim";
 	rd->run = (*fileIterator).index;
 	rd->event = eventCounter;
 	rd->booleanUserRecords.add("hasDanger", false);

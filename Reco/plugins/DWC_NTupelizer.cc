@@ -52,7 +52,8 @@ class DWC_NTupelizer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		edm::Service<TFileService> fs;
 		bool writeMinimal;
 
-  	int run, runType, n_event, goodDWC_Measurement;
+  	int run, pdgID, n_event, goodDWC_Measurement;
+  	double beamEnergy;
   	double triggerTimeDiff;
   	std::vector<double> time_DWC;
 	std::vector<double> reco_x, reco_y;
@@ -121,7 +122,8 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 	event.getByToken(MWCToken, dwcs);
 	
 	run = rd->run;
-	runType = std::atoi((rd->runType).c_str());
+	pdgID = rd->pdgID;
+	beamEnergy = rd->energy;
 	n_event = rd->event;
 	goodDWC_Measurement = (rd->booleanUserRecords.has("hasValidMWCMeasurement")&&rd->booleanUserRecords.get("hasValidMWCMeasurement")) ? 1 : 0;
 	
@@ -226,7 +228,8 @@ void DWC_NTupelizer::beginJob() {
 	tree = fs->make<TTree>("dwc_reco", "dwc_reco");
 
 	tree->Branch("run", &run);
-	tree->Branch("runType", &runType);
+	tree->Branch("pdgID", &pdgID);
+	tree->Branch("beamEnergy", &beamEnergy);
 	tree->Branch("event", &n_event);
 	tree->Branch("triggerTimeDifference", &triggerTimeDiff);
 	tree->Branch("goodDWC_Measurement", &goodDWC_Measurement);

@@ -259,7 +259,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	configuration = rd->configuration;
 	evId = event.id().event();
 	run = rd->run;
-	pdgID = std::atoi( (rd->runType).c_str() );
+	pdgID = rd->pdgID;
 	eventCounter = rd->event;
 	energy = rd->energy;
 	

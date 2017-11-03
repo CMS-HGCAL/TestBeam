@@ -29,7 +29,9 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	sumTriggerTimes = pset.getParameter<std::vector<int> >("sumTriggerTimes");
 	triggerCountOffsets = pset.getParameter<std::vector<int> >("triggerCountOffsets");
 	skipFirstNEvents = pset.getParameter<std::vector<int> >("skipFirstNEvents");
-	runType = pset.getParameter<std::vector<std::string> >("runType");
+	setupIDs = pset.getParameter<std::vector<int> >("setupIDs");
+	pdgIDs = pset.getParameter<std::vector<int> >("pdgIDs");
+	beamEnergies = pset.getParameter<std::vector<double> >("beamEnergies");
 	triggerTimingFormat = pset.getParameter<std::vector<int> >("triggerTimingFormat");
 	hitsPerChannelStored = pset.getParameter<std::vector<int> >("hitsPerChannelStored"); 
 
@@ -94,7 +96,6 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 		syncCounter[0] = syncCounter[1] =  syncCounter[2] = 0;
 
 		std::cout<<"Opening "<<fileNames()[fileCounter].c_str()<<std::endl;
-		std::cout<<"Run type "<<runType[fileCounter]<<std::endl;
 		rootFile = new TFile(fileNames()[fileCounter].c_str());	
 		tree = (TTree*)rootFile->Get("DelayWireChambers");
 
@@ -289,17 +290,10 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 	int n_trigger_orm = n_trigger_tdc-skipFirstNEvents[fileCounter]+skippedTDCTriggers;
 
-	rd->configuration = -1;
-	rd->runType = runType[fileCounter];
-	switch(atoi(runType[fileCounter].c_str()) % 10) {
-		case 0: rd->energy=80; break;
-		case 1: rd->energy=100; break;
-		case 2: rd->energy=150; break;
-		case 3: rd->energy=200; break;
-		case 4: rd->energy=250; break;
-		case 5: rd->energy=300; break;
-		default: rd->energy=-1;
-	}
+	rd->configuration = setupIDs[fileCounter];
+  	rd->energy = beamEnergies[fileCounter];
+  	rd->pdgID = pdgIDs[fileCounter];
+  	rd->runType = "HGCal_TB";
 
 
 	rd->run = n_run;

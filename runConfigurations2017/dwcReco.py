@@ -100,11 +100,25 @@ options.register('triggerCountOffsets',
                  'Indicate where the trigger count starts in the timing file.'
                 )
 
-options.register('runTypes',
-                [''],
+options.register('setupIDs',
+                [],
                  VarParsing.VarParsing.multiplicity.list,
-                 VarParsing.VarParsing.varType.string,
-                 'Run types (e.g. 1: 100 GeV pions).'
+                 VarParsing.VarParsing.varType.int,
+                 'Setup IDs.'
+                )
+
+options.register('pdgIDs',
+                [],
+                 VarParsing.VarParsing.multiplicity.list,
+                 VarParsing.VarParsing.varType.int,
+                 'PDG IDs.'
+                )
+
+options.register('beamEnergies',
+                [],
+                 VarParsing.VarParsing.multiplicity.list,
+                 VarParsing.VarParsing.varType.float,
+                 'beamEnergies [GeV].'
                 )
 
 options.register('triggerTimingFormats',
@@ -186,7 +200,9 @@ process.source = cms.Source("HGCalTBWireChamberSource",
     triggerCountOffsets = cms.vint32([triggerCountOffset for triggerCountOffset in options.triggerCountOffsets]),
     triggerTimeDifferenceTolerance = cms.untracked.double(options.triggerTimeDifferenceTolerance),
     TDCTriggerTimeStampConversionToMs = cms.untracked.double(options.TDCTriggerTimeStampConversionToMs),
-    runType = cms.vstring([runType for runType in options.runTypes]),
+    setupIDs = cms.vint32([setupID for setupID in options.setupIDs]),
+    pdgIDs = cms.vint32([pdgID for pdgID in options.pdgIDs]),
+    beamEnergies = cms.vdouble([energies for energies in options.beamEnergies]),
     triggerTimingFormat = cms.vint32([triggerTimingFormat for triggerTimingFormat in options.triggerTimingFormats]),
     hitsPerChannelStored = cms.vint32([hitsPerChannelStored for hitsPerChannelStored in options.hitsPerChannelStoreds]),
     areaSpecification = cms.untracked.string(options.areaSpecification),

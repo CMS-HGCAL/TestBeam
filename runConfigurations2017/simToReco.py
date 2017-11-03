@@ -34,9 +34,9 @@ options.register('beamEnergy',
                 )
 
 options.register('beamParticlePDGID',
-                "211",
+                211,
                  VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
+                 VarParsing.VarParsing.varType.int,
                  'Beam particles PDG ID.'
                 )
 
@@ -133,7 +133,7 @@ process.source = cms.Source("HGCalTBGenSimSource",
                         MaskNoisyChannels=cms.untracked.bool(bool(options.MaskNoisyChannels)),
                         ChannelsToMaskFileName=cms.untracked.string(options.noisyChannelsFile),
                         beamEnergy=cms.untracked.uint32(options.beamEnergy),
-                        beamParticlePDGID=cms.untracked.string(options.beamParticlePDGID),                        
+                        beamParticlePDGID=cms.untracked.int32(options.beamParticlePDGID),                        
                         energyNoise=cms.untracked.double(0.0),  
                         setupConfiguration=cms.untracked.uint32(options.setupConfiguration),
                         energyNoiseResolution=cms.untracked.double(0.0),

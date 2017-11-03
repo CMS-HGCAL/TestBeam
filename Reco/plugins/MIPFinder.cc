@@ -178,7 +178,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	
 	int evId = event.id().event();
 	int run = rd->run;
-	int pdgID = std::atoi( (rd->runType).c_str() );
+	int pdgID = rd->pdgID;
 	double energy = rd->energy;
 	
 	if (rd->booleanUserRecords.has("hasDanger")&&rd->booleanUserRecords.get("hasDanger")) {

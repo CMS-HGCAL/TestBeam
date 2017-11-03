@@ -77,7 +77,9 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		std::vector<int> sumTriggerTimes;
 		std::vector<int> skipFirstNEvents;
 		std::vector<int> triggerCountOffsets;
-		std::vector<std::string> runType;
+		std::vector<int> setupIDs;
+		std::vector<int> pdgIDs;
+		std::vector<double> beamEnergies;
 		std::vector<int> triggerTimingFormat; 	//default: ms, 1: micro seconds
 		std::vector<int> hitsPerChannelStored; 	//default: 0, 1: hits per Channel are Stored and in principle a more sophisticated analysis can be run
 

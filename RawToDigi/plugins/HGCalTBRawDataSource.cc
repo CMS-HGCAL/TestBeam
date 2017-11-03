@@ -23,7 +23,7 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   m_dataFormats(pset.getUntrackedParameter<unsigned int > ("DataFormats",0)),
   m_readTimeStamps(pset.getUntrackedParameter<bool> ("ReadTimeStamps",false)),
   m_beamEnergy(pset.getUntrackedParameter<unsigned int> ("beamEnergy", 250)),
-  m_beamParticlePDGID(pset.getUntrackedParameter<std::string> ("beamParticlePDGID", "211")),
+  m_beamParticlePDGID(pset.getUntrackedParameter<double> ("beamParticlePDGID", 211)),
   m_setupConfiguration(pset.getUntrackedParameter<unsigned int> ("setupConfiguration", 1))
 {
   produces<HGCalTBSkiroc2CMSCollection>(m_outputCollectionName);
@@ -292,9 +292,10 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
   std::auto_ptr<RunData> rd(new RunData);
 
 
-  rd->energy = m_beamEnergy;
   rd->configuration = m_setupConfiguration;
-  rd->runType = m_beamParticlePDGID;
+  rd->energy = m_beamEnergy;
+  rd->runType = "HGCal_TB";
+  rd->pdgID = m_beamParticlePDGID;
   rd->run = m_run;
   rd->event = m_event;
   rd->booleanUserRecords.add("hasDanger", problemDuringReadout);
@@ -323,7 +324,7 @@ void HGCalTBRawDataSource::fillDescriptions(edm::ConfigurationDescriptions& desc
   desc.addUntracked<unsigned int> ("DataFormats");
   desc.add<std::vector<std::string> >("timingFiles");
   desc.addUntracked<unsigned int> ("beamEnergy");
-  desc.addUntracked<std::string> ("beamParticlePDGID");
+  desc.addUntracked<double> ("beamParticlePDGID");
   desc.addUntracked<unsigned int> ("setupConfiguration");
 
   descriptions.add("source", desc);
