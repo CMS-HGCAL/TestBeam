@@ -14,7 +14,7 @@ options.register('dataFile',
                  'folder containing raw input')
 
 options.register('DWCFile',
-                 '/eos/user/t/tquast/outputs/Testbeam/July2017/reconstructed_DWC_data_full.root',
+                 '',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'path to the reconstructed DWC file.')
@@ -124,9 +124,10 @@ process.output = cms.OutputModule("PoolOutputModule",
 )
 
 #Wire chamber producer
-process.wirechamberproducer.OutputCollectionName = cms.string("DelayWireChambers") 
-process.wirechamberproducer.RUNDATA = cms.InputTag("source","RunData")
-process.wirechamberproducer.inputFile = cms.string(options.DWCFile)
+if options.DWCFile != "":
+    process.wirechamberproducer.OutputCollectionName = cms.string("DelayWireChambers") 
+    process.wirechamberproducer.RUNDATA = cms.InputTag("source","RunData")
+    process.wirechamberproducer.inputFile = cms.string(options.DWCFile)
 
 process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata"),
@@ -148,7 +149,9 @@ process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        SubtractCommonMode=cms.untracked.bool(True)
 )
 
-
-process.p = cms.Path( process.wirechamberproducer*process.rawhitproducer*process.rawhitplotter )
+if options.DWCFile != "":
+    process.p = cms.Path( process.wirechamberproducer*process.rawhitproducer*process.rawhitplotter )
+else:   #for pedestals
+    process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
 
 process.end = cms.EndPath(process.output)
