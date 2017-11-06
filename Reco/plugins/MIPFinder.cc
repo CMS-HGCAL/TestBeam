@@ -217,11 +217,11 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 			DUT_x = dwc_xy_z0.first;
 			DUT_y = dwc_xy_z0.second;
 		}
-		else if ((dwctrack->referenceType==13) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) {	//all
+		else if ((dwctrack->referenceType==13) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) {	//E, A, ext
 			DUT_x = dwc_xy_z0.first;
 			DUT_y = dwc_xy_z0.second;
 		}
-		else if ((dwctrack->referenceType==14) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) {	//all
+		else if ((dwctrack->referenceType==14) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) {	//D, A, ext 
 			DUT_x = dwc_xy_z0.first;
 			DUT_y = dwc_xy_z0.second;
 		}	
