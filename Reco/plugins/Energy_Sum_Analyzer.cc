@@ -343,7 +343,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	//fill the rechits:
 	for(auto Rechit : *Rechits) {	
 		int layer = (Rechit.id()).layer();
-		int skiroc = Rechit.skiroc()+(layer-1)*4;  
+		int skiroc = Rechit.skiroc();
 		if ( Sensors.find(layer) == Sensors.end() ) {
 			Sensors[layer] = new SensorHitMap(layer);
 			Sensors[layer]->setSensorSize(SensorSize);
@@ -378,7 +378,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
 		NE1_layer[it->first-1] = (int)relevantHitPositions.size();
-		if (cellIDToFocusOn!=-1 && (cellID_mostIntense_layer[it->first-1] % 1000) == cellIDToFocusOn) {	
+		if (cellIDToFocusOn==-1 || (cellID_mostIntense_layer[it->first-1] % 1000) == cellIDToFocusOn) {	
 			for (size_t i=0; i<relevantHitPositions.size(); i++) {
 				h_RecHit_MostIntense_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
 			}
@@ -393,7 +393,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
 		NE7_layer[it->first-1] = (int)relevantHitPositions.size();
-		if (cellIDToFocusOn!=-1 && (cellID_mostIntense_layer[it->first-1] % 1000) == cellIDToFocusOn) {
+		if (cellIDToFocusOn==-1 || (cellID_mostIntense_layer[it->first-1] % 1000) == cellIDToFocusOn) {
 			for (size_t i=0; i<relevantHitPositions.size(); i++) {
 				h_RecHit_First7_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
 			}
@@ -408,7 +408,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
 		NE19_layer[it->first-1] = (int)relevantHitPositions.size();
-		if (cellIDToFocusOn!=-1 && (cellID_mostIntense_layer[it->first-1] % 1000) == cellIDToFocusOn) {
+		if (cellIDToFocusOn==-1 || (cellID_mostIntense_layer[it->first-1] % 1000) == cellIDToFocusOn) {
 			for (size_t i=0; i<relevantHitPositions.size(); i++) {
 				h_RecHit_First19_layer[it->first-1]->Fill(relevantHitPositions[i].first/10., relevantHitPositions[i].second/10.);
 			}
@@ -433,7 +433,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	h_energyE19_tot->Fill(energyE19_tot);
 
 	for (int l=0; l<nLayers; l++) {
-		if (cellIDToFocusOn!=-1 && (cellID_mostIntense_layer[l] % 1000) != 236) continue;
+		if (cellIDToFocusOn==-1 || (cellID_mostIntense_layer[l] % 1000) != 236) continue;
 		h_energyAll_layer[l]->Fill(energyAll_layer[l]);
 		h_energyE1_layer[l]->Fill(energyE1_layer[l]);
 		h_energyE7_layer[l]->Fill(energyE7_layer[l]);
