@@ -114,8 +114,9 @@ void DWCTrackProducer::produce(edm::Event& event, const edm::EventSetup& setup) 
 		DWCTrack->chi2_x = DWCParticleTrack->getChi2(1);
 		DWCTrack->chi2_y = DWCParticleTrack->getChi2(2);
 	    		
+	} else {
+		DWCTrack->valid = false;
 	}
-	DWCTrack->valid = false;
 	event.put(DWCTrack, m_outputTrackName);
 
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
