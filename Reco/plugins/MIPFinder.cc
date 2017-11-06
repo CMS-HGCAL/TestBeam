@@ -196,7 +196,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	#ifdef DEBUG
 		int eventCounter = rd->event;
 		std::cout<<"run: "<<run<<"  energy: "<<energy<<"  pdgID:" << pdgID<<"   eventCounter: "<<eventCounter<<std::endl;
-		std::cout<<rd->doubleUserRecords.has("triggerDeltaT_to_TDC")<<"   "<<rd->booleanUserRecords.has("hasValidMWCMeasurement")<<"   "<<rd->booleanUserRecords.has("hasDanger")<<std::endl;
+		std::cout<<rd->doubleUserRecords.has("triggerDeltaT_to_TDC")<<"   "<<rd->booleanUserRecords.has("hasValidDWCMeasurement")<<"   "<<rd->booleanUserRecords.has("hasDanger")<<std::endl;
 	#endif
 
 	ReadCurrentDWCWindows(run);

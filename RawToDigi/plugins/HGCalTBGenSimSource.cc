@@ -245,7 +245,7 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	rd->event = eventCounter;
 	rd->booleanUserRecords.add("hasDanger", false);
 	rd->doubleUserRecords.add("trueEnergy", beamP);
-	rd->booleanUserRecords.add("hasValidMWCMeasurement", true);
+	rd->booleanUserRecords.add("hasValidDWCMeasurement", true);
 	event.put(std::move(rd), RunDataOutputCollectionName);	
 
 }

@@ -213,12 +213,12 @@ void HGCalTBTextSource::produce(edm::Event & event){
 	eventCounter++;	//indexes each event chronologically passing this plugin
 
 	//add the multi-wire chambers only if available
-	bool _hasValidMWCMeasurement = true;
+	bool _hasValidDWCMeasurement = true;
 	std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
 	if (mwcCounter < (int)EventMultiWireChambers.size()) {
 		for (size_t _imwc=0; _imwc < (size_t)EventMultiWireChambers[mwcCounter].size(); _imwc++) {
-			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].x != -999) && _hasValidMWCMeasurement;
-			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].y != -999) && _hasValidMWCMeasurement;
+			_hasValidDWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].x != -999) && _hasValidDWCMeasurement;
+			_hasValidDWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].y != -999) && _hasValidDWCMeasurement;
 			double rotAngle = mwcRotation*M_PI/180.;
 			double x_preRot = EventMultiWireChambers[mwcCounter][_imwc].x/10.;		//conersion from mm to cm 
 			double y_preRot = EventMultiWireChambers[mwcCounter][_imwc].y/10.; 
@@ -234,7 +234,7 @@ void HGCalTBTextSource::produce(edm::Event & event){
 		}
 		mwcCounter++;
 	} else {
-		_hasValidMWCMeasurement = false;
+		_hasValidDWCMeasurement = false;
 		//push some dummy value for the MWCs, subsequent plugins using this information should check the _hadValidMWCMeasurement flag
 		mwcs->push_back(MultiWireChamberData(1, -999, -999, 0));
 	}
@@ -285,7 +285,7 @@ void HGCalTBTextSource::produce(edm::Event & event){
 	}
 	eventsPerRun[m_run].first++;
 	rd->booleanUserRecords.add("hasDanger", _hasDanger);
-	rd->booleanUserRecords.add("hasValidMWCMeasurement", _hasValidMWCMeasurement);
+	rd->booleanUserRecords.add("hasValidDWCMeasurement", _hasValidDWCMeasurement);
 
 	event.put(std::move(rd), "RunData");	
 }

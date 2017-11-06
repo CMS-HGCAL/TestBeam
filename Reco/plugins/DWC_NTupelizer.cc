@@ -125,7 +125,7 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 	pdgID = rd->pdgID;
 	beamEnergy = rd->energy;
 	n_event = rd->event;
-	goodDWC_Measurement = (rd->booleanUserRecords.has("hasValidMWCMeasurement")&&rd->booleanUserRecords.get("hasValidMWCMeasurement")) ? 1 : 0;
+	goodDWC_Measurement = (rd->booleanUserRecords.has("hasValidDWCMeasurement")&&rd->booleanUserRecords.get("hasValidDWCMeasurement")) ? 1 : 0;
 	
 	triggerTimeDiff = rd->doubleUserRecords.has("triggerDeltaT_to_TDC") ? rd->doubleUserRecords.get("triggerDeltaT_to_TDC") : -1;
 
