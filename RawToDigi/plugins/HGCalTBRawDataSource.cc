@@ -153,7 +153,7 @@ void HGCalTBRawDataSource::fillEventTimingInformations()
 	}
 	prevTime[ii]=it->second.triggerTimeStamp(ii);
       }
-      std::cout << "Trigger " << it->first << "\t time stamp = " << prevTime[0] << "\t time diff = " << timeDiff << std::endl;
+      //std::cout << "Trigger " << it->first << "\t time stamp = " << prevTime[0] << "\t time diff = " << timeDiff << std::endl;
     }
   }
 }
