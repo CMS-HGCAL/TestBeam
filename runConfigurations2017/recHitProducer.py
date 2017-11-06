@@ -102,9 +102,7 @@ process.output = cms.OutputModule("PoolOutputModule",
                                   fileName = cms.untracked.string(options.processedFile),                                  
                                   outputCommands = cms.untracked.vstring('drop *',
                                                                          'keep *_*_HGCALTBRECHITS_*',
-                                                                         'keep *_*_DelayWireChambers_*',
-                                                                         'keep *_*_HGCalTBDWCTracks_*',
-                                                                         'keep *_*_FullRunData_*')
+                                                                         'keep *_*_RunData_*')                                                                         
 )
 
 process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
@@ -134,11 +132,7 @@ process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",
                                        NoiseThreshold=cms.untracked.double(20)
 )
 
-process.dwctrackproducer = cms.EDProducer("DWCTrackProducer",
-                                        MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
-                                        OutputCollectionName=cms.string("HGCalTBDWCTracks")
-)
 
-process.p = cms.Path( process.rechitproducer*process.rechitplotter*process.dwctrackproducer )
+process.p = cms.Path( process.rechitproducer*process.rechitplotter )
 
 process.end = cms.EndPath(process.output)

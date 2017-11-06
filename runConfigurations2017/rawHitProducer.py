@@ -13,12 +13,6 @@ options.register('dataFile',
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw input')
 
-options.register('DWCFile',
-                 '',
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 'path to the reconstructed DWC file.')
-
 options.register('processedFile',
                  '/eos/user/t/tquast/outputs/Testbeam/July2017/rawhits/RAWHITS_1303.root',
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -119,15 +113,10 @@ process.output = cms.OutputModule("PoolOutputModule",
                                   fileName = cms.untracked.string(options.processedFile),
                                   outputCommands = cms.untracked.vstring('drop *',
                                                                          'keep *_*_HGCALTBRAWHITS_*',
-                                                                         'keep *_*_DelayWireChambers_*',
-                                                                         'keep *_*_FullRunData_*')
+                                                                         'keep *_*_RunData_*')
 )
 
-#Wire chamber producer
-if options.DWCFile != "":
-    process.wirechamberproducer.OutputCollectionName = cms.string("DelayWireChambers") 
-    process.wirechamberproducer.RUNDATA = cms.InputTag("source","RunData")
-    process.wirechamberproducer.inputFile = cms.string(options.DWCFile)
+
 
 process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata"),
@@ -149,9 +138,6 @@ process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        SubtractCommonMode=cms.untracked.bool(True)
 )
 
-if options.DWCFile != "":
-    process.p = cms.Path( process.wirechamberproducer*process.rawhitproducer*process.rawhitplotter )
-else:   #for pedestals
-    process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
+process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
 
 process.end = cms.EndPath(process.output)
