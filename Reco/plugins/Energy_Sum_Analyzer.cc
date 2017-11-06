@@ -321,7 +321,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	configuration = rd->configuration;
 	evId = event.id().event();
 	run = rd->run;
-	pdgID = std::atoi( (rd->runType).c_str() );
+	pdgID = rd->pdgID;
 	eventCounter = rd->event;
 	beamEnergy = rd->energy;
 	
@@ -355,7 +355,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	}
 
 	#ifdef DEBUG
-		std::cout<<"run: "<<rd->run<<"  energy: "<<rd->energy<<"  type:" << rd->runType<<"   eventCounter: "<<rd->event<<std::endl;
+		std::cout<<"run: "<<rd->run<<"  energy: "<<rd->energy<<"  pdgID:" << pdgID<<"   eventCounter: "<<rd->event<<std::endl;
 	#endif
 
 	

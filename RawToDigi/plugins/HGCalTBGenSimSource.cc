@@ -240,7 +240,7 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	rd->energy = (*fileIterator).energy;		//mean energy of the beam configuration
 	rd->configuration = (*fileIterator).config;
 	rd->pdgID = (*fileIterator).pdgID;
-	rd->runType = "HGCal_Sim";
+	rd->runType = HGCAL_TB_SIM;
 	rd->run = (*fileIterator).index;
 	rd->event = eventCounter;
 	rd->booleanUserRecords.add("hasDanger", false);

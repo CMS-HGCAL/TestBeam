@@ -3,6 +3,12 @@
 #include <string>
 #include <map>
 
+enum RUNTYPES {
+  HGCAL_TB_PEDESTAL = 0,
+  HGCAL_TB_BEAM , 
+  HGCAL_TB_SIM
+};
+
 template <class T>
 class UserRecords { 
    private: 
@@ -27,14 +33,14 @@ class UserRecords {
 class RunData {
   public:
     explicit RunData(int config, int r, double e, std::string rt):  run(r), configuration(config), energy(e) {};
-    RunData(): run(0), configuration(0), energy(0), pdgID(0), runType(""){};
+    RunData(): run(0), configuration(0), energy(0), pdgID(0), runType(HGCAL_TB_BEAM){};
     int run;
     int trigger;
     int event;
     int configuration;
     double energy;
     int pdgID;
-    std::string runType;
+    RUNTYPES runType;
     
 
     UserRecords<bool> booleanUserRecords;

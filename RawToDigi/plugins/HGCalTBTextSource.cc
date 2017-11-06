@@ -17,7 +17,7 @@ void HGCalTBTextSource::fillConfiguredRuns(std::fstream& map_file) {
 	//perform the loop and fill configuredRuns
 	char fragment[100];
 	int readCounter = 0;
-	int _run = 0, _mwcrun = 0, _configuration = 0; double _energy = 0; std::string _runType = ""; 
+	int _run = 0, _mwcrun = 0, _configuration = 0; double _energy = 0; int _runType = 1; 
 
 	while (map_file.is_open() && !map_file.eof()) {
 		readCounter++;
@@ -31,7 +31,7 @@ void HGCalTBTextSource::fillConfiguredRuns(std::fstream& map_file) {
 		}
 		else if (readCounter % 5 == 2) _mwcrun = atoi(fragment);
 		else if (readCounter % 5 == 3) _energy = atof(fragment); 
-		else if (readCounter % 5 == 4) _runType = (std::string)fragment; 
+		else if (readCounter % 5 == 4) _runType = atoi(fragment); 
 		else if (readCounter % 5 == 0) {
 			_configuration = atoi(fragment); 
 			
@@ -41,7 +41,7 @@ void HGCalTBTextSource::fillConfiguredRuns(std::fstream& map_file) {
 
 			//store
 			configuredRuns[_run].energy = _energy;
-			configuredRuns[_run].runType = _runType;
+			configuredRuns[_run].runType = (RUNTYPES)_runType;
 			configuredRuns[_run].configuration = _configuration;
 
 			//add the zeros
@@ -268,13 +268,13 @@ void HGCalTBTextSource::produce(edm::Event & event){
 	if (configuredRuns.find(m_run) != configuredRuns.end()) {
 		rd->energy = configuredRuns[m_run].energy;
 		rd->configuration = configuredRuns[m_run].configuration;
-		rd->runType = configuredRuns[m_run].runType;
+		rd->runType = HGCAL_TB_BEAM;
 		rd->run = m_run;
 		rd->event = eventCounter;
 	} else {
 		rd->energy = -1;
 		rd->configuration = -1;
-		rd->runType = "-1";
+		rd->runType = HGCAL_TB_BEAM;
 		rd->run = -1;
 		rd->event = eventCounter;
 	}

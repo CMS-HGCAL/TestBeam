@@ -43,6 +43,13 @@ options.register('beamParticlePDGID',
                  'Beam particles PDG ID.'
                 )
 
+options.register('runType',
+                 "Beam",
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Run type: Pedestal, Beam, Simulation.'
+                )
+
 options.register('setupConfiguration',
                 1,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -119,6 +126,7 @@ process.source = cms.Source("HGCalTBRawDataSource",
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM2.txt"%(options.dataFolder,options.runNumber)),
                             beamEnergy=cms.untracked.double(options.beamEnergy),
                             beamParticlePDGID=cms.untracked.int32(options.beamParticlePDGID),
+                            runType=cms.untracked.string(options.runType),
                             setupConfiguration=cms.untracked.uint32(options.setupConfiguration)
 )
 

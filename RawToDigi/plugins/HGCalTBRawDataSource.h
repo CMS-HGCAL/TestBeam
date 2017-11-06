@@ -67,6 +67,8 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
 
   int m_beamEnergy;
   int m_beamParticlePDGID;
+  std::string m_runType;
+  RUNTYPES runType;
   int m_setupConfiguration;
   
   unsigned int timeStartRun;

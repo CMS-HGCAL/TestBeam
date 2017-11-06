@@ -295,7 +295,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	rd->configuration = setupIDs[fileCounter];
   	rd->energy = beamEnergies[fileCounter];
   	rd->pdgID = pdgIDs[fileCounter];
-  	rd->runType = "HGCal_TB";
+  	rd->runType = HGCAL_TB_BEAM;
 
 
 	rd->run = n_run;
