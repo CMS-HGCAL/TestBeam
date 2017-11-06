@@ -184,6 +184,11 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
        	  subLG[it]=cmMap[iski].outerLG[it]; 
        	}
        	break;
+      case 5 : for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+       	  subHG[it]=cmMap[iski].mergedHG[it]; 
+       	  subLG[it]=cmMap[iski].mergedLG[it]; 
+       	}
+       	break;
       }
       int iboard=hit.skiroc()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
       int ichan=hit.channel();

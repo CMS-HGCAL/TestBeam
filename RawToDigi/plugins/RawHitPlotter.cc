@@ -293,6 +293,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   	case 2 : subHG=cmMap[iski].halfHG[it]; subLG=cmMap[iski].halfLG[it]; break;
   	case 3 : subHG=cmMap[iski].mouseBiteHG[it]; subLG=cmMap[iski].mouseBiteLG[it]; break;
   	case 4 : subHG=cmMap[iski].outerHG[it]; subLG=cmMap[iski].outerLG[it]; break;
+   	case 5 : subHG=cmMap[iski].mergedHG[it]; subLG=cmMap[iski].mergedLG[it]; break;
   	}
   	highGain=hit.highGainADC(it)-subHG;
   	lowGain=hit.lowGainADC(it)-subLG;

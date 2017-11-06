@@ -42,7 +42,7 @@ void CommonMode::EvaluateMedianPerChip( edm::Handle<HGCalTBRawHitCollection> hit
 	else cmMapLG[100*iski+it].push_back( hit.lowGainADC(it) );
       }
     }
-    else{
+    else if( hit.detid().cellType()!=5 ){
       for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
     	if( cmMapHGHalf.find(100*iski+it)==cmMapHGHalf.end() ){
 	  std::vector<float> vec; vec.push_back( hit.highGainADC(it) );
@@ -55,6 +55,7 @@ void CommonMode::EvaluateMedianPerChip( edm::Handle<HGCalTBRawHitCollection> hit
 	  std::pair< int,std::vector<float> > p(100*iski+it,vec);
     	  cmMapLGHalf.insert(p);
 	}
+	else cmMapLGHalf[100*iski+it].push_back( hit.highGainADC(it) );
       }
     }
   }
@@ -67,12 +68,14 @@ void CommonMode::EvaluateMedianPerChip( edm::Handle<HGCalTBRawHitCollection> hit
       commonModeNoise cm;
       cm.fullHG[ts] = size%2==0 ? it->second.at(size/2-1) : it->second.at(size/2) ;
       cm.outerHG[ts] = cm.fullHG[ts];
+      cm.mergedHG[ts] = cm.fullHG[ts]*1.5;
       std::pair<int,commonModeNoise> p(iski,cm);
       _cmMap.insert(p);
     }
     else{
       _cmMap[iski].fullHG[ts] = size%2==0 ? it->second.at(size/2-1) : it->second.at(size/2) ;
       _cmMap[iski].outerHG[ts] = _cmMap[iski].fullHG[ts];
+      _cmMap[iski].mergedHG[ts] = _cmMap[iski].fullHG[ts]*1.5;
     }
   }
   for( std::map< int,std::vector<float> >::iterator it=cmMapLG.begin(); it!=cmMapLG.end(); ++it ){
@@ -84,11 +87,13 @@ void CommonMode::EvaluateMedianPerChip( edm::Handle<HGCalTBRawHitCollection> hit
       commonModeNoise cm;
       cm.fullLG[ts] = size%2==0 ? it->second.at(size/2-1) : it->second.at(size/2) ;
       cm.outerLG[ts] = cm.fullLG[ts];
+      cm.mergedLG[ts] = cm.fullLG[ts]*1.5;
       std::pair<int,commonModeNoise> p(iski,cm);
       _cmMap.insert(p);
     }
     _cmMap[iski].fullLG[ts] = size%2==0 ? it->second.at(size/2-1) : it->second.at(size/2) ;
     _cmMap[iski].outerLG[ts] = _cmMap[iski].fullLG[ts];
+    _cmMap[iski].mergedLG[ts] = _cmMap[iski].fullLG[ts]*1.5;
   }
   HGCalTBTopology topo;
   for( std::map< int,std::vector<float> >::iterator it=cmMapHGHalf.begin(); it!=cmMapHGHalf.end(); ++it ){
@@ -149,7 +154,7 @@ void CommonMode::EvaluateMedianPerLayer( edm::Handle<HGCalTBRawHitCollection> hi
 	}
       }
     }
-    else{
+    else if( hit.detid().cellType()!=5 ){
       for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
 	if( cmMapHGHalf.find(100*ilayer+it)==cmMapHGHalf.end() ){
 	  std::vector<float> vech; vech.push_back( hit.highGainADC(it) );
@@ -175,12 +180,14 @@ void CommonMode::EvaluateMedianPerLayer( edm::Handle<HGCalTBRawHitCollection> hi
       commonModeNoise cm;
       cm.fullHG[ts] = size%2==0 ? it->second.at(size/2-1) : it->second.at(size/2) ;
       cm.outerHG[ts] = cm.fullHG[ts];
+      cm.mergedHG[ts] = cm.fullHG[ts]*1.5;
       std::pair<int,commonModeNoise> p(ilayer,cm);
       _cmMap.insert(p);
     }
     else{
       _cmMap[ilayer].fullHG[ts] = size%2==0 ? it->second.at(size/2-1) : it->second.at(size/2) ;
       _cmMap[ilayer].outerHG[ts] = _cmMap[ilayer].fullHG[ts];
+      _cmMap[ilayer].mergedHG[ts] = _cmMap[ilayer].fullHG[ts]*1.5;
     }
   }
   for( std::map< int,std::vector<float> >::iterator it=cmMapLG.begin(); it!=cmMapLG.end(); ++it ){
@@ -194,6 +201,7 @@ void CommonMode::EvaluateMedianPerLayer( edm::Handle<HGCalTBRawHitCollection> hi
     }
     _cmMap[ilayer].fullLG[ts] = size%2==0 ? it->second.at(size/2-1) : it->second.at(size/2) ;
     _cmMap[ilayer].outerLG[ts] = _cmMap[ilayer].fullLG[ts];
+    _cmMap[ilayer].mergedLG[ts] = _cmMap[ilayer].fullLG[ts]*1.5;
   }
   for( std::map< int,std::vector<float> >::iterator it=cmMapHGHalf.begin(); it!=cmMapHGHalf.end(); ++it ){
     std::sort( it->second.begin(),it->second.end() );
