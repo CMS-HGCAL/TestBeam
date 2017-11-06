@@ -21,7 +21,7 @@ bool  HGCalElectronicsMap::MapEntry::operator<(const HGCalElectronicsMap::MapEnt
 bool HGCalElectronicsMap::existsDetId(DetId did) const
 {
 	DetIdMatch x(did.rawId());
-	return std::find_if(m_map.begin(), m_map.end(), x) == m_map.end();
+	return std::find_if(m_map.begin(), m_map.end(), x) != m_map.end();
 }
 
 bool HGCalElectronicsMap::existsEId(uint32_t eid) const

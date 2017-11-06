@@ -2,13 +2,17 @@
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
 #include "math.h"
 #include <stdlib.h>
+#include <iostream>
 #define PI 3.14159265
 
 bool HGCalTBTopology::iu_iv_valid(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorSize) const
 {
-	int aiv = abs(iv);
-	int iuc = (iv < 0) ? (-iu) : (iu);
-	if(layer <= 28 && sensor_iu == 0 && sensor_iv == 0) {
+	bool Is_Valid_sensor_iu_iv = true;
+	if( abs(sensor_iu+sensor_iv)>1 || abs(sensor_iu)>1 || abs(sensor_iv)>1 )
+	  Is_Valid_sensor_iu_iv=false; //!!ASSUMES NO MORE THAN 7 SEVEN MODULES PER LAYER!!
+        int aiv = abs(iv);
+        int iuc = (iv < 0) ? (-iu) : (iu);
+	if(layer <= 40 && Is_Valid_sensor_iu_iv) {
 		if(sensorSize == 128) {
 			if (iv == 0) return (iu >= -5 && iu <= 5);
 			else if (aiv == 1) return (iuc >= -6 && iuc <= 5);
@@ -43,5 +47,35 @@ double HGCalTBTopology::Cell_Area(int cell_type) const
 	else if (cell_type == 4) return area_outer_calib_pad;
 	else if (cell_type == 5) return area_merged_cell;
 	else return -1.; //signifies an invalid cell type
+}
+
+
+std::set<HGCalTBDetId> HGCalTBTopology::getNeighboringCellsDetID(HGCalTBDetId detid, int sensorSize, int maxDistance, const HGCalElectronicsMap& emap) const
+{
+	int layer=detid.layer();
+	std::set<HGCalTBDetId> detids;
+	for(int u=-maxDistance; u<=maxDistance; u++){
+		for(int v=-maxDistance; v<=maxDistance; v++){
+			if( (u==0 && v==0) || abs(u+v)>maxDistance ) continue;
+			int iU=detid.sensorIU();
+			int iV=detid.sensorIV();
+			int iu=detid.iu()+u;
+			int iv=detid.iv()+v;
+			if( iu_iv_valid( layer, iU, iV, iu, iv, sensorSize)!=true )
+				continue;
+			for(unsigned int cellType=0; cellType<6; cellType++){
+				HGCalTBDetId did( layer, iU, iV, iu, iv, cellType );
+				if( emap.existsDetId(did)==true ){
+					detids.insert(did);
+					if( cellType==1 ){
+						HGCalTBDetId didbis( layer, iU, iV, iu, iv, 4);
+						detids.insert(didbis);
+					}
+					break;
+				}
+			}
+		}
+	}
+	return detids;
 }
 

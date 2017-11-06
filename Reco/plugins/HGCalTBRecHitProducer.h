@@ -1,10 +1,5 @@
 #ifndef HGCALTBRECHITPRODUCER_H
 #define HGCALTBRECHITPRODUCER_H
-/** \class Reco/plugins/HGCalTBRecHitProducer.h HGCalTBRecHitProducer HGCalTBRecHitProducer
-	\brief
-
-	\author Shervin Nourbakhsh
- */
 
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
@@ -13,35 +8,42 @@
 #include "FWCore/ServiceRegistry/interface/Service.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 
+#include "DataFormats/CaloRecHit/interface/CaloRecHit.h"
+#include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
-//#include "HGCal/DataFormats/interface/HGCalTBDetId.h"
-#include "HGCal/DataFormats/interface/HGCalTBDigiCollections.h"
-
-
-// here are defined objects containing pedestals and ADCtoGeV factors
-#include "HGCal/CondObjects/interface/HGCalCondObjects.h"
+#include "HGCal/DataFormats/interface/HGCalTBDetId.h"
+#include "HGCal/DataFormats/interface/HGCalTBRawHitCollection.h"
+#include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
-#include "HGCal/CondObjects/interface/HGCalTBNumberingScheme.h"
-//#define DEBUG
+#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 
-
-#ifdef DEBUG
-#include <iostream>
-#endif
+#include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
 class HGCalTBRecHitProducer : public edm::EDProducer
 {
+ public:
+  HGCalTBRecHitProducer(const edm::ParameterSet&);
+  virtual void produce(edm::Event&, const edm::EventSetup&);
+ private:
+  virtual void beginJob() override;
+  std::string m_outputCollectionName;
+  std::string m_electronicMap;
+  int m_highGainADCSaturation;
+  int m_lowGainADCSaturation;
+  double m_timeSample3ADCCut;
+  
+  edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
+  std::vector<double> m_LG2HG_value;
+  std::vector<double> m_TOT2LG_value;
 
-public:
-	HGCalTBRecHitProducer(const edm::ParameterSet&);
-	virtual void produce(edm::Event&, const edm::EventSetup&);
-private:
-	std::string outputCollectionName;     ///<label name of collection made by this producer
-	edm::EDGetTokenT<HGCalTBDigiCollection> _digisToken;
-	std::string _pedestalLow_filename, _pedestalHigh_filename;
-	std::string _gainsLow_filename, _gainsHigh_filename;
+
+  std::pair<double, double> CellCentreXY;
+  HGCalTBCellVertices TheCell;
+
+  struct {
+    HGCalElectronicsMap emap_;
+  } essource_;
+  
 };
-
-
 
 #endif

@@ -133,3 +133,42 @@ bool HGCalCondObjectTextIO::store(const std::string& filename, const HGCalElectr
 	fclose(f);
 	return true;
 }
+
+bool HGCalCondObjectTextIO::load(const std::string& filename, HGCalTBDetectorLayout &hgcalGeom)
+{
+  FILE* f = fopen(filename.c_str(),"r");
+  if (f == 0) {
+    fprintf(stderr, "Unable to open '%s'\n", filename.c_str());
+    return false;
+  }
+  int layerId,x,y,moduleId;
+  float z;
+  char det[10];
+  char buffer[100];
+  std::vector<HGCalTBLayer> layers;
+  std::vector<HGCalTBLayer>::iterator it;
+  while(!feof(f)){
+    buffer[0]=0;
+    fgets(buffer,100,f);
+    char* p_comment = index(buffer, '#');
+    if (p_comment != 0) continue;
+    int ptr=0;
+    const char* process = buffer;
+    int found = sscanf(process, "%d %f %s %d %d %d %n", &layerId, &z, det, &x, &y, &moduleId, &ptr);
+    if (found == 6) {
+      process += ptr;
+      HGCalTBModule module(layerId, std::string(det), x, y, moduleId);
+      HGCalTBLayer layer(layerId, z, std::string(det) );
+      it=std::find(layers.begin(), layers.end(), layer);
+      if( it!=layers.end() )
+	(*it).add(module);
+      else layer.add(module);
+      layers.push_back(layer);
+    } else continue;
+  }
+  for( it=layers.begin(); it!=layers.end(); ++it ){
+    hgcalGeom.add(*it);
+  }
+  fclose(f);
+  return true;
+}

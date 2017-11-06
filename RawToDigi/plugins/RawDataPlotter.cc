@@ -1,0 +1,231 @@
+#include <iostream>
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TH2Poly.h"
+#include <fstream>
+#include <sstream>
+// user include files
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/one/EDAnalyzer.h"
+#include "FWCore/Framework/interface/Event.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
+#include "FWCore/ParameterSet/interface/ParameterSet.h"
+#include "FWCore/ServiceRegistry/interface/Service.h"
+#include "HGCal/DataFormats/interface/HGCalTBSkiroc2CMSCollection.h"
+#include "HGCal/DataFormats/interface/HGCalTBDetId.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
+#include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
+#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
+#include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
+#include "HGCal/Geometry/interface/HGCalTBTopology.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
+#include <iomanip>
+#include <set>
+
+class RawDataPlotter : public edm::one::EDAnalyzer<edm::one::SharedResources>
+{
+public:
+  explicit RawDataPlotter(const edm::ParameterSet&);
+  ~RawDataPlotter();
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
+private:
+  virtual void beginJob() override;
+  void analyze(const edm::Event& , const edm::EventSetup&) override;
+  virtual void endJob() override;
+  void InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV);
+
+  struct {
+    HGCalElectronicsMap emap_;
+  } essource_;
+  int m_sensorsize;
+  bool m_eventPlotter;
+  std::string m_electronicMap;
+
+  int m_evtID;
+  std::map<int,TH1F*> m_h_adcHigh;
+  std::map<int,TH1F*> m_h_adcLow;
+  std::map<int,TH2F*> m_h_pulseHigh;
+  std::map<int,TH2F*> m_h_pulseLow;
+  std::map<int,TH2F*> m_h_highVsChan;
+  std::map<int,TH2F*> m_h_lowVsChan;
+
+  edm::EDGetTokenT<HGCalTBSkiroc2CMSCollection> m_HGCalTBSkiroc2CMSCollection;
+
+  HGCalTBTopology IsCellValid;
+  HGCalTBCellVertices TheCell;
+  std::vector<std::pair<double, double>> CellXY;
+  std::pair<double, double> CellCentreXY;
+  std::set< std::pair<int,HGCalTBDetId> > setOfConnectedDetId;
+};
+
+RawDataPlotter::RawDataPlotter(const edm::ParameterSet& iConfig) :
+  m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
+  m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
+  m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"))
+{
+  usesResource("TFileService");
+  edm::Service<TFileService> fs;
+
+  m_HGCalTBSkiroc2CMSCollection = consumes<HGCalTBSkiroc2CMSCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
+
+  m_evtID=0;
+  
+  std::ostringstream os( std::ostringstream::ate );
+  TH2F* htmp2;
+  TH1F* htmp1;
+  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+    os.str("");os<<"Hexaboard"<<ib;
+    TFileDirectory dir = fs->mkdir( os.str().c_str() );
+    for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
+      os.str("");os<<"Skiroc"<<iski;
+      TFileDirectory skidir = dir.mkdir( os.str().c_str() );
+      for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
+	os.str("");
+	os << "SCA" << it ;
+	TFileDirectory scadir = skidir.mkdir( os.str().c_str() );
+	for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
+	  os.str("");
+	  os << "HighGain_Channel" << ichan ;
+	  htmp1=scadir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,0,4096);
+	  m_h_adcHigh.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+ichan*100+it, htmp1) );
+	  os.str("");
+	  os << "LowGain_Channel" << ichan ;
+	  htmp1=scadir.make<TH1F>(os.str().c_str(),os.str().c_str(),1000,0,4096);
+	  m_h_adcLow.insert( std::pair<int,TH1F*>(ib*100000+iski*10000+ichan*100+it, htmp1) );
+	  if( ichan%2==0 && it==0 ){
+	    os.str("");
+	    os << "HighGainVsSCA_Channel" << ichan;
+	    htmp2=skidir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_SCA,0, NUMBER_OF_SCA,1000,0,4096);
+	    m_h_pulseHigh.insert( std::pair<int,TH2F*>(ib*1000+iski*100+ichan, htmp2) );
+	    os.str("");
+	    os << "LowGainVsSCA_Channel" << ichan;
+	    htmp2=skidir.make<TH2F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_SCA,0, NUMBER_OF_SCA,1000,0,4096);
+	    m_h_pulseLow.insert( std::pair<int,TH2F*>(ib*1000+iski*100+ichan, htmp2) );
+	  }
+	}
+      }
+    }
+    for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
+      os.str("");
+      os << "HighGainVsChannel_SCA" << it;
+      htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),260,0, 260,1000,0,2000);
+      m_h_highVsChan.insert( std::pair<int,TH2F*>(ib*100+it, htmp2) );
+      os.str("");
+      os << "LowGainVsChannel_SCA" << it;
+      htmp2=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),260,0, 260,1000,0,2000);
+      m_h_lowVsChan.insert( std::pair<int,TH2F*>(ib*100+it, htmp2) );
+    }
+  }
+
+  HGCalCondObjectTextIO io(0);
+  edm::FileInPath fip(m_electronicMap);
+  if (!io.load(fip.fullPath(), essource_.emap_)) {
+    throw cms::Exception("Unable to load electronics map");
+  };
+  std::cout << iConfig.dump() << std::endl;
+}
+
+
+RawDataPlotter::~RawDataPlotter()
+{
+
+}
+
+void RawDataPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
+{
+  usesResource("TFileService");
+  edm::Service<TFileService> fs;
+
+  edm::Handle<HGCalTBSkiroc2CMSCollection> skirocs;
+  event.getByToken(m_HGCalTBSkiroc2CMSCollection, skirocs);
+
+  if( !skirocs->size() ) return;
+  
+  std::map<int,TH2Poly*>  polyMap;
+  if( m_eventPlotter ){
+    std::ostringstream os( std::ostringstream::ate );
+    os << "Event" << event.id().event();
+    TFileDirectory dir = fs->mkdir( os.str().c_str() );
+    for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+      for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
+	TH2Poly *h=dir.make<TH2Poly>();
+	os.str("");
+	os<<"HexaBoard"<<ib<<"_SCA"<<it;
+	h->SetName(os.str().c_str());
+	h->SetTitle(os.str().c_str());
+	InitTH2Poly(*h, (int)ib, 0, 0);
+	polyMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
+      }
+    }
+  }
+  
+  for( size_t iski=0;iski<skirocs->size(); iski++ ){
+    HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
+    std::vector<int> rollpositions=skiroc.rollPositions();
+    int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
+      HGCalTBDetId detid=skiroc.detid( ichan );
+      HGCalTBElectronicsId eid( essource_.emap_.detId2eid(detid.rawId()) );
+      if( essource_.emap_.existsEId(eid) ){
+	std::pair<int,HGCalTBDetId> p( iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan,skiroc.detid(ichan) );
+	setOfConnectedDetId.insert(p);
+      }
+      for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
+	if( rollpositions[it]<9 ){ //rm on track samples+2 last time sample which show weird behaviour
+	  m_h_adcHigh[iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it]->Fill(skiroc.ADCHigh(ichan,it));
+	  m_h_adcLow[iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it]->Fill(skiroc.ADCLow(ichan,it));
+	  if( ichan%2==0 ){
+	    m_h_pulseHigh[iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan]->Fill( it,skiroc.ADCHigh(ichan,it) ); 
+	    m_h_pulseLow[iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan]->Fill( it,skiroc.ADCLow(ichan,it) );
+	    m_h_highVsChan[iboard*100+it]->Fill(ichan+iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*64,skiroc.ADCHigh(ichan,it));
+	    m_h_lowVsChan[iboard*100+it]->Fill(ichan+iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*64,skiroc.ADCHigh(ichan,it)); // 
+	  }
+	}
+	if(m_eventPlotter&&essource_.emap_.existsEId(eid) ){
+	  if(!IsCellValid.iu_iv_valid( detid.layer(),detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize ) )  continue;
+	  CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
+	  polyMap[ 100*iboard+it ]->Fill(CellCentreXY.first , CellCentreXY.second, skiroc.ADCHigh(ichan,it) );
+	}
+      }
+    }
+  }
+}
+
+void RawDataPlotter::InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV)
+{
+  double HexX[HGCAL_TB_GEOMETRY::MAXVERTICES] = {0.};
+  double HexY[HGCAL_TB_GEOMETRY::MAXVERTICES] = {0.};
+  for(int iv = -7; iv < 8; iv++) {
+    for(int iu = -7; iu < 8; iu++) {
+      if(!IsCellValid.iu_iv_valid(layerID, sensorIU, sensorIV, iu, iv, m_sensorsize)) continue;
+      CellXY = TheCell.GetCellCoordinatesForPlots(layerID, sensorIU, sensorIV, iu, iv, m_sensorsize);
+      assert(CellXY.size() == 4 || CellXY.size() == 6);
+      unsigned int iVertex = 0;
+      for(std::vector<std::pair<double, double>>::const_iterator it = CellXY.begin(); it != CellXY.end(); it++) {
+	HexX[iVertex] =  it->first;
+	HexY[iVertex] =  it->second;
+	++iVertex;
+      }
+      //Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
+      poly.AddBin(CellXY.size(), HexX, HexY);
+    }//loop over iu
+  }//loop over iv
+}
+
+void RawDataPlotter::beginJob()
+{
+}
+
+void RawDataPlotter::endJob()
+{
+}
+
+void RawDataPlotter::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
+{
+  edm::ParameterSetDescription desc;
+  desc.setUnknown();
+  descriptions.addDefault(desc);
+}
+
+DEFINE_FWK_MODULE(RawDataPlotter);

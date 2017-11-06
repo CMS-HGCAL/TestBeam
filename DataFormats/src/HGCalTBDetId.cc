@@ -17,7 +17,7 @@ HGCalTBDetId::HGCalTBDetId(int lay, int sen_iu, int sen_iv, int iu, int iv, int 
 	rawid |= ((iu   & (kHGCalTBXSignMask | kHGCalTBXMask))        << kHGCalTBXOffset);
 	rawid |= ((iv   & (kHGCalTBVSignMask | kHGCalTBVMask))        << kHGCalTBVOffset);
 	rawid |= ((sen_iu  & (kHGCalTBSensorXSignMask | kHGCalTBSensorXMask))      << kHGCalTBSensorXOffset);
-	rawid |= ((sen_iv  & (kHGCalTBSensorVSignMask || kHGCalTBSensorVMask))      << kHGCalTBSensorVOffset);
+	rawid |= ((sen_iv  & (kHGCalTBSensorVSignMask | kHGCalTBSensorVMask))      << kHGCalTBSensorVOffset);
 	rawid |= ((lay    & kHGCalLayerMask)       << kHGCalLayerOffset);
 	rawid |= ((cellType & kHGCalTBCellTypeMask) << kHGCalTBCellTypeOffset);
 	id_ = rawid;

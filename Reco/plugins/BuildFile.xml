@@ -9,5 +9,6 @@
 <use name="HGCal/DataFormats"/>
 <use name="HGCal/Geometry"/>
 <use name="HGCal/CondObjects" />
+<use name="HGCal/Reco"/>
 <use name="CommonTools/UtilAlgos"/>
 <flags EDM_PLUGIN="1"/>

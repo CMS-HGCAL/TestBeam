@@ -1,241 +1,271 @@
-// -*- C++ -*-
-//
-// Package:    HGCal/RecHitPlotter
-// Class:      RecHitPlotter
-//
-/**\class RecHitPlotter RecHitPlotter.cc HGCal/RecHitPlotter/plugins/RecHitPlotter.cc
-
- Description: [one line class summary]
-
- Implementation:
-     [Notes on implementation]
-*/
-//
-// Original Author:  Rajdeep Mohan Chatterjee
-//         Created:  Mon, 15 Feb 2016 09:47:43 GMT
-//
-//
-
-
-// system include files
-#include <memory>
 #include <iostream>
-#include "TH2Poly.h"
 #include "TH1F.h"
-// user include files
+#include "TH2F.h"
+#include "TH2Poly.h"
+#include <fstream>
+#include <sstream>
+
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
-#include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
-#include "HGCal/DataFormats/interface/HGCalTBDetId.h"
-#include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
-#include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
-#include "HGCal/Geometry/interface/HGCalTBTopology.h"
+
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
-//
-// class declaration
-//
+#include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
+#include "HGCal/DataFormats/interface/HGCalTBDetId.h"
+#include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
+#include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
+#include "HGCal/CondObjects/interface/HGCalTBDetectorLayout.h"
+#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
+#include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
+#include "HGCal/Geometry/interface/HGCalTBTopology.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 
-// If the analyzer does not use TFileService, please remove
-// the template argument to the base class so the class inherits
-// from  edm::one::EDAnalyzer<> and also remove the line from
-// constructor "usesResource("TFileService");"
-// This will improve performance in multithreaded jobs.
+#include <iomanip>
+#include <set>
 
-static const double delta = 0.00001;//Add/subtract delta = 0.00001 to x,y of a cell centre so the TH2Poly::Fill doesnt have a problem at the edges where the centre of a half-hex cell passes through the sennsor boundary line.
+struct channelInfo{
+  channelInfo(){;}
+  int key;
+  TH1F* h_adcHigh;
+  TH1F* h_adcLow;
+  TH2F* h_high_vs_low;
+};
 
 class RecHitPlotter : public edm::one::EDAnalyzer<edm::one::SharedResources>
 {
-
 public:
-	explicit RecHitPlotter(const edm::ParameterSet&);
-	~RecHitPlotter();
-	static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
-
+  explicit RecHitPlotter(const edm::ParameterSet&);
+  ~RecHitPlotter();
+  static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 private:
-	virtual void beginJob() override;
-	void analyze(const edm::Event& , const edm::EventSetup&) override;
-	virtual void endJob() override;
+  virtual void beginJob() override;
+  virtual void endJob() override;
+  void analyze(const edm::Event& , const edm::EventSetup&) override;
+  void InitTH2Poly(TH2Poly& poly, int det, int layerID);
 
-	// ----------member data ---------------------------
-	edm::EDGetToken HGCalTBRecHitCollection_;
-	HGCalTBTopology IsCellValid;
-	HGCalTBCellVertices TheCell;
-	int sensorsize = 128;// The geometry for a 256 cell sensor hasnt been implemted yet. Need a picture to do this.
-	std::vector<std::pair<double, double>> CellXY;
-	std::pair<double, double> CellCentreXY;
-	std::vector<std::pair<double, double>>::const_iterator it;
-	const static int NLAYERS  = 2;
-	TH2Poly *h_RecHit_layer[NLAYERS];
-	TH1F    *h_RecHit_layer_summed[NLAYERS];
-	TH2Poly *h_RecHit_layer_Occupancy[NLAYERS];
-	const static int cellx = 15;
-	const static int celly = 15;
-	int Sensor_Iu = 0;
-	int Sensor_Iv = 0;
-	TH1F  *h_RecHit_layer_cell[NLAYERS][cellx][celly];
-	char name[50], title[50];
+  std::string m_electronicMap;
+  std::string m_detectorLayoutFile;
+
+  struct {
+    HGCalElectronicsMap emap_;
+    HGCalTBDetectorLayout layout_;
+  } essource_;
+
+  int m_sensorsize;
+  bool m_eventPlotter;
+  int m_evtID;
+  double m_mipThreshold;
+  double m_noiseThreshold;
+
+  TH1F* m_h_mip[4];
+  TH1F* m_h_hgSum;
+  TH1F* m_h_lgSum;
+  TH1F* m_h_enSum;
+  std::map<uint32_t,channelInfo*> m_channelInfoMap;
+
+  edm::EDGetTokenT<HGCalTBRecHitCollection> m_HGCalTBRecHitCollection;
+
+  HGCalTBTopology IsCellValid;
+  HGCalTBCellVertices TheCell;
+  std::vector<std::pair<double, double>> CellXY;
+  std::pair<double, double> CellCentreXY;
 };
 
-//
-// constants, enums and typedefs
-//
-
-//
-// static data member definitions
-//
-
-//
-// constructors and destructor
-//
-RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig)
+RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig) :
+  m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt")),
+  m_detectorLayoutFile(iConfig.getUntrackedParameter<std::string>("DetectorLayout","HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt")),
+  m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
+  m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
+  m_mipThreshold(iConfig.getUntrackedParameter<double>("MipThreshold",200.)),
+  m_noiseThreshold(iConfig.getUntrackedParameter<double>("NoiseThreshold",10.))
 {
-	//now do what ever initialization is needed
-	usesResource("TFileService");
-	edm::Service<TFileService> fs;
-	HGCalTBRecHitCollection_ = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
+  m_HGCalTBRecHitCollection = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
 
-//Booking 2 "hexagonal" histograms to display the sum of Rechits and the Occupancy(Hit > 5 GeV) in 1 sensor in 1 layer. To include all layers soon. Also the 1D Rechits per cell in a sensor is booked here.
-	const int HalfHexVertices = 4;
-	double HalfHexX[HalfHexVertices] = {0.};
-	double HalfHexY[HalfHexVertices] = {0.};
-	const int FullHexVertices = 6;
-	double FullHexX[FullHexVertices] = {0.};
-	double FullHexY[FullHexVertices] = {0.};
-	int iii = 0;
-	for(int nlayers = 0; nlayers < NLAYERS; nlayers++) {
-		sprintf(name, "FullLayer_RecHits_Layer%i", nlayers + 1);
-		sprintf(title, "Sum of RecHits Layer%i", nlayers + 1);
-		h_RecHit_layer[nlayers] = fs->make<TH2Poly>();
-		h_RecHit_layer[nlayers]->SetName(name);
-		h_RecHit_layer[nlayers]->SetTitle(title);
-		sprintf(name, "FullLayer_RecHits_Layer%i_Summed", nlayers + 1);
-		sprintf(title, "Sum of RecHits Layer%i Summed over the cells", nlayers + 1);
-		h_RecHit_layer_summed[nlayers] = fs->make<TH1F>(name, title, 200, -100., 100.);
-		h_RecHit_layer_summed[nlayers]->GetXaxis()->SetTitle("RecHits[GeV]");
-		sprintf(name, "FullLayer_Occupancy_Layer%i", nlayers + 1);
-		sprintf(title, "Sum of Occupancy Layer%i", nlayers + 1);
-		h_RecHit_layer_Occupancy[nlayers] = fs->make<TH2Poly>();
-		h_RecHit_layer_Occupancy[nlayers]->SetName(name);
-		h_RecHit_layer_Occupancy[nlayers]->SetTitle(title);
-		for(int iv = -7; iv < 8; iv++) {
-			for(int iu = -7; iu < 8; iu++) {
-				if(!IsCellValid.iu_iv_valid(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize)) continue;
-//Some thought needs to be put in about the binning and limits of this 1D histogram, probably different for beam type Fermilab and cern.
-				sprintf(name, "Cell_RecHits_u_%i_v_%i_Layer%i", iu, iv, nlayers + 1);
-				sprintf(title, "RecHits for Cell_u_%i_v_%i Layer%i", iu, iv, nlayers + 1);
-				h_RecHit_layer_cell[nlayers][iu + 7][iv + 7] = fs->make<TH1F>(name, title, 200, -100., 100.); // need to finalize binning
-				h_RecHit_layer_cell[nlayers][iu + 7][iv + 7]->GetXaxis()->SetTitle("RecHits[GeV]");
-				CellXY = TheCell.GetCellCoordinatesForPlots(nlayers, Sensor_Iu, Sensor_Iv, iu, iv, sensorsize);
-				int NumberOfCellVertices = CellXY.size();
-				iii = 0;
-				if(NumberOfCellVertices == 4) {
-					for(it = CellXY.begin(); it != CellXY.end(); it++) {
-						HalfHexX[iii] =  it->first;
-						HalfHexY[iii++] =  it->second;
-					}
-//Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
-					h_RecHit_layer[nlayers]->AddBin(NumberOfCellVertices, HalfHexX, HalfHexY);
-					h_RecHit_layer_Occupancy[nlayers]->AddBin(NumberOfCellVertices, HalfHexX, HalfHexY);
-				} else if(NumberOfCellVertices == 6) {
-					iii = 0;
-					for(it = CellXY.begin(); it != CellXY.end(); it++) {
-						FullHexX[iii] =  it->first;
-						FullHexY[iii++] =  it->second;
-					}
-					h_RecHit_layer[nlayers]->AddBin(NumberOfCellVertices, FullHexX, FullHexY);
-					h_RecHit_layer_Occupancy[nlayers]->AddBin(NumberOfCellVertices, FullHexX, FullHexY);
-				}
-
-			}
-		}
-	}//loop over layers end here
-
-
-}//contructor ends here
+  m_evtID=0;
+  
+  std::cout << iConfig.dump() << std::endl;
+}
 
 
 RecHitPlotter::~RecHitPlotter()
 {
 
-	// do anything here that needs to be done at desctruction time
-	// (e.g. close files, deallocate resources etc.)
-
 }
 
-
-//
-// member functions
-//
-
-// ------------ method called for each event  ------------
-void
-RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
+void RecHitPlotter::beginJob()
 {
+  HGCalCondObjectTextIO io(0);
+  edm::FileInPath fip(m_electronicMap);
+  if (!io.load(fip.fullPath(), essource_.emap_)) {
+    throw cms::Exception("Unable to load electronics map");
+  };
+  fip=edm::FileInPath(m_detectorLayoutFile);
+  if (!io.load(fip.fullPath(), essource_.layout_)) {
+    throw cms::Exception("Unable to load detector layout file");
+  };
+  for( auto layer : essource_.layout_.layers() )
+    layer.print();
 
-	using namespace edm;
-	using namespace std;
+  usesResource("TFileService");
+  edm::Service<TFileService> fs;
+  
+  m_h_mip[0]=fs->make<TH1F>("Mip_Ski0","Mip_Ski0",180,20,200);
+  m_h_mip[1]=fs->make<TH1F>("Mip_Ski1","Mip_Ski1",180,20,200);
+  m_h_mip[2]=fs->make<TH1F>("Mip_Ski2","Mip_Ski2",180,20,200);
+  m_h_mip[3]=fs->make<TH1F>("Mip_Ski3","Mip_Ski3",180,20,200);
+  m_h_hgSum=fs->make<TH1F>("HighGainSum","HighGainSum",5000,0,50000);
+  m_h_lgSum=fs->make<TH1F>("LowGainSum","LowGainSum",5000,0,50000);
+  m_h_enSum=fs->make<TH1F>("EnergySum","EnergySum",5000,0,50000);
 
-	edm::Handle<HGCalTBRecHitCollection> Rechits;
-	event.getByToken(HGCalTBRecHitCollection_, Rechits);
-	edm::Handle<HGCalTBRecHitCollection> Rechits1;
-	event.getByToken(HGCalTBRecHitCollection_, Rechits1);
+  std::ostringstream os( std::ostringstream::ate );
+  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+    for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
+      os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
+      TFileDirectory dir = fs->mkdir( os.str().c_str() );
+      for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
+	int skiId=ib*HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+	HGCalTBElectronicsId eid(skiId,ichan);
+	if( !essource_.emap_.existsEId(eid.rawId()) ) continue;
+	HGCalTBDetId detid=essource_.emap_.eid2detId(eid.rawId());
+	channelInfo *chan=new channelInfo();
+	chan->key=detid.layer()*10000+skiId*100+ichan;
+	os.str("");
+	os << "HighGain_Channel" << ichan  ;
+	chan->h_adcHigh=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),3600,-100,3500);
+	os.str("");
+	os << "LowGain_Channel" << ichan ;
+	chan->h_adcLow=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),3600,-100,3500);
+	os.str("");
+	os << "HighGainVsLowGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan;
+	chan->h_high_vs_low=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),360,-100,3500,400,-500,3500);
+	m_channelInfoMap.insert( std::pair<uint32_t,channelInfo*>(chan->key,chan) );
+      }
+    }
+  }
+}
 
-	double Average_Pedestal_Per_Event1_Full = 0;
-	int Cell_counter1_Full = 0;
-	for(auto RecHit1 : *Rechits1) {
-		Average_Pedestal_Per_Event1_Full += RecHit1.energyHigh();
-		Cell_counter1_Full++;
+void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
+{
+  usesResource("TFileService");
+  edm::Service<TFileService> fs;
+
+  edm::Handle<HGCalTBRecHitCollection> hits;
+  event.getByToken(m_HGCalTBRecHitCollection, hits);
+
+  std::map<int,TH2Poly*>  polyMapHG;
+  std::map<int,TH2Poly*>  polyMapLG;
+  if( m_eventPlotter ){
+    std::ostringstream os( std::ostringstream::ate );
+    os << "Event" << event.id().event();
+    TFileDirectory dir = fs->mkdir( os.str().c_str() );
+    for(int il = 0; il<essource_.layout_.nlayers(); il++) {
+      int subdetId = essource_.layout_.at(il).subdet();
+      TH2Poly *h=dir.make<TH2Poly>();
+      os.str("");
+      os<<"HighGain_Layer"<<il;
+      h->SetName(os.str().c_str());
+      h->SetTitle(os.str().c_str());
+      InitTH2Poly(*h, subdetId, il);
+      polyMapHG.insert( std::pair<int,TH2Poly*>(il,h) );
+      h=dir.make<TH2Poly>();
+      os.str("");
+      os<<"LowGain_Layer"<<il;
+      h->SetName(os.str().c_str());
+      h->SetTitle(os.str().c_str());
+      InitTH2Poly(*h, subdetId, il);
+      polyMapLG.insert( std::pair<int,TH2Poly*>(il,h) );
+    }
+  }
+  float energyHighSum(0),energyLowSum(0),energySum(0);
+  for( auto hit : *hits ){
+    HGCalTBElectronicsId eid( essource_.emap_.detId2eid( hit.id().rawId() ) );
+    int iski=(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-(eid.iskiroc()-1)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    int key=hit.id().layer()*10000+eid.iskiroc()*100+eid.ichan();
+    if( m_channelInfoMap.find(key)==m_channelInfoMap.end() )
+      std::cout << "Problem the key is not appearing in the channel map : key,layer-1,iski,channel,skiID = " << key << "\t" << hit.id().layer()-1<< " " << iski << " " << eid.ichan() << " "
+		<< eid.iskiroc() 
+		<< std::endl;
+    if( !hit.isUnderSaturationForHighGain() ) m_channelInfoMap[ key ]->h_adcHigh->Fill( hit.energyHigh() );
+    if( !hit.isUnderSaturationForLowGain() ) m_channelInfoMap[ key ]->h_adcLow->Fill( hit.energyLow() );
+    if( hit.energyHigh()>m_noiseThreshold && !hit.isUnderSaturationForLowGain() && !hit.isUnderSaturationForHighGain() ){
+      m_channelInfoMap[ key ]->h_high_vs_low->Fill( hit.energyLow(), hit.energyHigh() );
+      energyHighSum+=hit.energyHigh();
+      energyLowSum+=hit.energyLow();
+      energySum+=hit.energy();
+      //if( hit.energyHigh()<m_mipThreshold )
+      //	m_h_mip[(4-(eid.iskiroc()-1))%4]->Fill(hit.energyHigh());
+    }
+    if(m_eventPlotter){
+      if(!IsCellValid.iu_iv_valid(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize))  continue;
+      CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize);
+      polyMapHG[ hit.id().layer()-1 ]->Fill(CellCentreXY.first , CellCentreXY.second, hit.energyHigh());
+      polyMapLG[ hit.id().layer()-1 ]->Fill(CellCentreXY.first , CellCentreXY.second, hit.energyLow());
+    }
+  }
+  m_h_hgSum->Fill( energyHighSum );
+  m_h_lgSum->Fill( energyLowSum );
+  m_h_enSum->Fill( energySum );
+}
+
+void RecHitPlotter::InitTH2Poly(TH2Poly& poly, int det, int layerID)
+{
+  double HexX[HGCAL_TB_GEOMETRY::MAXVERTICES] = {0.};
+  double HexY[HGCAL_TB_GEOMETRY::MAXVERTICES] = {0.};
+  if( det==0 ){
+    for(int iv = -7; iv < 8; iv++) {
+      for(int iu = -7; iu < 8; iu++) {
+	if(!IsCellValid.iu_iv_valid(layerID, 0, 0, iu, iv, m_sensorsize)) 
+	  continue;
+	CellXY = TheCell.GetCellCoordinatesForPlots(layerID, 0, 0, iu, iv, m_sensorsize);
+	assert(CellXY.size() == 4 || CellXY.size() == 6);
+	unsigned int iVertex = 0;
+	for(std::vector<std::pair<double, double>>::const_iterator it = CellXY.begin(); it != CellXY.end(); it++) {
+	  HexX[iVertex] =  it->first;
+	  HexY[iVertex] =  it->second;
+	  ++iVertex;
 	}
-
-	for(auto RecHit : *Rechits) {
-		if(!IsCellValid.iu_iv_valid((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize))  continue;
-		int n_layer = (RecHit.id()).layer();
-		int n_cell_type = (RecHit.id()).cellType();
-		double n_cell_area = IsCellValid.Cell_Area(n_cell_type);
-//We now obtain the cartesian coordinates of the cell corresponding to an iu,iv. This may either be a full hex, a half hex or an invalid cell. If a cell is invalid based on the iu,iv index -123456 is returned for its x,y vertices
-		CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots((RecHit.id()).layer(), (RecHit.id()).sensorIU(), (RecHit.id()).sensorIV(), (RecHit.id()).iu(), (RecHit.id()).iv(), sensorsize);
-		double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
-		double iyy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-		h_RecHit_layer[n_layer - 1]->Fill(iux , iyy, RecHit.energyHigh());
-		h_RecHit_layer_summed[n_layer - 1]->Fill(RecHit.energyHigh());
-//The energyHigh threshold for the occupancy has been hardcoded here. Need to decide what a good choice is. Maybe dynamic per cell depending on the pedestal
-		if(RecHit.energyHigh() > 5) h_RecHit_layer_Occupancy[n_layer - 1]->Fill(iux , iyy, 1. / n_cell_area);
-// There will be several array indices iu, iv that wont be filled due to it being invalid. Can think of alternate array filling.
-		h_RecHit_layer_cell[n_layer - 1][7 + (RecHit.id()).iu()][7 + (RecHit.id()).iv()]->Fill(RecHit.energyHigh() - Average_Pedestal_Per_Event1_Full / Cell_counter1_Full);
-	}
-
-
-}//analyze method ends here
-
-
-// ------------ method called once each job just before starting event loop  ------------
-void
-RecHitPlotter::beginJob()
-{
-
+	//Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
+	poly.AddBin(CellXY.size(), HexX, HexY);
+      }//loop over iu
+    }//loop over iv
+  }
+  else if( det==1 ){
+    for(int sensorIV = -1; sensorIV <= 1; sensorIV++){
+      for(int sensorIU = -1; sensorIU <= 1; sensorIU++){
+	for(int iv = -7; iv < 8; iv++) {
+	  for(int iu = -7; iu < 8; iu++) {
+	    if(!IsCellValid.iu_iv_valid(layerID, sensorIU, sensorIV, iu, iv, m_sensorsize)) 
+	      continue;
+	    CellXY = TheCell.GetCellCoordinatesForPlots(layerID, sensorIU, sensorIV, iu, iv, m_sensorsize);
+	    assert(CellXY.size() == 4 || CellXY.size() == 6);
+	    unsigned int iVertex = 0;
+	    for(std::vector<std::pair<double, double>>::const_iterator it = CellXY.begin(); it != CellXY.end(); it++) {
+	      HexX[iVertex] =  it->first;
+	      HexY[iVertex] =  it->second;
+	      ++iVertex;
+	    }
+	    //Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
+	    poly.AddBin(CellXY.size(), HexX, HexY);
+	  }//loop over iu
+	}//loop over iv
+      }
+    }// loop over Sensor_Iu ends here
+  }// loop over Sensor_Iv ends here
 }
 
-// ------------ method called once each job just after ending the event loop  ------------
-void
-RecHitPlotter::endJob()
+void RecHitPlotter::endJob()
 {
 }
 
-// ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
-void
-RecHitPlotter::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
+void RecHitPlotter::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
 {
-	//The following says we do not know what parameters are allowed so do no validation
-	// Please change this to state exactly what you do use, even if it is no parameters
-	edm::ParameterSetDescription desc;
-	desc.setUnknown();
-	descriptions.addDefault(desc);
+  edm::ParameterSetDescription desc;
+  desc.setUnknown();
+  descriptions.addDefault(desc);
 }
 
-//define this as a plug-in
 DEFINE_FWK_MODULE(RecHitPlotter);
