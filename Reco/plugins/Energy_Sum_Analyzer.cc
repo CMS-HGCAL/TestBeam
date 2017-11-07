@@ -433,7 +433,9 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	h_energyE19_tot->Fill(energyE19_tot);
 
 	for (int l=0; l<nLayers; l++) {
-		if (cellIDToFocusOn==-1 || (cellID_mostIntense_layer[l] % 1000) != 236) continue;
+		
+		if (cellIDToFocusOn!=-1 && (cellID_mostIntense_layer[l] % 1000) != cellIDToFocusOn) continue;
+
 		h_energyAll_layer[l]->Fill(energyAll_layer[l]);
 		h_energyE1_layer[l]->Fill(energyE1_layer[l]);
 		h_energyE7_layer[l]->Fill(energyE7_layer[l]);
