@@ -128,7 +128,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     if( !essource_.emap_.existsEId(eid) ) continue;
     int iski=rawhit.skiroc();
     int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-    int ichannel=rawhit.channel();
+    int ichannel=eid.ichan();
     int key = iboard * 10000 + (iski % 4) * 100 + ichannel;
 
     if( !essource_.emap_.existsEId(eid.rawId()) || std::find(m_noisyChannels.begin(),m_noisyChannels.end(),eid.rawId())!=m_noisyChannels.end() )
@@ -308,11 +308,6 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     recHit.setEnergy(energy);
     recHit.setTime(time);
     
-    //channel information
-    recHit.setBoard(iboard);
-    recHit.setSkiroc(iski);
-    recHit.setChannel(ichannel);
-
     HGCalTBDetId detid = rawhit.detid();
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), SENSORSIZE );
     double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA);

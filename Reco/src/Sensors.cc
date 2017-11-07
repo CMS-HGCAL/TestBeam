@@ -92,6 +92,10 @@ double SensorHitMap::getX0() {
 //reduces the information from the Rechit towards what is necessary for the impact point calculation
 //here all hits independent from the cellType are included
 void SensorHitMap::addHit(HGCalTBRecHit Rechit, double ADC_per_MIP) {
+  addHit(Rechit, ADC_per_MIP, -1);
+}
+
+void SensorHitMap::addHit(HGCalTBRecHit Rechit, double ADC_per_MIP, int geoID) {
   int uniqueID = (Rechit.id()).rawId();
 
   CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), 128);
@@ -99,7 +103,6 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit, double ADC_per_MIP) {
   double ivy = Rechit.getCellCenterCartesianCoordinate(1) * 10.;   //conversion to mm
 
   int cellType = (Rechit.id()).cellType();
-  int geoID = 1000*Rechit.board() + 100*(Rechit.skiroc() % 4) + Rechit.channel();
 
   if (filterByCellType(cellType)) return; //returns false so far
 

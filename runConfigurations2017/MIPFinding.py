@@ -25,6 +25,12 @@ options.register('pathsToMIPWindowFiles',
                  'Paths to the file containing the corresponding cuts on the reconstructed impact positions on DWC E.'
                 )
 
+options.register('electronicMap',
+                 'map_CERN_Hexaboard_July_6Layers.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Name of the electronic map file in HGCal/CondObjects/data/')
+
 options.register('NHexaBoards',
                 10,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -66,6 +72,8 @@ options.parseArguments()
 print options
 
 
+electronicMap="HGCal/CondObjects/data/%s" % options.electronicMap
+
 ################################
 process = cms.Process("mipfindinganalysis")
 process.maxEvents = cms.untracked.PSet(
@@ -89,6 +97,7 @@ process.mipfindinganalysis = cms.EDAnalyzer("MIPFinder",
                                 MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
                                 DWCTRACKS = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" ), 
                                 HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
+                                ElectronicMap = cms.untracked.string(electronicMap),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                 n_bins_DWCE = cms.int32(options.NBins),
                                 max_dim_x_DUT = cms.double(options.DimXDUT),

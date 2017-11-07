@@ -153,6 +153,7 @@ class SensorHitMap {
     void setPedestalThreshold(double t);
     //reduces the information from the Rechit towards what is necessary for the impact point calculation
     void addHit(HGCalTBRecHit Rechit, double ADC_per_MIP);
+    void addHit(HGCalTBRecHit Rechit, double ADC_per_MIP, int geoID);
     void registerClusterHit(HGCalTBDetId hit, int N_considered);
     std::pair<int, double> subtractCM();  //returns the sum of Common mode noise and the number of cells that enter the calculation
     void calculateCenterPosition(ConsiderationMethod considerationMethod, WeightingMethod weightingMethod);

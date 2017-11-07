@@ -70,6 +70,11 @@ class MIPFinder : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		edm::EDGetTokenT<WireChambers> DWCToken;		
 		edm::EDGetTokenT<HGCalTBDWCTrack> DWCTrackToken;		
 
+		std::string m_electronicMap;
+		struct {
+			HGCalElectronicsMap emap_;
+		} essource_;
+
 		int m_NHexaBoards;
 
 		std::vector<std::string> pathsToMIPWindowFiles;
@@ -102,6 +107,8 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
 	DWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
 	DWCTrackToken= consumes<HGCalTBDWCTrack>(iConfig.getParameter<edm::InputTag>("DWCTRACKS"));
+	
+	m_electronicMap = iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt");
 	m_NHexaBoards= iConfig.getUntrackedParameter<int>("NHexaBoards", 10);
 
 	//read the configuration
@@ -277,11 +284,12 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	
 	//fill the rechits:
 	for(auto Rechit : *Rechits) {	
-		int board = Rechit.board();
 		int layer = (Rechit.id()).layer();
 
-		int skiroc = Rechit.skiroc() % 4;
-		int channel = Rechit.channel();
+		HGCalTBElectronicsId eid( essource_.emap_.detId2eid( Rechit.id().rawId() ) );
+		int skiroc = (eid.iskiroc()-1) % 4;
+		int board = (eid.iskiroc()-1) / 4;
+		int channel = eid.ichan();
   		int key = board*1000+skiroc*100+channel;
   		double energyHG = Rechit.energyHigh();
 		
@@ -294,9 +302,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 		#endif
 
 		h_DUT_occupancy[key]->Fill(DUT_x, DUT_y);
-
-
-
+		
   		m_h_rechitEnergyPerDUT[key]->Fill(DUT_x, DUT_y, energyHG);
   		m_h_rechitEnergy[key]->Fill(energyHG);
 
@@ -326,6 +332,11 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 
 void MIPFinder::beginJob() {	
 	ReadDWCWindows(0);
+	HGCalCondObjectTextIO io(0);
+	edm::FileInPath fip(m_electronicMap);
+	if (!io.load(fip.fullPath(), essource_.emap_)) {
+		throw cms::Exception("Unable to load electronics map");
+	};
 }
 
 void MIPFinder::endJob() {

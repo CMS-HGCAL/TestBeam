@@ -18,6 +18,12 @@ options.register('outputFile',
                  VarParsing.VarParsing.varType.string,
                  'Output folder where analysis output are stored')
 
+options.register('electronicMap',
+                 'map_CERN_Hexaboard_July_6Layers.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Name of the electronic map file in HGCal/CondObjects/data/')
+
 options.register('reportEvery',
                 1000,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -49,6 +55,7 @@ options.maxEvents = -1
 options.parseArguments()
 print options
 
+electronicMap="HGCal/CondObjects/data/%s" % options.electronicMap
 
 
 ################################
@@ -87,6 +94,7 @@ else:
 
 ####################################
 process.energy_sum_analyzer = cms.EDAnalyzer("Energy_Sum_Analyzer",
+                                ElectronicMap = cms.untracked.string(electronicMap),
                                 ADC_per_MIP = cms.vdouble([49.3]*20*4),
                                 nLayers = cms.int32(nLayers),
                                 SensorSize = cms.int32(133),

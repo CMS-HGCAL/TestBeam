@@ -44,9 +44,6 @@
 #include "TFile.h"
 #include "TTree.h"
   
-//configuration1 based on Shilpis plot from 26.07.17: 
-//https://indico.cern.ch/event/656159/contributions/2674177/attachments/1499439/2334623/update_simulation_geom.pdf
-// 2 layers in EE (first one in the graphics was removed) and 4 in FH, indications are in mm
 
 #define MAXVERTICES 6
 //#define DEBUG
@@ -71,7 +68,11 @@ class Energy_Sum_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResource
 		edm::EDGetTokenT<RunData> RunDataToken;	
 		edm::EDGetTokenT<WireChambers> MWCToken;
 		
-				
+		std::string m_electronicMap;
+		struct {
+			HGCalElectronicsMap emap_;
+		} essource_;
+			
 		std::vector<double> ADC_per_MIP;		//one value per skiroc
 		int SensorSize;
 		int nLayers;
@@ -138,6 +139,8 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
 
+	m_electronicMap = iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt");
+
 	eventCounter = 0;
 
 	SensorSize = iConfig.getParameter<int>("SensorSize");
@@ -150,22 +153,22 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 
 	os.str("");
 	os << "EnergyAll";
-	h_energyAll_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 2500.*nLayers/6);
+	h_energyAll_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 3500.*nLayers/6);
 	h_energyAll_tot->SetName(os.str().c_str());
 	h_energyAll_tot->SetTitle(os.str().c_str());
 	os.str("");
 	os << "EnergyE1";
-	h_energyE1_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 1000.*nLayers/6);
+	h_energyE1_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 1500.*nLayers/6);
 	h_energyE1_tot->SetName(os.str().c_str());
 	h_energyE1_tot->SetTitle(os.str().c_str());
 	os.str("");
 	os << "EnergyE7";
-	h_energyE7_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 2000.*nLayers/6);
+	h_energyE7_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 2500.*nLayers/6);
 	h_energyE7_tot->SetName(os.str().c_str());
 	h_energyE7_tot->SetTitle(os.str().c_str());
 	os.str("");
 	os << "EnergyE19";
-	h_energyE19_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 2500.*nLayers/6);
+	h_energyE19_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 3500.*nLayers/6);
 	h_energyE19_tot->SetName(os.str().c_str());
 	h_energyE19_tot->SetTitle(os.str().c_str());
 
@@ -343,14 +346,17 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	//fill the rechits:
 	for(auto Rechit : *Rechits) {	
 		int layer = (Rechit.id()).layer();
-		int skiroc = Rechit.skiroc();
+		HGCalTBElectronicsId eid( essource_.emap_.detId2eid( Rechit.id().rawId() ) );
+		int skiroc = (eid.iskiroc()-1);
+		int channel = eid.ichan();
+  		int geoID = (skiroc/4)*1000+(skiroc%4)*100+channel;
 		if ( Sensors.find(layer) == Sensors.end() ) {
 			Sensors[layer] = new SensorHitMap(layer);
 			Sensors[layer]->setSensorSize(SensorSize);
 		}
 
 		if (Rechit.energyHigh() > MIP_cut*ADC_per_MIP[skiroc])	{//only add if energy is higher than the MIP cut
-			Sensors[layer]->addHit(Rechit, ADC_per_MIP[skiroc]);		//without MIP calibration
+			Sensors[layer]->addHit(Rechit, ADC_per_MIP[skiroc], geoID);		//without MIP calibration
 		}
 	}
 
@@ -462,7 +468,8 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 		int layer = (Rechit.id()).layer();
 		double iux = Rechit.getCellCenterCartesianCoordinate(0);
 		double ivy = Rechit.getCellCenterCartesianCoordinate(1);
-		int skiroc = Rechit.skiroc()+(layer-1)*4;  
+		HGCalTBElectronicsId eid( essource_.emap_.detId2eid( Rechit.id().rawId() ) );
+		int skiroc = eid.iskiroc();
 
 		if ((cellID_mostIntense_layer[layer-1] % 1000) != 236) continue;
 		if (Rechit.energyHigh() <= MIP_cut*ADC_per_MIP[skiroc]) continue;
@@ -486,6 +493,11 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 }// analyze ends here
 
 void Energy_Sum_Analyzer::beginJob() {	
+  HGCalCondObjectTextIO io(0);
+  edm::FileInPath fip(m_electronicMap);
+  if (!io.load(fip.fullPath(), essource_.emap_)) {
+    throw cms::Exception("Unable to load electronics map");
+  };
 }
 
 void Energy_Sum_Analyzer::endJob() {

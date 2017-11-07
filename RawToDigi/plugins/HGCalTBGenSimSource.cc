@@ -300,11 +300,7 @@ void HGCalTBGenSimSource::makeRecHit(int layer, int cellno, double energy, std::
 
 		int skiRocIndex = (eid.iskiroc() - 1) > 0 ? eid.iskiroc() - 1 : 0;
 		skiRocIndex = skiRocIndex % HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;		
-		int channelIndex = eid.ichan();
-
-	    recHit.setBoard(layer);
-	    recHit.setSkiroc(skiRocIndex);
-	    recHit.setChannel(channelIndex);
+	
 	    recHit.setTime(-1);
 		recHit.setCellCenterCoordinate(x, y);
 	 	
