@@ -70,7 +70,7 @@ options.register('reportEvery',
                  '.'
                 )
 
-options.maxEvents = 500
+options.maxEvents = -1
 
 options.parseArguments()
 print options

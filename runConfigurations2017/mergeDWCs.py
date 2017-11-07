@@ -25,6 +25,12 @@ options.register('processedFile',
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
 
+options.register('layerPositionFile',
+                 'layer_distances_CERN_Hexaboard_July_6Layers.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'File indicating the layer positions in mm.')
+
 options.register('reportEvery',
                 10000,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -73,11 +79,12 @@ process.wirechamberproducer.OutputCollectionName = cms.string("DelayWireChambers
 process.wirechamberproducer.RUNDATA = cms.InputTag("source","RunData")
 process.wirechamberproducer.inputFile = cms.string(options.DWCFile)
 
+
 process.dwctrackproducer = cms.EDProducer("DWCTrackProducer",
                                         MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
-                                        OutputCollectionName=cms.string("HGCalTBDWCTracks")
+                                        OutputCollectionName=cms.string("HGCalTBDWCTracks"),
+                                        layerPositionFile=cms.string(options.layerPositionFile)
 )
-
 process.p = cms.Path( process.wirechamberproducer*process.dwctrackproducer )
 
 

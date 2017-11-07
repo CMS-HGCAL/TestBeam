@@ -45,6 +45,9 @@ class DWCTrackProducer : public edm::EDProducer {
 
 		edm::EDGetTokenT<WireChambers> MWCToken;
 		std::string m_outputTrackName;
+		std::string m_layerPositionFile;
+
+		std::map<int, double> layerPositions;
 
 		std::map<int, SensorHitMap*> Sensors;
 		ParticleTrack* DWCParticleTrack;
@@ -54,8 +57,28 @@ DWCTrackProducer::DWCTrackProducer(const edm::ParameterSet& iConfig) {
 	
 	MWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
 	m_outputTrackName = iConfig.getParameter<std::string>("OutputCollectionName");
+	m_layerPositionFile = iConfig.getParameter<std::string>("layerPositionFile");
 
 	produces <HGCalTBDWCTrack>(m_outputTrackName);
+
+
+	std::fstream file; 
+	char fragment[100];
+	int readCounter = -1;
+
+	file.open(m_layerPositionFile.c_str(), std::fstream::in);
+
+	std::cout<<"Reading file "<<m_layerPositionFile<<" -open: "<<file.is_open()<<std::endl;
+	int layer=0;
+	while (file.is_open() && !file.eof()) {
+		readCounter++;
+		file >> fragment;
+		if (readCounter==0) layer=atoi(fragment);
+		if (readCounter==1) {
+			layerPositions[layer]=atof(fragment)/10.;		//values are given in mm and should be converted into cm
+			readCounter=-1;
+		}
+	}
 
 }//constructor ends here
 
@@ -94,30 +117,39 @@ void DWCTrackProducer::produce(edm::Event& event, const edm::EventSetup& setup) 
 
 	}
 
-	std::auto_ptr<HGCalTBDWCTrack> DWCTrack(new HGCalTBDWCTrack);
+	std::auto_ptr<HGCalTBDWCTrack> dwcTrack(new HGCalTBDWCTrack);
 
 	if (NgoodDWCs>=2) {
-		DWCTrack->valid = true;
+		dwcTrack->valid = true;
 
 		DWCParticleTrack->fitTrack(LINEFITANALYTICAL);
 		#ifdef DEBUG
 			std::cout<<"DWC reference type: "<<DWCReferenceType<<std::endl;
 		#endif
 
-		DWCTrack->b_x = DWCParticleTrack->calculatePositionXY(0., 0).first;
-		DWCTrack->b_y = DWCParticleTrack->calculatePositionXY(0., 0).second;
-		DWCTrack->m_x = DWCParticleTrack->calculatePositionXY(1., 0).first - DWCTrack->b_x;
-		DWCTrack->m_y = DWCParticleTrack->calculatePositionXY(1., 0).second - DWCTrack->b_y;
+		dwcTrack->b_x = DWCParticleTrack->calculatePositionXY(0., 0).first;
+		dwcTrack->b_y = DWCParticleTrack->calculatePositionXY(0., 0).second;
+		dwcTrack->m_x = DWCParticleTrack->calculatePositionXY(1., 0).first - dwcTrack->b_x;
+		dwcTrack->m_y = DWCParticleTrack->calculatePositionXY(1., 0).second - dwcTrack->b_y;
 
-	    DWCTrack->referenceType = DWCReferenceType;
-	    DWCTrack->N_points = NgoodDWCs;
-		DWCTrack->chi2_x = DWCParticleTrack->getChi2(1);
-		DWCTrack->chi2_y = DWCParticleTrack->getChi2(2);
-	    		
+	    dwcTrack->referenceType = DWCReferenceType;
+	    dwcTrack->N_points = NgoodDWCs;
+		dwcTrack->chi2_x = DWCParticleTrack->getChi2(1);
+		dwcTrack->chi2_y = DWCParticleTrack->getChi2(2);
+
+		for (std::map<int, double>::iterator layerIt=layerPositions.begin(); layerIt!=layerPositions.end(); layerIt++) {	
+			dwcTrack->addLayerPosition(layerIt->first, layerIt->second);
+			#ifdef DEBUG
+				std::cout<<"bx = "<<dwcTrack->b_x<<"  mx= "<<dwcTrack->m_x<<"      "<<"by = "<<dwcTrack->b_y<<"  my= "<<dwcTrack->m_y<<std::endl;
+				std::cout<<"Layer: "<<layerIt->first<<"   at z = "<<layerIt->second<<std::endl;
+				std::cout<<"With position: "<<dwcTrack->DWCExtrapolation_XY(layerIt->first).first<<"  vs.  "<<dwcTrack->DWCExtrapolation_XY(layerIt->first).second<<std::endl;
+			#endif
+		}
+
 	} else {
-		DWCTrack->valid = false;
+		dwcTrack->valid = false;
 	}
-	event.put(DWCTrack, m_outputTrackName);
+	event.put(dwcTrack, m_outputTrackName);
 
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		delete (*it).second;

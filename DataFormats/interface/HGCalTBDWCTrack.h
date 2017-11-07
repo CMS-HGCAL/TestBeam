@@ -18,6 +18,12 @@ class HGCalTBDWCTrack {    //simple straight lines
     double chi2_x;
     double chi2_y;
 
+    std::map<int, std::pair<double, double> > layerPositions;
+
+    void addLayerPosition(int l, double z) {
+        layerPositions[l] = DWCExtrapolation_XY(z);
+    }
+
     std::pair<double, double> DWCExtrapolation_XY(double z) const{
       return std::make_pair(b_x+z*m_x, b_y+z*m_y);
     }
@@ -25,6 +31,13 @@ class HGCalTBDWCTrack {    //simple straight lines
     int NDWCTrackPoints() const {
       return N_points;
     }
+
+    std::pair<double, double> DWCExtrapolation_XY(int l) const{
+        if (layerPositions.find(l) != layerPositions.end())
+            return layerPositions.at(l);
+        else
+            return std::make_pair(-999., -999.); 
+    }    
 };
 
 
