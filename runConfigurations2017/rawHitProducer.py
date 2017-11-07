@@ -31,6 +31,12 @@ options.register('electronicMap',
                  VarParsing.VarParsing.varType.string,
                  'Name of the electronic map file in HGCal/CondObjects/data/')
 
+options.register('hgcalLayout',
+                 'layerGeom_oct2017_h2_17layers.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Name of the hgcal layout file in HGCal/CondObjects/data/')
+
 options.register('NHexaBoards',
                 10,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -84,6 +90,8 @@ print options
 
 
 electronicMap="HGCal/CondObjects/data/%s" % options.electronicMap
+hgcalLayout="HGCal/CondObjects/data/%s" % options.hgcalLayout
+
 
 ################################
 process = cms.Process("rawhitproducer")
@@ -133,6 +141,7 @@ process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
                                        ElectronicMap=cms.untracked.string(electronicMap),
                                        NHexaBoards=cms.untracked.int32(options.NHexaBoards),
+                                       DetectorLayout=cms.untracked.string(hgcalLayout),
                                        SensorSize=cms.untracked.int32(128),
                                        EventPlotter=cms.untracked.bool(False),
                                        SubtractCommonMode=cms.untracked.bool(True)

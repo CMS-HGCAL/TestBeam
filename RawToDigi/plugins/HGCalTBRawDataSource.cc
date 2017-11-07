@@ -260,8 +260,7 @@ void HGCalTBRawDataSource::readTimeStampFromRAW()
 void HGCalTBRawDataSource::produce(edm::Event & e)
 {
   std::auto_ptr<HGCalTBSkiroc2CMSCollection> skirocs(new HGCalTBSkiroc2CMSCollection);
-  
-  
+
   for( size_t iski=0; iski<m_decodedData.size(); iski++){
     std::vector<HGCalTBDetId> detids;
     for (size_t ichan = 0; ichan < HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++) {

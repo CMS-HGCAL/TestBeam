@@ -31,7 +31,15 @@ print options
 if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
 
-electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
+#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
+#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_September_17Sensors_7EELayers_10FHLayers_V0.txt" # end of september
+#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_October_17Sensors_5EELayers_6FHLayers_V0.txt" # october 18-22, 1st conf
+electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_October_20Sensors_5EELayers_7FHLayers_V0.txt" # october 18-22, 2nd conf
+
+#hgcalLayout="HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt"
+#hgcalLayout="HGCal/CondObjects/data/layerGeom_oct2017_h6_17layers.txt"
+hgcalLayout="HGCal/CondObjects/data/layerGeom_oct2017_h6_20layers.txt"
+
 pedestalHighGain="pedestalHG_"+str(options.runNumber)+".txt"
 pedestalLowGain="pedestalLG_"+str(options.runNumber)+".txt"
 noisyChannels="noisyChannels_"+str(options.runNumber)+".txt"
@@ -63,7 +71,7 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
                                         ElectronicMap=cms.untracked.string(electronicMap),
                                         SubtractPedestal=cms.untracked.bool(True),
-                                        MaskNoisyChannels=cms.untracked.bool(False),
+                                        MaskNoisyChannels=cms.untracked.bool(True),
                                         HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
                                         LowGainPedestalFileName=cms.untracked.string(pedestalLowGain),
                                         ChannelsToMaskFileName=cms.untracked.string(noisyChannels)
@@ -72,8 +80,9 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
 process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
                                        ElectronicMap=cms.untracked.string(electronicMap),
+                                       DetectorLayout=cms.untracked.string(hgcalLayout),
                                        SensorSize=cms.untracked.int32(128),
-                                       EventPlotter=cms.untracked.bool(True),
+                                       EventPlotter=cms.untracked.bool(False),
                                        SubtractCommonMode=cms.untracked.bool(True)
 )
 

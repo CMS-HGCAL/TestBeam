@@ -127,8 +127,11 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   }
   
   for( size_t iski=0; iski<skirocs->size(); iski++ ){
+    HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
+    if( !skiroc.check() )
+      continue;
+    std::vector<int> rollpositions=skiroc.rollPositions();
     for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
-      HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
       int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
       int iskiroc=iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
       int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*iboard+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iskiroc)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
@@ -138,7 +141,6 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       unsigned int rawid=skiroc.detid(ichan).rawId();
       std::vector<float> adchigh(NUMBER_OF_SCA,0);
       std::vector<float> adclow(NUMBER_OF_SCA,0);
-      std::vector<int> rollpositions=skiroc.rollPositions();
       bool hgSat(false),lgSat(false);
       for( int it=0; it<NUMBER_OF_SCA; it++ ){
 	if( it>=m_minTimeSampleForSaturation && it<=m_maxTimeSampleForSaturation && skiroc.ADCHigh(ichan,it)==m_underSaturationADC ) hgSat=true;

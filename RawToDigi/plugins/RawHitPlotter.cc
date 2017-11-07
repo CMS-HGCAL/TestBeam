@@ -20,6 +20,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
+#include "HGCal/CondObjects/interface/HGCalTBDetectorLayout.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
@@ -64,12 +65,14 @@ private:
   virtual void beginJob() override;
   void analyze(const edm::Event& , const edm::EventSetup&) override;
   virtual void endJob() override;
-  void InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV);
+  void InitTH2Poly(TH2Poly& poly, int det, int layerID);//detector=0 for ee, =1 for fh
 
   std::string m_electronicMap;
+  std::string m_detectorLayoutFile;
 
   struct {
     HGCalElectronicsMap emap_;
+    HGCalTBDetectorLayout layout_;
   } essource_;
 
   int m_NHexaBoards;
@@ -117,6 +120,7 @@ private:
 
 RawHitPlotter::RawHitPlotter(const edm::ParameterSet& iConfig) :
   m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
+  m_detectorLayoutFile(iConfig.getUntrackedParameter<std::string>("DetectorLayout","HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt")),
   m_NHexaBoards(iConfig.getUntrackedParameter<int>("NHexaBoards", 10)), 
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
   m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
@@ -142,38 +146,42 @@ void RawHitPlotter::beginJob()
   if (!io.load(fip.fullPath(), essource_.emap_)) {
     throw cms::Exception("Unable to load electronics map");
   };
-
+  fip=edm::FileInPath(m_detectorLayoutFile);
+  if (!io.load(fip.fullPath(), essource_.layout_)) {
+    throw cms::Exception("Unable to load detector layout file");
+  };
+  for( auto layer : essource_.layout_.layers() )
+    layer.print();
   usesResource("TFileService");
   edm::Service<TFileService> fs;
 
   std::ostringstream os( std::ostringstream::ate );
   TH1F* htmp1;
   TH2F* htmp2;
-  for(int ib = 0; ib<m_NHexaBoards; ib++) {
+  for(size_t ib = 0; ib<(size_t)m_NHexaBoards; ib++) {
     for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){ 
       os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
       TFileDirectory dir = fs->mkdir( os.str().c_str() );
       TFileDirectory adcdir = dir.mkdir( "ADC" );
       int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*ib+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
       for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
-  HGCalTBElectronicsId eid(skiId,ichan);      
-  if( !essource_.emap_.existsEId(eid) ) continue;
-  int key=ib*1000+iski*100+ichan;
-  channelInfo *cif=new channelInfo();
-  cif->key=key;
-  cif->init();
-  for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-    os.str("");
-    os << "HighGain_Channel" << ichan << "_TS" << it ;
-    htmp1=adcdir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
-    cif->h_adcHigh[it]=htmp1;
-
-    os.str("");
-    os << "LowGain_Channel" << ichan << "_TS" << it ;
-    htmp1=adcdir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
-    cif->h_adcLow[it]=htmp1;
-  }
-  m_channelMap.insert( std::pair<int,channelInfo*>(key,cif) );
+        HGCalTBElectronicsId eid(skiId,ichan);      
+        if( !essource_.emap_.existsEId(eid) ) continue;
+        int key=ib*1000+iski*100+ichan;
+        channelInfo *cif=new channelInfo();
+        cif->key=key;
+        cif->init();
+        for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+          os.str("");
+          os << "HighGain_Channel" << ichan << "_TS" << it ;
+          htmp1=adcdir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
+          cif->h_adcHigh[it]=htmp1;
+          os.str("");
+          os << "LowGain_Channel" << ichan << "_TS" << it ;
+          htmp1=adcdir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
+          cif->h_adcLow[it]=htmp1;
+        }
+        m_channelMap.insert( std::pair<int,channelInfo*>(key,cif) );
       }
       TFileDirectory cmdir = dir.mkdir( "CommonMode" );
       htmp2=cmdir.make<TH2F>("HighGain_RatiosVsTS","HighGain_RatiosVsTS",12,-0.5,11.5,1000,-10,10);
@@ -233,6 +241,8 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     std::ostringstream os( std::ostringstream::ate );
     os << "Event" << event.id().event();
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
+/*
+<<<<<<< HEAD
     int Board_IU = 0;
     int Board_IV = 0; 
     int Board_Layer = 0;
@@ -258,6 +268,19 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   h->SetTitle(os.str().c_str());
   InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
   polyMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
+=======
+*/
+    for(int il = 0; il<essource_.layout_.nlayers(); il++) {
+      int subdetId = essource_.layout_.at(il).subdet();
+      for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+  	TH2Poly *h=dir.make<TH2Poly>();
+  	os.str("");
+  	os<<"Layer"<<il<<"_TimeSample"<<it;
+  	h->SetName(os.str().c_str());
+  	h->SetTitle(os.str().c_str());
+	InitTH2Poly(*h, subdetId, il);
+  	polyMap.insert( std::pair<int,TH2Poly*>(100*il+it,h) );
+//>>>>>>> 678f32b636e3f6169af4ec57bccd3a87d9e12a9a
       }
     }
   }
@@ -305,15 +328,19 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       float highGain,lowGain;
       if( m_subtractCommonMode ){
-    float subHG(0),subLG(0);
-    switch ( hit.detid().cellType() ){
-    case 0 : subHG=cmMap[iski].fullHG[it]; subLG=cmMap[iski].fullLG[it]; break;
-    case 2 : subHG=cmMap[iski].halfHG[it]; subLG=cmMap[iski].halfLG[it]; break;
-    case 3 : subHG=cmMap[iski].mouseBiteHG[it]; subLG=cmMap[iski].mouseBiteLG[it]; break;
-    case 4 : subHG=cmMap[iski].outerHG[it]; subLG=cmMap[iski].outerLG[it]; break;
-    }
-    highGain=hit.highGainADC(it)-subHG;
-    lowGain=hit.lowGainADC(it)-subLG;
+
+    	iski = eid.iskiroc();
+    	float subHG(0),subLG(0);
+    	switch ( hit.detid().cellType() ){
+    	case 0 : subHG=cmMap[iski].fullHG[it]; subLG=cmMap[iski].fullLG[it]; break;
+    	case 2 : subHG=cmMap[iski].halfHG[it]; subLG=cmMap[iski].halfLG[it]; break;
+    	case 3 : subHG=cmMap[iski].mouseBiteHG[it]; subLG=cmMap[iski].mouseBiteLG[it]; break;
+    	case 4 : subHG=cmMap[iski].outerHG[it]; subLG=cmMap[iski].outerLG[it]; break;
+     	case 5 : subHG=cmMap[iski].mergedHG[it]; subLG=cmMap[iski].mergedLG[it]; break;
+    	}
+    	highGain=hit.highGainADC(it)-subHG;
+    	lowGain=hit.lowGainADC(it)-subLG;
+
       }
       else{
     highGain=hit.highGainADC(it);
@@ -334,7 +361,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       }
       if(!m_eventPlotter||!IsCellValid.iu_iv_valid(hit.detid().layer(),hit.detid().sensorIU(),hit.detid().sensorIV(),hit.detid().iu(),hit.detid().iv(),m_sensorsize))  continue;
       CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.detid().layer(),hit.detid().sensorIU(),hit.detid().sensorIV(),hit.detid().iu(),hit.detid().iv(),m_sensorsize);
-      polyMap[ 100*iboard+it ]->Fill(CellCentreXY.first , CellCentreXY.second, highGain);
+      polyMap[ 100*(hit.detid().layer()-1)+it ]->Fill(CellCentreXY.first , CellCentreXY.second, highGain);
     }
   }
   int ntot=0;
@@ -370,25 +397,50 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   m_h_FullQuality->Fill(fullq);
 }
 
-void RawHitPlotter::InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV)
+void RawHitPlotter::InitTH2Poly(TH2Poly& poly, int det, int layerID)
 {
   double HexX[MAXVERTICES] = {0.};
   double HexY[MAXVERTICES] = {0.};
-  for(int iv = -7; iv < 8; iv++) {
-    for(int iu = -7; iu < 8; iu++) {
-      if(!IsCellValid.iu_iv_valid(layerID, sensorIU, sensorIV, iu, iv, m_sensorsize)) continue;
-      CellXY = TheCell.GetCellCoordinatesForPlots(layerID, sensorIU, sensorIV, iu, iv, m_sensorsize);
-      assert(CellXY.size() == 4 || CellXY.size() == 6);
-      unsigned int iVertex = 0;
-      for(std::vector<std::pair<double, double>>::const_iterator it = CellXY.begin(); it != CellXY.end(); it++) {
-  HexX[iVertex] =  it->first;
-  HexY[iVertex] =  it->second;
-  ++iVertex;
+  if( det==0 ){
+    for(int iv = -7; iv < 8; iv++) {
+      for(int iu = -7; iu < 8; iu++) {
+	if(!IsCellValid.iu_iv_valid(layerID, 0, 0, iu, iv, m_sensorsize)) 
+	  continue;
+	CellXY = TheCell.GetCellCoordinatesForPlots(layerID, 0, 0, iu, iv, m_sensorsize);
+	assert(CellXY.size() == 4 || CellXY.size() == 6);
+	unsigned int iVertex = 0;
+	for(std::vector<std::pair<double, double>>::const_iterator it = CellXY.begin(); it != CellXY.end(); it++) {
+	  HexX[iVertex] =  it->first;
+	  HexY[iVertex] =  it->second;
+	  ++iVertex;
+	}
+	//Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
+	poly.AddBin(CellXY.size(), HexX, HexY);
+      }//loop over iu
+    }//loop over iv
+  }
+  else if( det==1 ){
+    for(int sensorIV = -1; sensorIV <= 1; sensorIV++){
+      for(int sensorIU = -1; sensorIU <= 1; sensorIU++){
+	for(int iv = -7; iv < 8; iv++) {
+	  for(int iu = -7; iu < 8; iu++) {
+	    if(!IsCellValid.iu_iv_valid(layerID, sensorIU, sensorIV, iu, iv, m_sensorsize)) 
+	      continue;
+	    CellXY = TheCell.GetCellCoordinatesForPlots(layerID, sensorIU, sensorIV, iu, iv, m_sensorsize);
+	    assert(CellXY.size() == 4 || CellXY.size() == 6);
+	    unsigned int iVertex = 0;
+	    for(std::vector<std::pair<double, double>>::const_iterator it = CellXY.begin(); it != CellXY.end(); it++) {
+	      HexX[iVertex] =  it->first;
+	      HexY[iVertex] =  it->second;
+	      ++iVertex;
+	    }
+	    //Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
+	    poly.AddBin(CellXY.size(), HexX, HexY);
+	  }//loop over iu
+	}//loop over iv
       }
-      //Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
-      poly.AddBin(CellXY.size(), HexX, HexY);
-    }//loop over iu
-  }//loop over iv
+    }// loop over Sensor_Iu ends here
+  }// loop over Sensor_Iv ends here
 }
 
 
@@ -402,66 +454,53 @@ void RawHitPlotter::endJob()
   std::map<int,TH2Poly*>  lgRMSMap;
   std::ostringstream os( std::ostringstream::ate );
   TH2Poly *h;
-  int Board_IU = 0;
-  int Board_IV = 0; 
-  int Board_Layer = 0;
-  for(int ib = 0; ib<m_NHexaBoards; ib++) {
-    Board_IU = 0;
-    Board_IV = 0; 
-    if( (ib == 6) || (ib == 9) ){
-  Board_IU = 0;
-  Board_IV = -1;
-    }
-    if( (ib == 5) || (ib == 8) ){
-        Board_IU = 1;
-        Board_IV = -1;
-    }
-    if(ib <= 3) Board_Layer = ib + 1;
-    else if( (ib == 4) || (ib == 5) || (ib == 6) ) Board_Layer = 5;
-    else if( (ib == 7) || (ib == 8) || (ib == 9) ) Board_Layer = 6;
+
+  for(int il = 0; il<essource_.layout_.nlayers(); il++) {
     os.str("");
-    os << "HexaBoard" << ib ;
+    os<<"Layer"<<il;
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
     TFileDirectory hgpdir = dir.mkdir( "HighGainPedestal" );
     TFileDirectory lgpdir = dir.mkdir( "LowGainPedestal" );
     TFileDirectory hgndir = dir.mkdir( "HighGainNoise" );
     TFileDirectory lgndir = dir.mkdir( "LowGainNoise" );
+    int subdetId = essource_.layout_.at(il).subdet();
     for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       h=hgpdir.make<TH2Poly>();
       os.str("");
       os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
-      hgMeanMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
+      InitTH2Poly(*h, subdetId, il);
+      hgMeanMap.insert( std::pair<int,TH2Poly*>(100*il+it,h) );
 
       h=lgpdir.make<TH2Poly>();
       os.str("");
       os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
-      lgMeanMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
+      InitTH2Poly(*h, subdetId, il);
+      lgMeanMap.insert( std::pair<int,TH2Poly*>(100*il+it,h) );
 
       h=hgndir.make<TH2Poly>();
       os.str("");
       os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
-      hgRMSMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
+      InitTH2Poly(*h, subdetId, il);
+      hgRMSMap.insert( std::pair<int,TH2Poly*>(100*il+it,h) );
 
       h=lgndir.make<TH2Poly>();
       os.str("");
       os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
-      lgRMSMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
+      InitTH2Poly(*h, subdetId, il);
+      lgRMSMap.insert( std::pair<int,TH2Poly*>(100*il+it,h) );
     }
   }
   for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
     int iboard=(*it).first/1000;
+    int ilayer=essource_.layout_.at(iboard).layerID();
     int iski=((*it).first%1000)/100;
     int ichan=(*it).first%100;
     HGCalTBDetId detid=(*it).second;
@@ -474,10 +513,10 @@ void RawHitPlotter::endJob()
       float lgMean=cif->meanLGMap[it]/cif->counterLGMap[it];
       float hgRMS=std::sqrt(cif->rmsHGMap[it]/cif->counterHGMap[it]-cif->meanHGMap[it]/cif->counterHGMap[it]*cif->meanHGMap[it]/cif->counterHGMap[it]);
       float lgRMS=std::sqrt(cif->rmsLGMap[it]/cif->counterLGMap[it]-cif->meanLGMap[it]/cif->counterLGMap[it]*cif->meanLGMap[it]/cif->counterLGMap[it]);
-      hgMeanMap[ 100*iboard+it ]->Fill(iux , iuy, hgMean );
-      lgMeanMap[ 100*iboard+it ]->Fill(iux , iuy, lgMean );
-      hgRMSMap[ 100*iboard+it ]->Fill(iux , iuy, hgRMS );
-      lgRMSMap[ 100*iboard+it ]->Fill(iux , iuy, lgRMS );
+      hgMeanMap[ 100*ilayer+it ]->Fill(iux , iuy, hgMean );
+      lgMeanMap[ 100*ilayer+it ]->Fill(iux , iuy, lgMean );
+      hgRMSMap[ 100*ilayer+it ]->Fill(iux , iuy, hgRMS );
+      lgRMSMap[ 100*ilayer+it ]->Fill(iux , iuy, lgRMS );
     }
   }
 }

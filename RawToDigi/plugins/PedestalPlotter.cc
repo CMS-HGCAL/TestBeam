@@ -138,7 +138,9 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
       else continue;
 
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
+
 	if( rollpositions[it]<=m_NTSForPedestalComputation ){ //consider only a certain number of time samples for pedestal subtraction
+
 	  uint32_t key=iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it;
 	  std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
 	  if( iter==m_channelMap.end() ){
@@ -198,37 +200,16 @@ void PedestalPlotter::endJob()
   std::map<int,TH2Poly*>  chanMap;
   std::ostringstream os( std::ostringstream::ate );
   TH2Poly *h;
-  int Board_IU = 0;
-  int Board_IV = 0;	
-  int Board_Layer = 0;
   for(size_t ib = 0; ib<m_numberOfBoards; ib++) {
-
-    Board_IU = 0;
-    Board_IV = 0;	
-
-    if( (ib == 6) || (ib == 9) ){
-	Board_IU = 0;
-	Board_IV = -1;
-    }
-
-    if( (ib == 5) || (ib == 8) ){
-        Board_IU = 1;
-        Board_IV = -1;
-    }
-
-    if(ib <= 3) Board_Layer = ib + 1;
-    else if( (ib == 4) || (ib == 5) || (ib == 6) ) Board_Layer = 5;
-    else if( (ib == 7) || (ib == 8) || (ib == 9) ) Board_Layer = 6;
-
     os.str("");
     os << "HexaBoard" << ib ;
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
     h=dir.make<TH2Poly>();
     os.str("");
-    os<<"ChannelMapping_"<<"Layer_"<<Board_Layer<<"_Sensor_IU_"<<Board_IU<<"_Sensor_IV_"<<Board_IV;
+    os<<"ChannelMapping";
     h->SetName(os.str().c_str());
     h->SetTitle(os.str().c_str());
-    InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
+    InitTH2Poly(*h, ib, 0, 0);
     chanMap.insert( std::pair<int,TH2Poly*>(ib,h) );
     TFileDirectory hgpdir = dir.mkdir( "HighGainPedestal" );
     TFileDirectory lgpdir = dir.mkdir( "LowGainPedestal" );
@@ -238,10 +219,10 @@ void PedestalPlotter::endJob()
 
       h=hgpdir.make<TH2Poly>();
       os.str("");
-      os<<"Layer_"<<Board_Layer<<"_Sensor_IU_"<<Board_IU<<"_Sensor_IV_"<<Board_IV<<"_SCA_"<<it;
+      os<<"SCA_"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
+      InitTH2Poly(*h, ib, 0, 0);
       hgMeanMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
 
       h=lgpdir.make<TH2Poly>();
@@ -250,7 +231,7 @@ void PedestalPlotter::endJob()
       os<<"SCA"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
+      InitTH2Poly(*h, ib, 0, 0);
       lgMeanMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
 
       h=hgndir.make<TH2Poly>();
@@ -258,7 +239,7 @@ void PedestalPlotter::endJob()
       os<<"SCA"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
+      InitTH2Poly(*h, ib, 0, 0);
       hgRMSMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
 
       h=lgndir.make<TH2Poly>();
@@ -266,9 +247,8 @@ void PedestalPlotter::endJob()
       os<<"SCA"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
+      InitTH2Poly(*h, ib, 0, 0);
       lgRMSMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
-
     }
   }
   
@@ -325,7 +305,7 @@ void PedestalPlotter::endJob()
       pedestalLG << iboard << " " << iski << " " << ichan ;
     }
     HGCalTBDetId detid=(*it).second;
-    CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
+    CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), 0, 0, detid.iu(), detid.iv(), m_sensorsize );
 
 
     double iux = CellCentreXY.first;
@@ -392,17 +372,17 @@ void PedestalPlotter::endJob()
     for( std::map<int,double>::iterator it=meanNoise.begin(); it!=meanNoise.end(); ++it ){
       meanNoise[ it->first ] = meanNoise[ it->first ]/countNoise[ it->first ];
       rmsNoise[ it->first ] = std::sqrt( rmsNoise[ it->first ]/countNoise[ it->first ] - meanNoise[ it->first ]*meanNoise[ it->first ] );
-      std::cout << it->first/10 << " " << it->first%10 << " " << meanNoise[ it->first ] << " " << rmsNoise[ it->first ] << std::endl;
+      std::cout << it->first << " " << meanNoise[ it->first ] << " " << rmsNoise[ it->first ] << std::endl;
     }
     for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
       HGCalTBDetId detid=(*it).second;
-      if( detid.cellType()!=0 && detid.cellType()!=5  && detid.cellType()!=4 )continue;
+      if( detid.cellType()!=0 && detid.cellType()!=4 )continue;
       int iboard=(*it).first/1000;
       int iski=((*it).first%1000)/100;
       int ichan=(*it).first%100;
       int key=iboard*100000+iski*10000+ichan*100;//we use SCA 0
       std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
-      if( iter->second.rmsHG-meanNoise[iboard]>2*rmsNoise[iboard] )
+      if( iter->second.rmsHG-meanNoise[iboard]>3*rmsNoise[iboard] )
 	noisyChannels << iboard << " " << iski << " " << ichan << std::endl;
     }
     noisyChannels.close();
