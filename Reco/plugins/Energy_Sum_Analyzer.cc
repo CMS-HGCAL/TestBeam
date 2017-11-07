@@ -471,7 +471,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 		HGCalTBElectronicsId eid( essource_.emap_.detId2eid( Rechit.id().rawId() ) );
 		int skiroc = eid.iskiroc();
 
-		if ((cellID_mostIntense_layer[layer-1] % 1000) != 236) continue;
+		if (cellIDToFocusOn!=-1 && (cellID_mostIntense_layer[layer-1] % 1000) != cellIDToFocusOn) continue;
 		if (Rechit.energyHigh() <= MIP_cut*ADC_per_MIP[skiroc]) continue;
 		if ((Rechit.id()).cellType() != 0) continue;
 		h_RecHit_Occupancy_layer[layer-1]->Fill(iux, ivy);

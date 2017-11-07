@@ -316,7 +316,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     if( !essource_.emap_.existsEId(eid) ) continue;
     int iski=hit.skiroc();
     int iboard=(iski)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-    int ichan=eid.ichan();
+    int ichan=hit.channel();
     
     m_h_HighVsLowGainTS3[10*iboard+(iski%4)]->Fill(hit.lowGainADC(3), hit.highGainADC(3));
     m_h_LowGainVsTOTTS3[10*iboard+(iski%4)]->Fill(hit.totSlow(), hit.lowGainADC(3));
@@ -329,7 +329,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       float highGain,lowGain;
       if( m_subtractCommonMode ){
 
-    	iski = eid.iskiroc()-1;
+    	iski = hit.skiroc();
     	float subHG(0),subLG(0);
     	switch ( hit.detid().cellType() ){
     	case 0 : subHG=cmMap[iski].fullHG[it]; subLG=cmMap[iski].fullLG[it]; break;
