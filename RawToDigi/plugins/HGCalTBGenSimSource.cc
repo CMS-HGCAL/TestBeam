@@ -316,30 +316,15 @@ void HGCalTBGenSimSource::makeRecHit(int layer, int cellno, double energy, std::
 		//additional noise to the energy in MIPs
 		energy += randgen->Gaus(energyNoise, energyNoiseResolution);
 
-		MIP_to_HG = 49.3;			//must be fed into from the calibration
-		HG_to_LG = 1./9.;			//must be fed into from the calibration
-		LG_to_TOT = 1./3.;			//must be fed into from the calibration
-		highGainADCSaturation = 2500.;		//must be fed into from the calibration
-		lowGainADCSaturation = 2500.;		//must be fed into from the calibration
-
-	 	recHit._energyHigh = energy * MIP_to_HG;
-	 	recHit._energyLow = recHit._energyHigh * HG_to_LG;
-	 	recHit._energyTot = recHit._energyLow * LG_to_TOT;
+		
+	 	recHit._energyHigh = -1;
+	 	recHit._energyLow = -1;
+	 	recHit._energyTot = -1;
 	 	
-	 	recHit.setEnergy(recHit._energyHigh);
-
-
-	    if(recHit._energyHigh < highGainADCSaturation){
-	      recHit.setFlag(HGCalTBRecHit::kGood);
-	    }     
-	    else if(recHit._energyLow < lowGainADCSaturation){
-	      recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
-	      recHit.setFlag(HGCalTBRecHit::kGood);
-	    }
-	    else {
-	      recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
-	      recHit.setFlag(HGCalTBRecHit::kGood);
-	    }
+		MIP_to_HG = 49.3;			//must be fed into from the calibration
+	 	recHit.setEnergy(energy * MIP_to_HG);
+	    recHit.setFlag(HGCalTBRecHit::kGood);
+	 
 
 		rechits->push_back(recHit);
 }

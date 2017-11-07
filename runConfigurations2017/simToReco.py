@@ -47,6 +47,12 @@ options.register('setupConfiguration',
                  'setupConfiguration.'
                 )
 
+options.register('layerPositionFile',
+                 'layer_distances_CERN_Hexaboard_July_6Layers.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'File indicating the layer positions in mm.')
+
 options.register('areaSpecification',
                 "H2",
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -145,9 +151,9 @@ process.source = cms.Source("HGCalTBGenSimSource",
 
 process.dwctrackproducer = cms.EDProducer("DWCTrackProducer",
                                         MWCHAMBERS = cms.InputTag("source","DelayWireChambers" ), 
-                                        OutputCollectionName=cms.string("HGCalTBDWCTracks")
+                                        OutputCollectionName=cms.string("HGCalTBDWCTracks"),
+                                       layerPositionFile=cms.string(options.layerPositionFile)
 )
-
 
 
 ####################################

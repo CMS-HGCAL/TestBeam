@@ -128,10 +128,6 @@ private:
 	int N_layers_EE, N_layers_FH, N_layers_BH;
 
 	double MIP_to_HG;
-	double HG_to_LG;
-	double LG_to_TOT;
-	double highGainADCSaturation;
-	double lowGainADCSaturation;
 
 
 public:
