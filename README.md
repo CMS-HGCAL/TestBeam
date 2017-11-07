@@ -1,4 +1,5 @@
-CMS HGCal Testbeam Analysis Framework
+CMS HGCal Testbeam Analysis Framework(OUTDATED, new documentation is being written)
+
 =============================================
 * This new branch is to be used for analysing data from 2017 test beam. 
 * The code runs with the one layer data, and will need (major) updates when we will have more layers. 
