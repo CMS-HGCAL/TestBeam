@@ -95,8 +95,8 @@ else:
 ####################################
 process.energy_sum_analyzer = cms.EDAnalyzer("Energy_Sum_Analyzer",
                                 ElectronicMap = cms.untracked.string(electronicMap),
-                                ADC_per_MIP = cms.vdouble([49.3]*20*4),
                                 nLayers = cms.int32(nLayers),
+                                MIP_cut = cms.double(4.),
                                 SensorSize = cms.int32(133),
                                 RUNDATA = rundata_tag,
                                 HGCALTBRECHITS = rechit_tag

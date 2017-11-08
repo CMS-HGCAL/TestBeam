@@ -37,8 +37,6 @@
  *
 **/
 
-double MIP2GeV_sim = 51.91e-06; //mpv muon EMM pysics list
-
 //must be a globally available variable, otherwise a segmentation fault is thrown  
 struct {
   HGCalElectronicsMap emap_;
@@ -127,8 +125,6 @@ private:
 	TRandom* randgen;
 
 	int N_layers_EE, N_layers_FH, N_layers_BH;
-
-	double MIP_to_HG;
 
 
 public:

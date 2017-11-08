@@ -318,8 +318,7 @@ void HGCalTBGenSimSource::makeRecHit(int layer, int cellno, double energy, std::
 	 	recHit._energyLow = -1;
 	 	recHit._energyTot = -1;
 	 	
-		MIP_to_HG = 49.3;			//must be fed into from the calibration
-	 	recHit.setEnergy(energy * MIP_to_HG);
+	 	recHit.setEnergy(energy);
 	    recHit.setFlag(HGCalTBRecHit::kGood);
 	 
 

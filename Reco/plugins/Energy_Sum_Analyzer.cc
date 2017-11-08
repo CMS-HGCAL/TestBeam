@@ -73,7 +73,7 @@ class Energy_Sum_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResource
 			HGCalElectronicsMap emap_;
 		} essource_;
 			
-		std::vector<double> ADC_per_MIP;		//one value per skiroc
+
 		int SensorSize;
 		int nLayers;
 
@@ -146,9 +146,8 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 
 	SensorSize = iConfig.getParameter<int>("SensorSize");
 	nLayers = iConfig.getParameter<int>("nLayers");
-	ADC_per_MIP = iConfig.getParameter<std::vector<double> >("ADC_per_MIP");
 
-	MIP_cut = 4.;		
+	MIP_cut = iConfig.getParameter<double>("MIP_cut");
 	
 	std::ostringstream os( std::ostringstream::ate );
 
@@ -362,9 +361,9 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 			Sensors[layer]->setSensorSize(SensorSize);
 		}
 
-		if (Rechit.energyHigh() > MIP_cut*ADC_per_MIP[skiroc])	{//only add if energy is higher than the MIP cut
-			Sensors[layer]->addHit(Rechit, ADC_per_MIP[skiroc], geoID);		//without MIP calibration
-			h_energyRechits->Fill(Rechit.energy()/ADC_per_MIP[skiroc]);
+		if (Rechit.energy() > MIP_cut)	{//only add if energy is higher than the MIP cut
+			Sensors[layer]->addHit(Rechit, 1., geoID);		//without MIP calibration
+			h_energyRechits->Fill(Rechit.energy());
 		}
 	}
 
@@ -477,15 +476,14 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 		double iux = Rechit.getCellCenterCartesianCoordinate(0);
 		double ivy = Rechit.getCellCenterCartesianCoordinate(1);
 		HGCalTBElectronicsId eid( essource_.emap_.detId2eid( Rechit.id().rawId() ) );
-		int skiroc = eid.iskiroc();
 
 		if (cellIDToFocusOn!=-1 && (cellID_mostIntense_layer[layer-1] % 1000) != cellIDToFocusOn) continue;
-		if (Rechit.energyHigh() <= MIP_cut*ADC_per_MIP[skiroc]) continue;
+		if (Rechit.energy() <= MIP_cut) continue;
 		if ((Rechit.id()).cellType() != 0) continue;
 		h_RecHit_Occupancy_layer[layer-1]->Fill(iux, ivy);
-		double _energy = Rechit.energy() / ADC_per_MIP[skiroc];
+		double _energy = Rechit.energy();
   		if (Rechit.checkFlag(HGCalTBRecHit::kLowGainSaturated)) {
-    		_energy = Rechit.energyLow() * 8. / ADC_per_MIP[skiroc] ;  
+    		_energy = Rechit.energyLow()/49.3;		//temporary estimation, 08 Nov 2017  
   		}
 		h_RecHit_Energy_layer[layer-1]->Fill(iux, ivy, _energy);
 	}

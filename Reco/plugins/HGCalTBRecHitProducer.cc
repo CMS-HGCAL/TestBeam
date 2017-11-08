@@ -18,13 +18,15 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) :
 
   produces <HGCalTBRecHitCollection>(m_outputCollectionName);
   std::vector<double> v0(1,10.);
-  m_highGainADCSaturation = cfg.getUntrackedParameter<std::vector<double> >("HighGainADCSaturation",v0);
+  m_ADC_per_MIP = cfg.getUntrackedParameter<std::vector<double> >("ADC_per_MIP",v0);
   std::vector<double> v1(1,10.);
-  m_lowGainADCSaturation = cfg.getUntrackedParameter<std::vector<double> >("LowGainADCSaturation",v1);
+  m_highGainADCSaturation = cfg.getUntrackedParameter<std::vector<double> >("HighGainADCSaturation",v1);
   std::vector<double> v2(1,10.);
-  m_LG2HG_value = cfg.getUntrackedParameter<std::vector<double> >("LG2HG",v2);
+  m_lowGainADCSaturation = cfg.getUntrackedParameter<std::vector<double> >("LowGainADCSaturation",v2);
   std::vector<double> v3(1,10.);
-  m_TOT2LG_value = cfg.getUntrackedParameter<std::vector<double> >("TOT2LG",v3);
+  m_LG2HG_value = cfg.getUntrackedParameter<std::vector<double> >("LG2HG",v3);
+  std::vector<double> v4(1,10.);
+  m_TOT2LG_value = cfg.getUntrackedParameter<std::vector<double> >("TOT2LG",v4);
 
   investigatePulseShape = cfg.getUntrackedParameter<bool>("investigatePulseShape", false);
   std::cout << cfg.dump() << std::endl;
@@ -273,8 +275,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       lowGain = rawhit.lowGainADC(3)-subLG[3];
 
     }
-
-
+    
     float energy = -1;
     float time = -1.;
     HGCalTBRecHit recHit(rawhit.detid(), energy, lowGain, highGain, totGain, time);
@@ -301,6 +302,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     if( rawhit.isUnderSaturationForHighGain() ) recHit.setUnderSaturationForHighGain();
     if( rawhit.isUnderSaturationForLowGain() ) recHit.setUnderSaturationForLowGain();
 
+    energy = energy/m_ADC_per_MIP.at(skiID-1);
     recHit.setEnergy(energy);
     recHit.setTime(time);
     

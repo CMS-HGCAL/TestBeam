@@ -95,7 +95,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 
 		std::vector<double> Layer_Z_Positions;
 		std::vector<double> Layer_Z_X0s;
-		std::vector<double> ADC_per_MIP;
+
 		int LayersConfig;
 		int SensorSize;
 		int nLayers;
@@ -190,8 +190,6 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 
 	SensorSize = iConfig.getParameter<int>("SensorSize");
 	nLayers = iConfig.getParameter<int>("nLayers");
-	ADC_per_MIP = iConfig.getParameter<std::vector<double> >("ADC_per_MIP");
-
 
 	useMWCReference = iConfig.getParameter<bool>("useMWCReference");
 

@@ -45,13 +45,14 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   bool m_maskNoisyChannels;
   std::string m_channelsToMask_filename;
   int m_NHexaBoards;
-  std::vector<double> m_highGainADCSaturation;
-  std::vector<double> m_lowGainADCSaturation;
   double m_timeSample3ADCCut;
   
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
+  std::vector<double> m_ADC_per_MIP;    
   std::vector<double> m_LG2HG_value;
   std::vector<double> m_TOT2LG_value;
+  std::vector<double> m_highGainADCSaturation;
+  std::vector<double> m_lowGainADCSaturation;
 
   bool performPulseFit;
   bool performAveraging;
