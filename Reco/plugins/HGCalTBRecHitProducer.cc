@@ -306,7 +306,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     if( rawhit.isUnderSaturationForHighGain() ) recHit.setUnderSaturationForHighGain();
     if( rawhit.isUnderSaturationForLowGain() ) recHit.setUnderSaturationForLowGain();
 
-    energy = energy/m_ADC_per_MIP.at(skiID-1);
+    energy = energy/m_ADC_per_MIP.at(iski);
     recHit.setEnergy(energy);
     recHit.setTime(time);
     

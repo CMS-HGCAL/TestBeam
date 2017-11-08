@@ -353,7 +353,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 	for(auto Rechit : *Rechits) {	
 		int layer = (Rechit.id()).layer();
 		HGCalTBElectronicsId eid( essource_.emap_.detId2eid( Rechit.id().rawId() ) );
-		int skiroc = (eid.iskiroc()-1);
+		int skiroc = eid.iskiroc_rawhit();
 		int channel = eid.ichan();
   		int geoID = (skiroc/4)*1000+(skiroc%4)*100+channel;
 		if ( Sensors.find(layer) == Sensors.end() ) {
