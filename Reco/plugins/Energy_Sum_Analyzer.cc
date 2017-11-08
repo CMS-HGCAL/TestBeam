@@ -104,6 +104,7 @@ class Energy_Sum_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResource
 		TH1F* h_energyE1_tot;
 		TH1F* h_energyE7_tot;
 		TH1F* h_energyE19_tot;
+		TH1F* h_energyRechits;
 
 		std::vector<TH1F*> h_energyAll_layer;
 		std::vector<TH1F*> h_energyE1_layer;
@@ -171,6 +172,12 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 	h_energyE19_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 3500.*nLayers/6);
 	h_energyE19_tot->SetName(os.str().c_str());
 	h_energyE19_tot->SetTitle(os.str().c_str());
+	os.str("");
+	os << "EnergyRecHits";
+	h_energyRechits = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 250, 0., 250);
+	h_energyRechits->SetName(os.str().c_str());
+	h_energyRechits->SetTitle(os.str().c_str());
+
 
 	
 	for( int ilayer=0; ilayer<nLayers; ilayer++ ){
@@ -357,6 +364,7 @@ void Energy_Sum_Analyzer::analyze(const edm::Event& event, const edm::EventSetup
 
 		if (Rechit.energyHigh() > MIP_cut*ADC_per_MIP[skiroc])	{//only add if energy is higher than the MIP cut
 			Sensors[layer]->addHit(Rechit, ADC_per_MIP[skiroc], geoID);		//without MIP calibration
+			h_energyRechits->Fill(Rechit.energy()/ADC_per_MIP[skiroc]);
 		}
 	}
 
