@@ -3,11 +3,6 @@
 
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
-#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
-#include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
-#include "math.h"
-#include <stdlib.h>
-#include <iostream>
 #include "set"
 /** \class HGCalTBTopology
   *
@@ -17,12 +12,6 @@
   * $Revision: $
   * \author J. Mans - Minnesota
   */
-
-
-//for the 2017 TB campaign with 4 skiroc2-cms chips per hexaboard
-int skiIDFromIski(int iski);
-int skiIDFromIboardAndIski(int ib, int iski);
-
 class HGCalTBTopology
 {
 public:

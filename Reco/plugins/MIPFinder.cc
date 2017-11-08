@@ -287,8 +287,8 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 		int layer = (Rechit.id()).layer();
 
 		HGCalTBElectronicsId eid( essource_.emap_.detId2eid( Rechit.id().rawId() ) );
-		int skiroc = (eid.iskiroc()-1) % HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-		int board = (eid.iskiroc()-1) / HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+		int skiroc = (eid.iskiroc()-1) % 4;
+		int board = (eid.iskiroc()-1) / 4;
 		int channel = eid.ichan();
   		int key = board*1000+skiroc*100+channel;
   		double energyHG = Rechit.energyHigh();

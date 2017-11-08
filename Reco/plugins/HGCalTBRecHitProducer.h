@@ -18,12 +18,6 @@
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
-#include "HGCal/Geometry/interface/HGCalTBTopology.h"
-#include "HGCal/Reco/interface/PulseFitter.h"
-#include "HGCal/Reco/interface/CommonMode.h"
-#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
-
-#include <iostream>
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"

@@ -3,17 +3,7 @@
 #include "FWCore/Sources/interface/ProducerSourceFromFiles.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
-#include "HGCal/Geometry/interface/HGCalTBTopology.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"
-#include "HGCal/DataFormats/interface/HGCalTBSkiroc2CMS.h"
-#include "HGCal/DataFormats/interface/HGCalTBSkiroc2CMSCollection.h"
-#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
-#include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
-#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
-#include <stdlib.h>
-#include <iomanip>
-#include <ctime>
-#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <stdio.h>

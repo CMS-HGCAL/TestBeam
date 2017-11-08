@@ -127,13 +127,12 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
   for( size_t iski=0;iski<skirocs->size(); iski++ ){
     HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
     std::vector<int> rollpositions=skiroc.rollPositions();
-    int skiID = skiIDFromIski(iski)-1;
-    int iboard=skiID/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
       HGCalTBDetId detid=skiroc.detid( ichan );
       HGCalTBElectronicsId eid( essource_.emap_.detId2eid(detid.rawId()) );
       if( essource_.emap_.existsEId(eid) ){
-	std::pair<int,HGCalTBDetId> p( iboard*1000+(skiID%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan,skiroc.detid(ichan) );
+	std::pair<int,HGCalTBDetId> p( iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan,skiroc.detid(ichan) );
 	setOfConnectedDetId.insert(p);
       }
       else continue;
@@ -142,7 +141,7 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
 
 	if( rollpositions[it]<=m_NTSForPedestalComputation ){ //consider only a certain number of time samples for pedestal subtraction
 
-	  uint32_t key=iboard*100000+(skiID%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it;
+	  uint32_t key=iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it;
 	  std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
 	  if( iter==m_channelMap.end() ){
 	    hgcal_channel tmp;

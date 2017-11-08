@@ -158,14 +158,12 @@ void RawHitPlotter::beginJob()
   std::ostringstream os( std::ostringstream::ate );
   TH1F* htmp1;
   TH2F* htmp2;
-  for(size_t board = 0; board<(size_t)m_NHexaBoards; board++) {
-    for( size_t skiroc=0; skiroc<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; skiroc++ ){ 
-      os.str("");os<<"HexaBoard"<<board<<"_Skiroc"<<skiroc;
+  for(size_t ib = 0; ib<(size_t)m_NHexaBoards; ib++) {
+    for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){ 
+      os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
       TFileDirectory dir = fs->mkdir( os.str().c_str() );
       TFileDirectory adcdir = dir.mkdir( "ADC" );
-      int skiId=skiIDFromIboardAndIski(board, skiroc);
-      int ib=(skiId-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-      int iski=(skiId-1)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+      int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*ib+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
       for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
         HGCalTBElectronicsId eid(skiId,ichan);      
         if( !essource_.emap_.existsEId(eid) ) continue;
@@ -243,7 +241,35 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     std::ostringstream os( std::ostringstream::ate );
     os << "Event" << event.id().event();
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
-
+/*
+<<<<<<< HEAD
+    int Board_IU = 0;
+    int Board_IV = 0; 
+    int Board_Layer = 0;
+    for(int ib = 0; ib<m_NHexaBoards; ib++) {
+      Board_IU = 0;
+      Board_IV = 0; 
+      if( (ib == 6) || (ib == 9) ){
+  Board_IU = 0;
+  Board_IV = -1;
+      }
+      if( (ib == 5) || (ib == 8) ){
+        Board_IU = 1;
+        Board_IV = -1;
+      }
+      if(ib <= 3) Board_Layer = ib + 1;
+      else if( (ib == 4) || (ib == 5) || (ib == 6) ) Board_Layer = 5;
+      else if( (ib == 7) || (ib == 8) || (ib == 9) ) Board_Layer = 6;
+      for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+  TH2Poly *h=dir.make<TH2Poly>();
+  os.str("");
+  os<<"HexaBoard"<<ib<<"_TimeSample"<<it;
+  h->SetName(os.str().c_str());
+  h->SetTitle(os.str().c_str());
+  InitTH2Poly(*h, Board_Layer, Board_IU, Board_IV);
+  polyMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
+=======
+*/
     for(int il = 0; il<essource_.layout_.nlayers(); il++) {
       int subdetId = essource_.layout_.at(il).subdet();
       for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
@@ -254,7 +280,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   	h->SetTitle(os.str().c_str());
 	InitTH2Poly(*h, subdetId, il);
   	polyMap.insert( std::pair<int,TH2Poly*>(100*il+it,h) );
-
+//>>>>>>> 678f32b636e3f6169af4ec57bccd3a87d9e12a9a
       }
     }
   }
@@ -264,8 +290,8 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   cm.Evaluate( hits );
   std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
   for( std::map<int,commonModeNoise>::iterator it=cmMap.begin(); it!=cmMap.end(); ++it ){
-    m_skirocID=(it->first-1)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-    m_layerID=(it->first-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    m_skirocID=(it->first)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    m_layerID=(it->first)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     int key=m_layerID*1000+m_skirocID*100;
 
     for( uint16_t ts=0; ts<NUMBER_OF_TIME_SAMPLES; ts++ ){
@@ -289,20 +315,21 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid) ) continue;
     int iski=hit.skiroc();
-    int iboard=(iski-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    int iboard=(iski)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     int ichan=hit.channel();
     
-    m_h_HighVsLowGainTS3[10*iboard+((iski-1)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)]->Fill(hit.lowGainADC(3), hit.highGainADC(3));
-    m_h_LowGainVsTOTTS3[10*iboard+((iski-1)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)]->Fill(hit.totSlow(), hit.lowGainADC(3));
+    m_h_HighVsLowGainTS3[10*iboard+(iski%4)]->Fill(hit.lowGainADC(3), hit.highGainADC(3));
+    m_h_LowGainVsTOTTS3[10*iboard+(iski%4)]->Fill(hit.totSlow(), hit.lowGainADC(3));
 
-    std::pair<int,HGCalTBDetId> p( iboard*1000+((iski-1)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan,hit.detid() );
+    std::pair<int,HGCalTBDetId> p( iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan,hit.detid() );
     setOfConnectedDetId.insert(p);
-    channelInfo* cif=m_channelMap[iboard*1000+((iski-1)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan];
-    if( hit.isUnderSaturationForHighGain() ) nhitUnderSat[iski-1]++;
+    channelInfo* cif=m_channelMap[iboard*1000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+ichan];
+    if( hit.isUnderSaturationForHighGain() ) nhitUnderSat[hit.skiroc()]++;
     for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       float highGain,lowGain;
       if( m_subtractCommonMode ){
 
+    	iski = hit.skiroc();
     	float subHG(0),subLG(0);
     	switch ( hit.detid().cellType() ){
     	case 0 : subHG=cmMap[iski].fullHG[it]; subLG=cmMap[iski].fullLG[it]; break;
