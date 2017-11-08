@@ -153,22 +153,22 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 
 	os.str("");
 	os << "EnergyAll";
-	h_energyAll_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 3000.*nLayers/6);
+	h_energyAll_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 200, 0., 3000.*nLayers/6);
 	h_energyAll_tot->SetName(os.str().c_str());
 	h_energyAll_tot->SetTitle(os.str().c_str());
 	os.str("");
 	os << "EnergyE1";
-	h_energyE1_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 1500.*nLayers/6);
+	h_energyE1_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 200, 0., 1000.*nLayers/6);
 	h_energyE1_tot->SetName(os.str().c_str());
 	h_energyE1_tot->SetTitle(os.str().c_str());
 	os.str("");
 	os << "EnergyE7";
-	h_energyE7_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 2500.*nLayers/6);
+	h_energyE7_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 200, 0., 1500.*nLayers/6);
 	h_energyE7_tot->SetName(os.str().c_str());
 	h_energyE7_tot->SetTitle(os.str().c_str());
 	os.str("");
 	os << "EnergyE19";
-	h_energyE19_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 3000.*nLayers/6);
+	h_energyE19_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 200, 0., 2500.*nLayers/6);
 	h_energyE19_tot->SetName(os.str().c_str());
 	h_energyE19_tot->SetTitle(os.str().c_str());
 	os.str("");
