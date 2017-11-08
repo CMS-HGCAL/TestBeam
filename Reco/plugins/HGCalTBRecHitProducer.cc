@@ -75,7 +75,7 @@ void HGCalTBRecHitProducer::beginJob()
       
       
       os.str("");os<<"Channel"<<ichan<<"__TMaxHGVsTMaxLG";
-      TMaxHGvsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 4, 3500., 100, 4., 3500.);
+      TMaxHGvsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 50., 150.);
       }
     }
   }
