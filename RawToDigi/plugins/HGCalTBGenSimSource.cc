@@ -298,7 +298,7 @@ void HGCalTBGenSimSource::makeRecHit(int layer, int cellno, double energy, std::
 	    if( !essource_.emap_.existsEId(eid.rawId()) || std::find(m_noisyChannels.begin(),m_noisyChannels.end(),eid.rawId())!=m_noisyChannels.end() )
 	      return;
 
-		int skiRocIndex = (eid.iskiroc() - 1) > 0 ? eid.iskiroc() - 1 : 0;
+		int skiRocIndex = eid.iskiroc_rawhit();
 		skiRocIndex = skiRocIndex % HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;		
 	
 	    recHit.setTime(-1);
