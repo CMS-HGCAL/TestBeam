@@ -153,7 +153,7 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 
 	os.str("");
 	os << "EnergyAll";
-	h_energyAll_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 3500.*nLayers/6);
+	h_energyAll_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 3000.*nLayers/6);
 	h_energyAll_tot->SetName(os.str().c_str());
 	h_energyAll_tot->SetTitle(os.str().c_str());
 	os.str("");
@@ -168,7 +168,7 @@ Energy_Sum_Analyzer::Energy_Sum_Analyzer(const edm::ParameterSet& iConfig) {
 	h_energyE7_tot->SetTitle(os.str().c_str());
 	os.str("");
 	os << "EnergyE19";
-	h_energyE19_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 3500.*nLayers/6);
+	h_energyE19_tot = fs->make<TH1F>(os.str().c_str(), os.str().c_str(), 50, 0., 3000.*nLayers/6);
 	h_energyE19_tot->SetName(os.str().c_str());
 	h_energyE19_tot->SetTitle(os.str().c_str());
 	os.str("");
