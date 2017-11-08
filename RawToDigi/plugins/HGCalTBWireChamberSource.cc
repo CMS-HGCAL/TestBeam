@@ -336,7 +336,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 			syncCounter[1]++;
 		}
 
-		if (deltaTs > 200. && deltaTs<100000 && eventCounter != 0 && sumTriggerTimes[fileCounter]!=-1) {			//the first line is not used to test synchronisation since a time offset is present for the two streams.
+		if (deltaTs > 200. && deltaTs<100000 && eventCounter > 3 && sumTriggerTimes[fileCounter]!=-1) {			//the first line is not used to test synchronisation since a time offset is present for the two streams.
 			//throw cms::Exception("EventAsynch") << "Trigger time interval differs by more than 200ms. The files are likely not synchronised. ";
 			#ifdef DEBUG
 				std::cout<<std::endl<<std::endl << "Trigger time interval differs by more than 200ms. The files are likely not synchronised. "<<std::endl<<std::endl<<std::endl;
