@@ -29,7 +29,7 @@ void CommonMode::EvaluateMedianPerChip( edm::Handle<HGCalTBRawHitCollection> hit
   for( auto hit : *hits ){
     HGCalTBElectronicsId eid( _emap.detId2eid(hit.detid().rawId()) );
     if( !_emap.existsEId(eid) ) continue;
-    int iski=hit.skiroc();
+    int iski=hit.skiroc();    //the numbering here now starts from 1!
     if( hit.detid().cellType()==0 || hit.detid().cellType()==4 ) {
       for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
 	

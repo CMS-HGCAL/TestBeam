@@ -1,9 +1,18 @@
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
-#include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
-#include "math.h"
-#include <stdlib.h>
-#include <iostream>
+
 #define PI 3.14159265
+
+
+int skiIDFromIski(int iski) {
+  int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*(iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+  return skiId;
+}
+
+int skiIDFromIboardAndIski(int ib, int iski) {
+  int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*ib+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+  return skiId;
+}
+
 
 bool HGCalTBTopology::iu_iv_valid(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorSize) const
 {

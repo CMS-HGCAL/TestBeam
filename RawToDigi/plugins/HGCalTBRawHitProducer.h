@@ -14,6 +14,9 @@
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
+#include "HGCal/Geometry/interface/HGCalTBTopology.h"
+#include <iostream>
 
 class HGCalTBRawHitProducer : public edm::EDProducer
 {

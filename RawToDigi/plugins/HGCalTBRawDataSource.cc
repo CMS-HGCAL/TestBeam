@@ -1,13 +1,5 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBRawDataSource.h"
-#include "HGCal/DataFormats/interface/HGCalTBSkiroc2CMS.h"
-#include "HGCal/DataFormats/interface/HGCalTBSkiroc2CMSCollection.h"
-#include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
-#include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
-#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
-#include <stdlib.h>
-#include <iomanip>
-#include <ctime>
-#include <cmath>
+
 
 //#define DEBUG
 
@@ -264,7 +256,7 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
   for( size_t iski=0; iski<m_decodedData.size(); iski++){
     std::vector<HGCalTBDetId> detids;
     for (size_t ichan = 0; ichan < HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++) {
-      int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*(iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+      int skiId=skiIDFromIski(iski);
       HGCalTBElectronicsId eid(skiId,ichan);      
       if (!essource_.emap_.existsEId(eid.rawId())) {
 	HGCalTBDetId did(-1);

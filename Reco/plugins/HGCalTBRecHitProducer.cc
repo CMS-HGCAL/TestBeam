@@ -1,9 +1,5 @@
 #include "HGCal/Reco/plugins/HGCalTBRecHitProducer.h"
-#include "HGCal/Reco/interface/PulseFitter.h"
-#include "HGCal/Reco/interface/CommonMode.h"
-#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 
-#include <iostream>
 
 const static int SENSORSIZE = 128;
 
@@ -126,10 +122,10 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   for( auto rawhit : *rawhits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid) ) continue;
-    int iski=rawhit.skiroc();
-    int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    int skiID=rawhit.skiroc();
+    int iboard=(skiID-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     int ichannel=eid.ichan();
-    int key = iboard * 10000 + (iski % 4) * 100 + ichannel;
+    int key = iboard * 10000 + ((skiID-1) % 4) * 100 + ichannel;
 
     if( !essource_.emap_.existsEId(eid.rawId()) || std::find(m_noisyChannels.begin(),m_noisyChannels.end(),eid.rawId())!=m_noisyChannels.end() )
       continue;
@@ -156,25 +152,25 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     switch ( rawhit.detid().cellType() ){
     case 0 : 
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	subHG[it]=cmMap[iski].fullHG[it]; 
-      	subLG[it]=cmMap[iski].fullLG[it]; 
+      	subHG[it]=cmMap[skiID].fullHG[it]; 
+      	subLG[it]=cmMap[skiID].fullLG[it]; 
       }
       break;
     case 2 : 
       	for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	  subHG[it]=cmMap[iski].halfHG[it]; 
-      	  subLG[it]=cmMap[iski].halfLG[it]; 
+      	  subHG[it]=cmMap[skiID].halfHG[it]; 
+      	  subLG[it]=cmMap[skiID].halfLG[it]; 
       	}
       	break;
     case 3 : 
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	subHG[it]=cmMap[iski].mouseBiteHG[it]; 
-      	subLG[it]=cmMap[iski].mouseBiteLG[it]; 
+      	subHG[it]=cmMap[skiID].mouseBiteHG[it]; 
+      	subLG[it]=cmMap[skiID].mouseBiteLG[it]; 
       }
       break;
       case 4 : for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	subHG[it]=cmMap[iski].outerHG[it]; 
-      	subLG[it]=cmMap[iski].outerLG[it]; 
+      	subHG[it]=cmMap[skiID].outerHG[it]; 
+      	subLG[it]=cmMap[skiID].outerLG[it]; 
       }
        	break;
     }
@@ -182,7 +178,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     
     for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       sampleHG.push_back(rawhit.highGainADC(it)-subHG[it]);
-      sampleLG.push_back((rawhit.lowGainADC(it)-subLG[it]) * m_LG2HG_value.at(iski));
+      sampleLG.push_back((rawhit.lowGainADC(it)-subLG[it]) * m_LG2HG_value.at(skiID-1));
       sampleT.push_back(25*it+12.5);
     }
     
@@ -209,7 +205,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
         highGain=0;
         timeHG=-1;
       } else if (investigatePulseShape) {
-        int key = iboard * 10000 + (iski % 4) * 100 + ichannel;
+        int key = iboard * 10000 + (skiID % 4) * 100 + ichannel;
         //std::cout<<"Filling HG key: "<<key<<std::endl;
         for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) 
           shapesHG[key]->Fill(25*it+12.5-(fithg.tmax - fithg.trise), (rawhit.highGainADC(it)-subHG[it])/fithg.amplitude);
@@ -240,7 +236,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
         timeLG=-1;
       } else if (investigatePulseShape) {
         for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) 
-          shapesLG[key]->Fill(25*it+12.5-(fitlg.tmax - fitlg.trise), (rawhit.lowGainADC(it)-subLG[it])*m_LG2HG_value.at(iski)/fitlg.amplitude);
+          shapesLG[key]->Fill(25*it+12.5-(fitlg.tmax - fitlg.trise), (rawhit.lowGainADC(it)-subLG[it])*m_LG2HG_value.at(skiID-1)/fitlg.amplitude);
         
         ToARisevsTMaxLG[key]->Fill(fitlg.tmax, toaRise);
         ToAFallvsTMaxLG[key]->Fill(fitlg.tmax, toaFall);
@@ -282,12 +278,12 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     float energy = -1;
     float time = -1.;
     HGCalTBRecHit recHit(rawhit.detid(), energy, lowGain, highGain, totGain, time);
-    if(rawhit.highGainADC(3) < m_highGainADCSaturation.at(iski) && hgStatus == 0){
+    if(rawhit.highGainADC(3) < m_highGainADCSaturation.at(skiID-1) && hgStatus == 0){
       energy = highGain;
       time = timeHG;
       recHit.setFlag(HGCalTBRecHit::kGood);
     }     
-    else if(rawhit.lowGainADC(3)-subHG[3] < m_lowGainADCSaturation.at(iski) && lgStatus == 0){
+    else if(rawhit.lowGainADC(3)-subHG[3] < m_lowGainADCSaturation.at(skiID-1) && lgStatus == 0){
       energy = lowGain;
       time = timeLG;
       recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
@@ -295,7 +291,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     }
     else if(totGain > 10 && toaRise > 0){
       //std::cout<<"Setting totGain: "<<totGain<<std::endl;
-      energy = totGain * m_TOT2LG_value.at(iski) * m_LG2HG_value.at(iski);
+      energy = totGain * m_TOT2LG_value.at(skiID-1) * m_LG2HG_value.at(skiID-1);
       recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
       recHit.setFlag(HGCalTBRecHit::kGood);
     }
@@ -317,24 +313,10 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     #ifdef DEBUG
       if ((energy > 1000. ) && (iboard==0 || iboard==1)) {
         std::cout<< "Event: "<<eventCounter<<std::endl;
-        std::cout<<"iboard: "<<iboard<<"  iski: "<<iski<<"   ichannel: "<<ichannel<<"   LG3: "<<rawhit.lowGainADC(3)<<"  - "<<subLG[3]<<"    HG3: "<<rawhit.highGainADC(3)<<"  - "<<subHG[3]<<std::endl;
+        std::cout<<"iboard: "<<iboard<<"  skiID: "<<skiID<<"   ichannel: "<<ichannel<<"   LG3: "<<rawhit.lowGainADC(3)<<"  - "<<subLG[3]<<"    HG3: "<<rawhit.highGainADC(3)<<"  - "<<subHG[3]<<std::endl;
       }
     #endif
     
-    /*
-    #ifdef DEBUG
-      if ((totGain>500)&&(iboard==1)) {
-        std::cout<<"++++++++++++++++++++++  Event: "<<eventCounter<<"   +++++++++++++++++++++"<<std::endl;
-
-        std::cout<<"Board: "<<iboard+1<<"  and skiroc "<<iski;
-        std::cout<<"  Channel: "<<ichannel<<"  layer: "<<detid.layer()<<"  sensiorIU: "<<detid.sensorIU()<<"   sensorIV: "<<detid.sensorIV()<<"   iu: "<<detid.iu()<<"   iv: "<<detid.iv()<<std::endl;
-        std::cout<<"subHG[3] = "<<subHG[3]<<"   subLG[3] = "<<subLG[3]<<std::endl;
-        std::cout<<"energy: "<<energy<<"   lowGain (pulse): "<<lowGain<<"   sample3 LG: "<<sampleLG[3]<<"  highGain (pulse): "<<highGain<<"   sample3 HG: " <<sampleHG[3]<<"  totGain: "<<totGain<<std::endl<<std::endl;
-        std::cout<<std::endl<<std::endl;
-      }
-      
-    #endif
-    */
     rechits->push_back(recHit);
   }
   event.put(rechits, m_outputCollectionName);

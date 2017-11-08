@@ -263,9 +263,9 @@ void HGCalTBGenSimSource::beginJob() {
       while ( ! feof (file) ){
         if ( fgets (buffer , 300 , file) == NULL ) break;
         const char* index = buffer;
-        int layer,skiroc,channel,ptr,nval;
-        nval=sscanf( index, "%d %d %d %n",&layer,&skiroc,&channel,&ptr );
-        int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*layer+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-skiroc)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+        int board,skiroc,channel,ptr,nval;
+        nval=sscanf( index, "%d %d %d %n",&board,&skiroc,&channel,&ptr );
+        int skiId=skiIDFromIboardAndIski(board, skiroc);
         if( nval==3 ){
           HGCalTBElectronicsId eid(skiId,channel);      
           if (essource_.emap_.existsEId(eid.rawId()))
@@ -298,13 +298,14 @@ void HGCalTBGenSimSource::makeRecHit(int layer, int cellno, double energy, std::
 	    if( !essource_.emap_.existsEId(eid.rawId()) || std::find(m_noisyChannels.begin(),m_noisyChannels.end(),eid.rawId())!=m_noisyChannels.end() )
 	      return;
 
-		int skiRocIndex = (eid.iskiroc() - 1) > 0 ? eid.iskiroc() - 1 : 0;
-		skiRocIndex = skiRocIndex % HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;		
-	
 	    recHit.setTime(-1);
 		recHit.setCellCenterCoordinate(x, y);
 	 	
 	 	#ifdef DEBUG
+			int skiRocIndex = eid.iskiroc();
+		  	if (eid.ichan()==62 && (skiRocIndex==14 || skiRocIndex==21)) {
+				std::cout<<skiRocIndex<<"   "<<eid.ichan()<<"  u: "<<iuiv.first<<"  v: "<<iuiv.second<<std::endl;
+		  	}
 	 		std::cout<<"skiRocIndex: "<<skiRocIndex<<"   channelIndex: "<<channelIndex<<std::endl;
 	 	#endif
 

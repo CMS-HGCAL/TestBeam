@@ -13,6 +13,7 @@
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalWaferGeometry.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
+#include "HGCal/Geometry/interface/HGCalTBTopology.h"
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
