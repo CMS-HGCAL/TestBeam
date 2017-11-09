@@ -23,6 +23,27 @@ options.register('outputFolder',
                  VarParsing.VarParsing.varType.string,
                  'Output folder where analysis output are stored')
 
+options.register('electronicMap',
+                 'HGCal/CondObjects/data/map_CERN_Hexaboard_September_17Sensors_7EELayers_10FHLayers_V1.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'path to the electronic map')
+# Available options: 
+# "HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
+# "HGCal/CondObjects/data/map_CERN_Hexaboard_September_17Sensors_7EELayers_10FHLayers_V1.txt" # end of september
+# "HGCal/CondObjects/data/map_CERN_Hexaboard_October_17Sensors_5EELayers_6FHLayers_V1.txt" # october 18-22, 1st conf
+# "HGCal/CondObjects/data/map_CERN_Hexaboard_October_20Sensors_5EELayers_7FHLayers_V1.txt" # october 18-22, 2nd conf
+
+options.register('hgcalLayout',
+                 'HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'path to hgcal layout file')
+# Available options: 
+# "HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt"
+# "HGCal/CondObjects/data/layerGeom_oct2017_h6_17layers.txt"
+# "HGCal/CondObjects/data/layerGeom_oct2017_h6_20layers.txt"
+
 options.maxEvents = -1
 options.output = "cmsswEvents_RecHit.root"
 
@@ -30,8 +51,6 @@ options.parseArguments()
 print options
 if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
-
-electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
 
 ################################
 process = cms.Process("rechitprod")
@@ -58,26 +77,32 @@ process.output = cms.OutputModule("PoolOutputModule",
 process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         OutputCollectionName = cms.string('HGCALTBRECHITS'),
                                         InputCollection = cms.InputTag('rawhitproducer','HGCALTBRAWHITS'),
-                                        LG2HG = cms.untracked.vdouble(8.2,9.0,8.6,9.4,8.0,
-                                                                      8.0,8.0,8.0,8.0,8.0),
-                                        TOT2LG = cms.untracked.vdouble(10.0,10.0,10.0,10.0,10.0,
-                                                                       10.0,10.0,10.0,10.0,10.0),
-                                        HighGainADCSaturation = cms.untracked.double(1500),
-                                        LowGainADCSaturation = cms.untracked.double(4000),
-                                        ElectronicsMap = cms.untracked.string(electronicMap),
+                                        ElectronicsMap = cms.untracked.string(options.electronicMap),
+                                        DetectorLayout=cms.untracked.string(options.hgcalLayout),
                                         TimeSample3ADCCut = cms.untracked.double(15.)
 )
 
 process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",
                                        InputCollection=cms.InputTag("rechitproducer","HGCALTBRECHITS"),
-                                       ElectronicMap=cms.untracked.string(electronicMap),
+                                       ElectronicMap=cms.untracked.string(options.electronicMap),
+                                       DetectorLayout=cms.untracked.string(options.hgcalLayout),
                                        SensorSize=cms.untracked.int32(128),
                                        EventPlotter=cms.untracked.bool(True),
-                                       MipThreshold=cms.untracked.double(200),
-                                       NoiseThreshold=cms.untracked.double(20)
+                                       MipThreshold=cms.untracked.double(5.0),
+                                       NoiseThreshold=cms.untracked.double(0.5)
+)
+process.pulseshapeplotter = cms.EDAnalyzer("PulseShapePlotter",
+                                           InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
+                                           ElectronicMap=cms.untracked.string(options.electronicMap)
 )
 
+process.showeranalyzer = cms.EDAnalyzer("ShowerAnalyzer",
+                                       InputCollection=cms.InputTag("rechitproducer","HGCALTBRECHITS"),
+                                       DetectorLayout=cms.untracked.string(options.hgcalLayout),
+                                       SensorSize=cms.untracked.int32(128),
+                                       NoiseThreshold=cms.untracked.double(0.5)
+)
 
-process.p = cms.Path( process.rechitproducer*process.rechitplotter )
+process.p = cms.Path( process.rechitproducer*process.showeranalyzer )
 
 process.end = cms.EndPath(process.output)
