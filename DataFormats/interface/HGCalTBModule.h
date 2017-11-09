@@ -41,22 +41,5 @@ class HGCalTBModule
   unsigned int _id;
 };
 
-class HGCalTBDetGeometry{
- public:
-  HGCalTBDetGeometry(){;}
-  ~HGCalTBDetGeometry(){;}
-    
-  void add( HGCalTBModule layer ){ _layers.push_back(layer); }
-  HGCalTBModule layerAt(int i){ return _layers.at(i); }
-  std::vector<HGCalTBModule>& layers(){return _layers;}
-  int nlayers(){
-    std::set<int> l;
-    for( auto il : _layers )
-      l.insert(il.layerID());
-    return l.size();
-  }
- private:
-  std::vector<HGCalTBModule> _layers;
-};
 #endif
 
