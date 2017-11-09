@@ -14,6 +14,8 @@ class HGCalTBDetectorLayout{
     
   void add( HGCalTBLayer layer ){ _layers.push_back(layer); }
   HGCalTBLayer at(int i){ return _layers.at(i); }
+  // need to be sure  how the vector _layers has been filled (should be ok if geometry file filled with logical order) : layout.at( hit.detid().layer()-1 )
+  // -1 needed if elec map starts from 1
   std::vector<HGCalTBLayer>& layers(){return _layers;}
   int nlayers(){
     std::set<int> l;

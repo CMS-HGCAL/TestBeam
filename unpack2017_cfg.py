@@ -29,6 +29,17 @@ options.register('dataFormat',
                  VarParsing.VarParsing.varType.int,
                  'Data formats int -> important for parameter setting')
 
+options.register('electronicMap',
+                 "HGCal/CondObjects/data/map_CERN_Hexaboard_September_17Sensors_7EELayers_10FHLayers_V1.txt",
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'path to the electronic map')
+#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"
+#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
+#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_September_17Sensors_7EELayers_10FHLayers_V1.txt" # end of september
+#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_October_17Sensors_5EELayers_6FHLayers_V1.txt" # october 18-22, 1st conf
+#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_October_20Sensors_5EELayers_7FHLayers_V1.txt" # october 18-22, 2nd conf
+
 options.maxEvents = -1
 options.output = "cmsswEvents.root"
 
@@ -37,11 +48,6 @@ print options
 if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
 
-#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt"
-#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
-#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_September_17Sensors_7EELayers_10FHLayers_V0.txt" # end of september
-#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_October_17Sensors_5EELayers_6FHLayers_V0.txt" # october 18-22, 1st conf
-electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_October_20Sensors_5EELayers_7FHLayers_V0.txt" # october 18-22, 2nd conf
 pedestalHighGain=options.outputFolder+"/pedestalHG_"+str(options.runNumber)+".txt"
 pedestalLowGain=options.outputFolder+"/pedestalLG_"+str(options.runNumber)+".txt"
 noisyChannels=options.outputFolder+"/noisyChannels_"+str(options.runNumber)+".txt"
@@ -63,7 +69,7 @@ elif options.dataFormat==1 :
     numberOfBytesForTheTrailer=4
     numberOfBytesForTheEventTrailers=12
 process.source = cms.Source("HGCalTBRawDataSource",
-                            ElectronicMap=cms.untracked.string(electronicMap),
+                            ElectronicMap=cms.untracked.string(options.electronicMap),
                             fileNames=cms.untracked.vstring("file:%s/HexaData_Run%04d.raw"%(options.dataFolder,options.runNumber)),
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
                             NumberOf32BitsWordsPerReadOut=cms.untracked.uint32(30787),
@@ -91,7 +97,7 @@ process.pedestalplotter = cms.EDAnalyzer("PedestalPlotter",
                                          SensorSize=cms.untracked.int32(128),
                                          WritePedestalFile=cms.untracked.bool(True),
                                          InputCollection=cms.InputTag("source","skiroc2cmsdata"),
-                                         ElectronicMap=cms.untracked.string(electronicMap),
+                                         ElectronicMap=cms.untracked.string(options.electronicMap),
                                          HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
                                          LowGainPedestalFileName=cms.untracked.string(pedestalLowGain),
                                          WriteNoisyChannelsFile=cms.untracked.bool(True),
@@ -104,7 +110,7 @@ process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata")
 )
 
-process.p = cms.Path( process.pedestalplotter )
+process.p = cms.Path( process.pedestalplotter*process.rawdataplotter )
 
 process.end = cms.EndPath(process.output)
 

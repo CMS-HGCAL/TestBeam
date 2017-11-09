@@ -23,6 +23,27 @@ options.register('outputFolder',
                  VarParsing.VarParsing.varType.string,
                  'Output folder where analysis output are stored')
 
+options.register('electronicMap',
+                 'HGCal/CondObjects/data/map_CERN_Hexaboard_September_17Sensors_7EELayers_10FHLayers_V1.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'path to the electronic map')
+# Available options: 
+# "HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
+# "HGCal/CondObjects/data/map_CERN_Hexaboard_September_17Sensors_7EELayers_10FHLayers_V1.txt" # end of september
+# "HGCal/CondObjects/data/map_CERN_Hexaboard_October_17Sensors_5EELayers_6FHLayers_V1.txt" # october 18-22, 1st conf
+# "HGCal/CondObjects/data/map_CERN_Hexaboard_October_20Sensors_5EELayers_7FHLayers_V1.txt" # october 18-22, 2nd conf
+
+options.register('hgcalLayout',
+                 'HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'path to hgcal layout file')
+# Available options: 
+# "HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt"
+# "HGCal/CondObjects/data/layerGeom_oct2017_h6_17layers.txt"
+# "HGCal/CondObjects/data/layerGeom_oct2017_h6_20layers.txt"
+
 options.maxEvents = -1
 options.output = "cmsswEvents.root"
 
@@ -31,14 +52,7 @@ print options
 if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
 
-#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
-#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_September_17Sensors_7EELayers_10FHLayers_V0.txt" # end of september
-#electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_October_17Sensors_5EELayers_6FHLayers_V0.txt" # october 18-22, 1st conf
-electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_October_20Sensors_5EELayers_7FHLayers_V0.txt" # october 18-22, 2nd conf
 
-#hgcalLayout="HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt"
-#hgcalLayout="HGCal/CondObjects/data/layerGeom_oct2017_h6_17layers.txt"
-hgcalLayout="HGCal/CondObjects/data/layerGeom_oct2017_h6_20layers.txt"
 
 pedestalHighGain="pedestalHG_"+str(options.runNumber)+".txt"
 pedestalLowGain="pedestalLG_"+str(options.runNumber)+".txt"
@@ -69,7 +83,7 @@ process.output = cms.OutputModule("PoolOutputModule",
 process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
-                                        ElectronicMap=cms.untracked.string(electronicMap),
+                                        ElectronicMap=cms.untracked.string(options.electronicMap),
                                         SubtractPedestal=cms.untracked.bool(True),
                                         MaskNoisyChannels=cms.untracked.bool(True),
                                         HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
@@ -79,8 +93,8 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
 
 process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
                                        InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
-                                       ElectronicMap=cms.untracked.string(electronicMap),
-                                       DetectorLayout=cms.untracked.string(hgcalLayout),
+                                       ElectronicMap=cms.untracked.string(options.electronicMap),
+                                       DetectorLayout=cms.untracked.string(options.hgcalLayout),
                                        SensorSize=cms.untracked.int32(128),
                                        EventPlotter=cms.untracked.bool(False),
                                        SubtractCommonMode=cms.untracked.bool(True)
@@ -88,10 +102,10 @@ process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
 
 process.pulseshapeplotter = cms.EDAnalyzer("PulseShapePlotter",
                                            InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
-                                           ElectronicMap=cms.untracked.string(electronicMap)
+                                           ElectronicMap=cms.untracked.string(options.electronicMap)
 )
 
 
-process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )#*process.pulseshapeplotter )
+process.p = cms.Path( process.rawhitproducer*process.pulseshapeplotter )
 
 process.end = cms.EndPath(process.output)
