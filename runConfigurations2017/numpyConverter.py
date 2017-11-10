@@ -76,8 +76,6 @@ process.source = cms.Source("PoolSource",
                             fileNames=cms.untracked.vstring("file:%s"%options.dataFile)
 )
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
-
 process.numpyconverter = cms.EDAnalyzer("NumpyConverter",
                                 RUNDATA = cms.InputTag("wirechamberproducer", "FullRunData" ), 
                                 MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
