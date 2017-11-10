@@ -34,7 +34,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "HGCal/DataFormats/interface/HGCalTBDWCTrack.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
-
+#include "HGCal/CondObjects/interface/HGCalTBDetectorLayout.h"
 
 #include "TFile.h"
 #include "TH2F.h"
@@ -71,8 +71,10 @@ class MIPFinder : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		edm::EDGetTokenT<HGCalTBDWCTrack> DWCTrackToken;		
 
 		std::string m_electronicMap;
+		std::string m_detectorLayoutFile;
 		struct {
 			HGCalElectronicsMap emap_;
+			HGCalTBDetectorLayout layout_;
 		} essource_;
 
 		int m_NHexaBoards;
@@ -90,7 +92,7 @@ class MIPFinder : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		std::map<int,TH2F*> m_h_rechitEnergyPerDUT_selected;
 		std::map<int,TH1F*> m_h_rechitEnergy_selected;
 
-		std::map<int,TH2F*> m_h_DUT_occupancy_forBoard;		
+		std::map<int,TH2F*> m_h_board_occupancy_selected;		
 		std::map<int,TH2F*> m_h_rechitEfficiencyPerDUT;		
 
 
@@ -109,6 +111,7 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 	DWCTrackToken= consumes<HGCalTBDWCTrack>(iConfig.getParameter<edm::InputTag>("DWCTRACKS"));
 	
 	m_electronicMap = iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt");
+	m_detectorLayoutFile = iConfig.getUntrackedParameter<std::string>("DetectorLayout","HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt");
 	m_NHexaBoards= iConfig.getUntrackedParameter<int>("NHexaBoards", 10);
 
 	//read the configuration
@@ -125,7 +128,7 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 		os.str("");
 		os << "DUT_Occupancy_PerBoard"<<ib;
 		htmp2=fs->make<TH2F>(os.str().c_str(), os.str().c_str(), n_bins_DWCE, -max_dim_x_DUT, max_dim_x_DUT, n_bins_DWCE, -max_dim_y_DUT, max_dim_y_DUT);
-		m_h_DUT_occupancy_forBoard.insert( std::pair<int,TH2F*>(ib, htmp2) );
+		m_h_board_occupancy_selected.insert( std::pair<int,TH2F*>(ib, htmp2) );
 
 		for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
 			os.str("");
@@ -140,7 +143,7 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 				TFileDirectory channel_dir = chip_dir.mkdir( os.str().c_str() );
 				
 				os.str("");
-				os << "DUTOccupancy_board_"<<ib<<"_chip_"<<iski<<"_channel_"<<ichan;
+				os << "DUTOccupancy"<<ib<<"_chip_"<<iski<<"_channel_"<<ichan;
 				htmp2 = channel_dir.make<TH2F>("DUTOccupancy", os.str().c_str(), n_bins_DWCE, -max_dim_x_DUT, max_dim_x_DUT, n_bins_DWCE, -max_dim_y_DUT, max_dim_y_DUT);
 				h_DUT_occupancy.insert(std::pair<int,TH2F*>(key, htmp2));
 
@@ -243,8 +246,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	std::map<int, double> layer_ref_y;
 
 	for(int ib = 0; ib<m_NHexaBoards; ib++) {
-		
-		int layer = ib+1;		//to do: generalize
+		int layer=1+essource_.layout_.at(ib).layerID();
   		if (dwctrack->valid) {
 	  		if (dwctrack->valid&&(dwctrack->referenceType==15) && (dwctrack->chi2_x<=10.) && (dwctrack->chi2_y<=10.)) { 
 	  			layer_ref_x[layer] = dwctrack->DWCExtrapolation_XY(layer).first;
@@ -265,14 +267,15 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 			layer_ref_y[layer] = dwcs->at(1).y;		
 		}
 
+		bool _boardFilled = false;
 		for( size_t _iskiroc=0; _iskiroc<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; _iskiroc++ ) for( size_t _ch=0; _ch<=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; _ch++ ){
 			if (_ch%2==1) continue;
-
 			int _key = ib*1000+_iskiroc*100+_ch;
 
-			if ((currentDWCWindows.find(_key) != currentDWCWindows.end()) && (layer_ref_x[layer] > currentDWCWindows[_key][0]) && (layer_ref_x[layer] < currentDWCWindows[_key][1]) && (layer_ref_y[layer] > currentDWCWindows[_key][2]) && (layer_ref_y[layer] < currentDWCWindows[_key][3])) {
-				m_h_DUT_occupancy_forBoard[ib]->Fill(layer_ref_x[layer], layer_ref_y[layer], 1.);
-				break;
+			h_DUT_occupancy[_key]->Fill(layer_ref_x[layer], layer_ref_y[layer]);
+			if ((!_boardFilled)&&(currentDWCWindows.find(_key) != currentDWCWindows.end()) && (layer_ref_x[layer] > currentDWCWindows[_key][0]) && (layer_ref_x[layer] < currentDWCWindows[_key][1]) && (layer_ref_y[layer] > currentDWCWindows[_key][2]) && (layer_ref_y[layer] < currentDWCWindows[_key][3])) {
+				m_h_board_occupancy_selected[ib]->Fill(layer_ref_x[layer], layer_ref_y[layer], 1.);
+				_boardFilled=true;
 			}
 		}
 	}
@@ -291,7 +294,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 		int board = eid.iskiroc_rawhit() / 4;
 		int channel = eid.ichan();
   		int key = board*1000+skiroc*100+channel;
-  		double energyHG = Rechit.energyHigh();
+  		double energy = (Rechit.checkFlag(HGCalTBRecHit::kGood)&&(!Rechit.checkFlag(HGCalTBRecHit::kHighGainSaturated))) ? Rechit.energyHigh() : 0;
 		
   		double DUT_x = layer_ref_x[layer];
   		double DUT_y = layer_ref_y[layer];
@@ -300,11 +303,9 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 		#ifdef DEBUG
 			std::cout<<"Reference type: "<<dwctrack->referenceType<<"   chi2_x: "<<dwctrack->chi2_x<<"   chi2_y: "<<dwctrack->chi2_y<<"    layer: "<<layer<<"  DUT_x: "<<DUT_x<<"   DUT_y: "<<DUT_y<<std::endl;  
 		#endif
-
-		h_DUT_occupancy[key]->Fill(DUT_x, DUT_y);
 		
-  		m_h_rechitEnergyPerDUT[key]->Fill(DUT_x, DUT_y, energyHG);
-  		m_h_rechitEnergy[key]->Fill(energyHG);
+  		m_h_rechitEnergyPerDUT[key]->Fill(DUT_x, DUT_y, energy);
+  		m_h_rechitEnergy[key]->Fill(energy);
 
 		//asses some efficiency for that cell
 		//loops over all windows in that board to also assess fake rates
@@ -313,7 +314,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 			int _key = board*1000+_iskiroc*100+_ch;
 			
 			if ((currentDWCWindows.find(_key) != currentDWCWindows.end()) && (DUT_x > currentDWCWindows[_key][0]) && (DUT_x < currentDWCWindows[_key][1]) && (DUT_y > currentDWCWindows[_key][2]) && (DUT_y < currentDWCWindows[_key][3])) {
-  				int hit = (energyHG > 0) ? 1: 0;
+  				int hit = (energy > 0) ? 1: 0;
 				m_h_rechitEfficiencyPerDUT[key]->Fill(DUT_x, DUT_y, hit);
 				break;
 			}
@@ -324,18 +325,24 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 		if (DUT_x < currentDWCWindows[key][0] || DUT_x > currentDWCWindows[key][1]) continue;
 		if (DUT_y < currentDWCWindows[key][2] || DUT_y > currentDWCWindows[key][3]) continue;
 
-  		m_h_rechitEnergyPerDUT_selected[key]->Fill(DUT_x, DUT_y, energyHG);
-  		m_h_rechitEnergy_selected[key]->Fill(energyHG);
+  		m_h_rechitEnergyPerDUT_selected[key]->Fill(DUT_x, DUT_y, energy);
+  		m_h_rechitEnergy_selected[key]->Fill(energy);
 	}
 	
 }// analyze ends here
 
 void MIPFinder::beginJob() {	
 	ReadDWCWindows(0);
+
 	HGCalCondObjectTextIO io(0);
 	edm::FileInPath fip(m_electronicMap);
 	if (!io.load(fip.fullPath(), essource_.emap_)) {
 		throw cms::Exception("Unable to load electronics map");
+	};
+
+  	fip=edm::FileInPath(m_detectorLayoutFile);
+	if (!io.load(fip.fullPath(), essource_.layout_)) {
+		throw cms::Exception("Unable to load detector layout file");
 	};
 }
 

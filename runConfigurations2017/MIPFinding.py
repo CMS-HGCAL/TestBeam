@@ -31,6 +31,12 @@ options.register('electronicMap',
                  VarParsing.VarParsing.varType.string,
                  'Name of the electronic map file in HGCal/CondObjects/data/')
 
+options.register('hgcalLayout',
+                 'layerGeom_oct2017_h2_17layers.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Name of the hgcal layout file in HGCal/CondObjects/data/')
+
 options.register('NHexaBoards',
                 10,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -73,6 +79,7 @@ print options
 
 
 electronicMap="HGCal/CondObjects/data/%s" % options.electronicMap
+hgcalLayout="HGCal/CondObjects/data/%s" % options.hgcalLayout
 
 ################################
 process = cms.Process("mipfindinganalysis")
@@ -98,6 +105,7 @@ process.mipfindinganalysis = cms.EDAnalyzer("MIPFinder",
                                 DWCTRACKS = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" ), 
                                 HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
                                 ElectronicMap = cms.untracked.string(electronicMap),
+                                DetectorLayout=cms.untracked.string(hgcalLayout),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                 n_bins_DWCE = cms.int32(options.NBins),
                                 max_dim_x_DUT = cms.double(options.DimXDUT),
