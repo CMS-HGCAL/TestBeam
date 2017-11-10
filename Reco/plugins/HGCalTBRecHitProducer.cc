@@ -146,7 +146,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
     std::vector<double> sampleHG, sampleLG, sampleT;
 
-    float highGain(0), lowGain(0), totGain(0),toaRise(0), toaFall(0), energy(0), time(-1);
+    float highGain(0), lowGain(0), totGain(0),toaRise(0), toaFall(0), energy(0), _time(-1);
 
     float subHG[NUMBER_OF_TIME_SAMPLES],subLG[NUMBER_OF_TIME_SAMPLES];
 
@@ -205,18 +205,16 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     float en3=sampleHG[3];
     float en4=sampleHG[4];
     float en6=sampleHG[6];
-    HGCalTBRecHit recHit(rawhit.detid(), energy, lowGain, highGain, totGain, time);
-    if( rawhit.isUnderSaturationForHighGain() ) recHit.setUnderSaturationForHighGain();
-    if( rawhit.isUnderSaturationForLowGain() ) recHit.setUnderSaturationForLowGain();
-    HGCalTBDetId detid = rawhit.detid();
-    CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), SENSORSIZE );
-    double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA);
-    double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
-    recHit.setCellCenterCoordinate(iux, iuy);
-        
-
     if( en1<en3 && en3>en6 && (en4>en6||en2>en6) && en3>m_timeSample3ADCCut){
-
+      HGCalTBRecHit recHit(rawhit.detid(), energy, lowGain, highGain, totGain, _time);
+      if( rawhit.isUnderSaturationForHighGain() ) recHit.setUnderSaturationForHighGain();
+      if( rawhit.isUnderSaturationForLowGain() ) recHit.setUnderSaturationForLowGain();
+      HGCalTBDetId detid = rawhit.detid();
+      CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), SENSORSIZE );
+      double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA);
+      double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
+      recHit.setCellCenterCoordinate(iux, iuy);
+        
       HGCalTBLayer layer= essource_.layout_.at(rawhit.detid().layer()-1);
       int moduleId= layer.at( recHit.id().sensorIU(),recHit.id().sensorIV() ).moduleID();
       iski = rawhit.skiroc()%4;
@@ -232,7 +230,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
         recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
         if( fitresult.status==0 ){
           energy = fitresult.amplitude * adcConv.lowGain_to_highGain();
-          time = fitresult.tmax - fitresult.trise;
+          _time = fitresult.tmax - fitresult.trise;
           recHit.setFlag(HGCalTBRecHit::kGood);
           if (investigatePulseShape) {
             for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) {
@@ -246,7 +244,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
         fitter.run(sampleT, sampleHG, fitresult);
         if( fitresult.status==0 ){
           energy = fitresult.amplitude;
-          time = fitresult.tmax - fitresult.trise;
+          _time = fitresult.tmax - fitresult.trise;
           recHit.setFlag(HGCalTBRecHit::kGood);
           if (investigatePulseShape) {
             for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) {
@@ -258,11 +256,13 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
         }
 
       }
+
+      //std::cout<<"Setting energy and time of: "<<detid.layer()<<"  "<<detid.iu()+7<<"  "<<detid.iv()+7<<"  "<<energy*adcConv.adc_to_MIP()<<"  "<<_time<<std::endl;
       recHit.setEnergy(energy*adcConv.adc_to_MIP());
-      recHit.setTime(time);
+      recHit.setTime(_time);
+      rechits->push_back(recHit);
     }
 
-    rechits->push_back(recHit);
   }
   event.put(rechits, m_outputCollectionName);
   #ifdef DEBUG
