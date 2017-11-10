@@ -62,6 +62,10 @@ public:
 
 	void setTime(float time);
 
+	void setEnergyTOT(float _energy) {_energyTot=_energy;};
+	void setEnergyLow(float _energy) {_energyLow=_energy;};
+	void setEnergyHigh(float _energy) {_energyHigh=_energy;};
+
 	float time(){ 
 	  return _time; 
 	} 

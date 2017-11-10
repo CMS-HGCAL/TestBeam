@@ -222,6 +222,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
       if( rawhit.lowGainADC(3) > adcConv.TOT_lowGain_transition() ){
         energy = totGain * adcConv.TOT_to_lowGain() * adcConv.lowGain_to_highGain();
+        recHit.setEnergyTOT(totGain);
         recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
         recHit.setFlag(HGCalTBRecHit::kGood);
       }
@@ -229,6 +230,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
         fitter.run(sampleT, sampleLG, fitresult);
         recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
         if( fitresult.status==0 ){
+          recHit.setEnergyLow(fitresult.amplitude);
           energy = fitresult.amplitude * adcConv.lowGain_to_highGain();
           _time = fitresult.tmax - fitresult.trise;
           recHit.setFlag(HGCalTBRecHit::kGood);
@@ -243,6 +245,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       } else{
         fitter.run(sampleT, sampleHG, fitresult);
         if( fitresult.status==0 ){
+          recHit.setEnergyHigh(fitresult.amplitude);
           energy = fitresult.amplitude;
           _time = fitresult.tmax - fitresult.trise;
           recHit.setFlag(HGCalTBRecHit::kGood);
