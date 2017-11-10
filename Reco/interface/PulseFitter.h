@@ -11,7 +11,7 @@
 
 struct PulseFitterResult{
 PulseFitterResult() : tmax(0.), amplitude(0.),
-    errortmax(0.), erroramplitude(0.) {;}
+    errortmax(0.), erroramplitude(0.), status(-1) {;}
   double tmax;
   double amplitude;
   double chi2;

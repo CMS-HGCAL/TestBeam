@@ -14,6 +14,8 @@
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRawHitCollection.h"
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
+#include "HGCal/CondObjects/interface/HGCalTBDetectorLayout.h"
+#include "HGCal/CondObjects/interface/HGCalTBADCConversionsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 
@@ -36,22 +38,17 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   virtual void beginJob() override;
   std::string m_outputCollectionName;
   std::string m_electronicMap;
+  std::string m_detectorLayoutFile;
+  std::string m_adcCalibrationsFile;
+  double m_timeSample3ADCCut;
+
+  edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
+
   bool m_maskNoisyChannels;
   std::string m_channelsToMask_filename;
   int m_NHexaBoards;
-  double m_timeSample3ADCCut;
-  
-  edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
-  std::vector<double> m_ADC_per_MIP;    
-  std::vector<double> m_LG2HG_value;
-  std::vector<double> m_TOT2LG_value;
-  std::vector<double> m_highGainADCSaturation;
-  std::vector<double> m_lowGainADCSaturation;
 
-  bool performPulseFit;
-  bool performAveraging;
   bool investigatePulseShape;
-
   std::map<int, TH2F*> shapesLG;
   std::map<int, TH2F*> shapesHG;
   std::map<int, TH2F*> ToARisevsTMaxLG;
@@ -71,6 +68,8 @@ class HGCalTBRecHitProducer : public edm::EDProducer
 
   struct {
     HGCalElectronicsMap emap_;
+    HGCalTBDetectorLayout layout_;
+    HGCalTBADCConversionsMap adccalibmap_;
   } essource_;
   
 };

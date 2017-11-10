@@ -38,6 +38,18 @@ options.register('electronicMap',
                  VarParsing.VarParsing.varType.string,
                  'Name of the electronic map file in HGCal/CondObjects/data/')
 
+options.register('hgcalLayout',
+                 'layerGeom_oct2017_h2_17layers.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Name of the hgcal layout file in HGCal/CondObjects/data/')
+
+options.register('adcCalibrations',
+                 'hgcal_calibration.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Name of the hgcal ADC to MIP calibration file in HGCal/CondObjects/data/')
+
 options.register('noisyChannelsFile',
                  '/home/tquast/tb2017/pedestals/noisyChannels.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -50,18 +62,6 @@ options.register('MaskNoisyChannels',
                  VarParsing.VarParsing.varType.int,
                  'Ignore noisy channels in the reconstruction.'
                 )
-
-options.register('performPulseFit',
-                 1,
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.int,
-                 'Perform the pulse fits for the rechit reconstruction. Has priority over averaging. ')
-
-options.register('performAveraging',
-                 0,
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.int,
-                 'Perform the averaging for the rechit reconstruction. ')
 
 options.register('reportEvery',
                 10000,
@@ -78,6 +78,8 @@ print options
 
 
 electronicMap="HGCal/CondObjects/data/%s" % options.electronicMap
+hgcalLayout="HGCal/CondObjects/data/%s" % options.hgcalLayout
+adcCalibrations="HGCal/CondObjects/data/%s" % options.adcCalibrations
 
 ################################
 process = cms.Process("rechitproducer")
@@ -108,14 +110,9 @@ process.output = cms.OutputModule("PoolOutputModule",
 process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         OutputCollectionName = cms.string('HGCALTBRECHITS'),
                                         InputCollection = cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
-                                        performPulseFit = cms.untracked.bool(bool(options.performPulseFit)),
-                                        performAveraging = cms.untracked.bool(bool(options.performAveraging)),
-                                        LG2HG = cms.untracked.vdouble( [8.83]*4*20),
-                                        TOT2LG = cms.untracked.vdouble([2.8]*4*20),
-                                        ADC_per_MIP = cms.untracked.vdouble([49.3]*20*4),
-                                        HighGainADCSaturation = cms.untracked.vdouble( [1500.]*4*20),
-                                        LowGainADCSaturation = cms.untracked.vdouble([1200.]*4*20),
                                         ElectronicsMap = cms.untracked.string(electronicMap),
+                                        DetectorLayout = cms.untracked.string(hgcalLayout),
+                                        ADCCalibrations = cms.untracked.string(adcCalibrations),                                       
                                         MaskNoisyChannels=cms.untracked.bool(bool(options.MaskNoisyChannels)),
                                         ChannelsToMaskFileName=cms.untracked.string(options.noisyChannelsFile),
                                         NHexaBoards=cms.untracked.int32(options.NHexaBoards),

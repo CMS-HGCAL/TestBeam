@@ -40,3 +40,6 @@ DQM/hgcalDQM_log
 DQM/hgcalDQM_log.old
 
 doc/doxygen
+
+scripts/run*.sh
+scripts/run*.py

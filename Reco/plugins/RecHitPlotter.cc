@@ -27,16 +27,6 @@
 #include <iomanip>
 #include <set>
 
-struct channelInfo{
-  channelInfo(){;}
-  int key;
-  TH1F* h_adcHigh;
-  TH1F* h_adcLow;
-  TH1F* h_tot;
-  TH2F* h_high_vs_low;
-  TH2F* h_low_vs_tot;
-};
-
 class RecHitPlotter : public edm::one::EDAnalyzer<edm::one::SharedResources>
 {
 public:
@@ -69,7 +59,6 @@ private:
   TH1F* m_h_hgSum;
   TH1F* m_h_lgSum;
   TH1F* m_h_enSum;
-  std::map<uint32_t,channelInfo*> m_channelInfoMap;
 
   edm::EDGetTokenT<HGCalTBRecHitCollection> m_HGCalTBRecHitCollection;
 
@@ -85,8 +74,8 @@ RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig) :
   m_NHexaBoards(iConfig.getUntrackedParameter<int>("NHexaBoards", 10)), 
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
   m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
-  m_mipThreshold(iConfig.getUntrackedParameter<double>("MipThreshold",200.)),
-  m_noiseThreshold(iConfig.getUntrackedParameter<double>("NoiseThreshold",10.))
+  m_mipThreshold(iConfig.getUntrackedParameter<double>("MipThreshold",5.0)),
+  m_noiseThreshold(iConfig.getUntrackedParameter<double>("NoiseThreshold",0.5))
 {
   m_HGCalTBRecHitCollection = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
 
@@ -112,9 +101,7 @@ void RecHitPlotter::beginJob()
   if (!io.load(fip.fullPath(), essource_.layout_)) {
     throw cms::Exception("Unable to load detector layout file");
   };
-  for( auto layer : essource_.layout_.layers() )
-    layer.print();
-
+ 
   usesResource("TFileService");
   edm::Service<TFileService> fs;
   
@@ -122,41 +109,10 @@ void RecHitPlotter::beginJob()
   m_h_mip[1]=fs->make<TH1F>("Mip_Ski1","Mip_Ski1",180,20,200);
   m_h_mip[2]=fs->make<TH1F>("Mip_Ski2","Mip_Ski2",180,20,200);
   m_h_mip[3]=fs->make<TH1F>("Mip_Ski3","Mip_Ski3",180,20,200);
-  m_h_hgSum=fs->make<TH1F>("HighGainSum","HighGainSum",5000,0,50000);
-  m_h_lgSum=fs->make<TH1F>("LowGainSum","LowGainSum",5000,0,50000);
-  m_h_enSum=fs->make<TH1F>("EnergySum","EnergySum",5000,0,50000);
+  m_h_hgSum=fs->make<TH1F>("HighGainSum","HighGainSum",5000,0,10000);
+  m_h_lgSum=fs->make<TH1F>("LowGainSum","LowGainSum",5000,0,10000);
+  m_h_enSum=fs->make<TH1F>("EnergySum","EnergySum",5000,0,10000);
 
-  std::ostringstream os( std::ostringstream::ate );
-  for(int ib = 0; ib<m_NHexaBoards; ib++) {
-    for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
-      os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
-      TFileDirectory dir = fs->mkdir( os.str().c_str() );
-      for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
-	int skiId=ib*HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
-	HGCalTBElectronicsId eid(skiId,ichan);
-	if( !essource_.emap_.existsEId(eid.rawId()) ) continue;
-	HGCalTBDetId detid=essource_.emap_.eid2detId(eid.rawId());
-	channelInfo *chan=new channelInfo();
-	chan->key=detid.layer()*10000+skiId*100+ichan;
-	os.str("");
-	os << "HighGain_Channel" << ichan  ;
-	chan->h_adcHigh=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),3600,-100,3500);
-	os.str("");
-	os << "LowGain_Channel" << ichan ;
-	chan->h_adcLow=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),3600,-100,3500);
-	os.str("");
-  os << "TOT_Channel" << ichan ;
-  chan->h_tot=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),3600,-100,3500);
-  os.str("");
-	os << "HighGainVsLowGain_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan;
-	chan->h_high_vs_low=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),360,-100,3500,400,-500,3500);
-  os.str("");
-  os << "LowGainVsTOT_HexaBoard" << ib << "_Chip" << iski << "_Channel" << ichan;
-  chan->h_low_vs_tot=dir.make<TH2F>(os.str().c_str(),os.str().c_str(),360,-100,3500,400,-500,3500);
-	m_channelInfoMap.insert( std::pair<uint32_t,channelInfo*>(chan->key,chan) );
-      }
-    }
-  }
 }
 
 void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
@@ -167,6 +123,7 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   edm::Handle<HGCalTBRecHitCollection> hits;
   event.getByToken(m_HGCalTBRecHitCollection, hits);
 
+  std::map<int,TH2Poly*>  polyMap;
   std::map<int,TH2Poly*>  polyMapHG;
   std::map<int,TH2Poly*>  polyMapLG;
   if( m_eventPlotter ){
@@ -176,6 +133,13 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     for(int il = 0; il<essource_.layout_.nlayers(); il++) {
       int subdetId = essource_.layout_.at(il).subdet();
       TH2Poly *h=dir.make<TH2Poly>();
+      os.str("");
+      os<<"Energy_Layer"<<il;
+      h->SetName(os.str().c_str());
+      h->SetTitle(os.str().c_str());
+      InitTH2Poly(*h, subdetId, il);
+      polyMap.insert( std::pair<int,TH2Poly*>(il,h) );
+      h=dir.make<TH2Poly>();
       os.str("");
       os<<"HighGain_Layer"<<il;
       h->SetName(os.str().c_str());
@@ -194,27 +158,19 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   float energyHighSum(0),energyLowSum(0),energySum(0);
   for( auto hit : *hits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid( hit.id().rawId() ) );
-    int iski=(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-(eid.iskiroc()-1)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-    int key=hit.id().layer()*10000+eid.iskiroc()*100+eid.ichan();
-    if( m_channelInfoMap.find(key)==m_channelInfoMap.end() )
-      std::cout << "Problem the key is not appearing in the channel map : key,layer-1,iski,channel,skiID = " << key << "\t" << hit.id().layer()-1<< " " << iski << " " << eid.ichan() << " "
-		<< eid.iskiroc() 
-		<< std::endl;
-    if( !hit.isUnderSaturationForHighGain() ) m_channelInfoMap[ key ]->h_adcHigh->Fill( hit.energyHigh() );
-    if( !hit.isUnderSaturationForLowGain() ) m_channelInfoMap[ key ]->h_adcLow->Fill( hit.energyLow() );
-    else m_channelInfoMap[ key ]->h_tot->Fill( hit.energyTot() );
-    if( hit.energyHigh()>m_noiseThreshold && !hit.isUnderSaturationForLowGain() && !hit.isUnderSaturationForHighGain() ){
-      m_channelInfoMap[ key ]->h_high_vs_low->Fill( hit.energyLow(), hit.energyHigh() );
-      m_channelInfoMap[ key ]->h_low_vs_tot->Fill( hit.energyTot(), hit.energyLow() );
+    if( hit.energy()>m_noiseThreshold && !hit.isUnderSaturationForLowGain() && !hit.isUnderSaturationForHighGain() && hit.id().cellType()!=5 ){
       energyHighSum+=hit.energyHigh();
       energyLowSum+=hit.energyLow();
       energySum+=hit.energy();
-      //if( hit.energyHigh()<m_mipThreshold )
-      //	m_h_mip[(4-(eid.iskiroc()-1))%4]->Fill(hit.energyHigh());
+      if( hit.energyHigh()<m_mipThreshold ){
+        m_h_mip[((eid.iskiroc()-1))%4]->Fill(hit.energyHigh());   
+      }
     }
+
     if(m_eventPlotter){
       if(!IsCellValid.iu_iv_valid(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize))  continue;
       CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize);
+      polyMap[ hit.id().layer()-1 ]->Fill(CellCentreXY.first , CellCentreXY.second, hit.energy());
       polyMapHG[ hit.id().layer()-1 ]->Fill(CellCentreXY.first , CellCentreXY.second, hit.energyHigh());
       polyMapLG[ hit.id().layer()-1 ]->Fill(CellCentreXY.first , CellCentreXY.second, hit.energyLow());
     }
