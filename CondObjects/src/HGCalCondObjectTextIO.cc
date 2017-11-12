@@ -146,7 +146,9 @@ bool HGCalCondObjectTextIO::load(const std::string& filename, HGCalTBDetectorLay
   char det[10];
   char buffer[100];
   std::vector<HGCalTBLayer> layers;
-  std::vector<HGCalTBLayer>::iterator it;
+  std::vector<HGCalTBLayer>::iterator it_layers;
+  std::vector<HGCalTBModule> modules;
+  std::vector<HGCalTBModule>::iterator it_modules;
   while(!feof(f)){
     buffer[0]=0;
     fgets(buffer,100,f);
@@ -159,17 +161,21 @@ bool HGCalCondObjectTextIO::load(const std::string& filename, HGCalTBDetectorLay
       process += ptr;
       HGCalTBModule module(layerId, std::string(det), x, y, moduleId);
       HGCalTBLayer layer(layerId, z, std::string(det) );
-      it=std::find(layers.begin(), layers.end(), layer);
-      if( it!=layers.end() )
-	(*it).add(module);
+      it_layers=std::find(layers.begin(), layers.end(), layer);
+      modules.push_back(module);
+      if( it_layers!=layers.end() )
+	(*it_layers).add(module);
       else{
 	layer.add(module);
 	layers.push_back(layer);
       }
     } else continue;
   }
-  for( it=layers.begin(); it!=layers.end(); ++it ){
-    hgcalGeom.add(*it);
+  for( it_layers=layers.begin(); it_layers!=layers.end(); ++it_layers ){
+    hgcalGeom.add(*it_layers);
+  }
+  for( it_modules=modules.begin(); it_modules!=modules.end(); ++it_modules ){
+    hgcalGeom.add(*it_modules);
   }
   fclose(f);
   return true;
