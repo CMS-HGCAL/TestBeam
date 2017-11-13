@@ -246,6 +246,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	std::map<int, double> layer_ref_y;
 
 	for(int ib = 0; ib<m_NHexaBoards; ib++) {
+
 		int layer=essource_.layout_.getLayerWithModuleIndex(ib).layerID();
   		if (dwctrack->valid) {
 	  		if (dwctrack->valid&&(dwctrack->referenceType==15) && (dwctrack->chi2_x<=10.) && (dwctrack->chi2_y<=10.)) { 
