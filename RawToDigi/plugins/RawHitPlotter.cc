@@ -455,10 +455,10 @@ void RawHitPlotter::endJob()
   }
   for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
     int iboard=(*it).first/1000;
-    int ilayer=essource_.layout_.at(iboard).layerID();
     int iski=((*it).first%1000)/100;
     int ichan=(*it).first%100;
     HGCalTBDetId detid=(*it).second;
+    int ilayer=detid.layer()-1;
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), m_sensorsize );
     double iux = CellCentreXY.first;
     double iuy = CellCentreXY.second;
