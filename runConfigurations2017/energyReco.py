@@ -83,7 +83,8 @@ elif int(options.configuration)==2:
     nLayers=17
 elif int(options.configuration)==3:
     nLayers=12      
-
+elif int(options.configuration)==4:
+    nLayers=12 
 
 if options.simulation==1:
     rundata_tag = cms.InputTag("source", "FullRunData", "rechitproducer") 
