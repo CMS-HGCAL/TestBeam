@@ -247,7 +247,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 
 	for(int ib = 0; ib<m_NHexaBoards; ib++) {
 
-		int layer=essource_.layout_.getLayerWithModuleIndex(ib).layerID();
+		int layer=essource_.layout_.getLayerWithModuleIndex(ib).layerID()+1;
   		if (dwctrack->valid) {
 	  		if (dwctrack->valid&&(dwctrack->referenceType==15) && (dwctrack->chi2_x<=10.) && (dwctrack->chi2_y<=10.)) { 
 	  			layer_ref_x[layer] = dwctrack->DWCExtrapolation_XY(layer).first;
@@ -397,13 +397,15 @@ void MIPFinder::ReadDWCWindows(int fileIndex) {
 	}
 	
 	WindowMap ::iterator it;
-	for (it=_parameters.begin(); it!=_parameters.end(); it++) {
-		std::cout<<"key: "<<it->first;
-		for (int i=0; i<4; i++) {
-			std::cout<<"  "<<it->second[i];
+	#ifdef DEBUG
+		for (it=_parameters.begin(); it!=_parameters.end(); it++) {
+			std::cout<<"key: "<<it->first;
+			for (int i=0; i<4; i++) {
+				std::cout<<"  "<<it->second[i];
+			}
+			std::cout<<std::endl;
 		}
-		std::cout<<std::endl;
-	}
+	#endif
 
 	loadedDWCWindows[std::make_pair(minRun, maxRun)] = _parameters;
 
