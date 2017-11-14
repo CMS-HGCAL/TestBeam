@@ -126,7 +126,7 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 	std::ostringstream os( std::ostringstream::ate );
 	for(int ib = 0; ib<m_NHexaBoards; ib++) {
 		os.str("");
-		os << "DUT_Occupancy_PerBoard"<<ib;
+		os << "DUT_Occupancy_PerBoard_DWCWindows"<<ib;
 		htmp2=fs->make<TH2F>(os.str().c_str(), os.str().c_str(), n_bins_DWCE, -max_dim_x_DUT, max_dim_x_DUT, n_bins_DWCE, -max_dim_y_DUT, max_dim_y_DUT);
 		m_h_board_occupancy_selected.insert( std::pair<int,TH2F*>(ib, htmp2) );
 
@@ -308,19 +308,9 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
   		m_h_rechitEnergyPerDUT[key]->Fill(DUT_x, DUT_y, energy);
   		m_h_rechitEnergy[key]->Fill(energy);
 
-		//asses some efficiency for that cell
-		//loops over all windows in that board to also assess fake rates
-		for( size_t _iskiroc=0; _iskiroc<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; _iskiroc++ ) for( size_t _ch=0; _ch<=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; _ch++ ){
-			if (_ch%2==1) continue;
-			int _key = board*1000+_iskiroc*100+_ch;
-			
-			if ((currentDWCWindows.find(_key) != currentDWCWindows.end()) && (DUT_x > currentDWCWindows[_key][0]) && (DUT_x < currentDWCWindows[_key][1]) && (DUT_y > currentDWCWindows[_key][2]) && (DUT_y < currentDWCWindows[_key][3])) {
-  				int hit = (energy > 0) ? 1: 0;
-				m_h_rechitEfficiencyPerDUT[key]->Fill(DUT_x, DUT_y, hit);
-				break;
-			}
-		}
-
+		int hit = (energy > 0) ? 1: 0;
+		m_h_rechitEfficiencyPerDUT[key]->Fill(DUT_x, DUT_y, hit);
+	
 
  		if (currentDWCWindows.find(key) == currentDWCWindows.end())	continue;	
 		if (DUT_x < currentDWCWindows[key][0] || DUT_x > currentDWCWindows[key][1]) continue;
