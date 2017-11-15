@@ -1,10 +1,10 @@
 /* 
- * Write out residuals and derivatives to pass forward to millepede. Relies on the fact that all layers have proper hits. 
+ * 
  */
 
 /**
 	@Author: Thorben Quast <tquast>
-		21 Dec 2016
+		21 July 2017
 		thorben.quast@cern.ch / thorben.quast@rwth-aachen.de
 */
 
