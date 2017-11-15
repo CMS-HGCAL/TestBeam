@@ -1,4 +1,4 @@
-CMS HGCal Testbeam Analysis Framework
+# CMS HGCal Testbeam Analysis Framework
 
 =============================================
 * This new branch is to be used for analysing data from 2017 test beam. 
@@ -143,7 +143,7 @@ scram b -j16
 
 ## Possibly helpful plugins
 
-###HGCalTBGenSimSource
+### HGCalTBGenSimSource
 * Defined in `RawToDigi/plugins/HGCalTBGenSimSource`. 
 * A source that reads from the simulated data files (=ROOT TTrees) and produces `HGCalTBRecHits`, `RunData` and `WireChamberData`.
 * The hit IDs are converted into layer and cell numbers. The cell numbers can be uniquely mapped to their respective x,y positions on the sensor. This in turn yields the (u,v) tuple with which electronic IDs are instantiated. Hence, a simulated cell can be mapped to its physical counter part using skiroc and channel IDs. In particular, noisy channels may be removed using the same code and files as in the rawhit production.
@@ -153,7 +153,7 @@ scram b -j16
 
 * Ultimately, the simulated files are converted into files which may be input to other analyzer plugins that are designed to run on real reconstructed TB data. This should facilitate data to MC comparisons.
 
-###NumpyConverter
+### NumpyConverter
 * Defined in `Reco/plugins/NumpyConverter`. 
 * A plugin that dumps the edm content into a specific numpy format. 
 * Here, the data are stored as tensors in `.npz` files which may be loaded subsequently using standard `python`. 
@@ -170,12 +170,12 @@ rechitOfInterest = rechits[198-1][4-1][-3+7][4+7]
 * **(More detailed examples on how to retrieve the data are in preparation.)**
 
 ## Exemplary analyzers
-###MIPFinder
+### MIPFinder
 * Defined in `Reco/plugins/MIPFinder`. 
 * It is the analyzer with which the histograms for the MIP calibration with and without cuts on the extrapolated DWC tracks are made.
 * It makes use of `RunData`, `WireChamberData`, `HGCalTBDWCTracks` and `HGCalTBRecHits` such that it should serve as a good reference for other persons intending to write own analyzers on any of these objects.
 
-###Configuration files
+### Configuration files
 * Step-by-step configration files are provided in the `runConfigurations2017`directory. 
 * For each file, not more than two processes are chained to each other to keep the output minimal and maintain modularity of the targeted workflow.
 
