@@ -1,4 +1,4 @@
-CMS HGCal Testbeam Analysis Framework(OUTDATED, new documentation is under preparation)
+CMS HGCal Testbeam Analysis Framework
 
 =============================================
 * This new branch is to be used for analysing data from 2017 test beam. 
@@ -67,7 +67,7 @@ scram b -j16
 * Defined in `DataFormats/interface/HGCalTBRunData.h`. 
 * An object that characterises a given event in terms of event numbers, trigger counters - independent of any event cuts if these variables are set at the unpacking stage -, run numbers, setup configurations ("1"=July 2017 TB - "4"=October 2017 with 20 layers), energy plus particle ID of the incident particles, and run types (pedestal, beam, sim.). 
 
-* ```c++
+```c++
     int run; //run number to which the event belongs. The edm's run object is always set to 1
     int trigger; //could be assigned to the trigger counter that is stored in the HGCal timing files
     int event; //is assigned to the actual event number starting at 1 for each new run
@@ -160,7 +160,7 @@ scram b -j16
 * As an example, reconstructed energies from rechits are stored as NEvents x NLayers x 15 x 15 tensors. 
 * The rechit energy of the cell with (u,v) = (-3, 4) in layer 4 and event 198 would be retrieved via 
 
-* ```python
+```python
 import numpy as np
 data = np.load("<pathToDataFile>.npz") #just a pointer to the file, does not consume any RAM
 rechits = data["rechits"] #actually loads the rechit data into the ram, ~300MB for 10k events with 17 modules
