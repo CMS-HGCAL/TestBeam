@@ -4,9 +4,7 @@
   </class>
   <class name="std::vector<HGCalTBTrack>"/>
   <class name="edm::Wrapper<vector<HGCalTBTrack> >"/>
-  <class name="HGCalTBRecHit" ClassVersion="0">
-   <version ClassVersion="1" checksum="562864565"/>
-  </class>
+  <class name="HGCalTBRecHit"/>
   <class name="std::vector<HGCalTBRecHit>"/>
   <class name="edm::SortedCollection<HGCalTBRecHit,edm::StrictWeakOrdering<HGCalTBRecHit> >"/>
   <class name="edm::Wrapper<HGCalTBRecHitCollection>"/>
@@ -14,8 +12,13 @@
   <class name="SKIROC2DigiCollection"/>
   <class name="edm::Wrapper<SKIROC2DigiCollection>"/>  
 
+  <class name="UserRecords<double>"/>
+  <class name="UserRecords<bool>"/>
   <class name="RunData"/>
   <class name="edm::Wrapper<RunData>"/>
+
+  <class name="HGCalTBDWCTrack"/>
+  <class name="edm::Wrapper<HGCalTBDWCTrack>"/>
 
   <class name="edm::reftobase::Holder<CaloRecHit, edm::Ref<edm::SortedCollection<HGCalTBRecHit, edm::StrictWeakOrdering<HGCalTBRecHit> >, HGCalTBRecHit, edm::refhelper::FindUsingAdvance<edm::SortedCollection<HGCalTBRecHit, edm::StrictWeakOrdering<HGCalTBRecHit> >, HGCalTBRecHit> > >" />
   <class name="reco::HGCalTBCluster"/>
@@ -30,10 +33,10 @@
   <class name="HGCalTBRawHitCollection"/>
   <class name="edm::Wrapper<edm::EDCollection<HGCalTBRawHit> >"/>
 
-  <class name="MultiWireChamberData"/>
-  <class name="edm::Wrapper<MultiWireChamberData>"/>
-  <class name="std::vector<MultiWireChamberData>"/>
-  <class name="edm::Wrapper<std::vector<MultiWireChamberData> >"/>
+  <class name="WireChamberData"/>
+  <class name="edm::Wrapper<WireChamberData>"/>
+  <class name="std::vector<WireChamberData>"/>
+  <class name="edm::Wrapper<std::vector<WireChamberData> >"/>
   
 
 </lcgdict>

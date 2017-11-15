@@ -5,6 +5,10 @@
 #include <cmath>
 #include <iostream>
 
+#include <Math/Minimizer.h>
+#include <Math/Factory.h>
+#include <Math/Functor.h>
+
 struct PulseFitterResult{
 PulseFitterResult() : tmax(0.), amplitude(0.),
     errortmax(0.), erroramplitude(0.), status(-1) {;}
@@ -40,6 +44,10 @@ class PulseFitter{
  private:
   int m_printLevel;
   fitterParameter m_fitterParameter;
+
 };
+
+double parabolicFit(std::vector<double>, std::vector<double>);
+
 
 #endif

@@ -47,6 +47,8 @@ private:
     HGCalTBDetectorLayout layout_;
   } essource_;
 
+  int m_NHexaBoards;
+
   int m_sensorsize;
   bool m_eventPlotter;
   int m_evtID;
@@ -69,6 +71,7 @@ private:
 RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig) :
   m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt")),
   m_detectorLayoutFile(iConfig.getUntrackedParameter<std::string>("DetectorLayout","HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt")),
+  m_NHexaBoards(iConfig.getUntrackedParameter<int>("NHexaBoards", 10)), 
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
   m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
   m_mipThreshold(iConfig.getUntrackedParameter<double>("MipThreshold",5.0)),
@@ -159,9 +162,11 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       energyHighSum+=hit.energyHigh();
       energyLowSum+=hit.energyLow();
       energySum+=hit.energy();
-      if( hit.energyHigh()<m_mipThreshold )
-      	m_h_mip[(4-(eid.iskiroc()-1))%4]->Fill(hit.energyHigh());
+      if( hit.energyHigh()<m_mipThreshold ){
+        m_h_mip[((eid.iskiroc()-1))%4]->Fill(hit.energyHigh());   
+      }
     }
+
     if(m_eventPlotter){
       if(!IsCellValid.iu_iv_valid(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize))  continue;
       CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize);

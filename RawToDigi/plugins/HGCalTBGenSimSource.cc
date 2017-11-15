@@ -1,9 +1,11 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBGenSimSource.h"
 
+
 using namespace std;
 
+//#define DEBUG
+
 HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :  edm::ProducerSourceFromFiles(pset, desc, true),
-	inputPathFormat(""),
 	currentRun(-1),
 	currentEvent(-1),
 	rootFile(NULL)
@@ -11,103 +13,100 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	eventCounter = 0;
 
 	//find and fill the configured runs
-	outputCollectionName = pset.getParameter<std::string>("OutputCollectionName");
-	runEnergyMapFile = pset.getUntrackedParameter<std::string>("runEnergyMapFile"); 
-	inputPathFormat = pset.getUntrackedParameter<std::string>("inputPathFormat");
-	energyNoise = pset.getParameter<double>("energyNoise");
-	energyNoiseResolution = pset.getParameter<double>("energyNoiseResolution");
-	smearingResolution = pset.getParameter<double>("MWCSmearingResolution")/1000.;		//configuration is in microns, convert to cm
+	RechitOutputCollectionName = pset.getParameter<std::string>("RechitOutputCollectionName"); 
+	DWCOutputCollectionName = pset.getParameter<std::string>("DWCOutputCollectionName"); 
+	RunDataOutputCollectionName = pset.getParameter<std::string>("RunDataOutputCollectionName"); 
+	m_maskNoisyChannels = pset.getUntrackedParameter<bool>("MaskNoisyChannels", true);
+  	m_channelsToMask_filename = pset.getUntrackedParameter<std::string>("ChannelsToMaskFileName","HGCal/CondObjects/data/noisyChannels.txt");
 
-	produces <HGCalTBRecHitCollection>(outputCollectionName);
-	produces<RunData>("RunData");
-	produces<MultiWireChambers>("MultiWireChambers");
+	energyNoise = pset.getUntrackedParameter<double>("energyNoise", 0.);	//in MIPS
+	energyNoiseResolution = pset.getUntrackedParameter<double>("energyNoiseResolution", 0.);
+  	std::vector<double> v1(4, 1.0);
+	wc_resolutions = pset.getUntrackedParameter<std::vector<double> >("wc_resolutions", v1);
 
+
+  	beamEnergy = pset.getUntrackedParameter<unsigned int> ("beamEnergy", 250);
+  	beamParticlePDGID = pset.getUntrackedParameter<int> ("beamParticlePDGID", 211);
+  	setupConfiguration = pset.getUntrackedParameter<unsigned int> ("setupConfiguration", 1);
+
+  	switch(setupConfiguration) {
+  		case 1:
+  			N_layers_EE = 2;		//must shift remove layer 0 artificially
+  			N_layers_FH = 4;
+  			N_layers_BH = 12;
+  			break;
+    	case 2:
+  			N_layers_EE = 7;
+  			N_layers_FH = 10;
+  			N_layers_BH = 12;
+  			break;
+    	case 3:
+  			N_layers_EE = 4;		//not sure about this number, 31.10.18 (T. Quast)
+  			N_layers_FH = 6;		//not sure about this number, 31.10.18 (T. Quast)
+  			N_layers_BH = 12;		//fix
+  			break;
+  		default:
+    	case 4:
+  			N_layers_EE = 4;		//not sure about this number, 31.10.18 (T. Quast)
+  			N_layers_FH = 6;		//not sure about this number, 31.10.18 (T. Quast)
+  			N_layers_BH = 12;
+  			break;
+  	}
+
+  	GeVToMip = pset.getUntrackedParameter<double>("GeVToMip", 1./(86.5e-6));			//value from Shilpi
+
+	areaSpecification = pset.getUntrackedParameter<std::string>("areaSpecification", "H2");
+
+	if (areaSpecification=="H6A") {
+		dwc_zPositions.push_back(-500.);
+	} else {
+		dwc_zPositions.push_back(-109.);
+		dwc_zPositions.push_back(-235.);
+		dwc_zPositions.push_back(-1509.);
+		dwc_zPositions.push_back(-1769.);
+	}
+
+	produces <HGCalTBRecHitCollection>(RechitOutputCollectionName);
+	produces<WireChambers>(DWCOutputCollectionName);
+	produces<RunData>(RunDataOutputCollectionName);
 
 	if (fileNames()[0] != "file:DUMMY") {
 		for (int i = 0; i<(int)(fileNames().size()); i++) {
 			FileInfo fInfo;
-			fInfo.index = 0;
-			fInfo.energy = -1;
-			fInfo.runType = "";
-			fInfo.config = -1;
+			fInfo.index = i;
+			fInfo.energy = beamEnergy;
+			fInfo.pdgID = beamParticlePDGID;
+			fInfo.config = setupConfiguration;
 			fInfo.name = fileNames()[i];
 			_fileNames.push_back(fInfo);
 		}
 		fileIterator = _fileNames.begin();
-	} else {
-		std::fstream map_file;
-		map_file.open(runEnergyMapFile.c_str(), std::fstream::in);
-		fillConfiguredRuns(map_file);
-		map_file.close();	
 	}
 	
-
-
-	 
-	_e_mapFile = pset.getParameter<std::string>("e_mapFile_CERN");	
+	_e_mapFile = pset.getUntrackedParameter<std::string>("e_mapFile_CERN");	
 	HGCalCondObjectTextIO io(0);
 	edm::FileInPath fip(_e_mapFile);
  	
-  if (!io.load(fip.fullPath(), essource_.emap_)) {
+	if (!io.load(fip.fullPath(), essource_.emap_)) {
 	  throw cms::Exception("Unable to load electronics map");
 	};
 	
 	geomc = new HexGeometry(false);
 
 	tree = 0;
-  	simHitCellIdE = 0;
-  	simHitCellEnE = 0;
+  	simHitCellIdEE = 0;
+  	simHitCellEnEE = 0;
+  	simHitCellIdFH = 0;
+  	simHitCellEnFH = 0;
+   	simHitCellIdBH = 0;
+  	simHitCellEnBH = 0;
   	beamX	 = 0;
   	beamY 	 = 0;
-
+  	beamP 	 = 0;
 
   	randgen = new TRandom();
 }
 
-void HGCalTBGenSimSource::fillConfiguredRuns(std::fstream& map_file) {
-	std::string filePath;
-
-	//perform the loop and fill configuredRuns
-	char fragment[100];
-	int readCounter = 0;
-	int _run = 0, _configuration = 0; double _energy = 0; std::string _runType = ""; 
-
-	while (map_file.is_open() && !map_file.eof()) {
-		readCounter++;
-		map_file >> fragment;
-		if (readCounter <= 4) continue; 	//skip the header
-		else if (readCounter % 4 == 1) {
-			if (((std::string)fragment).find("//") == std::string::npos)	//skip comments of form //
-				_run = atoi(fragment); 
-			else
-				readCounter = 1;
-		}
-		else if (readCounter % 4 == 2) _energy = atof(fragment); 
-		else if (readCounter % 4 == 3) _runType = (std::string)fragment; 
-		else if (readCounter % 4 == 0) {
-			_configuration = atoi(fragment); 
-			//store
-		
-			FileInfo fInfo;
-			fInfo.index = _run;
-			fInfo.energy = _energy;
-			fInfo.runType = _runType;
-			fInfo.config = _configuration;
-			
-			
-			filePath = inputPathFormat;		
-			
-			filePath.replace(filePath.find("<RUN>"), 5, std::to_string(_run));
-			filePath.replace(filePath.find("<ENERGY>"), 8, std::to_string((int)_energy));
-
-			fInfo.name = filePath;
-			
-			_fileNames.push_back(fInfo);			
-		}
-	}
-
-	fileIterator = _fileNames.begin();
-}
 
 bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType)
 {	
@@ -119,6 +118,16 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 	if (currentRun == -1) {		//initial loading of a file
 		currentRun = (*fileIterator).index;
 		currentEvent = 0;
+		
+		std::string fileName = (*fileIterator).name;
+		std::string filePrefix = "file:";
+		fileName.replace(fileName.find(filePrefix), filePrefix.size(), "");
+		if (access( (fileName).c_str(), F_OK ) == -1) {
+			std::cout<<fileName<<" does not exist and is skipped"<<std::endl;
+			fileIterator++;
+			currentRun = -1;
+			setRunAndEventInfo(id, time, evType);
+		}
 		/*
 		if (rootFile != NULL)
 			delete rootFile;
@@ -132,8 +141,12 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
   			tree = (TTree*)rootFile->Get("HGCTB");
   		}
 
-   		tree->SetBranchAddress("simHitCellIdE", &simHitCellIdE, &b_simHitCellIdE);
-  		tree->SetBranchAddress("simHitCellEnE", &simHitCellEnE, &b_simHitCellEnE);
+   		tree->SetBranchAddress("simHitCellIdEE", &simHitCellIdEE, &b_simHitCellIdEE);
+  		tree->SetBranchAddress("simHitCellEnEE", &simHitCellEnEE, &b_simHitCellEnEE);
+   		tree->SetBranchAddress("simHitCellIdFH", &simHitCellIdFH, &b_simHitCellIdFH);
+  		tree->SetBranchAddress("simHitCellEnFH", &simHitCellEnFH, &b_simHitCellEnFH);
+    	tree->SetBranchAddress("simHitCellIdBH", &simHitCellIdBH, &b_simHitCellIdBH);
+  		tree->SetBranchAddress("simHitCellEnBH", &simHitCellEnBH, &b_simHitCellEnBH);
   		tree->SetBranchAddress("xBeam", &beamX, &b_beamX);
   		tree->SetBranchAddress("yBeam", &beamY, &b_beamY);
   		tree->SetBranchAddress("pBeam", &beamP, &b_beamP);
@@ -154,6 +167,9 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 }
 
 
+//TODO: Why are the cell calibration pads ignored?
+//Check the orientation of the sensors
+
 void HGCalTBGenSimSource::produce(edm::Event & event)
 {	
 	if (fileIterator == _fileNames.end()) {
@@ -166,11 +182,107 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	//first: fill the rechits
 	std::auto_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection);
 
-	for(unsigned int icell=0; icell<simHitCellIdE->size(); icell++){
-		int layer = ((simHitCellIdE->at(icell)>>19)&0x7F);
+	//EE part
+	#ifdef DEBUG
+		std::cout<<"Hits in EE: "<<simHitCellIdEE->size()<<std::endl;
+	#endif
+	for(unsigned int icell=0; icell<simHitCellIdEE->size(); icell++){
+		int layer = ((simHitCellIdEE->at(icell)>>19)&0x7F);
+		if (setupConfiguration==1)
+			layer-=1;		//remove the first layer as it is not present in the data		
+		if (layer==0) continue;		//no layers with index 0 allowed
+		int cellno = (simHitCellIdEE->at(icell)>>0)&0xFF;
+	
+		double energy = simHitCellEnEE->at(icell);
+		#ifdef DEBUG
+			std::cout<<icell<<"  layer: "<<layer<<"   cellno:  "<<cellno<<"  energy: "<<energy<<std::endl;
+		#endif
+		makeRecHit(layer, cellno, energy, rechits);
 		
-		int cellno = (simHitCellIdE->at(icell)>>0)&0xFF;
-		std::pair<double,double> xy = geomc->position(cellno);
+	}	
+
+	//FH part
+	#ifdef DEBUG
+		std::cout<<"Hits in FH: "<<simHitCellIdFH->size()<<std::endl;
+	#endif
+	for(unsigned int icell=0; icell<simHitCellIdFH->size(); icell++){
+		int layer = ((simHitCellIdFH->at(icell)>>19)&0x7F) + N_layers_EE;		
+		int cellno = (simHitCellIdFH->at(icell)>>0)&0xFF;
+	
+		double energy = simHitCellEnFH->at(icell);
+		#ifdef DEBUG
+			std::cout<<icell<<"  layer: "<<layer<<"   cellno:  "<<cellno<<"  energy: "<<energy<<std::endl;
+		#endif
+		makeRecHit(layer, cellno, energy, rechits);
+		
+	}	
+	
+	event.put(rechits, RechitOutputCollectionName);
+
+	
+	//second: add fake dwcs from xBeam, yBeam
+	std::auto_ptr<WireChambers> dwcs(new WireChambers);	
+	for (size_t d=0; d<dwc_zPositions.size(); d++) {
+		double dwc_x = beamX * 10. + randgen->Gaus(0, wc_resolutions[d]);
+		double dwc_y = beamY * 10. + randgen->Gaus(0, wc_resolutions[d]);
+
+		WireChamberData* dwc = new WireChamberData(d+1, dwc_x*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*dwc_y, -dwc_x*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*dwc_y, dwc_zPositions[d]);
+		dwc->goodMeasurement_X = dwc->goodMeasurement_Y = dwc->goodMeasurement = true;
+		dwc->res_x = dwc->res_y = wc_resolutions[d];
+		
+		dwcs->push_back(*dwc);
+	}
+	event.put(std::move(dwcs), DWCOutputCollectionName);		
+
+
+	//third: fill the run data
+	std::auto_ptr<RunData> rd(new RunData);
+	rd->energy = (*fileIterator).energy;		//mean energy of the beam configuration
+	rd->configuration = (*fileIterator).config;
+	rd->pdgID = (*fileIterator).pdgID;
+	rd->runType = HGCAL_TB_SIM;
+	rd->run = (*fileIterator).index;
+	rd->event = eventCounter;
+	rd->booleanUserRecords.add("hasDanger", false);
+	rd->doubleUserRecords.add("trueEnergy", beamP);
+	rd->booleanUserRecords.add("hasValidDWCMeasurement", true);
+	event.put(std::move(rd), RunDataOutputCollectionName);	
+
+}
+
+void HGCalTBGenSimSource::beginJob() {
+  if( m_maskNoisyChannels ){
+    FILE* file;
+    char buffer[300];
+    //edm::FileInPath fip();
+    file = fopen (m_channelsToMask_filename.c_str() , "r");
+    if (file == NULL){
+      perror ("Error opening noisy channels file"); exit(1); 
+    } else{
+    
+      while ( ! feof (file) ){
+        if ( fgets (buffer , 300 , file) == NULL ) break;
+        const char* index = buffer;
+        int layer,skiroc,channel,ptr,nval;
+        nval=sscanf( index, "%d %d %d %n",&layer,&skiroc,&channel,&ptr );
+        int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*layer+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-skiroc)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+        if( nval==3 ){
+          HGCalTBElectronicsId eid(skiId,channel);      
+          if (essource_.emap_.existsEId(eid.rawId()))
+            m_noisyChannels.push_back(eid.rawId());
+        } else continue;
+      }
+    }
+    fclose (file);
+  }
+}
+
+void HGCalTBGenSimSource::endJob() {
+	delete randgen;
+}
+
+void HGCalTBGenSimSource::makeRecHit(int layer, int cellno, double energy, std::auto_ptr<HGCalTBRecHitCollection> &rechits) {
+		std::pair<double,double> xy = geomc->position_cell(cellno);
 		double x = xy.first / 10.;		//values are converted from mm to cm
 		double y =  xy.second / 10.;	//values are converted from mm to cm
 		int cellType = geomc->cellType(cellno);
@@ -179,79 +291,38 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 
 
 		HGCalTBRecHit recHit(HGCalTBDetId(layer, 0, 0, iuiv.first, iuiv.second, cellType), 0., 0., 0., 0., 0); 
-			
-		/* Back and forth computation, if correct: Numbers should be identical!
-		std::pair<double, double> CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((recHit.id()).layer(), (recHit.id()).sensorIU(), (recHit.id()).sensorIV(), (recHit.id()).iu(), (recHit.id()).iv(), 128); 	//TODO: Hard Coded Number!
-		std::pair<int, int> iuiv2 = TheCell.GetCellIUIVCoordinates(CellCenterXY.first, CellCenterXY.second);
-		std::cout<<"x: "<<CellCenterXY.first<<"  y: "<<CellCenterXY.second<<"   iu: "<<iuiv2.first<<"   iv: "<<iuiv2.second<<std::endl;
-		std::cout<<std::endl;
-		*/ 
-
-		recHit.setCellCenterCoordinate(x, y);
-	
-		uint32_t EID = essource_.emap_.detId2eid(recHit.id());
-		HGCalTBElectronicsId eid(EID);	 
-
 		//attention! the electric ID to skiroc mapping takes the cellType information as well which is only 0, 2 in the simulation!
 		//any analysis on the simulated data must respect that by computing MIP-ADC factors in the same way and by converting energies into MIP units
-		int skiRocIndex = (eid.iskiroc() - 1) > 0 ? eid.iskiroc() - 1 : 0;		
+		uint32_t EID = essource_.emap_.detId2eid(recHit.id());
+		HGCalTBElectronicsId eid(EID);	 
+	    if( !essource_.emap_.existsEId(eid.rawId()) || std::find(m_noisyChannels.begin(),m_noisyChannels.end(),eid.rawId())!=m_noisyChannels.end() )
+	      return;
 
-		double energy = simHitCellEnE->at(icell) / MIP2GeV_sim;
+		int skiRocIndex = eid.iskiroc_rawhit();
+		skiRocIndex = skiRocIndex % HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;		
+	
+	    recHit.setTime(-1);
+		recHit.setCellCenterCoordinate(x, y);
 	 	
+	 	#ifdef DEBUG
+	 		std::cout<<"skiRocIndex: "<<skiRocIndex<<"   channelIndex: "<<channelIndex<<std::endl;
+	 	#endif
+
+		energy *= GeVToMip;
 		//additional noise to the energy in MIPs
 		energy += randgen->Gaus(energyNoise, energyNoiseResolution);
 
-		energy *= ADCtoMIP_CERN[skiRocIndex];
-
+		
+	 	recHit._energyHigh = -1;
+	 	recHit._energyLow = -1;
+	 	recHit._energyTot = -1;
+	 	
 	 	recHit.setEnergy(energy);
-	 	recHit._energyLow = energy;
-	 	recHit._energyHigh = energy;
-	 	recHit._energyTot = energy;
+	    recHit.setFlag(HGCalTBRecHit::kGood);
+	 
 
 		rechits->push_back(recHit);
-	}	
-	event.put(rechits, outputCollectionName);
-
-	
-	//second: add fake multi-wire chambers from xBeam, yBeam
-	double x1_mc = beamX + randgen->Gaus(0, smearingResolution);
-	double y1_mc = beamY + randgen->Gaus(0, smearingResolution);
-	double x2_mc = beamX + randgen->Gaus(0, smearingResolution);
-	double y2_mc = beamY + randgen->Gaus(0, smearingResolution);
-	
-	std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
-	mwcs->push_back(MultiWireChamberData(1, x1_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y1_mc, -x1_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y1_mc, -126.-147.));
-	mwcs->push_back(MultiWireChamberData(2, x2_mc*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*y2_mc, -x2_mc*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*y2_mc, -147.));
-	
-	event.put(std::move(mwcs), "MultiWireChambers");		
-	
-
-	//third: fill the run data
-	std::auto_ptr<RunData> rd(new RunData);
-	rd->energy = (*fileIterator).energy;		//mean energy of the beam configuration
-	rd->configuration = (*fileIterator).config;
-	rd->runType = (*fileIterator).runType;
-	rd->run = (*fileIterator).index;
-	rd->event = eventCounter;
-	rd->hasDanger = false;
-	rd->trueEnergy = beamP;						//energy as truely simulated
-
-	bool _hasValidMWCMeasurement = true;
-	_hasValidMWCMeasurement = (x1_mc != -99.9) && _hasValidMWCMeasurement;
-	_hasValidMWCMeasurement = (y1_mc != -99.9) && _hasValidMWCMeasurement;
-	_hasValidMWCMeasurement = (x2_mc != -99.9) && _hasValidMWCMeasurement;
-	_hasValidMWCMeasurement = (y2_mc != -99.9) && _hasValidMWCMeasurement;
-	rd->hasValidMWCMeasurement = _hasValidMWCMeasurement;
-
-	event.put(std::move(rd), "RunData");	
-
-
 }
-
-void HGCalTBGenSimSource::endJob() {
-	delete randgen;
-}
-
 
 #include "FWCore/Framework/interface/InputSourceMacros.h"
 

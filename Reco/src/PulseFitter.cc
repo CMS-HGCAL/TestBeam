@@ -21,14 +21,14 @@ double pulseShape_chi2(const double *x)
   for(size_t i=0; i<7; i++){
     if( _energy[i]<0 || _time[i]>_maxTime ) continue;
     double zero = _energy[i]-pulseShape_fcn( _time[i],
-					     x[0],x[1] );
+               x[0],x[1] );
     sum += zero * zero / _noise / _noise;
   }
   return sum;
 }
 
 PulseFitter::PulseFitter( int printLevel, double maxTime , double alpha , double trise ) : m_printLevel(printLevel)
-{							     
+{                  
   _maxTime=maxTime;
   _alpha=alpha;
   _trise=trise;
@@ -52,7 +52,7 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   if( noise>0 )
     _noise=noise;
   
-  ROOT::Math::Minimizer* m = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
+  ROOT::Math::Minimizer* m = ROOT::Math::Factory::CreateMinimizer("Minuit", "Migrad");
   m->SetMaxFunctionCalls(m_fitterParameter.nMaxIterations);
   m->SetMaxIterations(m_fitterParameter.nMaxIterations);
   m->SetTolerance(0.001);
@@ -65,8 +65,8 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
 
   m->SetVariable(0, "tmax", m_fitterParameter.tmax0, 0.001);
   m->SetVariableLimits(0,
-		       m_fitterParameter.tmaxRangeDown,
-		       m_fitterParameter.tmaxRangeUp);
+           m_fitterParameter.tmaxRangeDown,
+           m_fitterParameter.tmaxRangeUp);
   m->SetVariable(1, "amp", _energy[3], 0.001);
   m->SetVariableLimits(1,0,10000);
 
@@ -82,5 +82,24 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   fit.chi2=m->MinValue();
   fit.status=(fabs(xm[0]-m_fitterParameter.tmaxRangeDown)>std::numeric_limits<double>::epsilon()&&
 	      fabs(xm[0]-m_fitterParameter.tmaxRangeUp)>std::numeric_limits<double>::epsilon()) ? m->Status() : 6;
+
   fit.ncalls=m->NCalls();
+
+  delete m;
+  
+}
+
+
+double parabolicFit(std::vector<double> x, std::vector<double> y) {
+      if (x.size()!=3) return -1;
+
+      //energy reconstruction from parabolic function a*x^2 + b*x + c
+      double _a = ( (y[2]-y[1])/(x[2]-x[1]) - (y[1]-y[0])/(x[1]-x[0]) )/( (pow(x[2],2)-pow(x[1],2))/(x[2]-x[1]) - (pow(x[1],2)-pow(x[0],2))/(x[1]-x[0]) );
+      double _b = (y[2]-y[1]+_a*(pow(x[1],2)-pow(x[2],2)))/(x[2]-x[1]);
+      //double _c = y[0]-_a*pow(x[0],2)-_b*x[0];
+
+      double max_x = (_a < 0) ? -_b/(2*_a) : 0;   //require maximum <--> a<0, unit is ns        
+      double f_x = (max_x<=150. && max_x>=25.) ? _a*pow(max_x,2)+_b*max_x : -1000.;
+
+      return f_x;
 }

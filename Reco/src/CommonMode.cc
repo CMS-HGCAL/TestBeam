@@ -6,6 +6,10 @@ CommonMode::CommonMode( HGCalElectronicsMap &emap, bool useMedian, bool cmPerChi
 												      _threshold(threshold)
 {
   _emap=emap;
+
+  thresholdHG = _threshold;
+  thresholdLG = thresholdHG/8.;
+
 }
 
 void CommonMode::Evaluate( edm::Handle<HGCalTBRawHitCollection> hits )
@@ -25,21 +29,27 @@ void CommonMode::EvaluateMedianPerChip( edm::Handle<HGCalTBRawHitCollection> hit
   for( auto hit : *hits ){
     HGCalTBElectronicsId eid( _emap.detId2eid(hit.detid().rawId()) );
     if( !_emap.existsEId(eid) ) continue;
-    int iski=eid.iskiroc();
+    int iski=hit.skiroc();
     if( hit.detid().cellType()==0 || hit.detid().cellType()==4 ) {
       for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-	if( cmMapHG.find(100*iski+it)==cmMapHG.end() ){
-	  std::vector<float> vec; vec.push_back( hit.highGainADC(it) );
-	  std::pair< int,std::vector<float> > p(100*iski+it,vec);
-	  cmMapHG.insert(p);
-	}
-	else cmMapHG[100*iski+it].push_back( hit.highGainADC(it) );
-	if( cmMapLG.find(100*iski+it)==cmMapLG.end() ){
-	  std::vector<float> vec; vec.push_back( hit.lowGainADC(it) );
-	  std::pair< int,std::vector<float> > p(100*iski+it,vec);
-	  cmMapLG.insert(p);
-	}
-	else cmMapLG[100*iski+it].push_back( hit.lowGainADC(it) );
+	
+  if (thresholdHG==-1 || hit.highGainADC(it)<thresholdHG) {
+    if( cmMapHG.find(100*iski+it)==cmMapHG.end() ){
+      std::vector<float> vec; vec.push_back( hit.highGainADC(it) );
+      std::pair< int,std::vector<float> > p(100*iski+it,vec);
+      cmMapHG.insert(p);
+    }
+    else cmMapHG[100*iski+it].push_back( hit.highGainADC(it) );
+  }
+
+  if (thresholdLG==-1 || hit.lowGainADC(it)<thresholdLG) {
+  	if( cmMapLG.find(100*iski+it)==cmMapLG.end() ){
+  	  std::vector<float> vec; vec.push_back( hit.lowGainADC(it) );
+  	  std::pair< int,std::vector<float> > p(100*iski+it,vec);
+  	  cmMapLG.insert(p);
+  	}
+	 else cmMapLG[100*iski+it].push_back( hit.lowGainADC(it) );
+  }
       }
     }
     else if( hit.detid().cellType()!=5 ){

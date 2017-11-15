@@ -51,6 +51,9 @@ class LineFitter {
 
     double eval(double x);
     double evalError(double x);
+
+    int GetNDF(); 
+    double GetChisquare();
 };
 
 #endif

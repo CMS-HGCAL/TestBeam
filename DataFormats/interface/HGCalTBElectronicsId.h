@@ -3,6 +3,7 @@
 
 #include <iosfwd>
 #include <stdint.h>
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 
 /** \class HGCalTBElectronicsId
   *
@@ -32,6 +33,11 @@ public:
 	int iskiroc() const
 	{
 		return (m_id >> kISkiRocOffset)&kISkiRocMask;
+	}
+	int iskiroc_rawhit() const 
+	{
+		int skiID = iskiroc();
+		return (HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-((skiID-1)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA))%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA + ((skiID-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;	
 	}
 
 	uint32_t rawId() const

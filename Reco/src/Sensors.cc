@@ -92,25 +92,39 @@ double SensorHitMap::getX0() {
 //reduces the information from the Rechit towards what is necessary for the impact point calculation
 //here all hits independent from the cellType are included
 void SensorHitMap::addHit(HGCalTBRecHit Rechit, double ADC_per_MIP) {
+  addHit(Rechit, ADC_per_MIP, -1);
+}
+
+void SensorHitMap::addHit(HGCalTBRecHit Rechit, double ADC_per_MIP, int geoID) {
   int uniqueID = (Rechit.id()).rawId();
 
-  //CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), sensorSize);
-  double iux = Rechit.getCellCenterCartesianCoordinate(0);  //CellCenterXY.first;
-  double ivy = Rechit.getCellCenterCartesianCoordinate(1); //CellCenterXY.second;
-  int ID = (Rechit.id()).cellType();
+  CellCenterXY = TheCell.GetCellCentreCoordinatesForPlots((Rechit.id()).layer(), (Rechit.id()).sensorIU(), (Rechit.id()).sensorIV(), (Rechit.id()).iu(), (Rechit.id()).iv(), 128);
+  double iux = Rechit.getCellCenterCartesianCoordinate(0) * 10.;    //conversion to mm
+  double ivy = Rechit.getCellCenterCartesianCoordinate(1) * 10.;   //conversion to mm
 
-  if (filterByCellType(ID)) return; //returns false so far
+  int cellType = (Rechit.id()).cellType();
 
-  double energy = Rechit.energy() / ADC_per_MIP;  //the LayerSumAnalyzer also energy deposits in MIP units
+  if (filterByCellType(cellType)) return; //returns false so far
+
+  double energy = Rechit.energy() / ADC_per_MIP;
+  if (Rechit.checkFlag(HGCalTBRecHit::kLowGainSaturated)) {
+    energy = Rechit.energyLow() * 8. / ADC_per_MIP ;  //the LayerSumAnalyzer also energy deposits in MIP units
+  }
+
+  //scale outer calibration pads:
+  if (cellType==4) energy*=9./8;
+
 
   Hits[uniqueID] = new HitData;
-  Hits[uniqueID]->ID = ID;
+  Hits[uniqueID]->cellType = cellType;
   Hits[uniqueID]->x = iux;
   Hits[uniqueID]->y = ivy;
   Hits[uniqueID]->I = energy;
   Hits[uniqueID]->E = energy;
+  Hits[uniqueID]->geoID = geoID;
   totalEnergy += energy;
-  
+ 
+
   if (mostSignificantHit==NULL || energy > mostSignificantHit->E) {
     mostSignificantHit = Hits[uniqueID];
   }
@@ -140,7 +154,7 @@ std::pair<int, double> SensorHitMap::subtractCM() {
   double cm_subtraction = CM_cells_count > 0. ? CM_sum/CM_cells_count : 0.;
 
   for(std::map<int, HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
-    if (filterByCellType((*hit).second->ID)) continue;
+    if (filterByCellType((*hit).second->cellType)) continue;
     // we want: - all cells that were input to the cm (common mode) calculation get weight 0
     //          - all the others are corrected by the cm
     if ((*hit).second->E > CM_threshold) {    
@@ -160,11 +174,9 @@ void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMeth
       SensorHitMap::considerNClosest(-1);
       break;
     case CONSIDERSEVEN:
-      //analogous to the LayerSumAnalyzer (25.11.16)
       SensorHitMap::considerNClosest(7); 
       break;
     case CONSIDERNINETEEN:
-      //analogous to the LayerSumAnalyzer (25.11.16)
       SensorHitMap::considerNClosest(19); 
       break;
     case CONSIDERCLUSTERSALL:
@@ -182,6 +194,9 @@ void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMeth
   }
 
   switch(weightingMethod){
+    case MOSTINTENSIVE:
+      SensorHitMap::mostIntensiveHit();
+      break;
     case SQUAREDWEIGHTING:
       SensorHitMap::poweredWeighting(2);
       break;
@@ -381,7 +396,7 @@ void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMeth
       //SensorHitMap::newWeightingFunction()
       //break;
     default:
-      SensorHitMap::poweredWeighting(2);
+      SensorHitMap::mostIntensiveHit();
   }
 
   //set the displacement in z w.r.t. the rotational angles only
@@ -410,7 +425,7 @@ std::pair<double, double> SensorHitMap::getHitPositionError() {
 std::pair<double, double> SensorHitMap::getCenterOfClosestCell(std::pair<double, double> X_ref) {
   std::vector<std::pair<double, HitData*>> to_sort;
   for(std::map<int, HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
-    if (filterByCellType((*hit).second->ID)) continue;
+    if (filterByCellType((*hit).second->cellType)) continue;
     double current_radius = sqrt(pow((*hit).second->x - X_ref.first,2) + pow((*hit).second->y - X_ref.second,2));
     to_sort.push_back(std::make_pair(current_radius, (*hit).second));
   }
@@ -451,7 +466,7 @@ bool SensorHitMap::filterByCellType(int ID) {
   ID = 5 : merged cell
   */
   
-  if (ID!=0 )  //we only want to consider the main cells in the middle for first estimation
+  if (ID==1 || ID==2 || ID==3 || ID==4|| ID==5)  //we only want to consider the main cells in the middle for first estimation
     return true;      
   
   return false;
@@ -462,7 +477,7 @@ void SensorHitMap::considerNClosest(int N_considered) {
   HitsForPositioning.clear();
   if (N_considered < 0) {
     for(std::map<int, HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
-      if (filterByCellType((*hit).second->ID)) continue;
+      if (filterByCellType((*hit).second->cellType)) continue;
       HitsForPositioning.push_back((*hit).second);
     }
     return;
@@ -471,7 +486,7 @@ void SensorHitMap::considerNClosest(int N_considered) {
   //calculate radial distance for all pairs to the most significant hit
   std::vector<std::pair<double, HitData*>> to_sort;
   for(std::map<int, HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
-    if (filterByCellType((*hit).second->ID)) continue;
+    if (filterByCellType((*hit).second->cellType)) continue;
     double current_radius = sqrt(pow((*hit).second->x - mostSignificantHit->x,2) + pow((*hit).second->y - mostSignificantHit->y,2));
     to_sort.push_back(std::make_pair(current_radius, (*hit).second));
   }
@@ -484,13 +499,13 @@ void SensorHitMap::considerNClosest(int N_considered) {
   );
 
   double maxDist = 0;
-  if (N_considered == 7) maxDist = (0.5 + sqrt(3)) * HGCAL_TB_CELL::FULL_CELL_SIDE;
-  else if (N_considered == 7) maxDist = (0.5 + sqrt(3) * 2.) * HGCAL_TB_CELL::FULL_CELL_SIDE;
+  if (N_considered == 7) maxDist = (0.5 + sqrt(3)) * 10. * HGCAL_TB_CELL::FULL_CELL_SIDE;
+  else if (N_considered == 19) maxDist = (0.5 + sqrt(3) * 2.) * 10. * HGCAL_TB_CELL::FULL_CELL_SIDE;
 
   int considerCounter = 0;
   for (std::vector<std::pair<double, HitData*>>::iterator sorted_hit = to_sort.begin(); 
     sorted_hit != to_sort.end(); sorted_hit++) {
-    if ((*sorted_hit).first > maxDist && considerCounter >= N_considered){ //fill at least Nconsider but also mind radial distance
+    if ((*sorted_hit).first > maxDist || considerCounter >= N_considered){ //fill at least Nconsider but also mind radial distance
       break;
     }
     considerCounter++;
@@ -501,11 +516,36 @@ void SensorHitMap::considerNClosest(int N_considered) {
   to_sort.clear();
 }
 
+
+std::vector<std::pair<double, double> > SensorHitMap::getHitPositionsForPositioning() {
+  std::vector<std::pair<double, double> > tbr;
+  for (std::vector<HitData*>::iterator sorted_hit = HitsForPositioning.begin(); sorted_hit != HitsForPositioning.end(); sorted_hit++) {
+    tbr.push_back(std::make_pair((*sorted_hit)->x, (*sorted_hit)->y));
+  }
+  return tbr;
+}
+
 void SensorHitMap::considerClusters(int N_considered) {
   for (std::vector<int>::iterator clusterIndex = clusterIndexes[N_considered].begin();
   clusterIndex != clusterIndexes[N_considered].end(); clusterIndex++){
     HitsForPositioning.push_back(Hits[*clusterIndex]);
   }
+}
+
+void SensorHitMap::mostIntensiveHit() {
+  HitsForPositioning.clear();
+  if (mostSignificantHit==NULL) return;
+  centralHitPoint.first = mostSignificantHit->x;
+  centralHitPoint.second = mostSignificantHit->y;
+  totalWeight = mostSignificantHit->I;
+  HitsForPositioning.push_back(mostSignificantHit);
+}
+
+int SensorHitMap::getMostIntensiveHit() {
+  if (mostSignificantHit!=NULL)
+    return mostSignificantHit->geoID;
+  else 
+    return -1;
 }
 
 void SensorHitMap::poweredWeighting(int exponent) {
@@ -514,10 +554,13 @@ void SensorHitMap::poweredWeighting(int exponent) {
   
   numerator_x = numerator_y = totalWeight = 0; 
   for(std::vector<HitData*>::iterator hit=HitsForPositioning.begin(); hit!=HitsForPositioning.end(); hit++){
+    //std::cout<<"Hit intensity: "<<(*hit)->I <<" at position x = "<<(*hit)->x<<" and y = "<<(*hit)->y<<std::endl;
     w = (*hit)->I >= 0.0 ? pow((*hit)->I, exponent) : 0.0;    //0.0 --> not included in the sum
     totalWeight += w;
     numerator_x += w*(*hit)->x;
     numerator_y += w*(*hit)->y;
+    //std::cout<<"numerator_x: "<<numerator_x<<"  numerator_y: "<<numerator_y<<"    totalWeight: "<<totalWeight<<std::endl;
+
   }
 
   //prevent divisions through zero

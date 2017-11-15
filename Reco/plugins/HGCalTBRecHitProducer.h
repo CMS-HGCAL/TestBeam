@@ -21,6 +21,14 @@
 
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "CommonTools/UtilAlgos/interface/TFileService.h"
+#include "TH2F.h"
+#include <sstream>
+
+
+//#define DEBUG
+
 class HGCalTBRecHitProducer : public edm::EDProducer
 {
  public:
@@ -33,12 +41,30 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   std::string m_detectorLayoutFile;
   std::string m_adcCalibrationsFile;
   double m_timeSample3ADCCut;
-  
+
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
 
+  bool m_maskNoisyChannels;
+  std::string m_channelsToMask_filename;
+  int m_NHexaBoards;
+
+  bool investigatePulseShape;
+  std::map<int, TH2F*> shapesLG;
+  std::map<int, TH2F*> shapesHG;
+  std::map<int, TH2F*> ToARisevsTMaxLG;
+  std::map<int, TH2F*> ToARisevsTMaxHG;
+  std::map<int, TH2F*> ToAFallvsTMaxLG;
+  std::map<int, TH2F*> ToAFallvsTMaxHG;
+  std::map<int, TH2F*> TMaxHGvsTMaxLG;
+
+  std::vector<int> m_noisyChannels;
 
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;
+
+  #ifdef DEBUG
+    int eventCounter;
+  #endif
 
   struct {
     HGCalElectronicsMap emap_;

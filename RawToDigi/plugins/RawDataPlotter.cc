@@ -41,6 +41,7 @@ private:
   int m_sensorsize;
   bool m_eventPlotter;
   std::string m_electronicMap;
+  int m_NHexaBoards;
 
   int m_evtID;
   std::map<int,TH1F*> m_h_adcHigh;
@@ -62,7 +63,8 @@ private:
 RawDataPlotter::RawDataPlotter(const edm::ParameterSet& iConfig) :
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
   m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
-  m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt"))
+  m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
+  m_NHexaBoards(iConfig.getUntrackedParameter<int>("NHexaBoards", 10))
 {
   usesResource("TFileService");
   edm::Service<TFileService> fs;
@@ -74,9 +76,12 @@ RawDataPlotter::RawDataPlotter(const edm::ParameterSet& iConfig) :
   std::ostringstream os( std::ostringstream::ate );
   TH2F* htmp2;
   TH1F* htmp1;
-  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+
+  for(size_t ib = 0; ib<(size_t)m_NHexaBoards; ib++) {
+
     os.str("");os<<"Hexaboard"<<ib;
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
+
     for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
       os.str("");os<<"Skiroc"<<iski;
       TFileDirectory skidir = dir.mkdir( os.str().c_str() );
@@ -147,7 +152,7 @@ void RawDataPlotter::analyze(const edm::Event& event, const edm::EventSetup& set
     std::ostringstream os( std::ostringstream::ate );
     os << "Event" << event.id().event();
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
-    for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+    for(int ib = 0; ib<m_NHexaBoards; ib++) {
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
 	TH2Poly *h=dir.make<TH2Poly>();
 	os.str("");

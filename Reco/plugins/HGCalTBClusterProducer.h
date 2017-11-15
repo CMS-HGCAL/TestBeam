@@ -33,7 +33,7 @@ private:
 	std::string _outputCollectionName19;
 	edm::EDGetTokenT<HGCalTBRecHitCollection> _rechitToken;
 	HGCalElectronicsMap _elecMap;
-	
+
 	bool _runDynamicCluster;
 	bool _runCluster7;
 	bool _runCluster19;
