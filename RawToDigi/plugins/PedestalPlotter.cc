@@ -2,6 +2,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH2Poly.h"
+#include "TTree.h"
 #include <fstream>
 #include <sstream>
 // user include files
@@ -22,6 +23,8 @@
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include <iomanip>
 #include <set>
+
+//#define DEBUG
 
 struct hgcal_channel{
   hgcal_channel() : key(0),
@@ -61,12 +64,14 @@ private:
   bool m_writeNoisyChannelFile;
   std::string m_noisyChannels_filename;
   std::string m_electronicMap;
+  int m_NTSForPedestalComputation;
 
   int m_evtID;
   uint16_t m_numberOfBoards;
   std::map<int,hgcal_channel> m_channelMap;
 
   edm::EDGetTokenT<HGCalTBSkiroc2CMSCollection> m_HGCalTBSkiroc2CMSCollection;
+
 
   HGCalTBTopology IsCellValid;
   HGCalTBCellVertices TheCell;
@@ -82,7 +87,9 @@ PedestalPlotter::PedestalPlotter(const edm::ParameterSet& iConfig) :
   m_pedestalLow_filename( iConfig.getUntrackedParameter<std::string>("LowGainPedestalFileName",std::string("pedestalLG.txt")) ),
   m_writeNoisyChannelFile(iConfig.getUntrackedParameter<bool>("WriteNoisyChannelsFile",false)),
   m_noisyChannels_filename( iConfig.getUntrackedParameter<std::string>("NoisyChannelsFileName",std::string("noisyChannels.txt")) ),
-  m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers.txt"))
+  m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers.txt")),
+  m_NTSForPedestalComputation(iConfig.getUntrackedParameter<int>("NTSForPedestalComputation",1))    
+
 {
   m_HGCalTBSkiroc2CMSCollection = consumes<HGCalTBSkiroc2CMSCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
 
@@ -131,7 +138,9 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
       else continue;
 
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-	if( rollpositions[it]<1 ){ //keep only 2 first time sample for pedestal evaluation
+
+	if( rollpositions[it]<=m_NTSForPedestalComputation ){ //consider only a certain number of time samples for pedestal subtraction
+
 	  uint32_t key=iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it;
 	  std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
 	  if( iter==m_channelMap.end() ){
@@ -265,12 +274,28 @@ void PedestalPlotter::endJob()
     pedestalHG.open(m_pedestalHigh_filename,std::ios::out);
     pedestalLG.open(m_pedestalLow_filename,std::ios::out);
   }
+
+
+  TTree* pedestalTree = fs->make<TTree>("pedestalTree", "pedestalTree");
+  int board, skiroc, channel, sca;
+  double median_high, RMS_high, median_low, RMS_low;
+  pedestalTree->Branch("board", &board);
+  pedestalTree->Branch("skiroc", &skiroc);
+  pedestalTree->Branch("channel", &channel);
+  pedestalTree->Branch("sca", &sca);
+  pedestalTree->Branch("median_high", &median_high);
+  pedestalTree->Branch("RMS_high", &RMS_high);
+  pedestalTree->Branch("median_low", &median_low);
+  pedestalTree->Branch("RMS_low", &RMS_low);
+
+
   std::fstream noisyChannels;
   if( m_writeNoisyChannelFile )
     noisyChannels.open(m_noisyChannels_filename,std::ios::out);
   std::map<int,double> meanNoise;
   std::map<int,double> rmsNoise;
   std::map<int,int> countNoise;
+
   for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
     int iboard=(*it).first/1000;
     int iski=((*it).first%1000)/100;
@@ -282,23 +307,39 @@ void PedestalPlotter::endJob()
     HGCalTBDetId detid=(*it).second;
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detid.layer(), 0, 0, detid.iu(), detid.iv(), m_sensorsize );
 
+
     double iux = CellCentreXY.first;
     double iuy = CellCentreXY.second;
+
     
     for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
+      board = iboard;
+      skiroc = iski;
+      channel = ichan;
+      sca = it;
+
       int key=iboard*100000+iski*10000+ichan*100+it;
       std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
       float hgMean=iter->second.medianHG;
       float lgMean=iter->second.medianLG;
       float hgRMS=iter->second.rmsHG;
       float lgRMS=iter->second.rmsLG;
+
       hgMeanMap[ 100*iboard+it ]->Fill(iux , iuy, hgMean );
       lgMeanMap[ 100*iboard+it ]->Fill(iux , iuy, lgMean );
       hgRMSMap[ 100*iboard+it ]->Fill(iux , iuy, hgRMS );
       lgRMSMap[ 100*iboard+it ]->Fill(iux , iuy, lgRMS );
+      
+      median_high = hgMean;
+      RMS_high = hgRMS;
+      median_low = lgMean;
+      RMS_low = lgRMS;
+      pedestalTree->Fill();
+
+
       if( m_writePedestalFile ){
-	pedestalHG << " " << hgMean << " " << hgRMS;
-	pedestalLG << " " << lgMean << " " << lgRMS;;
+      	pedestalHG << " " << hgMean << " " << hgRMS;
+	      pedestalLG << " " << lgMean << " " << lgRMS;;
       }
     }
     chanMap[ iboard ]->Fill(iux , iuy, iski*1000+ichan );
