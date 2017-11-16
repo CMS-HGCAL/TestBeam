@@ -91,10 +91,17 @@ class ParticleTrack{
     double getSumOfEnergies();
   
     void gblTrackToMilleBinary(gbl::MilleBinary *milleBinary);
+
+    double getChi2(int);
+    int getNDF(int);
+
   private:
     int N_points; //cross check, should be identical to x.size() etc.
     SensorHitMap* referenceSensor;
-    
+  
+    int NDF, NDF_x, NDF_y;
+    double chi2, chi2_x, chi2_y;
+
     //general information, the fit points
     std::vector<double> x;  
     std::vector<double> x_err;  

@@ -3,6 +3,7 @@
 #include "FWCore/Sources/interface/ProducerSourceFromFiles.h"
 #include "FWCore/ParameterSet/interface/ConfigurationDescriptions.h"
 #include "FWCore/ParameterSet/interface/ParameterSetDescription.h"
+#include "HGCal/DataFormats/interface/HGCalTBRunData.h"
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
@@ -63,14 +64,22 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   unsigned int m_nSkipEvents;
   unsigned int m_dataFormats; //0 when time stamps were save in separated .txt files, 1 since the timestamp are saved in the raw data
   bool m_readTimeStamps;
+
+  int m_beamEnergy;
+  int m_beamParticlePDGID;
+  std::string m_runType;
+  RUNTYPES runType;
+  int m_setupConfiguration;
   
   unsigned int timeStartRun;
   unsigned int timeStopRun;
   
   unsigned int m_time;
-  unsigned int m_event, m_run, m_spill;
+  unsigned int m_event, m_run, m_spill, m_trigger, m_triggertime, m_triggertime_prev;
   int m_eventSize,m_nevents;
   unsigned int m_fileId;
+  
+  bool problemDuringReadout;
   
   uint32_t m_skiMask;
   char* m_buffer;

@@ -9,6 +9,8 @@
 #include <ctime>
 #include <cmath>
 
+//#define DEBUG
+
 HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :
   edm::ProducerSourceFromFiles(pset, desc, true),
   m_electronicMap(pset.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers.txt")),
@@ -19,9 +21,14 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   m_eventTrailerSize(pset.getUntrackedParameter<unsigned int> ("NumberOfBytesForTheEventTrailers",4)),
   m_nSkipEvents(pset.getUntrackedParameter<unsigned int> ("NSkipEvents",0)),
   m_dataFormats(pset.getUntrackedParameter<unsigned int > ("DataFormats",0)),
-  m_readTimeStamps(pset.getUntrackedParameter<bool> ("ReadTimeStamps",false))
+  m_readTimeStamps(pset.getUntrackedParameter<bool> ("ReadTimeStamps",false)),
+  m_beamEnergy(pset.getUntrackedParameter<double> ("beamEnergy", 250)),
+  m_beamParticlePDGID(pset.getUntrackedParameter<int> ("beamParticlePDGID", 211)),
+  m_runType(pset.getUntrackedParameter<std::string> ("runType", "Beam")),
+  m_setupConfiguration(pset.getUntrackedParameter<unsigned int> ("setupConfiguration", 1))
 {
   produces<HGCalTBSkiroc2CMSCollection>(m_outputCollectionName);
+  produces<RunData>("RunData");
   
   m_event = 0;
   m_fileId=0;
@@ -37,12 +44,26 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
 
   m_timingFiles=pset.getParameter< std::vector<std::string> >("timingFiles");
   
+  m_triggertime_prev = 0;
+
   std::cout << pset << std::endl;
+
+  if (m_runType=="Pedestal") {
+    runType = HGCAL_TB_PEDESTAL;
+  } else if (m_runType=="Beam") {
+    runType = HGCAL_TB_BEAM;
+  } else if (m_runType=="Simulation") {
+    runType = HGCAL_TB_PEDESTAL;
+  } else {
+    runType = HGCAL_TB_BEAM;
+  }
 
 }
 
 bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType)
 {
+  problemDuringReadout = false;
+
   if( m_fileId == fileNames().size() ) return false;
   if (fileNames()[m_fileId] != "file:DUMMY")
     m_fileName = fileNames()[m_fileId];
@@ -93,9 +114,19 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
     char buf[] = {m_buffer[m_nWords*4],m_buffer[m_nWords*4+1],m_buffer[m_nWords*4+2],m_buffer[m_nWords*4+3]};
     memcpy(&evtTrailer, &buf, sizeof(evtTrailer));
     uint32_t ormId=evtTrailer&0xff;
-    if( ormId != iorm )
+    m_trigger = (evtTrailer>>0x8);
+    if( ormId != iorm ) {
+      problemDuringReadout = true;
       std::cout << "Problem in event trailer : wrong ORM id -> evtTrailer&0xff = " << std::dec << ormId << "\t iorm = " << iorm << std::endl;
+    }
     triggerNumber=evtTrailer>>0x8;
+
+    buf[0] = m_buffer[m_nWords*4+4];
+    buf[1] = m_buffer[m_nWords*4+5];
+    buf[2] = m_buffer[m_nWords*4+6];
+    buf[3] = m_buffer[m_nWords*4+7];
+    memcpy(&m_triggertime, &buf, sizeof(m_triggertime));
+  
     std::vector< std::array<uint16_t,1924> > decodedData=decode_raw_32bit(rawData);
     m_decodedData.insert(m_decodedData.end(),decodedData.begin(),decodedData.end());
   }
@@ -104,6 +135,7 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
     exit(1);
   }
   m_eventTimingInfo=m_eventTimingInfoMap[triggerNumber];
+
   return true;
 }
 
@@ -150,6 +182,7 @@ void HGCalTBRawDataSource::fillEventTimingInformations()
 	  std::cout << "Problem of timing sync in trigger " << it->first << " for rdout board " << ii
 		    << " with time stamp = " << it->second.triggerTimeStamp(ii)
 		    << " time diff : " << it->second.triggerTimeStamp(ii)-prevTime[ii] << " != " << timeDiff << std::endl;
+        problemDuringReadout= false;
 	}
 	prevTime[ii]=it->second.triggerTimeStamp(ii);
       }
@@ -227,6 +260,7 @@ void HGCalTBRawDataSource::readTimeStampFromRAW()
 void HGCalTBRawDataSource::produce(edm::Event & e)
 {
   std::auto_ptr<HGCalTBSkiroc2CMSCollection> skirocs(new HGCalTBSkiroc2CMSCollection);
+
   for( size_t iski=0; iski<m_decodedData.size(); iski++){
     std::vector<HGCalTBDetId> detids;
     for (size_t ichan = 0; ichan < HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++) {
@@ -248,10 +282,32 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
 				m_eventTimingInfo.triggerTimeStamp(0),
 				m_eventTimingInfo.triggerCounter());
     else skiroc=HGCalTBSkiroc2CMS( vdata,detids );
+
     skirocs->push_back(skiroc);
   }
   e.put(skirocs, m_outputCollectionName);
+
+
   m_event++;
+  
+
+  //set the RunData
+  std::auto_ptr<RunData> rd(new RunData);
+
+
+  rd->configuration = m_setupConfiguration;
+  rd->energy = m_beamEnergy;
+  rd->runType = runType;
+  rd->pdgID = m_beamParticlePDGID;
+  rd->run = m_run;
+  rd->event = m_event;
+  rd->booleanUserRecords.add("hasDanger", problemDuringReadout);
+
+  #ifdef DEBUG
+    std::cout<<rd->run<<"  "<<rd->event<<"  "<<rd->energy<<"  "<<rd->configuration<<"  "<<rd->runType<<"  "<<rd->booleanUserRecords.get("hasDanger")<<std::endl;
+  #endif
+
+  e.put(std::move(rd), "RunData");
 }
 
 void HGCalTBRawDataSource::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
@@ -270,6 +326,11 @@ void HGCalTBRawDataSource::fillDescriptions(edm::ConfigurationDescriptions& desc
   desc.addUntracked<bool> ("ReadTimeStamps");
   desc.addUntracked<unsigned int> ("DataFormats");
   desc.add<std::vector<std::string> >("timingFiles");
+  desc.addUntracked<double> ("beamEnergy");
+  desc.addUntracked<int> ("beamParticlePDGID");
+  desc.addUntracked<std::string>("runType");
+  desc.addUntracked<unsigned int> ("setupConfiguration");
+
   descriptions.add("source", desc);
 }
 

@@ -12,7 +12,9 @@
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h" //e.g. to get the cell's dimensions
+#include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
+//#define DEBUG
 
 enum ConsiderationMethod {
   CONSIDERALL,
@@ -26,6 +28,7 @@ enum ConsiderationMethod {
 
 enum WeightingMethod {
   DEFAULTWEIGHTING,
+  MOSTINTENSIVE,
   SQUAREDWEIGHTING,
   LINEARWEIGHTING,
   LOGWEIGHTING_20_10,
@@ -97,7 +100,8 @@ struct HitData {
   double x; double y; 
   double I; //intensity that is input to the weight calculation
   double E; //actual energy of the hit
-  int ID;   //the ID corresponds to the cell ID, it is necessary for the pedestal subtraction
+  int cellType;   
+  int geoID;    //iboard*1000 + iskiroc*100 + channel
 };
 
 
@@ -120,8 +124,8 @@ class SensorHitMap {
     HitData* mostSignificantHit;
 
     //helpers to obtain the x-y coordinate
-    //HGCalTBCellVertices TheCell;
-    //std::pair<double, double> CellCenterXY;
+    HGCalTBCellVertices TheCell;
+    std::pair<double, double> CellCenterXY;
     int CM_cells_count;
     double CM_sum;
 
@@ -132,6 +136,7 @@ class SensorHitMap {
     bool filterByCellType(int ID);
     void considerNClosest(int N_considered);
     void considerClusters(int N_considered);
+    void mostIntensiveHit();
     void poweredWeighting(int exponent);
     void logWeighting(double log_a, double log_b);
 
@@ -148,6 +153,7 @@ class SensorHitMap {
     void setPedestalThreshold(double t);
     //reduces the information from the Rechit towards what is necessary for the impact point calculation
     void addHit(HGCalTBRecHit Rechit, double ADC_per_MIP);
+    void addHit(HGCalTBRecHit Rechit, double ADC_per_MIP, int geoID);
     void registerClusterHit(HGCalTBDetId hit, int N_considered);
     std::pair<int, double> subtractCM();  //returns the sum of Common mode noise and the number of cells that enter the calculation
     void calculateCenterPosition(ConsiderationMethod considerationMethod, WeightingMethod weightingMethod);
@@ -164,6 +170,10 @@ class SensorHitMap {
     std::pair<double, double> getHitPositionError(); //calculated via RMS
     std::pair<double, double> getCenterOfClosestCell(std::pair<double, double> X_ref);
     
+    int getMostIntensiveHit();
+    std::vector<std::pair<double, double> > getHitPositionsForPositioning();
+
+
     //debug
     void printHits();
 };
