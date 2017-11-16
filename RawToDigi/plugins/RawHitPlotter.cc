@@ -286,7 +286,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       float highGain,lowGain;
       if( m_subtractCommonMode ){
-  	iski = eid.iskiroc();
+  	iski = hit.skiroc();
   	float subHG(0),subLG(0);
   	switch ( hit.detid().cellType() ){
   	case 0 : subHG=cmMap[iski].fullHG[it]; subLG=cmMap[iski].fullLG[it]; break;
