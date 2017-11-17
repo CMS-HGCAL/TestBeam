@@ -4,7 +4,7 @@
 
 /**
 	@Author: Thorben Quast <tquast>
-		20 Febr 2017
+		14 September 2017
 		thorben.quast@cern.ch / thorben.quast@rwth-aachen.de
 */
 
@@ -27,7 +27,7 @@
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"	//for the runData type definition
-#include "HGCal/DataFormats/interface/HGCalTBMultiWireChamberData.h"
+#include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
@@ -40,13 +40,34 @@
 #include "TFile.h"
 #include "TTree.h"
   
-//configuration1:
-double config1Positions[] = {0.0, 5.35, 10.52, 14.44, 18.52, 19.67, 23.78, 25.92};    //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
-double config1X0Depths[] = {6.268, 1.131, 1.131, 1.362, 0.574, 1.301, 0.574, 2.42}; //in radiation lengths, copied from layerSumAnalyzer
-//configuration2:
-double config2Positions[] = {0.0, 4.67, 9.84, 14.27, 19.25, 20.4, 25.8, 31.4};         //z-coordinate in cm, 1cm added to consider absorber in front of first sensor    
-double config2X0Depths[] = {5.048, 3.412, 3.412, 2.866, 2.512, 1.625, 2.368, 6.021}; //in radiation lengths, copied from layerSumAnalyzer
-                     
+//configuration1 based on Shilpis plot from 26.07.17: 
+//https://indico.cern.ch/event/656159/contributions/2674177/attachments/1499439/2334623/update_simulation_geom.pdf
+// 2 layers in EE (first one in the graphics was removed) and 4 in FH, indications are in mm
+double z1_config1 = 0. + 156. + 182.7 + 4.9 * 4 + 6.0 * 4 + 0.3 * 7 + 1.2;
+double z2_config1 = z1_config1 + 11.0 + 4.9 * 8 + 0.3 * 16 + 6.0 * 7 + 13.2;
+double z3_config1 = z2_config1 + 1.2 + 6.0 * 3 + 4 * 0.3 + 2 * 4.9 + 54. + 38. + 10. + 78. + 40. + 6. + 1.2;	
+double z4_config1 = z3_config1 + 46.9 + 3 * 40 + 6 + 1.2;
+double z5_config1 = z4_config1 + 26.9 + 40. + 10. + 63. + 10. + 2 * 40. + 6. + 1.2;
+double z6_config1 = z5_config1 + 58.9 + 3 * 40. + 6. + 1.2;
+
+double zdepth1_config1 = 0.;
+double zdepth2_config1 = 0.; 
+double zdepth3_config1 = 0.; 
+double zdepth4_config1 = 0.; 
+double zdepth5_config1 = 0.; 
+double zdepth6_config1 = 0.; 
+
+//here they must be indicated in cm
+double config1Positions[] = {z1_config1/10., z2_config1/10., z3_config1/10., z4_config1/10., z5_config1/10., z6_config1/10.};    
+double config1X0Depths[] = {zdepth1_config1, zdepth2_config1, zdepth3_config1, zdepth4_config1, zdepth5_config1, zdepth6_config1}; 
+  
+
+//needs to be fixed!
+double config2Positions[] = {z1_config1/10., z2_config1/10., z3_config1/10., z4_config1/10., z5_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10., z6_config1/10.};    
+double config2X0Depths[] = {zdepth1_config1, zdepth2_config1, zdepth3_config1, zdepth4_config1, zdepth5_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1, zdepth6_config1}; 
+
+//#define DEBUG
+
 class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	public:
 		explicit Position_Resolution_Analyzer(const edm::ParameterSet&);
@@ -58,38 +79,28 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		void analyze(const edm::Event& , const edm::EventSetup&) override;
 		virtual void endJob() override;
 
-		struct {
-  		HGCalElectronicsMap emap_;
-		} essource_;
-		std::string _e_mapFile;
 
 		// ----------member data ---------------------------
 		edm::Service<TFileService> fs;
 		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;
-	 	edm::EDGetToken HGCalTBClusterCollection_Token;
-  		edm::EDGetToken HGCalTBClusterCollection7_Token;
-  		edm::EDGetToken HGCalTBClusterCollection19_Token;
-
+	 	
 		edm::EDGetTokenT<RunData> RunDataToken;	
-		edm::EDGetTokenT<MultiWireChambers> MWCToken;
+		edm::EDGetTokenT<WireChambers> MWCToken;
 		
 		AlignmentParameters* alignmentParameters; //all entries are set to zero if no valid file is given 
 
 		ConsiderationMethod considerationMethod;
 		WeightingMethod weightingMethod;
 		TrackFittingMethod fittingMethod;		
-		FitPointWeightingMethod fitPointWeightingMethod;
 
-		double pedestalThreshold;
 		std::vector<double> Layer_Z_Positions;
 		std::vector<double> Layer_Z_X0s;
-		std::vector<double> ADC_per_MIP;
+
 		int LayersConfig;
 		int SensorSize;
 		int nLayers;
 
 		bool useMWCReference;
-
 
 		int ClusterVetoCounter;
 		int HitsVetoCounter;
@@ -103,40 +114,29 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 
 		//stuff to be written to the tree
 		TTree* outTree;
-		int configuration, evId, eventCounter, run, layer; 	//eventCounter: counts the events in this analysis run to match information within ove event to each other
+		int configuration, evId, eventCounter, run, pdgID, layer; 	//eventCounter: counts the events in this analysis run to match information within ove event to each other
 		double energy;
 		double layerWeight, layerEnergy, layerClusterEnergy, sumFitWeights, sumEnergy, sumClusterEnergy, CM_cells_count, CM_sum;
+		double track_chi2_x, track_chi2_y;
+		int track_ndf_x, track_ndf_y;
+		int NgoodDWCs, DWCReferenceType;
 		double x_predicted, x_predicted_err, y_predicted, y_predicted_err, x_true, x_true_err, y_true, y_true_err, deltaX, deltaY;
 		double x_predicted_to_closest_cell, y_predicted_to_closest_cell, x_true_to_closest_cell, y_true_to_closest_cell, layerZ_cm, layerZ_X0, deviation;
 
 		//averaged information up to the corresponding layers
 		double average_x_predicted, average_y_predicted, average_x_true, average_y_true, average_deltaX, average_deltaY; 
 
-		//MWCs
+		//dWCs
 		int useMWC;
-		double MWC_x1, MWC_y1, MWC_z1, MWC_x2, MWC_y2, MWC_z2;
 
-		std::pair<int, double> CM_tmp;	//will write the subtract_CM() return values for each layer
 };
 
 Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterSet& iConfig) {	
 	
-	// initialization
-	_e_mapFile = iConfig.getParameter<std::string>("e_mapFile_CERN");	
-	HGCalCondObjectTextIO io(0);
-	edm::FileInPath fip(_e_mapFile);
- 	
-  if (!io.load(fip.fullPath(), essource_.emap_)) {
-	  throw cms::Exception("Unable to load electronics map");
-	};
-
 	usesResource("TFileService");
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
-	MWCToken= consumes<MultiWireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
-	HGCalTBClusterCollection_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS"));
-	HGCalTBClusterCollection7_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS7"));
-	HGCalTBClusterCollection19_Token = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS19"));
+	MWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
 
 	//read the cell consideration option to calculate the central hit point
 	std::string methodString = iConfig.getParameter<std::string>("considerationMethod");
@@ -146,12 +146,6 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 		considerationMethod = CONSIDERSEVEN;
 	else if (methodString == "closest19")
 		considerationMethod = CONSIDERNINETEEN;
-	else if(methodString == "clustersAll")
-		considerationMethod = CONSIDERCLUSTERSALL;
-	else if(methodString == "clusters7")
-		considerationMethod = CONSIDERCLUSTERSSEVEN;
-	else if(methodString == "clusters19")
-		considerationMethod = CONSIDERCLUSTERSNINETEEN;
 
 	//read the weighting method to obtain the central hit point
 	methodString = iConfig.getParameter<std::string>("weightingMethod");
@@ -159,132 +153,10 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 		weightingMethod = SQUAREDWEIGHTING;	
 	else if (methodString == "linearWeighting")
 		weightingMethod = LINEARWEIGHTING;
-	else if (methodString == "logWeighting_2.0_1.0")
-		weightingMethod = LOGWEIGHTING_20_10;
-	else if (methodString == "logWeighting_2.1_1.0")
-		weightingMethod = LOGWEIGHTING_21_10;
-	else if (methodString == "logWeighting_2.2_1.0")
-		weightingMethod = LOGWEIGHTING_22_10;
-	else if (methodString == "logWeighting_2.3_1.0")
-		weightingMethod = LOGWEIGHTING_23_10;
-	else if (methodString == "logWeighting_2.4_1.0")
-		weightingMethod = LOGWEIGHTING_24_10;
-	else if (methodString == "logWeighting_2.5_1.0")
-		weightingMethod = LOGWEIGHTING_25_10;
-	else if (methodString == "logWeighting_2.6_1.0")
-		weightingMethod = LOGWEIGHTING_26_10;
-	else if (methodString == "logWeighting_2.7_1.0")
-		weightingMethod = LOGWEIGHTING_27_10;
-	else if (methodString == "logWeighting_2.8_1.0")
-		weightingMethod = LOGWEIGHTING_28_10;
-	else if (methodString == "logWeighting_2.9_1.0")
-		weightingMethod = LOGWEIGHTING_29_10;
-	else if (methodString == "logWeighting_3.0_1.0")
-		weightingMethod = LOGWEIGHTING_30_10;
-	else if (methodString == "logWeighting_3.1_1.0")
-		weightingMethod = LOGWEIGHTING_31_10;
-	else if (methodString == "logWeighting_3.2_1.0")
-		weightingMethod = LOGWEIGHTING_32_10;
-	else if (methodString == "logWeighting_3.3_1.0")
-		weightingMethod = LOGWEIGHTING_33_10;
-	else if (methodString == "logWeighting_3.4_1.0")
-		weightingMethod = LOGWEIGHTING_34_10;
 	else if (methodString == "logWeighting_3.5_1.0")
 		weightingMethod = LOGWEIGHTING_35_10;
-	else if (methodString == "logWeighting_3.6_1.0")
-		weightingMethod = LOGWEIGHTING_36_10;
-	else if (methodString == "logWeighting_3.7_1.0")
-		weightingMethod = LOGWEIGHTING_37_10;
-	else if (methodString == "logWeighting_3.8_1.0")
-		weightingMethod = LOGWEIGHTING_38_10;
-	else if (methodString == "logWeighting_3.9_1.0")
-		weightingMethod = LOGWEIGHTING_39_10;
-	else if (methodString == "logWeighting_4.0_1.0")
-		weightingMethod = LOGWEIGHTING_40_10;
-	else if (methodString == "logWeighting_4.1_1.0")
-		weightingMethod = LOGWEIGHTING_41_10;
-	else if (methodString == "logWeighting_4.2_1.0")
-		weightingMethod = LOGWEIGHTING_42_10;
-	else if (methodString == "logWeighting_4.3_1.0")
-		weightingMethod = LOGWEIGHTING_43_10;
-	else if (methodString == "logWeighting_4.4_1.0")
-		weightingMethod = LOGWEIGHTING_44_10;
-	else if (methodString == "logWeighting_4.5_1.0")
-		weightingMethod = LOGWEIGHTING_45_10;
-	else if (methodString == "logWeighting_4.6_1.0")
-		weightingMethod = LOGWEIGHTING_46_10;
-	else if (methodString == "logWeighting_4.7_1.0")
-		weightingMethod = LOGWEIGHTING_47_10;
-	else if (methodString == "logWeighting_4.8_1.0")
-		weightingMethod = LOGWEIGHTING_48_10;
-	else if (methodString == "logWeighting_4.9_1.0")
-		weightingMethod = LOGWEIGHTING_49_10;
-	else if (methodString == "logWeighting_5.0_1.0")
-		weightingMethod = LOGWEIGHTING_50_10;
-	else if (methodString == "logWeighting_6.0_1.0")
-		weightingMethod = LOGWEIGHTING_60_10;
-	else if (methodString == "logWeighting_7.0_1.0")
-		weightingMethod = LOGWEIGHTING_70_10;
-	else if (methodString == "logWeighting_2.05_1.0")
-		weightingMethod = LOGWEIGHTING_205_10;
-	else if (methodString == "logWeighting_2.15_1.0")
-		weightingMethod = LOGWEIGHTING_215_10;
-	else if (methodString == "logWeighting_2.25_1.0")
-		weightingMethod = LOGWEIGHTING_225_10;
-	else if (methodString == "logWeighting_2.35_1.0")
-		weightingMethod = LOGWEIGHTING_235_10;
-	else if (methodString == "logWeighting_2.45_1.0")
-		weightingMethod = LOGWEIGHTING_245_10;
-	else if (methodString == "logWeighting_2.55_1.0")
-		weightingMethod = LOGWEIGHTING_255_10;
-	else if (methodString == "logWeighting_2.65_1.0")
-		weightingMethod = LOGWEIGHTING_265_10;
-	else if (methodString == "logWeighting_2.75_1.0")
-		weightingMethod = LOGWEIGHTING_275_10;
-	else if (methodString == "logWeighting_2.85_1.0")
-		weightingMethod = LOGWEIGHTING_285_10;
-	else if (methodString == "logWeighting_2.95_1.0")
-		weightingMethod = LOGWEIGHTING_295_10;
-	else if (methodString == "logWeighting_3.05_1.0")
-		weightingMethod = LOGWEIGHTING_305_10;
-	else if (methodString == "logWeighting_3.15_1.0")
-		weightingMethod = LOGWEIGHTING_315_10;
-	else if (methodString == "logWeighting_3.25_1.0")
-		weightingMethod = LOGWEIGHTING_325_10;
-	else if (methodString == "logWeighting_3.35_1.0")
-		weightingMethod = LOGWEIGHTING_335_10;
-	else if (methodString == "logWeighting_3.45_1.0")
-		weightingMethod = LOGWEIGHTING_345_10;
-	else if (methodString == "logWeighting_3.55_1.0")
-		weightingMethod = LOGWEIGHTING_355_10;
-	else if (methodString == "logWeighting_3.65_1.0")
-		weightingMethod = LOGWEIGHTING_365_10;
-	else if (methodString == "logWeighting_3.75_1.0")
-		weightingMethod = LOGWEIGHTING_375_10;
-	else if (methodString == "logWeighting_3.85_1.0")
-		weightingMethod = LOGWEIGHTING_385_10;
-	else if (methodString == "logWeighting_3.95_1.0")
-		weightingMethod = LOGWEIGHTING_395_10;
-	else if (methodString == "logWeighting_4.05_1.0")
-		weightingMethod = LOGWEIGHTING_405_10;
-	else if (methodString == "logWeighting_4.15_1.0")
-		weightingMethod = LOGWEIGHTING_415_10;
-	else if (methodString == "logWeighting_4.25_1.0")
-		weightingMethod = LOGWEIGHTING_425_10;
-	else if (methodString == "logWeighting_4.35_1.0")
-		weightingMethod = LOGWEIGHTING_435_10;
-	else if (methodString == "logWeighting_4.45_1.0")
-		weightingMethod = LOGWEIGHTING_445_10;
-	else if (methodString == "logWeighting_4.55_1.0")
-		weightingMethod = LOGWEIGHTING_455_10;
-	else if (methodString == "logWeighting_4.65_1.0")
-		weightingMethod = LOGWEIGHTING_465_10;
-	else if (methodString == "logWeighting_4.75_1.0")
-		weightingMethod = LOGWEIGHTING_475_10;
-	else if (methodString == "logWeighting_4.85_1.0")
-		weightingMethod = LOGWEIGHTING_485_10;
-	else if (methodString == "logWeighting_4.95_1.0")
-		weightingMethod = LOGWEIGHTING_495_10;
+	else if (methodString == "mostIntensive")
+		weightingMethod = MOSTINTENSIVE;
 	else 
 		weightingMethod = DEFAULTWEIGHTING;
 
@@ -294,50 +166,30 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 		fittingMethod = LINEFITANALYTICAL;
 	else if (methodString == "lineTGraphErrors")
 		fittingMethod = LINEFITTGRAPHERRORS;
-	else if (methodString == "pol2TGraphErrors")
-		fittingMethod = POL2TGRAPHERRORS;
-	else if (methodString == "pol3TGraphErrors")
-		fittingMethod = POL3TGRAPHERRORS;
 	else if (methodString == "gblTrack")
 		fittingMethod = GBLTRACK;
 	else 
 		fittingMethod = DEFAULTFITTING;
 
-	//read the fit point weighting technique:
-	methodString = iConfig.getParameter<std::string>("fitPointWeightingMethod");
-	if (methodString == "none")
-		fitPointWeightingMethod = NONE;
-	else if (methodString == "linear")
-		fitPointWeightingMethod = LINEAR;
-	else if (methodString == "squared")
-		fitPointWeightingMethod = SQUARED;
-	else if (methodString == "logarithmic")
-		fitPointWeightingMethod = LOGARITHMIC;
-	else if (methodString == "exponential")
-		fitPointWeightingMethod = EXPONENTIAL;
-	else 
-		fitPointWeightingMethod = NONE;
 
 	//read the layer configuration
 	LayersConfig = iConfig.getParameter<int>("layers_config");
 	if (LayersConfig == 1) {
 		Layer_Z_Positions = std::vector<double>(config1Positions, config1Positions + sizeof(config1Positions)/sizeof(double));
 		Layer_Z_X0s 			= std::vector<double>(config1X0Depths, config1X0Depths + sizeof(config1X0Depths)/sizeof(double));
-	} if (LayersConfig == 2) {
+	} else if (LayersConfig == 2){
 		Layer_Z_Positions = std::vector<double>(config2Positions, config2Positions + sizeof(config2Positions)/sizeof(double));
 		Layer_Z_X0s 			= std::vector<double>(config2X0Depths, config2X0Depths + sizeof(config2X0Depths)/sizeof(double));
-	} else {
+	}
+	 else {
 		Layer_Z_Positions = std::vector<double>(config1Positions, config1Positions + sizeof(config1Positions)/sizeof(double));
 		Layer_Z_X0s 			= std::vector<double>(config1X0Depths, config1X0Depths + sizeof(config1X0Depths)/sizeof(double));
 	}
 
 	eventCounter = 0;
 
-	pedestalThreshold = iConfig.getParameter<double>("pedestalThreshold");
 	SensorSize = iConfig.getParameter<int>("SensorSize");
 	nLayers = iConfig.getParameter<int>("nLayers");
-	ADC_per_MIP = iConfig.getParameter<std::vector<double> >("ADC_per_MIP");
-
 
 	useMWCReference = iConfig.getParameter<bool>("useMWCReference");
 
@@ -347,17 +199,12 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("eventId", &evId, "eventId/I");	//event ID as it comes from the reader, as it is stored in the txt files
 	outTree->Branch("eventCounter", &eventCounter, "eventCounter/I");	//event counter, current iteration, indexing occurs chronologically in the readin plugins
 	outTree->Branch("run", &run, "run/I");
+	outTree->Branch("pdgID", &pdgID, "pdgID/I");
 	outTree->Branch("layer", &layer, "layer/I");
 	outTree->Branch("energy", &energy, "energy/D");	//electron energy in GeV
 	
-	outTree->Branch("CM_sum", &CM_sum, "CM_sum/D");
-	outTree->Branch("CM_cells_count", &CM_cells_count, "CM_cells_count/D");
 	outTree->Branch("layerEnergy", &layerEnergy, "layerEnergy/D");
-	outTree->Branch("layerClusterEnergy", &layerClusterEnergy, "layerClusterEnergy/D");
-	outTree->Branch("layerWeight", &layerWeight, "layerWeight/D");
 	outTree->Branch("sumEnergy", &sumEnergy, "sumEnergy/D");
-	outTree->Branch("sumClusterEnergy", &sumClusterEnergy, "sumClusterEnergy/D");
-	outTree->Branch("sumFitWeights", &sumFitWeights, "sumFitWeights/D");
 	
 	outTree->Branch("x_true", &x_true, "x_true/D");
 	outTree->Branch("x_true_to_closest_cell", &x_true_to_closest_cell, "x_true_to_closest_cell/D");
@@ -366,6 +213,13 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("y_true_to_closest_cell", &y_true_to_closest_cell, "y_true_to_closest_cell/D");
 	outTree->Branch("y_true_err", &y_true_err, "y_true_err/D");
 	
+	outTree->Branch("NgoodDWCs", &NgoodDWCs, "NgoodDWCs/I");
+	outTree->Branch("DWCReferenceType", &DWCReferenceType, "DWCReferenceType/I");
+	outTree->Branch("track_chi2_x", &track_chi2_x, "track_chi2_x/D");
+	outTree->Branch("track_chi2_y", &track_chi2_y, "track_chi2_y/D");
+	outTree->Branch("track_ndf_x", &track_ndf_x, "track_ndf_x/I");
+	outTree->Branch("track_ndf_y", &track_ndf_y, "track_ndf_y/I");
+
 	outTree->Branch("x_predicted", &x_predicted, "x_predicted/D");
 	outTree->Branch("x_predicted_to_closest_cell", &x_predicted_to_closest_cell, "x_predicted_to_closest_cell/D");
 	outTree->Branch("x_predicted_err", &x_predicted_err, "x_predicted_err/D");
@@ -373,18 +227,8 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	outTree->Branch("y_predicted_to_closest_cell", &y_predicted_to_closest_cell, "y_predicted_to_closest_cell/D");
 	outTree->Branch("y_predicted_err", &y_predicted_err, "y_predicted_err/D");
 	
-	outTree->Branch("useMWC", &useMWC, "uswMWC/I");
-	outTree->Branch("MWC_x1", &MWC_x1, "MWC_x1/D");
-	outTree->Branch("MWC_y1", &MWC_y1, "MWC_y1/D");
-	outTree->Branch("MWC_z1", &MWC_z1, "MWC_z1/D");
-	outTree->Branch("MWC_x2", &MWC_x2, "MWC_x2/D");
-	outTree->Branch("MWC_y2", &MWC_y2, "MWC_y2/D");
-	outTree->Branch("MWC_z2", &MWC_z2, "MWC_z2/D");
-	
 	outTree->Branch("deltaX", &deltaX, "deltaX/D");
 	outTree->Branch("deltaY", &deltaY, "deltaY/D");
-	outTree->Branch("layerZ_cm", &layerZ_cm, "layerZ_cm/D");
-	outTree->Branch("layerZ_X0", &layerZ_X0, "layerZ_X0/D");
 	outTree->Branch("deviation", &deviation, "deviation/D");
 
 	outTree->Branch("average_x_predicted", &average_x_predicted, "average_x_predicted/D");
@@ -396,9 +240,6 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 
 	alignmentParameters = new AlignmentParameters(iConfig.getParameter<std::vector<std::string> >("alignmentParameterFiles")); 
 
-	ClusterVetoCounter = 0;
-	HitsVetoCounter = 0;
-	CommonVetoCounter = 0;
 }//constructor ends here
 
 Position_Resolution_Analyzer::~Position_Resolution_Analyzer() {
@@ -407,31 +248,31 @@ Position_Resolution_Analyzer::~Position_Resolution_Analyzer() {
 
 // ------------ method called for each event  ------------
 void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::EventSetup& setup) {
-
+	#ifdef DEBUG
+		std::cout<<"In the event..."<<std::endl;
+	#endif
 	edm::Handle<RunData> rd;
  	//get the relevant event information
 	event.getByToken(RunDataToken, rd);
 	configuration = rd->configuration;
 	evId = event.id().event();
 	run = rd->run;
+	pdgID = rd->pdgID;
 	eventCounter = rd->event;
 	energy = rd->energy;
-	if (rd->hasDanger) {
-		std::cout<<"Event "<<evId<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has DANGER=true"<<std::endl;
+	
+	if (rd->booleanUserRecords.has("hasDanger")&&rd->booleanUserRecords.get("hasDanger")) {
+		std::cout<<"Event "<<evId<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because somthing went wrong"<<std::endl;
 		return;
 	}
-	if (useMWCReference && ! rd->hasValidMWCMeasurement) {
-		//std::cout<<"Event "<<event.id().event()<<" of run "<<run<<" ("<<energy<<"GeV)  is skipped because it has an invalid MWC measurement"<<std::endl;
-		return;	
-	}
+
 	if (run == -1) {
 		std::cout<<"Run is not in configuration file - is ignored."<<std::endl;
 		return;
 	}
 
-
-	edm::Handle<MultiWireChambers> mwcs;
-	event.getByToken(MWCToken, mwcs);
+	edm::Handle<WireChambers> dwcs;
+	event.getByToken(MWCToken, dwcs);
 
 	//initialize new fit counters in case this is a new run:
 	if (successfulFitCounter.find(run) == successfulFitCounter.end()) 
@@ -441,21 +282,33 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_Token, Rechits);
 
-	//opening Clusters (made from all, closest 7, closest 9)
-	edm::Handle<reco::HGCalTBClusterCollection> clusters;
-  	edm::Handle<reco::HGCalTBClusterCollection> clusters7;
-  	edm::Handle<reco::HGCalTBClusterCollection> clusters19;
-	event.getByToken(HGCalTBClusterCollection_Token, clusters);
-	event.getByToken(HGCalTBClusterCollection7_Token, clusters7);
-	event.getByToken(HGCalTBClusterCollection19_Token, clusters19);
-
+	#ifdef DEBUG
+		std::cout<<"Event: "<<rd->event<<std::endl;
+	#endif
 	//step 1: Reduce the information to energy deposits/hits in x,y per sensor/layer 
 	//fill the rechits:
+	for (int _l=1; _l<=nLayers; _l++) {
+		Sensors[_l] = new SensorHitMap(_l);
+		Sensors[_l]->setLabZ(Layer_Z_Positions[_l-1], Layer_Z_X0s[_l-1]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
+
+		Sensors[_l]->setAlignmentParameters(alignmentParameters->getValue(run, 100*_l + 21), 0.0, 0.0,
+			alignmentParameters->getValue(run, 100*_l + 11), alignmentParameters->getValue(run, 100*_l + 12), 0.0);	
+		Sensors[_l]->setSensorSize(SensorSize);
+
+		double X0sum = 0;
+		for (int _x = 0; _x<(int)layer; _x++) X0sum += Layer_Z_X0s[_x];
+		Sensors[_l]->setParticleEnergy(energy - gblhelpers::computeEnergyLoss(X0sum, energy));
+
+	}
+
 	for(auto Rechit : *Rechits) {	
 		layer = (Rechit.id()).layer();
+		if (layer>nLayers) continue;
+
+		/*
 		if ( Sensors.find(layer) == Sensors.end() ) {
+  			std::cout<<layer<<std::endl;
 			Sensors[layer] = new SensorHitMap(layer);
-			Sensors[layer]->setPedestalThreshold(pedestalThreshold);
 			Sensors[layer]->setLabZ(Layer_Z_Positions[layer-1], Layer_Z_X0s[layer-1]);	//first argument: real positon as measured (not aligned) in cm, second argument: position in radiation lengths
 
 			Sensors[layer]->setAlignmentParameters(alignmentParameters->getValue(run, 100*layer + 21), 0.0, 0.0,
@@ -466,81 +319,69 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			for (int _x = 0; _x<(int)layer; _x++) X0sum += Layer_Z_X0s[_x];
 			Sensors[layer]->setParticleEnergy(energy - gblhelpers::computeEnergyLoss(X0sum, energy));
 		}
-		uint32_t EID = essource_.emap_.detId2eid(Rechit.id());
-		HGCalTBElectronicsId eid(EID);	 
-		int skiRocIndex = (eid.iskiroc() - 1) > 0 ? eid.iskiroc() - 1 : 0;	
-		Sensors[layer]->addHit(Rechit, ADC_per_MIP[skiRocIndex]);
+		*/
+		Sensors[layer]->addHit(Rechit, 1.0);		
 	}
 
-	//fill the hits from the cluster collections 
-	for( auto cluster : *clusters ){
-		layer = cluster.layer();
-		for( std::vector< std::pair<DetId,float> >::const_iterator it=cluster.hitsAndFractions().begin(); it!=cluster.hitsAndFractions().end(); ++it ){
-			Sensors[layer]->registerClusterHit((*it).first, -1);
-		}
-	}
-	for( auto cluster : *clusters7 ){
-		layer = cluster.layer();
-		for( std::vector< std::pair<DetId,float> >::const_iterator it=cluster.hitsAndFractions().begin(); it!=cluster.hitsAndFractions().end(); ++it ){
-			Sensors[layer]->registerClusterHit((*it).first, 7);
-		}
-	}
-	for( auto cluster : *clusters19 ){
-		layer = cluster.layer();
-		for( std::vector< std::pair<DetId,float> >::const_iterator it=cluster.hitsAndFractions().begin(); it!=cluster.hitsAndFractions().end(); ++it ){
-			Sensors[layer]->registerClusterHit((*it).first, 19);
-		}
-	}
-
+	#ifdef DEBUG
+		std::cout<<"run: "<<rd->run<<"  energy: "<<rd->energy<<"  type:" << rd->runType<<"   eventCounter: "<<rd->event<<std::endl;
+	#endif
+	
 	//Possible event selection: sum of energies of all cells(=hits) from RecHits Collection and Clusters
-	sumEnergy = 0., sumClusterEnergy = 0.;
+	sumEnergy = 0.;
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {	
 		sumEnergy += it->second->getTotalEnergy();
-		sumClusterEnergy += it->second->getTotalClusterEnergy(-1);
 	}
+
 	
 
 	//step 2: calculate impact point with technique indicated as the argument
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
-		//subtract common first
-		CM_tmp = it->second->subtractCM();
-		CM_cells_count = CM_tmp.first;
-		CM_sum = CM_tmp.second;
-
 		//now calculate the center positions for each layer
 		it->second->calculateCenterPosition(considerationMethod, weightingMethod);
+		
+		#ifdef DEBUG
+			std::pair<double, double> position_true = it->second->getLabHitPosition();
+			std::cout<<"layer "<<it->first<<"  x: "<<position_true.first<<"    y: "<<position_true.second<<std::endl;
+		#endif
 	}
 
-	//Step 3: add MWCs to the setup if useMWCReference option is set true
+	#ifdef DEBUG
+		std::cout<<dwcs->at(0).x<<"  "<<dwcs->at(0).y<<"   "<<dwcs->at(0).z<<"  "<<dwcs->at(0).goodMeasurement<<std::endl;
+		std::cout<<dwcs->at(1).x<<"  "<<dwcs->at(1).y<<"   "<<dwcs->at(1).z<<"  "<<dwcs->at(1).goodMeasurement<<std::endl;
+		std::cout<<dwcs->at(2).x<<"  "<<dwcs->at(2).y<<"   "<<dwcs->at(2).z<<"  "<<dwcs->at(2).goodMeasurement<<std::endl;
+		std::cout<<dwcs->at(3).x<<"  "<<dwcs->at(3).y<<"   "<<dwcs->at(3).z<<"  "<<dwcs->at(3).goodMeasurement<<std::endl;
+	#endif
+
+	//Step 3: add dWCs to the setup if useMWCReference option is set true
 	if (useMWCReference) {
 		useMWC = 1;
+		NgoodDWCs = 0;
+		DWCReferenceType = 0;
+		
 
-		double mwc_resolution = 0.005; //cm
-		Sensors[(nLayers+1)] = new SensorHitMap((nLayers+1));				//attention: This is specifically tailored for the 8-layer setup
-		Sensors[(nLayers+1)]->setLabZ(mwcs->at(0).z, 0.001);
-		Sensors[(nLayers+1)]->setCenterHitPosition(mwcs->at(0).x, mwcs->at(0).y ,mwc_resolution , mwc_resolution);
-		Sensors[(nLayers+1)]->setParticleEnergy(energy);
-		Sensors[(nLayers+1)]->setAlignmentParameters(alignmentParameters->getValue(energy, 100*(nLayers+1) + 21), 0.0, 0.0,
-				alignmentParameters->getValue(energy, 100*(nLayers+1) + 11), alignmentParameters->getValue(energy, 100*(nLayers+1) + 12), 0.0);	
-		Sensors[(nLayers+1)]->setResidualResolution(mwc_resolution);	
-		MWC_x1 = Sensors[nLayers+1]->getLabHitPosition().first; //mwcs->at(0).x;
-		MWC_y1 = Sensors[nLayers+1]->getLabHitPosition().second; //mwcs->at(0).y;
-		MWC_z1 = Sensors[nLayers+1]->getLabZ() + Sensors[nLayers+1]->getIntrinsicHitZPosition(); //mwcs->at(0).z;
+		for (size_t i=0; i<dwcs->size(); i++) {
+			if (!dwcs->at(i).goodMeasurement) continue;
+			
+			NgoodDWCs++;
+			DWCReferenceType += pow(2, i);
+			
+			Sensors[(nLayers+NgoodDWCs)] = new SensorHitMap((nLayers+NgoodDWCs));				//attention: This is specifically tailored for the 8-layer setup
+			Sensors[(nLayers+NgoodDWCs)]->setLabZ(dwcs->at(i).z, 0.001);
+			Sensors[(nLayers+NgoodDWCs)]->setCenterHitPosition(dwcs->at(i).x, dwcs->at(i).y, dwcs->at(i).res_x , dwcs->at(i).res_y);
+			Sensors[(nLayers+NgoodDWCs)]->setParticleEnergy(energy);
+			Sensors[(nLayers+NgoodDWCs)]->setAlignmentParameters(alignmentParameters->getValue(energy, 100*(nLayers+NgoodDWCs) + 21), 0.0, 0.0,
+					alignmentParameters->getValue(energy, 100*(nLayers+NgoodDWCs) + 11), alignmentParameters->getValue(energy, 100*(nLayers+NgoodDWCs) + 12), 0.0);	
+			Sensors[(nLayers+NgoodDWCs)]->setResidualResolution(dwcs->at(i).res_x);	
+		}
 
-		Sensors[(nLayers+2)] = new SensorHitMap((nLayers+2));				//attention: This is specifically tailored for the 8-layer setup
-		Sensors[(nLayers+2)]->setLabZ(mwcs->at(1).z, 0.001);
-		Sensors[(nLayers+2)]->setCenterHitPosition(mwcs->at(1).x, mwcs->at(1).y ,mwc_resolution , mwc_resolution);
-		Sensors[(nLayers+2)]->setParticleEnergy(energy);
-		Sensors[(nLayers+2)]->setAlignmentParameters(alignmentParameters->getValue(energy, 100*(nLayers+2) + 21), 0.0, 0.0,
-				alignmentParameters->getValue(energy, 100*(nLayers+2) + 11), alignmentParameters->getValue(energy, 100*(nLayers+2) + 12), 0.0);	
-		Sensors[(nLayers+2)]->setResidualResolution(mwc_resolution);
-		MWC_x2 = Sensors[nLayers+2]->getLabHitPosition().first; //mwcs->at(1).x;
-		MWC_y2 = Sensors[nLayers+2]->getLabHitPosition().second; //mwcs->at(1).y;
-		MWC_z2 = Sensors[nLayers+2]->getLabZ() + Sensors[nLayers+1]->getIntrinsicHitZPosition(); //mwcs->at(1).z;
+		#ifdef DEBUG
+			std::cout<<"DWC reference type: "<<DWCReferenceType<<std::endl;
+		#endif
+		if (NgoodDWCs<2) return;
 
 	} else {
 		useMWC = 0;
-		MWC_x1 = MWC_y1 = MWC_z1 = MWC_x2 = MWC_y2 = MWC_z2 = -999;
 	}
 	
 	//step 4: fill particle tracks
@@ -556,16 +397,17 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 			if (i==j) continue;
 
 			if (i<=nLayers) {
-				if(useMWCReference && j>nLayers) Tracks[i]->addFitPoint(Sensors[j]);
+				if(useMWCReference && j>nLayers) {
+					//std::cout<<"Adding sensor "<<j<<" to track i"<<std::endl;
+					Tracks[i]->addFitPoint(Sensors[j]);
+				}
 				else if(!useMWCReference && j<=nLayers) Tracks[i]->addFitPoint(Sensors[j]);
 			} else {
 				if(useMWCReference && j<=nLayers) 
-					Tracks[i]->addFitPoint(Sensors[j]);	
-				
+					Tracks[i]->addFitPoint(Sensors[j]);					
 			}
 		}
 
-		Tracks[i]->weightFitPoints(fitPointWeightingMethod);
 		Tracks[i]->fitTrack(fittingMethod);
 	}
 
@@ -585,16 +427,21 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		layerZ_X0 += Sensors[layer]->getX0();
 		
 		std::pair<double, double> position_predicted = Tracks[layer]->calculateReferenceXY();
-		x_predicted = position_predicted.first;
+		x_predicted = -position_predicted.first;
 		sum_x_predicted  += x_predicted*layerEnergy;
 		y_predicted = position_predicted.second;
 		sum_y_predicted  += y_predicted*layerEnergy;
 
+		track_chi2_x = Tracks[layer]->getChi2(1);
+		track_chi2_y = Tracks[layer]->getChi2(2);
+		track_ndf_x = Tracks[layer]->getNDF(1);
+		track_ndf_y = Tracks[layer]->getNDF(2);
+
 		std::pair<double, double> position_predicted_to_closest_cell = Sensors[layer]->getCenterOfClosestCell(position_predicted);
-		x_predicted_to_closest_cell = position_predicted_to_closest_cell.first;
+		x_predicted_to_closest_cell = -position_predicted_to_closest_cell.first;	//2017: DWCs are rotated by 180 degrees in x
 		y_predicted_to_closest_cell = position_predicted_to_closest_cell.second;
 		std::pair<double, double> position_error_predicted = Tracks[layer]->calculateReferenceErrorXY();
-		x_predicted_err = position_error_predicted.first;
+		x_predicted_err = position_error_predicted.first;		//2017: DWCs are rotated by 180 degrees in x
 		y_predicted_err = position_error_predicted.second;
 
 
@@ -621,31 +468,30 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		deltaY = y_true - y_predicted;
 		deviation  = sqrt( pow(deltaX, 2) + pow(deltaY, 2) );
 
-
-		average_x_predicted = layer <= 8 ? sum_x_predicted / sum_energy : -999;
-		average_y_predicted = layer <= 8 ? sum_y_predicted / sum_energy : -999;
-		average_x_true = layer <= 8 ? sum_x_true / sum_energy : -999;
-		average_y_true = layer <= 8 ? sum_y_true / sum_energy : -999;
-		average_deltaX = layer <= 8 ? average_x_true - average_x_predicted : -999;
-		average_deltaY = layer <= 8 ? average_y_true - average_y_predicted : -999;
-		//DEBUG
-		if (deviation > 1000.) {
-			std::cout<<"Event: "<<eventCounter<<std::endl;
-			std::cout<<"   layer: "<<layer<<"   x:  "<<x_predicted<<" - "<<x_true<<"     "<<y_predicted<<" - "<<y_true<<std::endl;
-		}
-		//END OF DEBUG
+		average_x_predicted = layer <= 6 ? sum_x_predicted / sum_energy : -999;
+		average_y_predicted = layer <= 6 ? sum_y_predicted / sum_energy : -999;
+		average_x_true = layer <= 6 ? sum_x_true / sum_energy : -999;
+		average_y_true = layer <= 6 ? sum_y_true / sum_energy : -999;
+		average_deltaX = layer <= 6 ? average_x_true - average_x_predicted : -999;
+		average_deltaY = layer <= 6 ? average_y_true - average_y_predicted : -999;
+		#ifdef DEBUG
+			if (layer==1) {
+				std::cout<<"   layer: "<<layer<<"   x:  "<<x_predicted<<" - "<<x_true<<"     "<<y_predicted<<" - "<<y_true<<std::endl;
+			}
+		#endif
 		
-		//fill the tree
 		outTree->Fill();
+		//fill the tree
 	}
-
+	/*
+	*/
 	
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		delete (*it).second;
 	};	Sensors.clear();
-	for(std::map<int, ParticleTrack*>::iterator it=Tracks.begin(); it!=Tracks.end(); it++) {
-		delete (*it).second;
-	}; Tracks.clear();
+	//for(std::map<int, ParticleTrack*>::iterator it=Tracks.begin(); it!=Tracks.end(); it++) {
+	//	delete (*it).second;
+	//}; Tracks.clear();
 	
 }// analyze ends here
 
@@ -653,9 +499,7 @@ void Position_Resolution_Analyzer::beginJob() {
 }
 
 void Position_Resolution_Analyzer::endJob() {
-	std::cout<<"ClusterVetos: "<<ClusterVetoCounter<<std::endl;
-	std::cout<<"HitsVetos: "<<HitsVetoCounter<<std::endl;
-	std::cout<<"CommonVetos: "<<CommonVetoCounter<<std::endl;
+	
 
 	delete alignmentParameters;
 }

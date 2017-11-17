@@ -10,7 +10,8 @@
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
 #include "HGCal/DataFormats/interface/HGCalTBTrackCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"
-#include "HGCal/DataFormats/interface/HGCalTBMultiWireChamberData.h"
+#include "HGCal/DataFormats/interface/HGCalTBDWCTrack.h"
+#include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
 
 #include "DataFormats/Common/interface/RefProd.h"
 #include "DataFormats/Common/interface/Wrapper.h"
@@ -38,12 +39,18 @@ struct dictionary {
 	SKIROC2DigiCollection _SR2DC;
 	edm::Wrapper<SKIROC2DigiCollection> _theSR2DC;
 
-  RunData _aRunData;
-  edm::Wrapper<RunData> _aRunDataWrapper;
+	UserRecords<bool> _aBooleanUserRecord;
+	UserRecords<double> _aDoubleUserRecord;
 
-  MultiWireChamberData _aMultiWireChamberData;
-  std::vector<MultiWireChamberData> _aMultiWireChamberDataVector;
-  edm::Wrapper<MultiWireChamberData> __aMultiWireChamberDataWrapper;
+	RunData _aRunData;
+	edm::Wrapper<RunData> _aRunDataWrapper;
+
+	HGCalTBDWCTrack _aHGCalTBDWCTrack;
+	edm::Wrapper<HGCalTBDWCTrack> _aHGCalTBDWCTrackWrapper;
+
+	WireChamberData _aWireChamberData;
+	std::vector<WireChamberData> _aWireChamberDataVector;
+	edm::Wrapper<WireChamberData> __aWireChamberDataWrapper;
 
 	HGCalTBTrack _aTrack;
 	std::vector<HGCalTBTrack> _HGCTBTRackVect;

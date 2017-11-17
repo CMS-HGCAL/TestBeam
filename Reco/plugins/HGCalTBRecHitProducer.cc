@@ -58,7 +58,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   for( auto rawhit : *rawhits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid) ) continue;
-    int iski=eid.iskiroc();
+    int iski=rawhit.skiroc();
 
     std::vector<double> sampleHG, sampleLG, sampleT;
 
