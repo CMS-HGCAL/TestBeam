@@ -24,7 +24,6 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
   	std::vector<double> v1(4, 1.0);
 	wc_resolutions = pset.getUntrackedParameter<std::vector<double> >("wc_resolutions", v1);
 
-
   	beamEnergy = pset.getUntrackedParameter<unsigned int> ("beamEnergy", 250);
   	beamParticlePDGID = pset.getUntrackedParameter<int> ("beamParticlePDGID", 211);
   	setupConfiguration = pset.getUntrackedParameter<unsigned int> ("setupConfiguration", 1);
@@ -65,6 +64,37 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 		dwc_zPositions.push_back(-1509.);
 		dwc_zPositions.push_back(-1769.);
 	}
+
+	physicsListUsed = pset.getUntrackedParameter<std::string>("physicsListUsed", "");
+
+	if (physicsListUsed=="SIM_FTF_BIC") 
+		_enumPhysicsListUsed = HGCAL_TB_SIM_FTF_BIC;
+	else if (physicsListUsed=="SIM_FTFP_BERT") 
+		_enumPhysicsListUsed = HGCAL_TB_SIM_FTFP_BERT ;
+	else if (physicsListUsed=="SIM_FTFP_BERT_EML") 
+		_enumPhysicsListUsed = HGCAL_TB_SIM_FTFP_BERT_EML ;
+	else if (physicsListUsed=="SIM_FTFP_BERT_EMM") 
+		_enumPhysicsListUsed = HGCAL_TB_SIM_FTFP_BERT_EMM;
+	else if (physicsListUsed=="SIM_FTFP_BERT_HP_EML") 
+		_enumPhysicsListUsed = HGCAL_TB_SIM_FTFP_BERT_HP_EML;
+	else if (physicsListUsed=="SIM_FTFP_BERT_EMY") 
+		_enumPhysicsListUsed = HGCAL_TB_SIM_FTFP_BERT_EMY;
+	else if (physicsListUsed=="SIM_QGSP_BERT") 
+		_enumPhysicsListUsed = HGCAL_TB_SIM_QGSP_BERT;
+	else if (physicsListUsed=="SIM_QGSP_BERT_EML") 
+		_enumPhysicsListUsed = HGCAL_TB_SIM_QGSP_BERT_EML;
+	else if (physicsListUsed=="SIM_QGSP_BERT_HP_EML") 
+		_enumPhysicsListUsed = HGCAL_TB_SIM_QGSP_BERT_HP_EML;
+	else if (physicsListUsed=="SIM_QGSP_FTFP_BERT") 
+		_enumPhysicsListUsed = HGCAL_TB_SIM_QGSP_FTFP_BERT;
+	else if (physicsListUsed=="SIM_QGSP_FTFP_BERT_EML") 
+		_enumPhysicsListUsed = HGCAL_TB_SIM_QGSP_FTFP_BERT_EML;
+	else if (physicsListUsed=="SIM_QGSP_FTFP_BERT_EML_New") 
+		_enumPhysicsListUsed = HGCAL_TB_SIM_QGSP_FTFP_BERT_EML_New;
+	else if (physicsListUsed=="SIM_QGSP_FTFP_BERT_EMM") 
+		_enumPhysicsListUsed = HGCAL_TB_SIM_QGSP_FTFP_BERT_EMM;
+	else 
+		_enumPhysicsListUsed = HGCAL_TB_SIM;
 
 	produces <HGCalTBRecHitCollection>(RechitOutputCollectionName);
 	produces<WireChambers>(DWCOutputCollectionName);
@@ -240,7 +270,7 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	rd->energy = (*fileIterator).energy;		//mean energy of the beam configuration
 	rd->configuration = (*fileIterator).config;
 	rd->pdgID = (*fileIterator).pdgID;
-	rd->runType = HGCAL_TB_SIM;
+	rd->runType = _enumPhysicsListUsed;
 	rd->run = (*fileIterator).index;
 	rd->event = eventCounter;
 	rd->booleanUserRecords.add("hasDanger", false);

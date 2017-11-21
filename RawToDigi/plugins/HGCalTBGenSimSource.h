@@ -81,6 +81,9 @@ private:
   	double GeVToMip;
 	std::string areaSpecification;
 
+	std::string physicsListUsed;
+	RUNTYPES _enumPhysicsListUsed;
+
 	std::vector<double> dwc_zPositions;		//filled by area specification
 
 	

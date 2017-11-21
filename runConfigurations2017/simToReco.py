@@ -53,6 +53,13 @@ options.register('layerPositionFile',
                  VarParsing.VarParsing.varType.string,
                  'File indicating the layer positions in mm.')
 
+options.register('physicsListUsed',
+                "",
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Specify the used physics list to be passed forward to the run data object.'
+                )
+
 options.register('areaSpecification',
                 "H2",
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -145,6 +152,7 @@ process.source = cms.Source("HGCalTBGenSimSource",
                         energyNoiseResolution=cms.untracked.double(0.0),
                         GeVToMip=cms.untracked.double(1./(86.5*pow(10.,-6)*1.7)),   #apply an overall scaling of the recorded intensities in the cells
                         areaSpecification = cms.untracked.string(options.areaSpecification),
+                        physicsListUsed = cms.untracked.string(options.physicsListUsed),
                         wc_resolutions = cms.untracked.vdouble([1.5, 1.5, 1.0, 1.0])
                         )
 
