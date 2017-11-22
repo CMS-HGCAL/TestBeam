@@ -50,10 +50,8 @@ private:
   int m_sensorsize;
   bool m_eventPlotter;
   int m_evtID;
-  double m_mipThreshold;
   double m_noiseThreshold;
 
-  TH1F* m_h_mip[4];
   TH1F* m_h_hgSum;
   TH1F* m_h_lgSum;
   TH1F* m_h_enSum;
@@ -71,7 +69,6 @@ RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig) :
   m_detectorLayoutFile(iConfig.getUntrackedParameter<std::string>("DetectorLayout","HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt")),
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
   m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
-  m_mipThreshold(iConfig.getUntrackedParameter<double>("MipThreshold",5.0)),
   m_noiseThreshold(iConfig.getUntrackedParameter<double>("NoiseThreshold",0.5))
 {
   m_HGCalTBRecHitCollection = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
@@ -102,10 +99,6 @@ void RecHitPlotter::beginJob()
   usesResource("TFileService");
   edm::Service<TFileService> fs;
   
-  m_h_mip[0]=fs->make<TH1F>("Mip_Ski0","Mip_Ski0",180,20,200);
-  m_h_mip[1]=fs->make<TH1F>("Mip_Ski1","Mip_Ski1",180,20,200);
-  m_h_mip[2]=fs->make<TH1F>("Mip_Ski2","Mip_Ski2",180,20,200);
-  m_h_mip[3]=fs->make<TH1F>("Mip_Ski3","Mip_Ski3",180,20,200);
   m_h_hgSum=fs->make<TH1F>("HighGainSum","HighGainSum",5000,0,10000);
   m_h_lgSum=fs->make<TH1F>("LowGainSum","LowGainSum",5000,0,10000);
   m_h_enSum=fs->make<TH1F>("EnergySum","EnergySum",5000,0,10000);
@@ -159,8 +152,6 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       energyHighSum+=hit.energyHigh();
       energyLowSum+=hit.energyLow();
       energySum+=hit.energy();
-      if( hit.energyHigh()<m_mipThreshold )
-      	m_h_mip[(4-(eid.iskiroc()-1))%4]->Fill(hit.energyHigh());
     }
     if(m_eventPlotter){
       if(!IsCellValid.iu_iv_valid(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize))  continue;

@@ -41,8 +41,10 @@ class HGCalTBLayer
   const int subdet(){return _subdet;}
   void print()
   {
-    for( auto module : _modules )
+    for( auto module : _modules ){
+      std::cout << "z = " << _z << "\t";
       module.print();
+    }
   }
  private:
   std::vector<HGCalTBModule> _modules;

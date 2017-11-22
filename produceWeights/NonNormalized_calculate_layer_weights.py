@@ -4,11 +4,11 @@ from __future__ import print_function, division
 
 from math import pow
 
-dEdX_for = {'W': 2.21, 'Cu': 1.257, 'Air': 0, 'Si': 0.3876, 'AcSi': 0.3876, 'Pb': 1.274}
+dEdX_for = {'W': 2.21, 'Cu': 1.257, 'Air': 0, 'Si': 0.3876, 'AcSi': 0.3876, 'Pb': 1.274, 'Al' : 0.4358, 'Fe' : 1.143}
 #dEdX_for = {'W': 2.21, 'Cu': 1.257, 'Air': 0, 'Si': 0., 'AcSi': 0.3876, 'Pb': 1.274}
 dEdX_for['WCu'] = 0.75*dEdX_for['W'] + 0.25*dEdX_for['Cu']
 
-X0_for = {'W': 3.504, 'Cu': 14.36, 'Air': 303900, 'Si': 93.70, 'AcSi': 93.70, 'Pb': 5.612}
+X0_for = {'W': 3.504, 'Cu': 14.36, 'Air': 303900, 'Si': 93.70, 'AcSi': 93.70, 'Pb': 5.612, 'Al' : 88.97, 'Fe' : 17.57}
 X0_for['WCu'] = pow(0.75*pow(X0_for['W'],-1) + 0.25*pow(X0_for['Cu'],-1),-1)
 
 #path_to_setup_data = "./TM_setup_data_FNAL.txt"
@@ -27,7 +27,10 @@ X0_for['WCu'] = pow(0.75*pow(X0_for['W'],-1) + 0.25*pow(X0_for['Cu'],-1),-1)
 #path_to_setup_data = "./GeometrySetup/setup_data_FNAL.txt"
 
 ## 28 layers FNAL
-path_to_setup_data = "./GeometrySetup/setup_data_FNAL_28layers.txt"
+#path_to_setup_data = "./GeometrySetup/setup_data_FNAL_28layers.txt"
+
+## sep2017 7EE layers, 10 FH layers :
+path_to_setup_data = "./GeometrySetup/setup_data_CERN_setup_sep2017_7ee_10fh.txt"
 
 dEdX_times_deltaX_before_first_layer = 0
 radiation_lengths_before_first_layer = 0 # this means 0 radiation lengths before the beam encounters the first sublayer
