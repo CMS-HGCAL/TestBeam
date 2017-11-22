@@ -106,6 +106,6 @@ process.pulseshapeplotter = cms.EDAnalyzer("PulseShapePlotter",
 )
 
 
-process.p = cms.Path( process.rawhitproducer*process.pulseshapeplotter )
+process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
 
 process.end = cms.EndPath(process.output)
