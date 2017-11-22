@@ -1,5 +1,6 @@
 /* 
  * Determination of the position resolution of the setup.
+ * Deprecated --> should be rewritten for other purposes
  */
 
 /**

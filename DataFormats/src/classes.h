@@ -46,6 +46,7 @@ struct dictionary {
 
 	UserRecords<bool> _aBooleanUserRecord;
 	UserRecords<double> _aDoubleUserRecord;
+  	edm::Wrapper<UserRecords<double> > _aDoubleUserRecordWrapper;
 
 	RunData _aRunData;
 	edm::Wrapper<RunData> _aRunDataWrapper;

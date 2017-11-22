@@ -56,7 +56,6 @@ class RunData {
     int pdgID;
     RUNTYPES runType;
     
-
     UserRecords<bool> booleanUserRecords;
     UserRecords<double> doubleUserRecords;
 
