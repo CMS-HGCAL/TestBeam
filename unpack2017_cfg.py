@@ -40,6 +40,34 @@ options.register('electronicMap',
 #electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_October_17Sensors_5EELayers_6FHLayers_V1.txt" # october 18-22, 1st conf
 #electronicMap="HGCal/CondObjects/data/map_CERN_Hexaboard_October_20Sensors_5EELayers_7FHLayers_V1.txt" # october 18-22, 2nd conf
 
+options.register('beamEnergy',
+                0,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.float,
+                 'Beam energy.'
+                )
+
+options.register('beamParticlePDGID',
+                 0,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Beam particles PDG ID.'
+                )
+
+options.register('runType',
+                 "Beam",
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Run type: Pedestal, Beam, Simulation.'
+                )
+
+options.register('setupConfiguration',
+                0,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'setupConfiguration (1: July - 4: 20 Layers in October in H6A".'
+                )
+
 options.maxEvents = -1
 options.output = "cmsswEvents.root"
 
@@ -81,7 +109,12 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             DataFormats=cms.untracked.uint32(options.dataFormat),
                             timingFiles=cms.vstring("%s/HexaData_Run%04d_TIMING_RDOUT_ORM0.txt"%(options.dataFolder,options.runNumber),
                                                     "%s/HexaData_Run%04d_TIMING_RDOUT_ORM1.txt"%(options.dataFolder,options.runNumber),
-                                                    "%s/HexaData_Run%04d_TIMING_RDOUT_ORM2.txt"%(options.dataFolder,options.runNumber))
+                                                    "%s/HexaData_Run%04d_TIMING_RDOUT_ORM2.txt"%(options.dataFolder,options.runNumber)),
+                            beamEnergy=cms.untracked.double(options.beamEnergy),
+                            beamParticlePDGID=cms.untracked.int32(options.beamParticlePDGID),
+                            runType=cms.untracked.string(options.runType),
+                            setupConfiguration=cms.untracked.uint32(options.setupConfiguration)
+
 )
 
 filename = options.outputFolder+"/PedestalOutput_"+str(options.runNumber)+".root"
@@ -110,7 +143,7 @@ process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata")
 )
 
-process.p = cms.Path( process.pedestalplotter*process.rawdataplotter )
+process.p = cms.Path( process.pedestalplotter )
 
 process.end = cms.EndPath(process.output)
 

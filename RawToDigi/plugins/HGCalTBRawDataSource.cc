@@ -22,10 +22,10 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
   m_nSkipEvents(pset.getUntrackedParameter<unsigned int> ("NSkipEvents",0)),
   m_dataFormats(pset.getUntrackedParameter<unsigned int > ("DataFormats",0)),
   m_readTimeStamps(pset.getUntrackedParameter<bool> ("ReadTimeStamps",false)),
-  m_beamEnergy(pset.getUntrackedParameter<double> ("beamEnergy", 250)),
-  m_beamParticlePDGID(pset.getUntrackedParameter<int> ("beamParticlePDGID", 211)),
+  m_beamEnergy(pset.getUntrackedParameter<double> ("beamEnergy", 0)),
+  m_beamParticlePDGID(pset.getUntrackedParameter<int> ("beamParticlePDGID", 0)),
   m_runType(pset.getUntrackedParameter<std::string> ("runType", "Beam")),
-  m_setupConfiguration(pset.getUntrackedParameter<unsigned int> ("setupConfiguration", 1))
+  m_setupConfiguration(pset.getUntrackedParameter<unsigned int> ("setupConfiguration", 0))
 {
   produces<HGCalTBSkiroc2CMSCollection>(m_outputCollectionName);
   produces<RunData>("RunData");
@@ -44,8 +44,6 @@ HGCalTBRawDataSource::HGCalTBRawDataSource(const edm::ParameterSet & pset, edm::
 
   m_timingFiles=pset.getParameter< std::vector<std::string> >("timingFiles");
   
-  m_triggertime_prev = 0;
-
   std::cout << pset << std::endl;
 
   if (m_runType=="Pedestal") {
@@ -121,12 +119,6 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
     }
     triggerNumber=evtTrailer>>0x8;
 
-    buf[0] = m_buffer[m_nWords*4+4];
-    buf[1] = m_buffer[m_nWords*4+5];
-    buf[2] = m_buffer[m_nWords*4+6];
-    buf[3] = m_buffer[m_nWords*4+7];
-    memcpy(&m_triggertime, &buf, sizeof(m_triggertime));
-  
     std::vector< std::array<uint16_t,1924> > decodedData=decode_raw_32bit(rawData);
     m_decodedData.insert(m_decodedData.end(),decodedData.begin(),decodedData.end());
   }
