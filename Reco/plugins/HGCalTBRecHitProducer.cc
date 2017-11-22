@@ -5,21 +5,11 @@
 
 #include <iostream>
 
-/*
- else if (investigatePulseShape) {
-        for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) 
-          shapesLG[key]->Fill(25*it+12.5-(fitlg.tmax - fitlg.trise), (rawhit.lowGainADC(it)-subLG[it])*m_LG2HG_value.at(iski)/fitlg.amplitude);
-        
-        ToARisevsTMaxLG[key]->Fill(fitlg.tmax, toaRise);
-        ToAFallvsTMaxLG[key]->Fill(fitlg.tmax, toaFall);
-      }
-
-*/
-
 
 const static int SENSORSIZE = 128;
 
 HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) : 
+  m_CommonModeNoiseCollectionName(cfg.getUntrackedParameter<std::string>("CommonModeNoiseCollectionName", "HGCALTBCOMMONMODENOISEMAP")),
   m_outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
   m_electronicMap(cfg.getUntrackedParameter<std::string>("ElectronicsMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt")),
   m_detectorLayoutFile(cfg.getUntrackedParameter<std::string>("DetectorLayout","HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt")),
@@ -33,6 +23,7 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) :
   investigatePulseShape = cfg.getUntrackedParameter<bool>("investigatePulseShape", false);
   std::cout << cfg.dump() << std::endl;
 
+  produces <std::map<int, commonModeNoise> >(m_CommonModeNoiseCollectionName);
   produces <HGCalTBRecHitCollection>(m_outputCollectionName);
 }
 
@@ -123,9 +114,14 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   edm::Handle<HGCalTBRawHitCollection> rawhits;
   event.getByToken(m_HGCalTBRawHitCollection, rawhits);
 
+  //compute the common mode noise 
   CommonMode cm(essource_.emap_, true, true, -1); //default is common mode per chip using the median
   cm.Evaluate( rawhits );
-  std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
+
+  //..and at it to the edm event
+  std::auto_ptr<std::map<int, commonModeNoise> > cmMap(new std::map<int, commonModeNoise>);
+  (*cmMap)=cm.CommonModeNoiseMap();
+  
 
   std::vector<std::pair<double, double> > CellXY;
 
@@ -162,30 +158,30 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       }
     case 0 : 
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	subHG[it]=cmMap[iski].fullHG[it]; 
-      	subLG[it]=cmMap[iski].fullLG[it]; 
+      	subHG[it]=cmMap->at(iski).fullHG[it]; 
+      	subLG[it]=cmMap->at(iski).fullLG[it]; 
       }
       break;
     case 2 : 
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	subHG[it]=cmMap[iski].halfHG[it]; 
-      	subLG[it]=cmMap[iski].halfLG[it]; 
+      	subHG[it]=cmMap->at(iski).halfHG[it]; 
+      	subLG[it]=cmMap->at(iski).halfLG[it]; 
       }
       break;
     case 3 : 
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	subHG[it]=cmMap[iski].mouseBiteHG[it]; 
-      	subLG[it]=cmMap[iski].mouseBiteLG[it]; 
+      	subHG[it]=cmMap->at(iski).mouseBiteHG[it]; 
+      	subLG[it]=cmMap->at(iski).mouseBiteLG[it]; 
       }
       break;
     case 4 : for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-      	subHG[it]=cmMap[iski].outerHG[it]; 
-      	subLG[it]=cmMap[iski].outerLG[it]; 
+      	subHG[it]=cmMap->at(iski).outerHG[it]; 
+      	subLG[it]=cmMap->at(iski).outerLG[it]; 
       }
       break;
     case 5 : for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-        subHG[it]=cmMap[iski].mergedHG[it]; 
-        subLG[it]=cmMap[iski].mergedLG[it]; 
+        subHG[it]=cmMap->at(iski).mergedHG[it]; 
+        subLG[it]=cmMap->at(iski).mergedLG[it]; 
       }
       break;
     }
@@ -267,6 +263,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     }
 
   }
+  event.put(cmMap, m_CommonModeNoiseCollectionName);
   event.put(rechits, m_outputCollectionName);
   #ifdef DEBUG
     eventCounter++;

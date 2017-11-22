@@ -71,7 +71,8 @@ process.output = cms.OutputModule("PoolOutputModule",
                                                                          'keep *_*_HGCALTBRECHITS_*',
                                                                          'keep *_*_DelayWireChambers_*',
                                                                          'keep *_*_HGCalTBDWCTracks_*',
-                                                                         'keep *_*_FullRunData_*')
+                                                                         'keep *_*_FullRunData_*',
+                                                                         'keep *_*_HGCALTBCOMMONMODENOISEMAP_*')
 )
 
 

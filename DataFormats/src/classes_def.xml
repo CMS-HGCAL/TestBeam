@@ -12,6 +12,10 @@
   <class name="SKIROC2DigiCollection"/>
   <class name="edm::Wrapper<SKIROC2DigiCollection>"/>  
 
+  <class name="commonModeNoise"/>
+  <class name="std::map<int, commonModeNoise>"/>
+  <class name="edm::Wrapper<std::map<int, commonModeNoise> >"/>
+
   <class name="UserRecords<double>"/>
   <class name="UserRecords<bool>"/>
   <class name="RunData"/>

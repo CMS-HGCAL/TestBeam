@@ -9,6 +9,7 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 
 #include "DataFormats/CaloRecHit/interface/CaloRecHit.h"
+#include "HGCal/DataFormats/interface/HGCalTBCommonModeNoise.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
@@ -36,6 +37,7 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   virtual void produce(edm::Event&, const edm::EventSetup&);
  private:
   virtual void beginJob() override;
+  std::string m_CommonModeNoiseCollectionName;
   std::string m_outputCollectionName;
   std::string m_electronicMap;
   std::string m_detectorLayoutFile;

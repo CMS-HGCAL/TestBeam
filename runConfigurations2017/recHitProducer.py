@@ -104,7 +104,8 @@ process.output = cms.OutputModule("PoolOutputModule",
                                   fileName = cms.untracked.string(options.processedFile),                                  
                                   outputCommands = cms.untracked.vstring('drop *',
                                                                          'keep *_*_HGCALTBRECHITS_*',
-                                                                         'keep *_*_RunData_*')                                                                         
+                                                                         'keep *_*_RunData_*',
+                                                                         'keep *_*_HGCALTBCOMMONMODENOISEMAP_*')                                                                         
 )
 
 process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",

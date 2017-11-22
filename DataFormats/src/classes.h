@@ -9,6 +9,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
 #include "HGCal/DataFormats/interface/HGCalTBTrackCollection.h"
+#include "HGCal/DataFormats/interface/HGCalTBCommonModeNoise.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"
 #include "HGCal/DataFormats/interface/HGCalTBDWCTrack.h"
 #include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
@@ -38,6 +39,10 @@ struct dictionary {
 
 	SKIROC2DigiCollection _SR2DC;
 	edm::Wrapper<SKIROC2DigiCollection> _theSR2DC;
+
+  	commonModeNoise _acommonModeNoise;
+  	std::map<int, commonModeNoise> _acommonModeNoiseMap;
+  	edm::Wrapper<std::map<int, commonModeNoise> > _acommonModeNoiseMapWrapper;
 
 	UserRecords<bool> _aBooleanUserRecord;
 	UserRecords<double> _aDoubleUserRecord;
