@@ -32,6 +32,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
+#include "HGCal/DataFormats/interface/HGCalTBCommonModeNoise.h"
 #include "HGCal/DataFormats/interface/HGCalTBDWCTrack.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "HGCal/CondObjects/interface/HGCalTBDetectorLayout.h"
@@ -43,6 +44,22 @@
 #include <fstream>
 #include <iomanip>
 #include <set>
+
+
+bool rejectFromCommonModeNoise(edm::Handle<std::map<int, commonModeNoise> > &cmMap, int iski, int criterion=0) {
+	if (criterion==0) return false;
+	else if (criterion==1) {
+		for (size_t ts=1; ts<=6; ts++)	if (fabs(cmMap->at(iski).fullHG[ts]) > 200.) return true;
+		return false;
+	}
+	else if (criterion==2) {
+		float HGCMTS1 = cmMap->at(iski).fullHG[1];
+		for (size_t ts=2; ts<=6; ts++)	if (fabs(cmMap->at(iski).fullHG[ts]-HGCMTS1) > 100.) return true;
+		return false;
+	}
+	else return false;
+
+}
  
 
 typedef std::map<int, std::vector<double> > WindowMap;
@@ -66,6 +83,7 @@ class MIPFinder : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		// ----------member data ---------------------------
 		edm::Service<TFileService> fs;
 		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;	 	
+		edm::EDGetTokenT<std::map<int, commonModeNoise> > CommonModeNoiseMap_Token;	 	
 		edm::EDGetTokenT<RunData> RunDataToken;	
 		edm::EDGetTokenT<WireChambers> DWCToken;		
 		edm::EDGetTokenT<HGCalTBDWCTrack> DWCTrackToken;		
@@ -95,17 +113,18 @@ class MIPFinder : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		std::map<int,TH2F*> m_h_board_occupancy_selected;		
 		std::map<int,TH2F*> m_h_rechitEfficiencyPerDUT;		
 
-
-
 		int n_bins_DWCE;
 		double max_dim_x_DUT;
 		double max_dim_y_DUT;
+
+		int commonModeNoiseRejectionType;
 };
 
 MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {	
 	
 	usesResource("TFileService");
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
+	CommonModeNoiseMap_Token = consumes<std::map<int, commonModeNoise>>(iConfig.getParameter<edm::InputTag>("HGCALTBCOMMONMODENOISE"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
 	DWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
 	DWCTrackToken= consumes<HGCalTBDWCTrack>(iConfig.getParameter<edm::InputTag>("DWCTRACKS"));
@@ -119,6 +138,8 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 	n_bins_DWCE = iConfig.getParameter<int>("n_bins_DWCE");
 	max_dim_x_DUT = iConfig.getParameter<double>("max_dim_x_DUT");
 	max_dim_y_DUT = iConfig.getParameter<double>("max_dim_y_DUT");
+
+	commonModeNoiseRejectionType = iConfig.getParameter<int>("commonModeNoiseRejectionType");
 
 
 	TH2F* htmp2;
@@ -217,6 +238,10 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 
 	ReadCurrentDWCWindows(run);
 
+	edm::Handle<std::map<int, commonModeNoise>> cmMap;
+	if (commonModeNoiseRejectionType) {
+		event.getByToken(CommonModeNoiseMap_Token, cmMap);
+	}
 
 	//obtain the track information
 	edm::Handle<HGCalTBDWCTrack> dwctrack;
@@ -269,14 +294,18 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 		}
 
 		bool _boardFilled = false;
-		for( size_t _iskiroc=0; _iskiroc<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; _iskiroc++ ) for( size_t _ch=0; _ch<=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; _ch++ ){
-			if (_ch%2==1) continue;
-			int _key = ib*1000+_iskiroc*100+_ch;
+		for( size_t _iskiroc=0; _iskiroc<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; _iskiroc++ ) {
+			if (commonModeNoiseRejectionType&&rejectFromCommonModeNoise(cmMap, _iskiroc, commonModeNoiseRejectionType)) continue;
 
-			h_DUT_occupancy[_key]->Fill(layer_ref_x[layer], layer_ref_y[layer]);
-			if ((!_boardFilled)&&(currentDWCWindows.find(_key) != currentDWCWindows.end()) && (layer_ref_x[layer] > currentDWCWindows[_key][0]) && (layer_ref_x[layer] < currentDWCWindows[_key][1]) && (layer_ref_y[layer] > currentDWCWindows[_key][2]) && (layer_ref_y[layer] < currentDWCWindows[_key][3])) {
-				m_h_board_occupancy_selected[ib]->Fill(layer_ref_x[layer], layer_ref_y[layer], 1.);
-				_boardFilled=true;
+			for( size_t _ch=0; _ch<=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; _ch++ ){
+				if (_ch%2==1) continue;
+				int _key = ib*1000+_iskiroc*100+_ch;
+
+				h_DUT_occupancy[_key]->Fill(layer_ref_x[layer], layer_ref_y[layer]);
+				if ((!_boardFilled)&&(currentDWCWindows.find(_key) != currentDWCWindows.end()) && (layer_ref_x[layer] > currentDWCWindows[_key][0]) && (layer_ref_x[layer] < currentDWCWindows[_key][1]) && (layer_ref_y[layer] > currentDWCWindows[_key][2]) && (layer_ref_y[layer] < currentDWCWindows[_key][3])) {
+					m_h_board_occupancy_selected[ib]->Fill(layer_ref_x[layer], layer_ref_y[layer], 1.);
+					_boardFilled=true;
+				}
 			}
 		}
 	}
@@ -291,8 +320,11 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 		int layer = (Rechit.id()).layer();
 
 		HGCalTBElectronicsId eid( essource_.emap_.detId2eid( Rechit.id().rawId() ) );
-		int skiroc = eid.iskiroc_rawhit() % 4;
-		int board = eid.iskiroc_rawhit() / 4;
+		int skiroc = eid.iskiroc_rawhit();
+		int board = skiroc / 4;
+		if (commonModeNoiseRejectionType&&rejectFromCommonModeNoise(cmMap, skiroc, commonModeNoiseRejectionType)) continue;
+		
+		skiroc = eid.iskiroc_rawhit() % 4;
 		int channel = eid.ichan();
   		int key = board*1000+skiroc*100+channel;
   		double energy = (Rechit.checkFlag(HGCalTBRecHit::kGood)&&(!Rechit.checkFlag(HGCalTBRecHit::kHighGainSaturated))) ? Rechit.energyHigh() : 0;

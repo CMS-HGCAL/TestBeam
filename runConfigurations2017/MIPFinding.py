@@ -104,13 +104,15 @@ process.mipfindinganalysis = cms.EDAnalyzer("MIPFinder",
                                 MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
                                 DWCTRACKS = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" ), 
                                 HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
+                                HGCALTBCOMMONMODENOISE = cms.InputTag("rechitproducer","HGCALTBCOMMONMODENOISEMAP" ),
                                 ElectronicMap = cms.untracked.string(electronicMap),
                                 DetectorLayout=cms.untracked.string(hgcalLayout),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                 n_bins_DWCE = cms.int32(options.NBins),
                                 max_dim_x_DUT = cms.double(options.DimXDUT),
                                 max_dim_y_DUT = cms.double(options.DimYDUT),
-                                pathsToMIPWindowFiles = cms.vstring(options.pathsToMIPWindowFiles)
+                                pathsToMIPWindowFiles = cms.vstring(options.pathsToMIPWindowFiles),
+                                commonModeNoiseRejectionType = cms.int32()       #0: none, else 1-..., default: 0 
 
                               )
 

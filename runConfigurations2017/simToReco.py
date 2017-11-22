@@ -165,16 +165,6 @@ process.dwctrackproducer = cms.EDProducer("DWCTrackProducer",
 
 
 ####################################
-'''
-process.energy_sum_analyzer = cms.EDAnalyzer("Energy_Sum_Analyzer",
-                                layers_config  = cms.int32(options.setupConfiguration),
-                                ADC_per_MIP = cms.vdouble([1.]*20*4),
-                                nLayers = cms.int32(6),
-                                SensorSize = cms.int32(133),
-                                RUNDATA = cms.InputTag("source","FullRunData" ), 
-                                HGCALTBRECHITS = cms.InputTag("source","HGCALTBRECHITS" ),
-                              )
-'''
 
 process.p = cms.Path( process.dwctrackproducer )
 
