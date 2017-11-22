@@ -153,7 +153,7 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
   for( auto hit : *hits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
     if( essource_.emap_.existsEId(eid) ){
-      int iski=eid.iskiroc();
+      int iski=hit.skiroc();
       float highGain,lowGain;
       float subHG[NUMBER_OF_TIME_SAMPLES],subLG[NUMBER_OF_TIME_SAMPLES];
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
@@ -192,7 +192,6 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
       }
       int iboard=hit.skiroc()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
       int ichan=hit.channel();
-      iski=hit.skiroc();
       std::vector<double> hg,lg,time;
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
 	highGain=hit.highGainADC(it)-subHG[it];
@@ -234,7 +233,6 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
       }
     }
   }
-  //getchar();
   m_evtID++;
 }
 

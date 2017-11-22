@@ -217,6 +217,7 @@ void RawHitPlotter::beginJob()
   m_tree->Branch("cmHighGain",&m_cmHigh,"cmHighGain[11]/F");
   m_tree->Branch("cmLowGain",&m_cmLow,"cmLowGain[11]/F");
   m_tree->Branch("time",&m_time,"time[11]/I");
+
 }
 
 void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
@@ -253,7 +254,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   cm.Evaluate( hits );
   std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
   for( std::map<int,commonModeNoise>::iterator it=cmMap.begin(); it!=cmMap.end(); ++it ){
-    m_skirocID=(it->first-1)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    m_skirocID=it->first%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     m_layerID=(it->first-1)/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     int key=m_layerID*1000+m_skirocID*100;
     for( uint16_t ts=0; ts<NUMBER_OF_TIME_SAMPLES; ts++ ){
@@ -286,7 +287,6 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
     for( size_t it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       float highGain,lowGain;
       if( m_subtractCommonMode ){
-  	iski = hit.skiroc();
   	float subHG(0),subLG(0);
   	switch ( hit.detid().cellType() ){
   	case 0 : subHG=cmMap[iski].fullHG[it]; subLG=cmMap[iski].fullLG[it]; break;
@@ -302,7 +302,6 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   	highGain=hit.highGainADC(it);
   	lowGain=hit.lowGainADC(it);
       }
-      iski=hit.skiroc();
       if( !hit.isUnderSaturationForHighGain() ){
 	cif->h_adcHigh[it]->Fill(highGain);
 	cif->meanHGMap[it]+=highGain;
