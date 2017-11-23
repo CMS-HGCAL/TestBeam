@@ -53,8 +53,7 @@ bool rejectFromCommonModeNoise(edm::Handle<std::map<int, commonModeNoise> > &cmM
 		return false;
 	}
 	else if (criterion==2) {
-		float HGCMTS1 = cmMap->at(iski).fullHG[1];
-		for (size_t ts=2; ts<=6; ts++)	if (fabs(cmMap->at(iski).fullHG[ts]-HGCMTS1) > 100.) return true;
+		for (size_t ts=1; ts<=6; ts++)	if (cmMap->at(iski).fullHG[ts] < -150.) return true;
 		return false;
 	}
 	else return false;
