@@ -7,13 +7,13 @@ options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, file
 
 
 options.register('dataFile',
-                 '/home/tquast/tb2017/reconstructedFiles/reco_1589.root',
+                 '/home/tquast/tb2017/reconstructedFiles/reco_1501.root',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw input')
 
 options.register('outputFile',
-                 '/home/tquast/tb2017/variable_trees/tree_1589.root',
+                 '/home/tquast/tb2017/variable_trees/tree_1501.root',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output file where analysis output are stored')
@@ -37,11 +37,24 @@ options.register('hgcalLayout',
                  VarParsing.VarParsing.varType.string,
                  'Name of the hgcal layout file in HGCal/CondObjects/data/')
 
+options.register('layerPositionFile',
+                 '/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/CondObjects/data/layer_distances_CERN_Hexaboard_September_7EELayers_10FHLayers_V0.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'File indicating the layer positions in mm.')
+
 options.register('NHexaBoards',
-                10,
+                17,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Number of hexaboards for analysis.'
+                )
+
+options.register('NLayers',
+                17,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Number of layers for analysis.'
                 )
 
 options.register('reportEvery',
@@ -87,7 +100,9 @@ process.variablecomputation = cms.EDProducer("VariableComputation",
                                 UserRecordCollectionName=cms.untracked.string("VariableUserRecords"),
                                 ElectronicMap = cms.untracked.string(electronicMap),
                                 DetectorLayout=cms.untracked.string(hgcalLayout),
-                                NHexaBoards=cms.untracked.int32(options.NHexaBoards)
+                                layerPositionFile=cms.string(options.layerPositionFile),
+                                NHexaBoards=cms.untracked.int32(options.NHexaBoards),
+                                NLayers=cms.untracked.int32(options.NLayers)
                               )
 
 process.ntupelizer = cms.EDAnalyzer("NTupelizer",

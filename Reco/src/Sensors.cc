@@ -1,5 +1,12 @@
 #include "HGCal/Reco/interface/Sensors.h"
 
+//Gaussian fit with correlation
+Double_t g2(Double_t *x, Double_t *par) {
+  Double_t r1 = Double_t((x[0]-par[1]));
+  Double_t r2 = Double_t((x[1]-par[3]));
+  return par[0]*TMath::Exp(-(pow(r1/par[2], 2)+pow(r2/par[4], 2)));
+}
+
 
 //****   Sensor Hit Maps    ****//
 
@@ -107,13 +114,9 @@ void SensorHitMap::addHit(HGCalTBRecHit Rechit, double ADC_per_MIP, int geoID) {
   if (filterByCellType(cellType)) return; //returns false so far
 
   double energy = Rechit.energy() / ADC_per_MIP;
-  if (Rechit.checkFlag(HGCalTBRecHit::kLowGainSaturated)) {
-    energy = Rechit.energyLow() * 8. / ADC_per_MIP ;  //the LayerSumAnalyzer also energy deposits in MIP units
-  }
 
   //scale outer calibration pads:
   if (cellType==4) energy*=9./8;
-
 
   Hits[uniqueID] = new HitData;
   Hits[uniqueID]->cellType = cellType;
@@ -178,6 +181,12 @@ void SensorHitMap::calculateCenterPosition(ConsiderationMethod considerationMeth
       break;
     case CONSIDERNINETEEN:
       SensorHitMap::considerNClosest(19); 
+      break;
+    case CONSIDERTHIRTYSEVEN:
+      SensorHitMap::considerNClosest(37); 
+      break;
+    case CONSIDERSIXTYONE:
+      SensorHitMap::considerNClosest(61); 
       break;
     case CONSIDERCLUSTERSALL:
       SensorHitMap::considerClusters(-1);
@@ -422,6 +431,22 @@ std::pair<double, double> SensorHitMap::getHitPositionError() {
   return centralHitPointError;
 }
 
+double SensorHitMap::getDistanceBetweenMostIntenseCells() {
+  std::vector<HitData*> to_sort;
+  for(std::map<int, HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
+    if (filterByCellType((*hit).second->cellType)) continue;
+    to_sort.push_back((*hit).second);
+  }
+  //sort the hits by their radial distance
+  std::sort(to_sort.begin(), to_sort.end(), 
+    [](const HitData* a, const HitData* b){
+      return a->I < b->I;
+    }
+  );  
+  if (to_sort.size()<2) return -1.; 
+  else return sqrt(pow(to_sort[0]->x - to_sort[1]->x,2) + pow(to_sort[0]->y - to_sort[1]->y,2));
+}
+
 std::pair<double, double> SensorHitMap::getCenterOfClosestCell(std::pair<double, double> X_ref) {
   std::vector<std::pair<double, HitData*>> to_sort;
   for(std::map<int, HitData*>::iterator hit=Hits.begin(); hit!=Hits.end(); hit++){
@@ -498,9 +523,11 @@ void SensorHitMap::considerNClosest(int N_considered) {
     }
   );
 
-  double maxDist = 0;
+  maxDist = 0;
   if (N_considered == 7) maxDist = (0.5 + sqrt(3)) * 10. * HGCAL_TB_CELL::FULL_CELL_SIDE;
   else if (N_considered == 19) maxDist = (0.5 + sqrt(3) * 2.) * 10. * HGCAL_TB_CELL::FULL_CELL_SIDE;
+  else if (N_considered == 37) maxDist = (0.5 + sqrt(3) * 3.) * 10. * HGCAL_TB_CELL::FULL_CELL_SIDE;
+  else if (N_considered == 61) maxDist = (0.5 + sqrt(3) * 4.) * 10. * HGCAL_TB_CELL::FULL_CELL_SIDE;
 
   int considerCounter = 0;
   for (std::vector<std::pair<double, HitData*>>::iterator sorted_hit = to_sort.begin(); 
@@ -546,6 +573,45 @@ int SensorHitMap::getMostIntensiveHit() {
     return mostSignificantHit->geoID;
   else 
     return -1;
+}
+
+std::vector<double> SensorHitMap::fit2DGaussian() {
+  std::vector<double> tbr;
+
+  TGraph2D *dt = new TGraph2D();
+  int N=0;
+  for(std::vector<HitData*>::iterator hit=HitsForPositioning.begin(); hit!=HitsForPositioning.end(); hit++){
+    dt->SetPoint(N, (*hit)->x, (*hit)->y, (*hit)->E);
+    N++;
+  }
+
+  if (N<7) {
+    delete dt;
+    tbr.push_back(-1); return tbr;
+  }
+  
+  TF2* TwoDgauss = new TF2("2Dgauss", g2, mostSignificantHit->x-maxDist, mostSignificantHit->x+maxDist, mostSignificantHit->y-maxDist, mostSignificantHit->y+maxDist, 5);
+  TwoDgauss->SetParameter(0, mostSignificantHit->E);
+  TwoDgauss->SetParameter(1, mostSignificantHit->x);
+  TwoDgauss->SetParameter(3, mostSignificantHit->y);
+  TwoDgauss->SetParameter(2, 10.);
+  TwoDgauss->SetParameter(4, 10.);
+  int status = dt->Fit(TwoDgauss, "RNQ");
+  
+   if (status!=0) {
+    delete dt;
+    delete TwoDgauss;
+    tbr.push_back(-1); return tbr;
+  } 
+  
+  tbr.push_back(status);
+  for (int i=0; i<5; i++)
+    tbr.push_back(TwoDgauss->GetParameter(i));
+
+  delete dt;
+  delete TwoDgauss;
+
+  return tbr;
 }
 
 void SensorHitMap::poweredWeighting(int exponent) {

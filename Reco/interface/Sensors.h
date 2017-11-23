@@ -14,12 +14,20 @@
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h" //e.g. to get the cell's dimensions
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
+#include <TGraph2D.h>
+#include <TF2.h>
+#include <TMath.h>
+
 //#define DEBUG
+
+
 
 enum ConsiderationMethod {
   CONSIDERALL,
   CONSIDERSEVEN,
   CONSIDERNINETEEN,
+  CONSIDERTHIRTYSEVEN,
+  CONSIDERSIXTYONE,
   CONSIDERCLUSTERSALL,
   CONSIDERCLUSTERSSEVEN,
   CONSIDERCLUSTERSNINETEEN
@@ -123,6 +131,8 @@ class SensorHitMap {
     std::vector<HitData*> HitsForPositioning;
     HitData* mostSignificantHit;
 
+    double maxDist;
+
     //helpers to obtain the x-y coordinate
     HGCalTBCellVertices TheCell;
     std::pair<double, double> CellCenterXY;
@@ -165,9 +175,11 @@ class SensorHitMap {
     double getParticleEnergy();
     double getIntrinsicHitZPosition();
     double getResidualResolution();
+    std::vector<double> fit2DGaussian();
     std::pair<double, double> getHitPosition(); //returns central hit in layer's own frame
     std::pair<double, double> getLabHitPosition();  //returns central hit in lab frame
     std::pair<double, double> getHitPositionError(); //calculated via RMS
+    double getDistanceBetweenMostIntenseCells();
     std::pair<double, double> getCenterOfClosestCell(std::pair<double, double> X_ref);
     
     int getMostIntensiveHit();
