@@ -66,8 +66,7 @@ class VariableComputation : public edm::EDProducer {
 
 
 		// ----------member data ---------------------------
-		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;	 	
-		edm::EDGetTokenT<std::map<int, commonModeNoise> > CommonModeNoiseMap_Token;	 	
+		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;	 		
 		edm::EDGetTokenT<RunData> RunDataToken;	
 		edm::EDGetTokenT<WireChambers> DWCToken;		
 		edm::EDGetTokenT<HGCalTBDWCTrack> DWCTrackToken;		
@@ -108,7 +107,6 @@ class VariableComputation : public edm::EDProducer {
 VariableComputation::VariableComputation(const edm::ParameterSet& iConfig) {	
 	
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
-	CommonModeNoiseMap_Token = consumes<std::map<int, commonModeNoise>>(iConfig.getParameter<edm::InputTag>("HGCALTBCOMMONMODENOISE"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
 	DWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
 	DWCTrackToken= consumes<HGCalTBDWCTrack>(iConfig.getParameter<edm::InputTag>("DWCTRACKS"));
@@ -136,9 +134,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	edm::Handle<RunData> rd;
 	event.getByToken(RunDataToken, rd);
 	
-	edm::Handle<std::map<int, commonModeNoise>> cmMap;
-	//event.getByToken(CommonModeNoiseMap_Token, cmMap);
-	
+
 	edm::Handle<HGCalTBDWCTrack> dwctrack;
 	event.getByToken(DWCTrackToken, dwctrack);
 

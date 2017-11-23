@@ -57,6 +57,13 @@ options.register('NLayers',
                  'Number of layers for analysis.'
                 )
 
+options.register('simulation',
+                 0,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 '1=Analysis is run on simulated samples'
+                 )
+
 options.register('reportEvery',
                 1000,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -91,12 +98,22 @@ process.source = cms.Source("PoolSource",
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
 
 
+if options.simulation==1:
+    rundata_tag = cms.InputTag("source", "FullRunData", "rechitproducer") 
+    rechit_tag = cms.InputTag("source", "HGCALTBRECHITS", "rechitproducer")
+    dwc_tag = cms.InputTag("source","DelayWireChambers" )
+    dwc_track_tag = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" )
+else:
+    rundata_tag = cms.InputTag("wirechamberproducer","FullRunData")
+    rechit_tag = cms.InputTag("rechitproducer","HGCALTBRECHITS" )
+    dwc_tag = cms.InputTag("wirechamberproducer","DelayWireChambers" )
+    dwc_track_tag = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" )
+
 process.variablecomputation = cms.EDProducer("VariableComputation",
-                                RUNDATA = cms.InputTag("wirechamberproducer", "FullRunData" ), 
-                                MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
-                                DWCTRACKS = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" ), 
-                                HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
-                                HGCALTBCOMMONMODENOISE = cms.InputTag("rechitproducer","HGCALTBCOMMONMODENOISEMAP" ),
+                                RUNDATA = rundata_tag,
+                                HGCALTBRECHITS = rechit_tag,
+                                MWCHAMBERS = dwc_tag,
+                                DWCTRACKS = dwc_track_tag,
                                 UserRecordCollectionName=cms.untracked.string("VariableUserRecords"),
                                 ElectronicMap = cms.untracked.string(electronicMap),
                                 DetectorLayout=cms.untracked.string(hgcalLayout),
