@@ -50,6 +50,9 @@
 #include <iomanip>
 #include <set>
 
+double X0PosSeptember2017[18] = {2.764, 4.385, 6.005, 7.625, 9.245, 12.837, 16.267, 23.636, 26.431, 29.226, 32.215 ,35.01, 37.805, 41.739, 44.728, 47.717, 50.706, 55.846};
+double weightsSeptember2017[18] = {24.523, 17.461, 17.461, 17.461, 27.285, 38.737, 75.867, 83.382, 55.394, 55.823, 55.823, 55.394, 66.824, 67.253, 56.252, 56.252, 79.871, 103.49};
+double MIP2GeVSeptember2017 = 84.9e-6;
 
 //#define DEBUG
 
@@ -94,8 +97,11 @@ class VariableComputation : public edm::EDProducer {
 		std::map<int, SensorHitMap*> Sensors;
 
 		double energyAll_tot, energyE1_tot, energyE7_tot, energyE19_tot, energyE37_tot, energyE61_tot;
+		double energyAll_weight, energyE1_weight, energyE7_weight, energyE19_weight, energyE37_weight, energyE61_weight;
 		std::vector<double> energyAll_layer, energyE1_layer, energyE7_layer, energyE19_layer, energyE37_layer, energyE61_layer;
 		std::vector<int> NAll_layer, NE1_layer, NE7_layer, NE19_layer, NE37_layer, NE61_layer;
+
+		double depthX0;
 
 		//distance information
 		std::vector<double> mainCoreWidth;
@@ -268,9 +274,11 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	
 	//Energy information
 	energyE1_tot = energyE7_tot = energyE19_tot = energyE37_tot = energyE61_tot = energyAll_tot = 0.;
+	energyE1_weight = energyE7_weight = energyE19_weight = energyE37_weight = energyE61_weight = energyAll_weight = 0.;
 	
-	std::vector<std::pair<double, double> > relevantHitPositions;
+	depthX0 = 0;
 
+	std::vector<std::pair<double, double> > relevantHitPositions;
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		//most intensive cell
 		it->second->calculateCenterPosition(CONSIDERALL, MOSTINTENSIVE);
@@ -326,7 +334,24 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		UR->add("E19PerE37_layer"+std::to_string(it->first), energyE19_layer[it->first-1]/energyE37_layer[it->first-1]);
 		UR->add("E37PerE61_layer"+std::to_string(it->first), energyE37_layer[it->first-1]/energyE61_layer[it->first-1]);
 
+		double weight = 0., MIP2GeV=1., X0 = 0.;
+		if (rd->configuration==2) {
+			weight = weightsSeptember2017[it->first-1]*1e-3;
+			MIP2GeV = MIP2GeVSeptember2017;
+			X0 = X0PosSeptember2017[it->first-1];
+		}
+
+		depthX0 += X0*energyAll_layer[it->first-1];
+
+		energyE1_weight += energyE1_layer[it->first-1]*(MIP2GeV+weight); 
+		energyE7_weight += energyE7_layer[it->first-1]*(MIP2GeV+weight); 
+		energyE19_weight += energyE19_layer[it->first-1]*(MIP2GeV+weight); 
+		energyE37_weight += energyE37_layer[it->first-1]*(MIP2GeV+weight); 
+		energyE61_weight += energyE61_layer[it->first-1]*(MIP2GeV+weight); 
+		energyAll_weight += energyAll_layer[it->first-1]*(MIP2GeV+weight); 
 	}
+
+	depthX0 /= energyAll_tot;
 
 	UR->add("E1_tot", energyE1_tot);
 	UR->add("E7_tot", energyE7_tot);
@@ -334,7 +359,15 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	UR->add("E37_tot", energyE37_tot);
 	UR->add("E61_tot", energyE61_tot);
 	UR->add("EAll_tot", energyAll_tot);
-	
+
+	UR->add("E1_weight", energyE1_weight);
+	UR->add("E7_weight", energyE7_weight);
+	UR->add("E19_weight", energyE19_weight);
+	UR->add("E37_weight", energyE37_weight);
+	UR->add("E61_weight", energyE61_weight);
+	UR->add("EAll_weight", energyAll_weight);
+
+	UR->add("depthX0", depthX0);
 
 	double E_EE = 0, E_FH = 0;
 	int last_layer_EE = 2; int last_layer_FH = 6;
