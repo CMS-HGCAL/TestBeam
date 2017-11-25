@@ -54,6 +54,30 @@ double X0PosSeptember2017[18] = {2.764, 4.385, 6.005, 7.625, 9.245, 12.837, 16.2
 double weightsSeptember2017[18] = {24.523, 17.461, 17.461, 17.461, 27.285, 38.737, 75.867, 83.382, 55.394, 55.823, 55.823, 55.394, 66.824, 67.253, 56.252, 56.252, 79.871, 103.49};
 double MIP2GeVSeptember2017 = 84.9e-6;
 
+
+std::vector<double> getEigenValuesOfSymmetrix3x3(double A11, double A22, double A33, double A12, double A13, double A23) {
+	//eigenvalue computation: https://arxiv.org/pdf/1306.6291.pdf
+	double b = A11 + A22 + A33;
+	double c = A11*A22 + A11*A33 + A22*A33 - pow(A12,2) - pow(A13,2) - pow(A23,2);
+	double d = A11*pow(A23,2) + A22*pow(A13,2) + A33*pow(A12,2) - A11*A22*A33 - 2*A12*A13*A23;
+
+	double p = pow(b, 2) - 3*c;
+	double q = 2*pow(b, 3) - 9*b*c - 27*d;
+
+	double delta = acos(q/sqrt(4*pow(p, 3)));
+	double lambda1 = (b+2*sqrt(p)*cos(delta/3))/3;
+	double lambda2 = (b+2*sqrt(p)*cos((delta+2*M_PI)/3))/3;
+	double lambda3 = (b+2*sqrt(p)*cos((delta-2*M_PI)/3))/3;
+
+	std::vector<double> EVs;
+	EVs.push_back(lambda1);
+	EVs.push_back(lambda2);
+	EVs.push_back(lambda3);
+	std::sort(EVs.begin(), EVs.end());
+
+	return EVs;
+}
+
 //#define DEBUG
 
 class VariableComputation : public edm::EDProducer {
@@ -251,23 +275,34 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 				//std::cout<<"Layer: "<<layer<<" z: "<<z<<std::endl;
 				double m = Rechit.energy();
 
-				Ixx += m*pow(x-xmean, 2);
-				Iyy += m*pow(y-ymean, 2);
-				Izz += m*pow(z-zmean, 2);
-				Ixy += m*(x-xmean)*(y-ymean);
-				Ixz += m*(x-xmean)*(z-zmean);
-				Iyz += m*(y-ymean)*(z-zmean);
+				Ixx += m*(pow(y-ymean, 2)+pow(z-zmean, 2));
+				Iyy += m*(pow(x-xmean, 2)+pow(z-zmean, 2));
+				Izz += m*(pow(x-xmean, 2)+pow(y-ymean, 2));
+				Ixy -= m*(x-xmean)*(y-ymean);
+				Ixz -= m*(x-xmean)*(z-zmean);
+				Iyz -= m*(y-ymean)*(z-zmean);
 
 			}
 		}
 	}
 
-	UR->add("Ixx", Ixx / M);
-	UR->add("Iyy", Iyy / M);
-	UR->add("Izz", Izz / M);
-	UR->add("Ixy", Ixy / M);
-	UR->add("Ixz", Ixz / M);
-	UR->add("Iyz", Iyz / M);
+	Ixx /= M;
+	Iyy /= M;
+	Izz /= M;
+	Ixy /= M;
+	Ixz /= M;
+	Iyz /= M;
+	std::vector<double> I_EV = getEigenValuesOfSymmetrix3x3(Ixx, Iyy, Izz, Ixy, Ixz, Iyz);
+
+	UR->add("Ixx", Ixx);
+	UR->add("Iyy", Iyy);
+	UR->add("Izz", Izz);
+	UR->add("Ixy", Ixy);
+	UR->add("Ixz", Ixz);
+	UR->add("Iyz", Iyz);
+	UR->add("I_EV1", I_EV[0]);
+	UR->add("I_EV2", I_EV[1]);
+	UR->add("I_EV3", I_EV[2]);
 
 
 	/**********                                 ****************/
