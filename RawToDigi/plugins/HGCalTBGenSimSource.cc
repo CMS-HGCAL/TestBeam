@@ -256,7 +256,7 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 		double dwc_x = beamX * 10. + randgen->Gaus(0, wc_resolutions[d]);
 		double dwc_y = beamY * 10. + randgen->Gaus(0, wc_resolutions[d]);
 
-		WireChamberData* dwc = new WireChamberData(d+1, dwc_x*cos(90.0*M_PI/180.0) + sin(90.0*M_PI/180.0)*dwc_y, -dwc_x*sin(90.0*M_PI/180.0) + cos(90.0*M_PI/180.0)*dwc_y, dwc_zPositions[d]);
+		WireChamberData* dwc = new WireChamberData(d+1, dwc_x , dwc_y, dwc_zPositions[d]);
 		dwc->goodMeasurement_X = dwc->goodMeasurement_Y = dwc->goodMeasurement = true;
 		dwc->res_x = dwc->res_y = wc_resolutions[d];
 		

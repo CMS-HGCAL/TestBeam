@@ -117,7 +117,7 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
         dwc1->goodMeasurement_X = (reco1_x_loaded[event_nr] != -999);
         dwc1->goodMeasurement_Y = (reco1_y_loaded[event_nr] != -999);
         dwc1->goodMeasurement = (dwc1->goodMeasurement_X && dwc1->goodMeasurement_Y);
-        dwc1->x = reco1_x_loaded[event_nr];
+        dwc1->x = -reco1_x_loaded[event_nr];    //September 2017: Invert the sign in the x-coordinate
         dwc1->res_x = res1_x_loaded[event_nr];
         dwc1->y = reco1_y_loaded[event_nr];
         dwc1->res_y = res1_y_loaded[event_nr];
@@ -128,7 +128,7 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
         dwc2->goodMeasurement_X = (reco2_x_loaded[event_nr] != -999);
         dwc2->goodMeasurement_Y = (reco2_y_loaded[event_nr] != -999);
         dwc2->goodMeasurement = (dwc2->goodMeasurement_X && dwc2->goodMeasurement_Y);
-        dwc2->x = reco2_x_loaded[event_nr];
+        dwc2->x = -reco2_x_loaded[event_nr];    //September 2017: Invert the sign in the x-coordinate
         dwc2->res_x = res2_x_loaded[event_nr];
         dwc2->y = reco2_y_loaded[event_nr];
         dwc2->res_y = res2_y_loaded[event_nr];
@@ -139,7 +139,7 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
         dwc3->goodMeasurement_X = (reco3_x_loaded[event_nr] != -999);
         dwc3->goodMeasurement_Y = (reco3_y_loaded[event_nr] != -999);
         dwc3->goodMeasurement = (dwc3->goodMeasurement_X && dwc3->goodMeasurement_Y);
-        dwc3->x = reco3_x_loaded[event_nr];
+        dwc3->x = -reco3_x_loaded[event_nr];    //September 2017: Invert the sign in the x-coordinate
         dwc3->res_x = res3_x_loaded[event_nr];
         dwc3->y = reco3_y_loaded[event_nr];
         dwc3->res_y = res3_y_loaded[event_nr];
@@ -150,7 +150,7 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
         dwc4->goodMeasurement_X = (reco4_x_loaded[event_nr] != -999);
         dwc4->goodMeasurement_Y = (reco4_y_loaded[event_nr] != -999);
         dwc4->goodMeasurement = (dwc4->goodMeasurement_X && dwc4->goodMeasurement_Y);
-        dwc4->x = reco4_x_loaded[event_nr];
+        dwc4->x = -reco4_x_loaded[event_nr];    //September 2017: Invert the sign in the x-coordinate
         dwc4->res_x = res4_x_loaded[event_nr];
         dwc4->y = reco4_y_loaded[event_nr];
         dwc4->res_y = res4_y_loaded[event_nr];
