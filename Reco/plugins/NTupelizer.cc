@@ -74,7 +74,7 @@ void NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& setup) 
 	event.getByToken(UserRecordToken, ur);
 	
 	for (size_t i=0; i<N_keys; i++) {
-		dataToFill[i] = -1.;
+		dataToFill[i] = -999.;
 		if (!ur->has(UserRecordKeys[i])) continue;
 		dataToFill[i]=1.0*ur->get(UserRecordKeys[i]);
 	}
