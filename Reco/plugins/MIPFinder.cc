@@ -53,7 +53,7 @@ bool rejectFromCommonModeNoise(edm::Handle<std::map<int, commonModeNoise> > &cmM
 		return false;
 	}
 	else if (criterion==2) {
-		for (size_t ts=1; ts<=6; ts++)	if (cmMap->at(iski).fullHG[ts] < -150.) return true;
+		for (size_t ts=1; ts<=6; ts++)	if (cmMap->at(iski).fullHG[ts] < -200.) return true;
 		return false;
 	}
 	else return false;
@@ -291,7 +291,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 			layer_ref_x[layer] = dwcs->at(1).x;
 			layer_ref_y[layer] = dwcs->at(1).y;		
 		}
-
+		layer_ref_x[layer] = - layer_ref_x[layer];		//necessary due to rotation of coordinate system for September TB data
 		bool _boardFilled = false;
 		for( size_t _iskiroc=0; _iskiroc<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; _iskiroc++ ) {
 			if (commonModeNoiseRejectionType&&rejectFromCommonModeNoise(cmMap, _iskiroc, commonModeNoiseRejectionType)) continue;

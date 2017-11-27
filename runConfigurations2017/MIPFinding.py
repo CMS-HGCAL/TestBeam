@@ -112,7 +112,7 @@ process.mipfindinganalysis = cms.EDAnalyzer("MIPFinder",
                                 max_dim_x_DUT = cms.double(options.DimXDUT),
                                 max_dim_y_DUT = cms.double(options.DimYDUT),
                                 pathsToMIPWindowFiles = cms.vstring(options.pathsToMIPWindowFiles),
-                                commonModeNoiseRejectionType = cms.int32()       #0: none, else 1-..., default: 0 
+                                commonModeNoiseRejectionType = cms.int32(2)       #0: none, else 1-..., default: 0 
 
                               )
 
