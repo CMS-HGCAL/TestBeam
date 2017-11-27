@@ -51,9 +51,9 @@
 #include <set>
 
 double X0PosSeptember2017[18] = {2.764, 4.385, 6.005, 7.625, 9.245, 12.837, 16.267, 23.636, 26.431, 29.226, 32.215 ,35.01, 37.805, 41.739, 44.728, 47.717, 50.706, 55.846};
+double Lambda0PosSeptember2017[18] = {0.168, 0.245, 0.323, 0.401, 0.478, 0.649, 0.853, 1.351, 1.587, 1.823, 2.059, 2.295, 2.531, 2.886, 3.122, 3.358, 3.594, 3.994};
 double weightsSeptember2017[18] = {24.523, 17.461, 17.461, 17.461, 27.285, 38.737, 75.867, 83.382, 55.394, 55.823, 55.823, 55.394, 66.824, 67.253, 56.252, 56.252, 79.871, 103.49};
 double MIP2GeVSeptember2017 = 84.9e-6;
-
 
 std::vector<double> getEigenValuesOfSymmetrix3x3(double A11, double A22, double A33, double A12, double A13, double A23) {
 	//eigenvalue computation: https://arxiv.org/pdf/1306.6291.pdf
@@ -125,7 +125,7 @@ class VariableComputation : public edm::EDProducer {
 		std::vector<double> energyAll_layer, energyE1_layer, energyE7_layer, energyE19_layer, energyE37_layer, energyE61_layer;
 		std::vector<int> NAll_layer, NE1_layer, NE7_layer, NE19_layer, NE37_layer, NE61_layer;
 
-		double depthX0;
+		double depthX0, depthLambda0;
 
 		//distance information
 		std::vector<double> mainCoreWidth;
@@ -311,7 +311,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	energyE1_tot = energyE7_tot = energyE19_tot = energyE37_tot = energyE61_tot = energyAll_tot = 0.;
 	energyE1_weight = energyE7_weight = energyE19_weight = energyE37_weight = energyE61_weight = energyAll_weight = 0.;
 	
-	depthX0 = 0;
+	depthX0 = 0, depthLambda0 = 0;
 
 	std::vector<std::pair<double, double> > relevantHitPositions;
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
@@ -347,7 +347,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		NE37_layer[it->first-1] = (int)relevantHitPositions.size();
 		relevantHitPositions.clear();
 
-      	//four rings around
+     //four rings around
  		it->second->calculateCenterPosition(CONSIDERSIXTYONE, LINEARWEIGHTING);
 		energyE61_tot += it->second->getTotalWeight();
 		energyE61_layer[it->first-1] = it->second->getTotalWeight();
@@ -369,14 +369,16 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		UR->add("E19PerE37_layer"+std::to_string(it->first), energyE19_layer[it->first-1]/energyE37_layer[it->first-1]);
 		UR->add("E37PerE61_layer"+std::to_string(it->first), energyE37_layer[it->first-1]/energyE61_layer[it->first-1]);
 
-		double weight = 0., MIP2GeV=1., X0 = 0.;
+		double weight = 0., MIP2GeV=1., X0 = 0., lambda0 = 0.;
 		if (rd->configuration==2) {
 			weight = weightsSeptember2017[it->first-1]*1e-3;
 			MIP2GeV = MIP2GeVSeptember2017;
 			X0 = X0PosSeptember2017[it->first-1];
+			lambda0 = Lambda0PosSeptember2017[it->first-1];
 		}
 
 		depthX0 += X0*energyAll_layer[it->first-1];
+		depthLambda0 += lambda0*energyAll_layer[it->first-1];
 
 		energyE1_weight += energyE1_layer[it->first-1]*(MIP2GeV+weight); 
 		energyE7_weight += energyE7_layer[it->first-1]*(MIP2GeV+weight); 
@@ -384,9 +386,24 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		energyE37_weight += energyE37_layer[it->first-1]*(MIP2GeV+weight); 
 		energyE61_weight += energyE61_layer[it->first-1]*(MIP2GeV+weight); 
 		energyAll_weight += energyAll_layer[it->first-1]*(MIP2GeV+weight); 
+
+
+		//position resolution
+		if (dwctrack->valid&&(dwctrack->referenceType==15) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) { 
+			//std::cout<<"Layer: "<<it->first<<std::endl;
+			//std::cout<<"DWC X: "<<dwctrack->DWCExtrapolation_XY(it->first).first<<"  reco X: "<<it->second->getLabHitPosition().first<<std::endl;
+			//std::cout<<"DWC Y: "<<dwctrack->DWCExtrapolation_XY(it->first).second<<"  reco Y: "<<it->second->getLabHitPosition().second<<std::endl;
+			it->second->calculateCenterPosition(CONSIDERNINETEEN, LOGWEIGHTING_35_10);
+			//investigate here
+			//x = -x in DWC coordinate system
+			UR->add("PosResX_layer"+std::to_string(it->first),(it->second->getLabHitPosition().first-dwctrack->DWCExtrapolation_XY(it->first).first));
+			UR->add("PosResY_layer"+std::to_string(it->first),(it->second->getLabHitPosition().second-dwctrack->DWCExtrapolation_XY(it->first).second));
+		}
 	}
+	//std::cout<<std::endl;
 
 	depthX0 /= energyAll_tot;
+	depthLambda0 /= energyAll_tot;
 
 	UR->add("E1_tot", energyE1_tot);
 	UR->add("E7_tot", energyE7_tot);
@@ -403,6 +420,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	UR->add("EAll_weight", energyAll_weight);
 
 	UR->add("depthX0", depthX0);
+	UR->add("depthLambda0", depthLambda0);
 
 	double E_EE = 0, E_FH = 0;
 	int last_layer_EE = 2; int last_layer_FH = 6;
@@ -420,6 +438,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	UR->add("E_FHperE_tot", E_FH/(E_EE+E_FH));
 
 	
+
 	/**********                                 ****************/
 	
 	//Spacing information
