@@ -99,6 +99,11 @@ private:
   std::map<int, TH2F*> m_h_LowGainVsTOTTS3;
 
   std::map<int,TH1F*> m_h_cmHigh;
+  std::map<int,TH2F*> m_h_cmCorrelation12High;
+  std::map<int,TH2F*> m_h_cmCorrelation23High;
+  std::map<int,TH2F*> m_h_cmCorrelation34High;
+  std::map<int,TH2F*> m_h_cmCorrelation45High;
+  std::map<int,TH2F*> m_h_cmCorrelation15High;
   std::map<int,TH1F*> m_h_cmLow;
   std::map<int,TH2F*> m_h_cmHighTime;
   std::map<int,TH2F*> m_h_cmLowTime;
@@ -186,6 +191,18 @@ void RawHitPlotter::beginJob()
       TFileDirectory cmdir = dir.mkdir( "CommonMode" );
       htmp2=cmdir.make<TH2F>("HighGain_RatiosVsTS","HighGain_RatiosVsTS",12,-0.5,11.5,1000,-10,10);
       m_h_cmHighTime.insert( std::pair<int,TH2F*>(ib*10+iski, htmp2) );
+      htmp2=cmdir.make<TH2F>("HighGainCorrelation12","HighGainCorrelation12",100,-250.,500.,100,-250.,500.);
+      m_h_cmCorrelation12High.insert( std::pair<int,TH2F*>(ib*10+iski, htmp2) );
+      htmp2=cmdir.make<TH2F>("HighGainCorrelation23","HighGainCorrelation23",100,-250.,500.,100,-250.,500.);
+      m_h_cmCorrelation23High.insert( std::pair<int,TH2F*>(ib*10+iski, htmp2) );
+      htmp2=cmdir.make<TH2F>("HighGainCorrelation34","HighGainCorrelation34",100,-250.,500.,100,-250.,500.);
+      m_h_cmCorrelation34High.insert( std::pair<int,TH2F*>(ib*10+iski, htmp2) );
+      htmp2=cmdir.make<TH2F>("HighGainCorrelation45","HighGainCorrelation45",100,-250.,500.,100,-250.,500.);
+      m_h_cmCorrelation45High.insert( std::pair<int,TH2F*>(ib*10+iski, htmp2) );
+      htmp2=cmdir.make<TH2F>("HighGainCorrelation15","HighGainCorrelation15",100,-250.,500.,100,-250.,500.);
+      m_h_cmCorrelation15High.insert( std::pair<int,TH2F*>(ib*10+iski, htmp2) );
+
+
       htmp2=cmdir.make<TH2F>("LowGain_RatiosVsTS","LowGain_RatiosVsTS",12,-0.5,11.5,1000,-10,10);
       m_h_cmLowTime.insert( std::pair<int,TH2F*>(ib*10+iski, htmp2) );
       htmp1=cmdir.make<TH1F>("NhitUnderZero","NhitUnderZero",33,0,33);
@@ -306,6 +323,11 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       m_h_cmLowTime[m_layerID*10+m_skirocID]->Fill( ts,(m_cmLow[ts]-m_cmLow[0])/m_cmLow[0] );
       key+=1;
     }
+    m_h_cmCorrelation12High[m_layerID*10+m_skirocID]->Fill(it->second.fullHG[1], it->second.fullHG[2]);
+    m_h_cmCorrelation23High[m_layerID*10+m_skirocID]->Fill(it->second.fullHG[2], it->second.fullHG[3]);
+    m_h_cmCorrelation34High[m_layerID*10+m_skirocID]->Fill(it->second.fullHG[3], it->second.fullHG[4]);
+    m_h_cmCorrelation45High[m_layerID*10+m_skirocID]->Fill(it->second.fullHG[4], it->second.fullHG[5]);
+    m_h_cmCorrelation15High[m_layerID*10+m_skirocID]->Fill(it->second.fullHG[1], it->second.fullHG[5]);
     m_tree->Fill();
   }
 
