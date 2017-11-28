@@ -211,8 +211,8 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		if (Rechit.energy() > MIP_cut_for_energy) {
 			Sensors[layer]->addHit(Rechit, 1.);
 			if ((Rechit.id()).cellType() == 0) {
-				double x = Rechit.getCellCenterCartesianCoordinate(0);
-				double y = Rechit.getCellCenterCartesianCoordinate(1);
+				double x = Rechit.getCellCenterCartesianCoordinate(0)*10.;		//conversion to mm
+				double y = Rechit.getCellCenterCartesianCoordinate(1)*10.;		//conversion to mm
 				double z = layerPositions[layer];
 				//std::cout<<"Layer: "<<layer<<" z: "<<z<<std::endl;
 				double m = Rechit.energy();
@@ -269,8 +269,8 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		int layer = (Rechit.id()).layer();
 		if (Rechit.energy() > MIP_cut_for_energy) {
 			if ((Rechit.id()).cellType() == 0) {
-				double x = Rechit.getCellCenterCartesianCoordinate(0);
-				double y = Rechit.getCellCenterCartesianCoordinate(1);
+				double x = Rechit.getCellCenterCartesianCoordinate(0)*10.;
+				double y = Rechit.getCellCenterCartesianCoordinate(1)*10.;
 				double z = layerPositions[layer];
 				//std::cout<<"Layer: "<<layer<<" z: "<<z<<std::endl;
 				double m = Rechit.energy();
