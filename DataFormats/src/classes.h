@@ -7,7 +7,6 @@
 #include "HGCal/DataFormats/interface/HGCalTBRawHit.h"
 #include "HGCal/DataFormats/interface/HGCalTBRawHitCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
-#include "HGCal/DataFormats/interface/HGCalTBDataFrameContainers.h"
 #include "HGCal/DataFormats/interface/HGCalTBTrackCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"
 #include "HGCal/DataFormats/interface/HGCalTBDWCTrack.h"
@@ -35,9 +34,6 @@ struct dictionary {
 	
 	HGCalTBRawHit _aRawHit;
 	std::vector<HGCalTBRawHit> _rawHitVec;
-
-	SKIROC2DigiCollection _SR2DC;
-	edm::Wrapper<SKIROC2DigiCollection> _theSR2DC;
 
 	UserRecords<bool> _aBooleanUserRecord;
 	UserRecords<double> _aDoubleUserRecord;
