@@ -50,8 +50,10 @@
 #include <iomanip>
 #include <set>
 
-double X0PosSeptember2017[18] = {2.764, 4.385, 6.005, 7.625, 9.245, 12.837, 16.267, 23.636, 26.431, 29.226, 32.215 ,35.01, 37.805, 41.739, 44.728, 47.717, 50.706, 55.846};
-double Lambda0PosSeptember2017[18] = {0.168, 0.245, 0.323, 0.401, 0.478, 0.649, 0.853, 1.351, 1.587, 1.823, 2.059, 2.295, 2.531, 2.886, 3.122, 3.358, 3.594, 3.994};
+
+
+double X0PosSeptember2017[18] = {2.76674,4.37279,5.97883,7.58488,9.19093,13.0331,16.1884,23.9158,26.6938,29.4718,32.4454,35.2234,38.0014,41.9177,44.8912,47.8647,50.8382,55.9605};
+double Lambda0PosSeptember2017[18] = {0.15558,0.237188,0.318797,0.400405,0.482013,0.665655,0.85385,1.4237,1.70922,1.99473,2.28343,2.56895,2.85447,3.25925,3.54794,3.83664,4.12533,4.662};
 double weightsSeptember2017[18] = {24.523, 17.461, 17.461, 17.461, 27.285, 38.737, 75.867, 83.382, 55.394, 55.823, 55.823, 55.394, 66.824, 67.253, 56.252, 56.252, 79.871, 103.49};
 double MIP2GeVSeptember2017 = 84.9e-6;
 
@@ -362,6 +364,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		energyAll_layer[it->first-1] = it->second->getTotalWeight();
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
 		NAll_layer[it->first-1] = (int)relevantHitPositions.size();
+		UR->add("NAll_layer"+std::to_string(it->first), NAll_layer[it->first-1]);
 		relevantHitPositions.clear();
 		UR->add("EAll_layer"+std::to_string(it->first), energyAll_layer[it->first-1]);
 	
@@ -388,6 +391,10 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		energyE61_weight += energyE61_layer[it->first-1]*(MIP2GeV+weight); 
 		energyAll_weight += energyAll_layer[it->first-1]*(MIP2GeV+weight); 
 
+		//dwc information
+		UR->add("dwctrack_type", dwctrack->referenceType);
+		UR->add("dwctrack_chi2x", dwctrack->chi2_x);
+		UR->add("dwctrack_chi2y", dwctrack->chi2_y);
 
 		//position resolution
 		if (dwctrack->valid&&(dwctrack->referenceType==15) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) { 

@@ -153,7 +153,7 @@ process.source = cms.Source("HGCalTBGenSimSource",
                         GeVToMip=cms.untracked.double(1./(84.9*pow(10.,-6))),   #apply an overall scaling of the recorded intensities in the cells
                         areaSpecification = cms.untracked.string(options.areaSpecification),
                         physicsListUsed = cms.untracked.string(options.physicsListUsed),
-                        wc_resolutions = cms.untracked.vdouble([1.5, 1.5, 1.0, 1.0])
+                        wc_resolutions = cms.untracked.vdouble([0.2, 0.2, 0.2, 0.2])        #set to the expected resolutions according to the manual
                         )
 
 
