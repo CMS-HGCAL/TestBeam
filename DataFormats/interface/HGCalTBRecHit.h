@@ -3,6 +3,7 @@
 
 #include "DataFormats/CaloRecHit/interface/CaloRecHit.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
+#include "DataFormats/Math/interface/Point3D.h"
 #include <vector>
 
 /** \class HGCalTBRecHit
@@ -82,10 +83,11 @@ public:
 		return flagField(flag, 1);
 	}; //flagBits_ & ( 0x1<<flag);}
 
-	void setCellCenterCoordinate(float x, float y);
-
-	float getCellCenterCartesianCoordinate(int index);	//index of the access
-
+	void setPosition( math::XYZPoint pos ){ m_position=pos; }
+	math::XYZPoint position() const { return m_position; }
+	double x() const { return m_position.x(); }
+	double y() const { return m_position.y(); }
+	double z() const { return m_position.z(); }
 	void setUnderSaturationForHighGain(){ m_underSaturationHG=true; }
 	void setUnderSaturationForLowGain(){ m_underSaturationLG=true; }
 	bool isUnderSaturationForHighGain(){ return m_underSaturationHG; }
@@ -93,7 +95,8 @@ public:
  private:
 	bool m_underSaturationHG;
 	bool m_underSaturationLG;
-	
+
+	math::XYZPoint m_position;
 };
 
 std::ostream& operator<<(std::ostream& s, const HGCalTBRecHit& hit);

@@ -302,7 +302,7 @@ void HGCalTBGenSimSource::makeRecHit(int layer, int cellno, double energy, std::
 		skiRocIndex = skiRocIndex % HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;		
 	
 	    recHit.setTime(-1);
-		recHit.setCellCenterCoordinate(x, y);
+	    recHit.setPosition( math::XYZPoint(x,y,layer) );//!!!to be modified as soon as we have the z position of the layer
 	 	
 	 	#ifdef DEBUG
 	 		std::cout<<"skiRocIndex: "<<skiRocIndex<<"   channelIndex: "<<channelIndex<<std::endl;

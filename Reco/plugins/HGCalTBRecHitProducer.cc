@@ -109,12 +109,6 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       if( lowGain<sampleLG[it] && it>1 && it<5 ) lowGain=sampleLG[it];
       sampleT.push_back(25*it+12.5);
     }
-    //this is a just try to isolate hits with signal
-    float en1=sampleHG[1];
-    float en2=sampleHG[2];
-    float en3=sampleHG[3];
-    float en4=sampleHG[4];
-    float en6=sampleHG[6];
     HGCalTBRecHit recHit(rawhit.detid(), energy, lowGain, highGain, totGain, time);
     if( rawhit.isUnderSaturationForHighGain() ) recHit.setUnderSaturationForHighGain();
     if( rawhit.isUnderSaturationForLowGain() ) recHit.setUnderSaturationForLowGain();
@@ -122,11 +116,17 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), SENSORSIZE );
     double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA);
     double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
-    recHit.setCellCenterCoordinate(iux, iuy);
 
+    HGCalTBLayer layer= essource_.layout_.at(rawhit.detid().layer()-1);
+    recHit.setPosition( math::XYZPoint(iux,iuy,layer.z()) );
+
+    //this is a just try to isolate hits with signal
+    float en1=sampleHG[1];
+    float en2=sampleHG[2];
+    float en3=sampleHG[3];
+    float en4=sampleHG[4];
+    float en6=sampleHG[6];
     if( en1<en3 && en3>en6 && (en4>en6||en2>en6) && en3>m_timeSample3ADCCut){
-
-      HGCalTBLayer layer= essource_.layout_.at(rawhit.detid().layer()-1);
       int moduleId= layer.at( recHit.id().sensorIU(),recHit.id().sensorIV() ).moduleID();
       iski = rawhit.skiroc()%4;
       ASIC_ADC_Conversions adcConv=essource_.adccalibmap_.getASICConversions(moduleId,iski);

@@ -28,23 +28,6 @@ void HGCalTBRecHit::setTime(float time){
   return;
 }
 
-void HGCalTBRecHit::setCellCenterCoordinate(float x, float y) {
-  cellCenter_x = x;
-  cellCenter_y = y;
-}
-
-float HGCalTBRecHit::getCellCenterCartesianCoordinate(int index) {
-  switch(index) {
-    case 0:
-      return cellCenter_x;
-    case 1:
-      return cellCenter_y;
-    default:
-      return -999;
-  }
-}
-
-
 std::ostream& operator<<(std::ostream& s, const HGCalTBRecHit& hit)
 {
   return s << hit.id() << ": " << hit.energy() << " GeV, " << hit._time << " ns";
