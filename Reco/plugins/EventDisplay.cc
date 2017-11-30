@@ -3,10 +3,9 @@
 #include <fstream>
 #include <sstream>
 #include <iterator>
+#include <algorithm>
 #include "TH2Poly.h"
-#include "TProfile.h"
 #include "TH1F.h"
-#include "TH2F.h"
 // user include files
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
@@ -20,8 +19,12 @@
 #include "DataFormats/Math/interface/Point3D.h"
 
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
-#include "HGCal/DataFormats/interface/HGCalTBClusterCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
+#include "HGCal/DataFormats/interface/HGCalTBRunData.h" //for the runData type definition
+#include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
+#include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
+#include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
+#include "HGCal/DataFormats/interface/HGCalTBDWCTrack.h"
 
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
@@ -53,17 +56,18 @@ private:
   void InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV);
 
   // ----------member data ---------------------------
-  //  edm::EDGetToken HGCalTBRecHitCollection_;
-  edm::EDGetToken HGCalTBClusterCollection_;
-  edm::EDGetToken HGCalTBClusterCollection7_;
-  edm::EDGetToken HGCalTBClusterCollection19_;
-  std::string mapfile_ = "HGCal/CondObjects/data/map_CERN_8Layers_Sept2016.txt";
+  edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;      
+  edm::EDGetTokenT<RunData> RunDataToken; 
+  edm::EDGetTokenT<WireChambers> DWCToken;    
+  edm::EDGetTokenT<HGCalTBDWCTrack> DWCTrackToken;  
   struct {
     HGCalElectronicsMap emap_;
   } essource_;
-  int nlayers;
+  int nboards;
   int sensorsize;
-  int _evtID;
+  std::string emapfile_;
+  std::vector<int> eventsToPlot;
+
   HGCalTBTopology IsCellValid;
   HGCalTBCellVertices TheCell;
   std::vector<std::pair<double, double>> CellXY;
@@ -72,14 +76,18 @@ private:
 };
 
 EventDisplay::EventDisplay(const edm::ParameterSet& iConfig) :
-  nlayers( iConfig.getUntrackedParameter<int>("Nlayers",8) ),
-  sensorsize( iConfig.getUntrackedParameter<int>("SensorSize",128) )
+  nboards( iConfig.getUntrackedParameter<int>("NHexaBoards",17) ),
+  sensorsize( iConfig.getUntrackedParameter<int>("SensorSize",128) ),
+  emapfile_ (iConfig.getUntrackedParameter<std::string>("electronicsMap",""))
 {
+  HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
+  RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
+  DWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
+  DWCTrackToken= consumes<HGCalTBDWCTrack>(iConfig.getParameter<edm::InputTag>("DWCTRACKS"));
+
+  eventsToPlot = iConfig.getParameter<std::vector<int> >("eventsToPlot");
+
   usesResource("TFileService");
-  HGCalTBClusterCollection_ = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS"));
-  HGCalTBClusterCollection7_ = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS7"));
-  HGCalTBClusterCollection19_ = consumes<reco::HGCalTBClusterCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBCLUSTERS19"));
-  _evtID = 0;
 }
 
 
@@ -99,9 +107,9 @@ void EventDisplay::InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sen
       assert(CellXY.size() == 4 || CellXY.size() == 6);
       unsigned int iVertex = 0;
       for(std::vector<std::pair<double, double>>::const_iterator it = CellXY.begin(); it != CellXY.end(); it++) {
-	HexX[iVertex] =  it->first;
-	HexY[iVertex] =  it->second;
-	++iVertex;
+      	HexX[iVertex] =  it->first;
+      	HexY[iVertex] =  it->second;
+	    ++iVertex;
       }
       //Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
       poly.AddBin(CellXY.size(), HexX, HexY);
@@ -111,135 +119,116 @@ void EventDisplay::InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sen
 //
 
 // ------------ method called for each event  ------------
-void
-EventDisplay::analyze(const edm::Event& event, const edm::EventSetup& setup)
-{
+void EventDisplay::analyze(const edm::Event& event, const edm::EventSetup& setup){
+  edm::Handle<RunData> rd;
+  event.getByToken(RunDataToken, rd);
+ 
+  if (std::find(eventsToPlot.begin(), eventsToPlot.end(), rd->event)==eventsToPlot.end()) return;
 
-  edm::Handle<reco::HGCalTBClusterCollection> clusters;
-  event.getByToken(HGCalTBClusterCollection_, clusters);
-  edm::Handle<reco::HGCalTBClusterCollection> clusters7;
-  event.getByToken(HGCalTBClusterCollection7_, clusters7);
-  edm::Handle<reco::HGCalTBClusterCollection> clusters19;
-  event.getByToken(HGCalTBClusterCollection19_, clusters19);
+  edm::Handle<HGCalTBDWCTrack> dwctrack;
+  event.getByToken(DWCTrackToken, dwctrack);
+
+  edm::Handle<WireChambers> dwcs;
+  event.getByToken(DWCToken, dwcs);
+
+  edm::Handle<HGCalTBRecHitCollection> Rechits;
+  event.getByToken(HGCalTBRecHitCollection_Token, Rechits);
+
 
   std::ostringstream os( std::ostringstream::ate );
-  TH2Poly *h_RecHit_layer[nlayers];
-  TH2Poly *h_Cluster_layer[nlayers];
-  TH2Poly *h_Cluster7_layer[nlayers];
-  TH2Poly *h_Cluster19_layer[nlayers];
-  for( int ilayer=0; ilayer<nlayers; ilayer++ ){
+  TH2Poly *h_Energy_board[nboards];
+  TH2Poly *h_ADCHG_board[nboards];
+  TH2Poly *h_ADCLG_board[nboards];
+  TH2Poly *h_ADCTOT_board[nboards];
+  TH2Poly *h_ADCTOA_board[nboards];
+
+  os.str("");
+  os << "Event" << rd->event;
+  std::cout << "Event: " << rd->event << std::endl;
+  TFileDirectory event_dir = fs->mkdir( os.str().c_str() );
+  for( int iboard=0; iboard<nboards; iboard++ ){
+    
     os.str("");
-    os << "Layer" << ilayer << "_Event" << _evtID;
-    h_RecHit_layer[ilayer] = fs->make<TH2Poly>();
-    h_RecHit_layer[ilayer]->SetName( os.str().c_str() );
-    h_RecHit_layer[ilayer]->SetTitle( os.str().c_str() );
-    InitTH2Poly(*h_RecHit_layer[ilayer],ilayer,0,0);
+    os << "Energy__Board:" << iboard;
+    h_Energy_board[iboard] = event_dir.make<TH2Poly>();
+    h_Energy_board[iboard]->SetName( os.str().c_str() );
+    h_Energy_board[iboard]->SetTitle( os.str().c_str() );
+    h_Energy_board[iboard]->GetZaxis()->SetTitle( "Energy [MIP]" );
+    InitTH2Poly(*h_Energy_board[iboard],iboard,0,0);
+
     os.str("");
-    os << "Layer" << ilayer << "_Event" << _evtID << "_cluster";
-    h_Cluster_layer[ilayer] = fs->make<TH2Poly>();
-    h_Cluster_layer[ilayer]->SetName( os.str().c_str() );
-    h_Cluster_layer[ilayer]->SetTitle( os.str().c_str() );
-    InitTH2Poly(*h_Cluster_layer[ilayer],ilayer,0,0);
+    os << "HG__Board:" << iboard;
+    h_ADCHG_board[iboard] = event_dir.make<TH2Poly>();
+    h_ADCHG_board[iboard]->SetName( os.str().c_str() );
+    h_ADCHG_board[iboard]->SetTitle( os.str().c_str() );
+    h_ADCHG_board[iboard]->GetZaxis()->SetTitle( "HG [ADC]" );
+    InitTH2Poly(*h_ADCHG_board[iboard],iboard,0,0);
+
     os.str("");
-    os << "Layer" << ilayer << "_Event" << _evtID << "_cluster7";
-    h_Cluster7_layer[ilayer] = fs->make<TH2Poly>();
-    h_Cluster7_layer[ilayer]->SetName( os.str().c_str() );
-    h_Cluster7_layer[ilayer]->SetTitle( os.str().c_str() );
-    InitTH2Poly(*h_Cluster7_layer[ilayer],ilayer,0,0);
+    os << "LG__Board:" << iboard;
+    h_ADCLG_board[iboard] = event_dir.make<TH2Poly>();
+    h_ADCLG_board[iboard]->SetName( os.str().c_str() );
+    h_ADCLG_board[iboard]->SetTitle( os.str().c_str() );
+    h_ADCLG_board[iboard]->GetZaxis()->SetTitle( "LG [ADC]" );
+    InitTH2Poly(*h_ADCLG_board[iboard],iboard,0,0);
+
     os.str("");
-    os << "Layer" << ilayer << "_Event" << _evtID << "_cluster19";
-    h_Cluster19_layer[ilayer] = fs->make<TH2Poly>();
-    h_Cluster19_layer[ilayer]->SetName( os.str().c_str() );
-    h_Cluster19_layer[ilayer]->SetTitle( os.str().c_str() );
-    InitTH2Poly(*h_Cluster19_layer[ilayer],ilayer,0,0);
+    os << "TOT__Board:" << iboard;
+    h_ADCTOT_board[iboard] = event_dir.make<TH2Poly>();
+    h_ADCTOT_board[iboard]->SetName( os.str().c_str() );
+    h_ADCTOT_board[iboard]->SetTitle( os.str().c_str() );
+    h_ADCTOT_board[iboard]->GetZaxis()->SetTitle( "TOT [ADC]" );
+    InitTH2Poly(*h_ADCTOT_board[iboard],iboard,0,0);
+
+    os.str("");
+    os << "TOA__Board:" << iboard;
+    h_ADCTOA_board[iboard] = event_dir.make<TH2Poly>();
+    h_ADCTOA_board[iboard]->SetName( os.str().c_str() );
+    h_ADCTOA_board[iboard]->SetTitle( os.str().c_str() );
+    h_ADCTOA_board[iboard]->GetZaxis()->SetTitle( "TOA [ADC]" );
+    InitTH2Poly(*h_ADCTOA_board[iboard],iboard,0,0);    
 
   }
-  _evtID++;
-  
-  float clusterID[nlayers];
-  for(int i=0; i<nlayers; i++) 
-    clusterID[i]=0.;
+  std::cout<<std::endl;
 
-  for( auto cluster : *clusters ){
-    clusterID[ cluster.layer()-1 ]+=1.0;
-    for( std::vector< std::pair<DetId,float> >::const_iterator it=cluster.hitsAndFractions().begin(); it!=cluster.hitsAndFractions().end(); ++it ){
-      HGCalTBDetId detID=(*it).first;
-      if(!IsCellValid.iu_iv_valid( detID.layer(),
-				   detID.sensorIU(), detID.sensorIV(), 
-				   detID.iu(), detID.iv(), sensorsize ) 
-	 )  continue;
-      CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detID.layer(), 
-							       detID.sensorIU(), detID.sensorIV(), 
-							       detID.iu(), detID.iv(), sensorsize );
-      double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
-      double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-      if( detID.cellType()!=1 )
-	h_Cluster_layer[ detID.layer()-1 ]->Fill(iux , iuy, clusterID[ detID.layer()-1 ]);
-      h_RecHit_layer[ detID.layer()-1 ]->Fill(iux , iuy, (*it).second*cluster.energy());
-    }
-  }
+  for( auto rechit : *Rechits ){
+    
+    HGCalTBDetId detID=rechit.id();
+    if(!IsCellValid.iu_iv_valid( detID.layer(), detID.sensorIU(), detID.sensorIV(), detID.iu(), detID.iv(), sensorsize ) ) continue;
+    CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detID.layer(), detID.sensorIU(), detID.sensorIV(), detID.iu(), detID.iv(), sensorsize );
+    double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
+    double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
+    HGCalTBElectronicsId eid( essource_.emap_.detId2eid( rechit.id().rawId() ) );
+    int board = eid.iskiroc_rawhit() / 4;
+    if( detID.cellType()!=1 ) {
+      h_Energy_board[ board ]->Fill(iux , iuy, rechit.energy());
+      h_ADCTOA_board[ board ]->Fill(iux, iuy, rechit.time());   //this is not TOA yet but the Tmax
 
-  for(int i=0; i<nlayers; i++) 
-    clusterID[i]=0.;
-  for( auto cluster : *clusters7 ){
-    clusterID[ cluster.layer()-1 ]+=1.0;
-    for( std::vector< std::pair<DetId,float> >::const_iterator it=cluster.hitsAndFractions().begin(); it!=cluster.hitsAndFractions().end(); ++it ){
-      HGCalTBDetId detID=(*it).first;
-      if(!IsCellValid.iu_iv_valid( detID.layer(),
-  				   detID.sensorIU(), detID.sensorIV(), 
-  				   detID.iu(), detID.iv(), sensorsize ) 
-  	 )  continue;
-      CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detID.layer(), 
-  							       detID.sensorIU(), detID.sensorIV(), 
-  							       detID.iu(), detID.iv(), sensorsize );
-      double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
-      double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-      if( detID.cellType()!=1 )
-	h_Cluster7_layer[ detID.layer()-1 ]->Fill(iux , iuy, clusterID[ detID.layer()-1 ]);
-    }
-  }
-  
-  for(int i=0; i<nlayers; i++) 
-    clusterID[i]=0.;
-  for( auto cluster : *clusters19 ){
-    clusterID[ cluster.layer()-1 ]+=1.0;
-    for( std::vector< std::pair<DetId,float> >::const_iterator it=cluster.hitsAndFractions().begin(); it!=cluster.hitsAndFractions().end(); ++it ){
-      HGCalTBDetId detID=(*it).first;
-      if(!IsCellValid.iu_iv_valid( detID.layer(),
-  				   detID.sensorIU(), detID.sensorIV(), 
-  				   detID.iu(), detID.iv(), sensorsize ) 
-  	 )  continue;
-      CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detID.layer(), 
-  							       detID.sensorIU(), detID.sensorIV(), 
-  							       detID.iu(), detID.iv(), sensorsize );
-      double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
-      double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
-      if( detID.cellType()!=1 )
-	h_Cluster19_layer[ detID.layer()-1 ]->Fill(iux , iuy, clusterID[ detID.layer()-1 ]);
+      if (!rechit.checkFlag(HGCalTBRecHit::kHighGainSaturated))
+        h_ADCHG_board[ board ]->Fill(iux, iuy, rechit.energyHigh());
+      else if (!rechit.checkFlag(HGCalTBRecHit::kLowGainSaturated))
+        h_ADCLG_board[ board ]->Fill(iux, iuy, rechit.energyLow());
+      else if (!rechit.checkFlag(HGCalTBRecHit::kTotGainSaturated))
+        h_ADCTOT_board[ board ]->Fill(iux, iuy, rechit.energyTot());
     }
   }
 
 }
 
-void
-EventDisplay::beginJob()
+void EventDisplay::beginJob()
 {
   HGCalCondObjectTextIO io(0);
-  edm::FileInPath fip(mapfile_);
+  edm::FileInPath fip(emapfile_);
   if (!io.load(fip.fullPath(), essource_.emap_)) {
     throw cms::Exception("Unable to load electronics map");
   }
 }
 
-void
-EventDisplay::endJob()
-{
+void EventDisplay::endJob() {
 
 }
 
-void
-EventDisplay::fillDescriptions(edm::ConfigurationDescriptions& descriptions)
-{
+void EventDisplay::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
   edm::ParameterSetDescription desc;
   desc.setUnknown();
   descriptions.addDefault(desc);
