@@ -8,8 +8,9 @@ CommonMode::CommonMode( HGCalElectronicsMap &emap, bool useMedian, bool cmPerChi
   _emap=emap;
 
   thresholdHG = _threshold;
-  thresholdLG = thresholdHG/8.;
-
+  thresholdLG = _threshold/8.;
+  if (_threshold==-1) 
+    thresholdLG = -1;
 }
 
 void CommonMode::Evaluate( edm::Handle<HGCalTBRawHitCollection> hits )
