@@ -263,7 +263,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     }
 
   }
-  event.put(cmMap, m_CommonModeNoiseCollectionName);
+  //event.put(cmMap, m_CommonModeNoiseCollectionName);
   event.put(rechits, m_outputCollectionName);
   #ifdef DEBUG
     eventCounter++;
