@@ -65,6 +65,7 @@ class DWC_NTupelizer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
   	std::vector<int> dwc_goodMeasurement;
   	std::vector<int> dwc_goodMeasurementX;
   	std::vector<int> dwc_goodMeasurementY;
+	std::vector<double> dwc_hitmultiplicity;
   	int N_goodMeasurements, N_goodMeasurements_X, N_goodMeasurements_Y;
   	std::vector<double> residuals_x;
   	std::vector<double> residuals_y;
@@ -101,6 +102,7 @@ DWC_NTupelizer::DWC_NTupelizer(const edm::ParameterSet& iConfig) {
 	  	dwc_goodMeasurement.push_back(0);
 	  	dwc_goodMeasurementX.push_back(0);
 	  	dwc_goodMeasurementY.push_back(0);
+	  	dwc_hitmultiplicity.push_back(-1);
 		residuals_x.push_back(-1.);
 		residuals_y.push_back(-1.);
 	}
@@ -136,6 +138,7 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 		res_y[i] = dwcs->at(i).res_y;
 		z[i] = dwcs->at(i).z;
 		dwc_goodMeasurement[i] = dwcs->at(i).goodMeasurement;
+		dwc_hitmultiplicity[i] = dwcs->at(i).averageHitMultiplicty;
 	}
 
 	if (!writeMinimal) {	
@@ -159,7 +162,7 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 			dwc_Ntimestamps[i] = dwcs->at(i).recordedTimeStamps;
 			dwc_goodMeasurementX[i] = dwcs->at(i).goodMeasurement_X;
 			dwc_goodMeasurementY[i] = dwcs->at(i).goodMeasurement_Y;
-			
+
 			if (dwc_goodMeasurement[i]) N_goodMeasurements++;
 			if (dwc_goodMeasurementX[i]) N_goodMeasurements_X++;
 			if (dwc_goodMeasurementY[i]) N_goodMeasurements_Y++;
@@ -240,6 +243,7 @@ void DWC_NTupelizer::beginJob() {
 	tree->Branch("res1_y", &res_y[0]);
 	tree->Branch("z1", &z[0]);
 	tree->Branch("dwc1_goodMeasurement", &dwc_goodMeasurement[0]);
+	tree->Branch("dwc1_multiplicity", &dwc_hitmultiplicity[0]);
 
 	tree->Branch("reco2_x", &reco_x[1]);
 	tree->Branch("reco2_y", &reco_y[1]);
@@ -247,6 +251,7 @@ void DWC_NTupelizer::beginJob() {
 	tree->Branch("res2_y", &res_y[1]);
 	tree->Branch("z2", &z[1]);
 	tree->Branch("dwc2_goodMeasurement", &dwc_goodMeasurement[1]);
+	tree->Branch("dwc2_multiplicity", &dwc_hitmultiplicity[1]);
 
 	tree->Branch("reco3_x", &reco_x[2]);
 	tree->Branch("reco3_y", &reco_y[2]);
@@ -254,6 +259,7 @@ void DWC_NTupelizer::beginJob() {
 	tree->Branch("res3_y", &res_y[2]);
 	tree->Branch("z3", &z[2]);
 	tree->Branch("dwc3_goodMeasurement", &dwc_goodMeasurement[2]);
+	tree->Branch("dwc3_multiplicity", &dwc_hitmultiplicity[2]);
 
 	tree->Branch("reco4_x", &reco_x[3]);
 	tree->Branch("reco4_y", &reco_y[3]);
@@ -261,7 +267,7 @@ void DWC_NTupelizer::beginJob() {
 	tree->Branch("res4_y", &res_y[3]);
 	tree->Branch("z4", &z[3]);
 	tree->Branch("dwc4_goodMeasurement", &dwc_goodMeasurement[3]); 
-
+	tree->Branch("dwc4_multiplicity", &dwc_hitmultiplicity[3]);
 
 	if (!writeMinimal) {
 	  	tree->Branch("time_DWC1", &time_DWC[0]);

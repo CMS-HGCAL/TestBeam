@@ -259,7 +259,8 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 		WireChamberData* dwc = new WireChamberData(d+1, dwc_x , dwc_y, dwc_zPositions[d]);
 		dwc->goodMeasurement_X = dwc->goodMeasurement_Y = dwc->goodMeasurement = true;
 		dwc->res_x = dwc->res_y = wc_resolutions[d];
-		
+		dwc->averageHitMultiplicty = 1.;
+
 		dwcs->push_back(*dwc);
 	}
 	event.put(std::move(dwcs), DWCOutputCollectionName);		

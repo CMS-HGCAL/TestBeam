@@ -15,6 +15,7 @@ struct WireChamberData {
   bool goodMeasurement;
   int recordedTimeStamps;
   double averagedTimeStamp;
+  double averageHitMultiplicty;
 };
 
 typedef std::vector<WireChamberData> WireChambers;

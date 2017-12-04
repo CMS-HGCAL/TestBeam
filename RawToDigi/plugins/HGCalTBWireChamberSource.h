@@ -103,6 +103,7 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 	  	unsigned int n_run; unsigned int n_trigger_tdc; unsigned int n_trigger_orm; unsigned int skippedTDCTriggers;
 	  	std::vector<int> *channels;
 	  	std::vector<int> *dwc_timestamps;
+	  	std::map<int, std::vector<int>* > hits;
 	  	int timeSinceStart;
 	  	Long64_t timeSinceStart_long;
 	 
@@ -114,6 +115,7 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 	  	TBranch                   *b_channels;   
 	  	TBranch                   *b_dwc_timestamps;   
 	  	TBranch                   *b_timeSinceStart;   
+	  	std::map<int, TBranch*>	  b_hits;
 
 
 	public:

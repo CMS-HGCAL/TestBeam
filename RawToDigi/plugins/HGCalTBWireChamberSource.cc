@@ -1,6 +1,6 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBWireChamberSource.h"
 
-#define DEBUG
+//#define DEBUG
 
 
 bool validTimestamp(int ts) {
@@ -60,6 +60,13 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	channels=0;
 	dwc_timestamps=0;
 
+	for (int ch=0; ch<16; ch++) {
+		if (hitsPerChannelStored[ch]==1) {
+			hits[ch] = new std::vector<int>;
+			hits[ch] = 0;
+		}
+	}
+	
 
 }
 
@@ -111,6 +118,16 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 		} else {
 			tree->SetBranchAddress("timeSinceStart", &timeSinceStart_long, &b_timeSinceStart);
 		}
+
+
+		for (int ch=0; ch<16; ch++) {
+			if (hitsPerChannelStored[ch]==1) {
+				b_hits[ch] = new TBranch;
+				b_hits[ch] = 0;
+				tree->SetBranchAddress(("dwc_hits_ch"+std::to_string(ch)).c_str(), &(hits.at(ch)), &(b_hits.at(ch)));
+			}
+		}
+
 		skippedTDCTriggers = 0;
 		ReadTimingFile(timingFileNames[fileCounter], sumTriggerTimes[fileCounter]);
 	}
@@ -141,9 +158,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	
 	std::auto_ptr<WireChambers> mwcs(new WireChambers);	
 
+
 	//make the wire chambers
 	int N_DWC_points = 0;
-
 
 	//DWC 1
 	WireChamberData* dwc1 = new WireChamberData();
@@ -248,6 +265,35 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc4->res_y = wc_resolutions[3];
 	dwc4->z = dwc_z4;
 
+
+	//store multiplicities:
+	int N(0), sumHits(0);
+	if (hitsPerChannelStored[DWC1_LEFT]==1) {N++;sumHits+=hits.at(DWC1_LEFT)->size();}
+	if (hitsPerChannelStored[DWC1_RIGHT]==1) {N++;sumHits+=hits.at(DWC1_RIGHT)->size();}
+	if (hitsPerChannelStored[DWC1_DOWN]==1) {N++;sumHits+=hits.at(DWC1_DOWN)->size();}
+	if (hitsPerChannelStored[DWC1_UP]==1) {N++;sumHits+=hits.at(DWC1_UP)->size();}
+	dwc1->averageHitMultiplicty = (N > 0) ? sumHits*1.*1./N : -999; 
+
+	N = 0; sumHits = 0;
+	if (hitsPerChannelStored[DWC2_LEFT]==1) {N++;sumHits+=hits.at(DWC2_LEFT)->size();}
+	if (hitsPerChannelStored[DWC2_RIGHT]==1) {N++;sumHits+=hits.at(DWC2_RIGHT)->size();}
+	if (hitsPerChannelStored[DWC2_DOWN]==1) {N++;sumHits+=hits.at(DWC2_DOWN)->size();}
+	if (hitsPerChannelStored[DWC2_UP]==1) {N++;sumHits+=hits.at(DWC2_UP)->size();}
+	dwc2->averageHitMultiplicty = (N > 0) ? sumHits*1./N : -999; 
+
+	N = 0; sumHits = 0;
+	if (hitsPerChannelStored[DWC3_LEFT]==1) {N++;sumHits+=hits.at(DWC3_LEFT)->size();}
+	if (hitsPerChannelStored[DWC3_RIGHT]==1) {N++;sumHits+=hits.at(DWC3_RIGHT)->size();}
+	if (hitsPerChannelStored[DWC3_DOWN]==1) {N++;sumHits+=hits.at(DWC3_DOWN)->size();}
+	if (hitsPerChannelStored[DWC3_UP]==1) {N++;sumHits+=hits.at(DWC3_UP)->size();}
+	dwc3->averageHitMultiplicty = (N > 0) ? sumHits*1./N : -999; 
+
+	N = 0; sumHits = 0;
+	if (hitsPerChannelStored[DWC4_LEFT]==1) {N++;sumHits+=hits.at(DWC4_LEFT)->size();}
+	if (hitsPerChannelStored[DWC4_RIGHT]==1) {N++;sumHits+=hits.at(DWC4_RIGHT)->size();}
+	if (hitsPerChannelStored[DWC4_DOWN]==1) {N++;sumHits+=hits.at(DWC4_DOWN)->size();}
+	if (hitsPerChannelStored[DWC4_UP]==1) {N++;sumHits+=hits.at(DWC4_UP)->size();}
+	dwc4->averageHitMultiplicty = (N > 0) ? sumHits*1./N : -999; 
 
 	//perform alignment
 	if (fabs(dwc1->x) <= 50.) dwc1->x = dwc1->x - currentAlignmentParameters[11] - dwc1->y*currentAlignmentParameters[21]; else dwc1->goodMeasurement_X=false;

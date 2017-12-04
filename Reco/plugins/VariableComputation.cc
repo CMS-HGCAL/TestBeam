@@ -391,10 +391,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		energyE61_weight += energyE61_layer[it->first-1]*(MIP2GeV+weight); 
 		energyAll_weight += energyAll_layer[it->first-1]*(MIP2GeV+weight); 
 
-		//dwc information
-		UR->add("dwctrack_type", dwctrack->referenceType);
-		UR->add("dwctrack_chi2x", dwctrack->chi2_x);
-		UR->add("dwctrack_chi2y", dwctrack->chi2_y);
 
 		//position resolution
 		if (dwctrack->valid&&(dwctrack->referenceType==15) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) { 
@@ -407,6 +403,16 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 			UR->add("PosResX_layer"+std::to_string(it->first),(it->second->getLabHitPosition().first-dwctrack->DWCExtrapolation_XY(it->first).first));
 			UR->add("PosResY_layer"+std::to_string(it->first),(it->second->getLabHitPosition().second-dwctrack->DWCExtrapolation_XY(it->first).second));
 		}
+	}
+
+	if (rd->booleanUserRecords.get("hasValidDWCMeasurement")) {	
+		UR->add("dwc1_multiplicity", dwcs->at(0).averageHitMultiplicty);
+		UR->add("dwc2_multiplicity", dwcs->at(1).averageHitMultiplicty);
+		UR->add("dwc3_multiplicity", dwcs->at(2).averageHitMultiplicty);
+		UR->add("dwc4_multiplicity", dwcs->at(3).averageHitMultiplicty);
+		UR->add("dwctrack_type", dwctrack->referenceType);
+		UR->add("dwctrack_chi2x", dwctrack->chi2_x);
+		UR->add("dwctrack_chi2y", dwctrack->chi2_y);
 	}
 	//std::cout<<std::endl;
 
