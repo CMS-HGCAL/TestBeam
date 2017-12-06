@@ -71,7 +71,7 @@ options.register('reportEvery',
                 )
 
 
-options.maxEvents = -1
+options.maxEvents = 100
 
 options.parseArguments()
 print options
@@ -108,9 +108,20 @@ process.output = cms.OutputModule("PoolOutputModule",
                                                                          'keep *_*_HGCALTBCOMMONMODENOISEMAP_*')                                                                         
 )
 
+process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
+                                       InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
+                                       ElectronicMap=cms.untracked.string(electronicMap),
+                                       NHexaBoards=cms.untracked.int32(options.NHexaBoards),
+                                       DetectorLayout=cms.untracked.string(hgcalLayout),
+                                       SensorSize=cms.untracked.int32(128),
+                                       EventPlotter=cms.untracked.bool(False),
+                                       SubtractCommonMode=cms.untracked.bool(True)
+)
+
 process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         OutputCollectionName = cms.string('HGCALTBRECHITS'),
                                         InputCollection = cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
+                                        RUNDATA = cms.InputTag("source", "RunData" ), 
                                         ElectronicsMap = cms.untracked.string(electronicMap),
                                         DetectorLayout = cms.untracked.string(hgcalLayout),
                                         ADCCalibrations = cms.untracked.string(adcCalibrations),                                       

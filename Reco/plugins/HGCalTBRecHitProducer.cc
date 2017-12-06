@@ -20,6 +20,7 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) :
   m_NHexaBoards(cfg.getUntrackedParameter<int>("NHexaBoards", 10)) { 
   
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
+  RunDataToken= consumes<RunData>(cfg.getParameter<edm::InputTag>("RUNDATA"));
   investigatePulseShape = cfg.getUntrackedParameter<bool>("investigatePulseShape", false);
   std::cout << cfg.dump() << std::endl;
 
@@ -69,6 +70,32 @@ void HGCalTBRecHitProducer::beginJob()
     }
   }
 
+  outtree = fs->make<TTree>("timeInvestigationTree", "timeInvestigationTree");
+
+  outtree->Branch("event", &event_for_tree);
+  outtree->Branch("run", &run_for_tree);
+  outtree->Branch("pdgID", &pdgID_for_tree);
+  outtree->Branch("beamEnergy", &beamEnergy_for_tree);
+  outtree->Branch("board", &board_for_tree);
+  outtree->Branch("skiroc", &skiroc_for_tree);
+  outtree->Branch("channel", &channel_for_tree);
+  outtree->Branch("MIPEnergy", &MIPEnergy_for_tree);
+  outtree->Branch("HG_max", &HG_max_for_tree);
+  outtree->Branch("LG_max", &LG_max_for_tree);
+  outtree->Branch("TMax_HG", &TMax_HG_for_tree);
+  outtree->Branch("TMax_LG", &TMax_LG_for_tree);
+  outtree->Branch("TOT", &TOT_for_tree);
+  outtree->Branch("TOA_rise", &TOA_rise_for_tree);
+  outtree->Branch("TOA_fall", &TOA_fall_for_tree);
+  outtree->Branch("chi2_HG", &chi2_HG_for_tree);
+  outtree->Branch("chi2_LG", &chi2_LG_for_tree);
+  outtree->Branch("trise_HG", &trise_HG_for_tree);
+  outtree->Branch("trise_LG", &trise_LG_for_tree);
+  outtree->Branch("errortmax_HG", &errortmax_HG_for_tree);
+  outtree->Branch("errortmax_LG", &errortmax_LG_for_tree);
+  outtree->Branch("erroramplitude_HG", &erroramplitude_HG_for_tree);
+  outtree->Branch("erroramplitude_LG", &erroramplitude_LG_for_tree);
+
   if( m_maskNoisyChannels ){
     FILE* file;
     char buffer[300];
@@ -109,6 +136,10 @@ void HGCalTBRecHitProducer::beginJob()
 
 void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iSetup)
 {
+  edm::Handle<RunData> rd;
+  //get the relevant event information
+  event.getByToken(RunDataToken, rd);
+
   std::auto_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection);
 
   edm::Handle<HGCalTBRawHitCollection> rawhits;
@@ -130,6 +161,14 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   PulseFitterResult fitresult;
 
   for( auto rawhit : *rawhits ){
+
+  event_for_tree = rd->event;
+  run_for_tree = rd->run;
+  pdgID_for_tree = rd->pdgID;
+  beamEnergy_for_tree = rd->energy;
+
+
+
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid.rawId()) || std::find(m_noisyChannels.begin(),m_noisyChannels.end(),eid.rawId())!=m_noisyChannels.end() )
       continue;
@@ -137,8 +176,12 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     int iski=rawhit.skiroc();
     int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     int ichannel=eid.ichan();
+    board_for_tree = iboard;
+    skiroc_for_tree = iski;
+    channel_for_tree = ichannel;
     int key = iboard * 10000 + (iski % 4) * 100 + ichannel;
 
+    MIPEnergy_for_tree =  HG_max_for_tree =  LG_max_for_tree =  TMax_HG_for_tree =  TMax_LG_for_tree =  TOT_for_tree =  TOA_rise_for_tree =  TOA_fall_for_tree =  chi2_HG_for_tree =  chi2_LG_for_tree =  trise_HG_for_tree =  trise_LG_for_tree =  errortmax_HG_for_tree =  errortmax_LG_for_tree =  erroramplitude_HG_for_tree =  erroramplitude_LG_for_tree = -999;
 
     std::vector<double> sampleHG, sampleLG, sampleT;
 
@@ -230,12 +273,20 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
           energy = fitresult.amplitude * adcConv.lowGain_to_highGain();
           _time = fitresult.tmax - fitresult.trise;
           recHit.setFlag(HGCalTBRecHit::kGood);
+
+          LG_max_for_tree = fitresult.amplitude;
+          TMax_LG_for_tree = fitresult.tmax;
+          chi2_LG_for_tree = fitresult.chi2;
+          trise_LG_for_tree = fitresult.trise;
+          errortmax_LG_for_tree = fitresult.errortmax;
+          erroramplitude_LG_for_tree = fitresult.erroramplitude;
+
           if (investigatePulseShape) {
             for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) {
               shapesLG[key]->Fill(25*it+12.5-(fitresult.tmax - fitresult.trise), sampleLG[it]/fitresult.amplitude);
-              ToARisevsTMaxLG[key]->Fill(fitresult.tmax, toaRise);
-              ToAFallvsTMaxLG[key]->Fill(fitresult.tmax, toaFall);
             }
+            ToARisevsTMaxLG[key]->Fill(fitresult.tmax, toaRise);
+            ToAFallvsTMaxLG[key]->Fill(fitresult.tmax, toaFall);
           }
         }
       } else{
@@ -245,12 +296,21 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
           energy = fitresult.amplitude;
           _time = fitresult.tmax - fitresult.trise;
           recHit.setFlag(HGCalTBRecHit::kGood);
+
+
+          HG_max_for_tree = fitresult.amplitude;
+          TMax_HG_for_tree = fitresult.tmax;
+          chi2_HG_for_tree = fitresult.chi2;
+          trise_HG_for_tree = fitresult.trise;
+          errortmax_HG_for_tree = fitresult.errortmax;
+          erroramplitude_HG_for_tree = fitresult.erroramplitude;
+
           if (investigatePulseShape) {
             for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) {
               shapesHG[key]->Fill(25*it+12.5-(fitresult.tmax - fitresult.trise), sampleHG[it]/fitresult.amplitude);
-              ToARisevsTMaxHG[key]->Fill(fitresult.tmax, toaRise);
-              ToAFallvsTMaxHG[key]->Fill(fitresult.tmax, toaFall);
             }
+            ToARisevsTMaxHG[key]->Fill(fitresult.tmax, toaRise);
+            ToAFallvsTMaxHG[key]->Fill(fitresult.tmax, toaFall);
           }
         }
 
@@ -258,7 +318,15 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
       //std::cout<<"Setting energy and time of: "<<detid.layer()<<"  "<<detid.iu()+7<<"  "<<detid.iv()+7<<"  "<<energy*adcConv.adc_to_MIP()<<"  "<<_time<<std::endl;
       recHit.setEnergy(energy*adcConv.adc_to_MIP());
-      recHit.setTime(_time);
+      MIPEnergy_for_tree = energy*adcConv.adc_to_MIP();
+      TOA_rise_for_tree = toaRise;
+      TOA_fall_for_tree = toaFall;
+      TOT_for_tree = totGain;   //is TOT slow
+      //recHit.setTime(_time);
+      recHit.setTime(toaRise);
+
+
+      outtree->Fill();
       rechits->push_back(recHit);
     }
 

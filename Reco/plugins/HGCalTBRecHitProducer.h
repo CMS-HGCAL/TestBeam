@@ -19,12 +19,14 @@
 #include "HGCal/CondObjects/interface/HGCalTBADCConversionsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
+#include "HGCal/DataFormats/interface/HGCalTBRunData.h" //for the runData type definition
 
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "TH2F.h"
+#include "TTree.h"
 #include <sstream>
 
 
@@ -45,6 +47,7 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   double m_timeSample3ADCCut;
 
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
+  edm::EDGetTokenT<RunData> RunDataToken; 
 
   bool m_maskNoisyChannels;
   std::string m_channelsToMask_filename;
@@ -60,6 +63,33 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   std::map<int, TH2F*> TMaxHGvsTMaxLG;
 
   std::vector<int> m_noisyChannels;
+
+
+  TTree* outtree;
+  int event_for_tree;
+  int run_for_tree;
+  int pdgID_for_tree;
+  double beamEnergy_for_tree;
+  int board_for_tree;
+  int skiroc_for_tree;
+  int channel_for_tree;
+  double MIPEnergy_for_tree;
+  double HG_max_for_tree;
+  double LG_max_for_tree;
+  double TMax_HG_for_tree;
+  double TMax_LG_for_tree;
+  double TOT_for_tree;
+  double TOA_rise_for_tree;
+  double TOA_fall_for_tree;
+  double chi2_HG_for_tree;
+  double chi2_LG_for_tree;
+  double trise_HG_for_tree;
+  double trise_LG_for_tree;
+  double errortmax_HG_for_tree;
+  double errortmax_LG_for_tree;
+  double erroramplitude_HG_for_tree;
+  double erroramplitude_LG_for_tree;
+
 
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;
