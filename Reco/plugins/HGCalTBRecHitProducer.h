@@ -64,6 +64,8 @@ class HGCalTBRecHitProducer : public edm::EDProducer
 
   std::vector<int> m_noisyChannels;
 
+  std::map<int, TH2F*> m_h_HighVsLowGainAmpl;
+  std::map<int, TH2F*> m_h_LowGainVsTOTAmpl;
 
   TTree* outtree;
   int event_for_tree;

@@ -38,35 +38,47 @@ void HGCalTBRecHitProducer::beginJob()
 
   edm::Service<TFileService> fs;
 
+
   std::ostringstream os( std::ostringstream::ate );
+  TH2F* htmp2;
   for(int ib = 0; ib<m_NHexaBoards; ib++) {
     for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
       os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
       TFileDirectory dir = fs->mkdir( os.str().c_str() );
       for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
-      if ((ichan % 2) == 1) continue;
+        if ((ichan % 2) == 1) continue;
 
-      int key = ib * 10000 + iski * 100 + ichan;
+        int key = ib * 10000 + iski * 100 + ichan;
 
-      os.str("");os<<"Channel"<<ichan<<"__LGShape";
-      shapesLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 0, 225, 100, -0.2, 1.);
-      os.str("");os<<"Channel"<<ichan<<"__HGShape";
-      shapesHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 0, 225, 100, -0.2, 1.);
-      
-      os.str("");os<<"Channel"<<ichan<<"__ToARiseVsTMaxLG";
-      ToARisevsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
-      os.str("");os<<"Channel"<<ichan<<"__ToARiseVsTMaxHG";
-      ToARisevsTMaxHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
+        os.str("");os<<"Channel"<<ichan<<"__LGShape";
+        shapesLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 0, 225, 100, -0.2, 1.);
+        os.str("");os<<"Channel"<<ichan<<"__HGShape";
+        shapesHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 0, 225, 100, -0.2, 1.);
+        
+        os.str("");os<<"Channel"<<ichan<<"__ToARiseVsTMaxLG";
+        ToARisevsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
+        os.str("");os<<"Channel"<<ichan<<"__ToARiseVsTMaxHG";
+        ToARisevsTMaxHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
 
-      os.str("");os<<"Channel"<<ichan<<"__ToAFallVsTMaxLG";
-      ToAFallvsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
-      os.str("");os<<"Channel"<<ichan<<"__ToAFallVsTMaxHG";
-      ToAFallvsTMaxHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
-      
-      
-      os.str("");os<<"Channel"<<ichan<<"__TMaxHGVsTMaxLG";
-      TMaxHGvsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 50., 150.);
+        os.str("");os<<"Channel"<<ichan<<"__ToAFallVsTMaxLG";
+        ToAFallvsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
+        os.str("");os<<"Channel"<<ichan<<"__ToAFallVsTMaxHG";
+        ToAFallvsTMaxHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
+        
+        
+        os.str("");os<<"Channel"<<ichan<<"__TMaxHGVsTMaxLG";
+        TMaxHGvsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 50., 150.);
       }
+      TFileDirectory gaindir = dir.mkdir( "Gains" );
+      htmp2=gaindir.make<TH2F>("HighGainVsLowGainAmpl","HighGainVsLowGainAmpl",200,-500.,1500,200,-500.,3500);
+      htmp2->GetXaxis()->SetTitle("Low Gain Amplitude [ADC]"); 
+      htmp2->GetYaxis()->SetTitle("High Gain Amplitude [ADC]"); 
+      m_h_HighVsLowGainAmpl.insert( std::pair<int,TH2F*>(ib*10+iski, htmp2) );  
+
+      htmp2=gaindir.make<TH2F>("LowGainVsTOTAmpl","LowGainVsTOTAmpl",150, 0.,1500,175,-500.,3000);
+      htmp2->GetXaxis()->SetTitle("TOT [ADC]");   
+      htmp2->GetYaxis()->SetTitle("Low Gain Amplitude [ADC]"); 
+      m_h_LowGainVsTOTAmpl.insert( std::pair<int,TH2F*>(ib*10+iski, htmp2) ); 
     }
   }
 
@@ -158,7 +170,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
 
   PulseFitter fitter(0,150);
-  PulseFitterResult fitresult;
+  PulseFitterResult fitresultLG;
+  PulseFitterResult fitresultHG;
 
   for( auto rawhit : *rawhits ){
 
@@ -264,56 +277,65 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
         recHit.setEnergyTOT(totGain);
         recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
         recHit.setFlag(HGCalTBRecHit::kGood);
-      }
-      else if( rawhit.highGainADC(3) > adcConv.lowGain_highGain_transition() ){
-        fitter.run(sampleT, sampleLG, fitresult);
-        recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
-        if( fitresult.status==0 ){
-          recHit.setEnergyLow(fitresult.amplitude);
-          energy = fitresult.amplitude * adcConv.lowGain_to_highGain();
-          _time = fitresult.tmax - fitresult.trise;
-          recHit.setFlag(HGCalTBRecHit::kGood);
+      } else {
+        
+        fitter.run(sampleT, sampleLG, fitresultLG);
+        fitter.run(sampleT, sampleHG, fitresultHG);
 
-          LG_max_for_tree = fitresult.amplitude;
-          TMax_LG_for_tree = fitresult.tmax;
-          chi2_LG_for_tree = fitresult.chi2;
-          trise_LG_for_tree = fitresult.trise;
-          errortmax_LG_for_tree = fitresult.errortmax;
-          erroramplitude_LG_for_tree = fitresult.erroramplitude;
-
-          if (investigatePulseShape) {
-            for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) {
-              shapesLG[key]->Fill(25*it+12.5-(fitresult.tmax - fitresult.trise), sampleLG[it]/fitresult.amplitude);
-            }
-            ToARisevsTMaxLG[key]->Fill(fitresult.tmax, toaRise);
-            ToAFallvsTMaxLG[key]->Fill(fitresult.tmax, toaFall);
-          }
-        }
-      } else{
-        fitter.run(sampleT, sampleHG, fitresult);
-        if( fitresult.status==0 ){
-          recHit.setEnergyHigh(fitresult.amplitude);
-          energy = fitresult.amplitude;
-          _time = fitresult.tmax - fitresult.trise;
-          recHit.setFlag(HGCalTBRecHit::kGood);
-
-
-          HG_max_for_tree = fitresult.amplitude;
-          TMax_HG_for_tree = fitresult.tmax;
-          chi2_HG_for_tree = fitresult.chi2;
-          trise_HG_for_tree = fitresult.trise;
-          errortmax_HG_for_tree = fitresult.errortmax;
-          erroramplitude_HG_for_tree = fitresult.erroramplitude;
-
-          if (investigatePulseShape) {
-            for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) {
-              shapesHG[key]->Fill(25*it+12.5-(fitresult.tmax - fitresult.trise), sampleHG[it]/fitresult.amplitude);
-            }
-            ToARisevsTMaxHG[key]->Fill(fitresult.tmax, toaRise);
-            ToAFallvsTMaxHG[key]->Fill(fitresult.tmax, toaFall);
-          }
+        if (fitresultLG.status==0) {
+          m_h_LowGainVsTOTAmpl[10*iboard + iski%4]->Fill(totGain, fitresultLG.amplitude);   
+          if (fitresultHG.status==0)
+            m_h_HighVsLowGainAmpl[10*iboard + iski%4]->Fill(fitresultLG.amplitude, fitresultHG.amplitude);   
+          
         }
 
+        if( rawhit.highGainADC(3) > adcConv.lowGain_highGain_transition() ){
+          recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
+          if( fitresultLG.status==0 ){
+            recHit.setEnergyLow(fitresultLG.amplitude);
+            energy = fitresultLG.amplitude * adcConv.lowGain_to_highGain();
+            _time = fitresultLG.tmax - fitresultLG.trise;
+            recHit.setFlag(HGCalTBRecHit::kGood);
+
+            LG_max_for_tree = fitresultLG.amplitude;
+            TMax_LG_for_tree = fitresultLG.tmax;
+            chi2_LG_for_tree = fitresultLG.chi2;
+            trise_LG_for_tree = fitresultLG.trise;
+            errortmax_LG_for_tree = fitresultLG.errortmax;
+            erroramplitude_LG_for_tree = fitresultLG.erroramplitude;
+
+            if (investigatePulseShape) {
+              for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) {
+                shapesLG[key]->Fill(25*it+12.5-(fitresultLG.tmax - fitresultLG.trise), sampleLG[it]/fitresultLG.amplitude);
+              }
+              ToARisevsTMaxLG[key]->Fill(fitresultLG.tmax, toaRise);
+              ToAFallvsTMaxLG[key]->Fill(fitresultLG.tmax, toaFall);
+            }
+          }
+        } else{
+          if( fitresultHG.status==0 ){
+            recHit.setEnergyHigh(fitresultHG.amplitude);
+            energy = fitresultHG.amplitude;
+            _time = fitresultHG.tmax - fitresultHG.trise;
+            recHit.setFlag(HGCalTBRecHit::kGood);
+
+
+            HG_max_for_tree = fitresultHG.amplitude;
+            TMax_HG_for_tree = fitresultHG.tmax;
+            chi2_HG_for_tree = fitresultHG.chi2;
+            trise_HG_for_tree = fitresultHG.trise;
+            errortmax_HG_for_tree = fitresultHG.errortmax;
+            erroramplitude_HG_for_tree = fitresultHG.erroramplitude;
+
+            if (investigatePulseShape) {
+              for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) {
+                shapesHG[key]->Fill(25*it+12.5-(fitresultHG.tmax - fitresultHG.trise), sampleHG[it]/fitresultHG.amplitude);
+              }
+              ToARisevsTMaxHG[key]->Fill(fitresultHG.tmax, toaRise);
+              ToAFallvsTMaxHG[key]->Fill(fitresultHG.tmax, toaFall);
+            }
+          }
+        }
       }
 
       //std::cout<<"Setting energy and time of: "<<detid.layer()<<"  "<<detid.iu()+7<<"  "<<detid.iv()+7<<"  "<<energy*adcConv.adc_to_MIP()<<"  "<<_time<<std::endl;
