@@ -23,6 +23,10 @@
   <class name="RunData"/>
   <class name="edm::Wrapper<RunData>"/>
 
+  <class name="HGCalTBGlobalTimestamps"/>
+  <class name="std::map<int, uint32_t>"/>
+  <class name="edm::Wrapper<HGCalTBGlobalTimestamps>"/>
+
   <class name="HGCalTBDWCTrack"/>
   <class name="edm::Wrapper<HGCalTBDWCTrack>"/>
 

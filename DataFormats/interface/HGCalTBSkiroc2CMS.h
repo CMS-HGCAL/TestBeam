@@ -42,11 +42,11 @@ class HGCalTBSkiroc2CMS
   std::vector<int> rollPositions() const ;
 
  private:
-  uint32_t globalTS_MSB() const { return (m_data.at(SKIROC_DATA_SIZE-3) & MASK_GTS_MSB ); }
-  uint32_t globalTS_LSB() const { return ( (m_data.at(SKIROC_DATA_SIZE-2) & MASK_GTS_LSB)>>1 ); }
+  uint16_t globalTS_MSB() const { return gray_to_brady(m_data.at(SKIROC_DATA_SIZE-3) & MASK_GTS_MSB ); }
+  uint16_t globalTS_LSB() const { return gray_to_brady( (m_data.at(SKIROC_DATA_SIZE-2) & MASK_GTS_LSB)>>1 ); }
   
  public:
-  uint32_t globalTS()const{ return gray_to_brady( globalTS_MSB()<<12 | globalTS_LSB()); }
+  uint32_t globalTS()const{ return ( globalTS_MSB() ) <<12 | globalTS_LSB(); }
   uint64_t triggerTimeStamp()const{ return m_triggerTimeStamp; }
   uint32_t triggerCounter()const{ return m_triggerCounter; }
   int skirocId()const{ return (m_data.at(SKIROC_DATA_SIZE-1) & MASK_ID); }

@@ -5,6 +5,7 @@
 HGCalTBRawHitProducer::HGCalTBRawHitProducer(const edm::ParameterSet& cfg) : 
   m_electronicMap(cfg.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
   m_outputCollectionName(cfg.getParameter<std::string>("OutputCollectionName")),
+  m_globalTimestampCollectionName(cfg.getParameter<std::string>("GlobalTimestampCollectionName")),
   m_subtractPedestal(cfg.getUntrackedParameter<bool>("SubtractPedestal",false)),
   m_maskNoisyChannels(cfg.getUntrackedParameter<bool>("MaskNoisyChannels",false)),
   m_pedestalHigh_filename(cfg.getUntrackedParameter<std::string>("HighGainPedestalFileName",std::string("pedestalHG.txt"))),
@@ -16,6 +17,7 @@ HGCalTBRawHitProducer::HGCalTBRawHitProducer(const edm::ParameterSet& cfg) :
 {
   m_HGCalTBSkiroc2CMSCollection = consumes<HGCalTBSkiroc2CMSCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
   produces <HGCalTBRawHitCollection>(m_outputCollectionName);
+  produces <HGCalTBGlobalTimestamps>(m_globalTimestampCollectionName);
   std::cout << cfg.dump() << std::endl;
 }
 
@@ -117,6 +119,7 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 {
 
   std::auto_ptr<HGCalTBRawHitCollection> hits(new HGCalTBRawHitCollection);
+  std::auto_ptr<HGCalTBGlobalTimestamps> globalTimestamps(new HGCalTBGlobalTimestamps);
 
   edm::Handle<HGCalTBSkiroc2CMSCollection> skirocs;
   event.getByToken(m_HGCalTBSkiroc2CMSCollection, skirocs);
@@ -131,6 +134,7 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     if( !skiroc.check() )
       continue;
     std::vector<int> rollpositions=skiroc.rollPositions();
+    globalTimestamps->skiroc_to_timestamps[iski] = skiroc.globalTS();
     for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
       int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
       int iskiroc=iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
@@ -167,6 +171,7 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     }
   }
   event.put(hits, m_outputCollectionName);
+  event.put(globalTimestamps, m_globalTimestampCollectionName);
 }
 
 DEFINE_FWK_MODULE(HGCalTBRawHitProducer);

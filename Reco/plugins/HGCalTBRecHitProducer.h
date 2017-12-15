@@ -20,6 +20,7 @@
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h" //for the runData type definition
+#include "HGCal/DataFormats/interface/HGCalTBGlobalTimestamps.h" //for the runData type definition
 
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
@@ -48,6 +49,7 @@ class HGCalTBRecHitProducer : public edm::EDProducer
 
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
   edm::EDGetTokenT<RunData> RunDataToken; 
+  edm::EDGetTokenT<HGCalTBGlobalTimestamps> HGCalTBGlobalTimestampsToken; 
 
   bool m_maskNoisyChannels;
   std::string m_channelsToMask_filename;
@@ -75,6 +77,7 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   int board_for_tree;
   int skiroc_for_tree;
   int channel_for_tree;
+  uint32_t globalTimestamp_for_tree;
   double MIPEnergy_for_tree;
   double HG_max_for_tree;
   double LG_max_for_tree;

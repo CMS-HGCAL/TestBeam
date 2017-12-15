@@ -11,6 +11,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBTrackCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBCommonModeNoise.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"
+#include "HGCal/DataFormats/interface/HGCalTBGlobalTimestamps.h"
 #include "HGCal/DataFormats/interface/HGCalTBDWCTrack.h"
 #include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
 
@@ -50,6 +51,10 @@ struct dictionary {
 
 	RunData _aRunData;
 	edm::Wrapper<RunData> _aRunDataWrapper;
+
+	HGCalTBGlobalTimestamps _aHGCalTBGlobalTimestamps;
+	std::map<int, uint32_t> askiroc_to_timestamps;
+	edm::Wrapper<HGCalTBGlobalTimestamps> _aHGCalTBGlobalTimestampsWrapper;
 
 	HGCalTBDWCTrack _aHGCalTBDWCTrack;
 	edm::Wrapper<HGCalTBDWCTrack> _aHGCalTBDWCTrackWrapper;

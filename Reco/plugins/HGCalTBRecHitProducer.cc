@@ -21,6 +21,7 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) :
   
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
   RunDataToken= consumes<RunData>(cfg.getParameter<edm::InputTag>("RUNDATA"));
+  HGCalTBGlobalTimestampsToken= consumes<HGCalTBGlobalTimestamps>(cfg.getParameter<edm::InputTag>("GlobalTimestampCollectionName"));
   investigatePulseShape = cfg.getUntrackedParameter<bool>("investigatePulseShape", false);
   std::cout << cfg.dump() << std::endl;
 
@@ -91,6 +92,7 @@ void HGCalTBRecHitProducer::beginJob()
   outtree->Branch("board", &board_for_tree);
   outtree->Branch("skiroc", &skiroc_for_tree);
   outtree->Branch("channel", &channel_for_tree);
+  outtree->Branch("globalTimestamp", &globalTimestamp_for_tree);
   outtree->Branch("MIPEnergy", &MIPEnergy_for_tree);
   outtree->Branch("HG_max", &HG_max_for_tree);
   outtree->Branch("LG_max", &LG_max_for_tree);
@@ -152,6 +154,10 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   //get the relevant event information
   event.getByToken(RunDataToken, rd);
 
+
+  edm::Handle<HGCalTBGlobalTimestamps> gts;
+  event.getByToken(HGCalTBGlobalTimestampsToken, gts);
+
   std::auto_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection);
 
   edm::Handle<HGCalTBRawHitCollection> rawhits;
@@ -193,6 +199,10 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     skiroc_for_tree = iski;
     channel_for_tree = ichannel;
     int key = iboard * 10000 + (iski % 4) * 100 + ichannel;
+
+    uint32_t globalTimestamp = gts->skiroc_to_timestamps.at(iski);
+
+    globalTimestamp_for_tree = globalTimestamp;
 
     MIPEnergy_for_tree =  HG_max_for_tree =  LG_max_for_tree =  TMax_HG_for_tree =  TMax_LG_for_tree =  TOT_for_tree =  TOA_rise_for_tree =  TOA_fall_for_tree =  chi2_HG_for_tree =  chi2_LG_for_tree =  trise_HG_for_tree =  trise_LG_for_tree =  errortmax_HG_for_tree =  errortmax_LG_for_tree =  erroramplitude_HG_for_tree =  erroramplitude_LG_for_tree = -999;
 

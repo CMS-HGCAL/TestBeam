@@ -121,6 +121,7 @@ process.output = cms.OutputModule("PoolOutputModule",
                                   fileName = cms.untracked.string(options.processedFile),
                                   outputCommands = cms.untracked.vstring('drop *',
                                                                          'keep *_*_HGCALTBRAWHITS_*',
+                                                                         'keep *_*_HGCALGLOBALTIMESTAMPS_*',
                                                                          'keep *_*_RunData_*')
 )
 
@@ -129,6 +130,7 @@ process.output = cms.OutputModule("PoolOutputModule",
 process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                         OutputCollectionName=cms.string("HGCALTBRAWHITS"),
+                                        GlobalTimestampCollectionName=cms.string("HGCALGLOBALTIMESTAMPS"),
                                         ElectronicMap=cms.untracked.string(electronicMap),
                                         SubtractPedestal=cms.untracked.bool(bool(options.SubtractPedestal)),
                                         MaskNoisyChannels=cms.untracked.bool(bool(options.MaskNoisyChannels)),

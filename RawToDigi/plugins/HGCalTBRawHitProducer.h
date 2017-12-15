@@ -9,6 +9,7 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 
 #include "HGCal/DataFormats/interface/HGCalTBRawHitCollection.h"
+#include "HGCal/DataFormats/interface/HGCalTBGlobalTimestamps.h"
 #include "HGCal/DataFormats/interface/HGCalTBSkiroc2CMSCollection.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
@@ -25,6 +26,7 @@ class HGCalTBRawHitProducer : public edm::EDProducer
  private:
   std::string m_electronicMap;
   std::string m_outputCollectionName;
+  std::string m_globalTimestampCollectionName;
   bool m_subtractPedestal;
   bool m_maskNoisyChannels;
   std::string m_pedestalHigh_filename;
