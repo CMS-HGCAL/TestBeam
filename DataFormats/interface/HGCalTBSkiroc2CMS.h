@@ -7,7 +7,7 @@
 
 static const int MASK_ADC = 0x0FFF;
 static const int MASK_ROLL = 0x1FFF;
-static const int MASK_GTS_MSB = 0x2FFF;
+static const int MASK_GTS_MSB = 0x3FFF;
 static const int MASK_GTS_LSB = 0x1FFF;
 static const int MASK_ID = 0xFF;
 static const int MASK_HEAD = 0xF000;
