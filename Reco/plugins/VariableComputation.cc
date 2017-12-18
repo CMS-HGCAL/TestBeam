@@ -50,7 +50,14 @@
 #include <iomanip>
 #include <set>
 
+typedef std::map<int, std::vector<double> > WindowMap;
 
+//#define DEBUG
+//see presentation at CHEF 06 Oct 2017 by Thorben Quast
+double X0PosJuly2017[7] = {6.3, 16.8, 25.3, 32.7, 41.1, 48.4, 48.4};	//includes upstream material, last value is a dummy 
+double Lambda0PosJuly2017[7] = {0.35, 0.89, 1.6, 2.4, 3.3, 4.0, 4.0};
+double weightsJuly2017[7] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+double MIP2GeVJuly2017 = 84.9e-6;
 
 double X0PosSeptember2017[18] = {2.76674,4.37279,5.97883,7.58488,9.19093,13.0331,16.1884,23.9158,26.6938,29.4718,32.4454,35.2234,38.0014,41.9177,44.8912,47.8647,50.8382,55.9605};
 double Lambda0PosSeptember2017[18] = {0.15558,0.237188,0.318797,0.400405,0.482013,0.665655,0.85385,1.4237,1.70922,1.99473,2.28343,2.56895,2.85447,3.25925,3.54794,3.83664,4.12533,4.662};
@@ -92,7 +99,8 @@ class VariableComputation : public edm::EDProducer {
 		virtual void beginJob();
 		virtual void produce(edm::Event& , const edm::EventSetup&);
 		virtual void endJob();
-
+		void ReadDWCWindows();
+		void ReadCurrentDWCWindows(int);
 
 		// ----------member data ---------------------------
 		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;	 		
@@ -134,6 +142,12 @@ class VariableComputation : public edm::EDProducer {
 		std::vector<double> cellDistance_layer;
 
 		double Ixx, Iyy, Izz, Ixy, Ixz, Iyz;
+
+
+		std::vector<std::string> pathsToMIPWindowFiles;
+	  	std::map<std::pair<int, int> ,WindowMap  >loadedDWCWindows;
+		WindowMap currentDWCWindows;
+		std::map<int, std::pair<double, double> > simPositions;
 };
 
 VariableComputation::VariableComputation(const edm::ParameterSet& iConfig) {	
@@ -231,7 +245,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		} else  {
 			if ((Rechit.id()).cellType() == 0) noisehits.push_back(Rechit);
 		}
-
 	}
 
 
@@ -349,7 +362,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		NE37_layer[it->first-1] = (int)relevantHitPositions.size();
 		relevantHitPositions.clear();
 
-     //four rings around
+     	//four rings around
  		it->second->calculateCenterPosition(CONSIDERSIXTYONE, LINEARWEIGHTING);
 		energyE61_tot += it->second->getTotalWeight();
 		energyE61_layer[it->first-1] = it->second->getTotalWeight();
@@ -374,7 +387,13 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		UR->add("E37PerE61_layer"+std::to_string(it->first), energyE37_layer[it->first-1]/energyE61_layer[it->first-1]);
 
 		double weight = 0., MIP2GeV=1., X0 = 0., lambda0 = 0.;
-		if (rd->configuration==2) {
+		if (rd->configuration==1) {
+			weight = weightsJuly2017[it->first-1]*1e-3;
+			MIP2GeV = MIP2GeVJuly2017;
+			X0 = X0PosJuly2017[it->first-1];
+			lambda0 = Lambda0PosJuly2017[it->first-1];
+		}
+		else if (rd->configuration==2) {
 			weight = weightsSeptember2017[it->first-1]*1e-3;
 			MIP2GeV = MIP2GeVSeptember2017;
 			X0 = X0PosSeptember2017[it->first-1];
@@ -393,7 +412,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 
 
 		//position resolution
-		if (dwctrack->valid&&(dwctrack->referenceType==15) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) { 
+		if (dwctrack->valid&&(dwctrack->referenceType>10) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) { 
 			//std::cout<<"Layer: "<<it->first<<std::endl;
 			//std::cout<<"DWC X: "<<dwctrack->DWCExtrapolation_XY(it->first).first<<"  reco X: "<<it->second->getLabHitPosition().first<<std::endl;
 			//std::cout<<"DWC Y: "<<dwctrack->DWCExtrapolation_XY(it->first).second<<"  reco Y: "<<it->second->getLabHitPosition().second<<std::endl;
@@ -475,9 +494,53 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	/**********                                 ****************/
 		
 
+	//spectra of selected cells
+	ReadCurrentDWCWindows(1680);
+	std::vector<double> cell_chip1_ch36_energySpectra; for (size_t l=0; (int)l<m_NLayers; l++) cell_chip1_ch36_energySpectra.push_back(-1.);
+	
+	if (dwctrack->valid&&(dwctrack->referenceType>=7) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) {
+
+		for(auto Rechit : *Rechits) {	
+
+			HGCalTBElectronicsId eid( essource_.emap_.detId2eid( Rechit.id().rawId() ) );
+			int board = eid.iskiroc_rawhit() / 4;
+			int skiroc = eid.iskiroc_rawhit() % 4;
+			int channel = eid.ichan();
+			
+
+			if (skiroc!=1)	continue;
+			if ((channel!=36)&&(channel!=38)&&(channel!=44)&&(channel!=54)) continue;
+
+			int key = board*1000+skiroc*100+channel;
+
+			int layer = (Rechit.id()).layer();
+			double dwc_x_layer = dwctrack->DWCExtrapolation_XY(layer).first;
+			double dwc_y_layer = dwctrack->DWCExtrapolation_XY(layer).second;
+
+			if (rd->runType==HGCAL_TB_BEAM) {
+				//if (!Rechit.checkFlag(HGCalTBRecHit::kLowGainSaturated)) continue;
+		 		if (currentDWCWindows.find(key) == currentDWCWindows.end())	continue;	
+				if (-dwc_x_layer < currentDWCWindows[key][0] || -dwc_x_layer > currentDWCWindows[key][1]) continue;
+				if (dwc_y_layer < currentDWCWindows[key][2] || dwc_y_layer > currentDWCWindows[key][3]) continue;
+			} else {
+				//if (Rechit.energy()<300.) continue;
+				if (!((dwc_x_layer>simPositions[key].first-4.)&&(dwc_x_layer<simPositions[key].first+4.))) continue;
+				if (!((dwc_y_layer>simPositions[key].second-4.)&&(dwc_y_layer<simPositions[key].second+4.))) continue;
+			}
+
+
+			
+			cell_chip1_ch36_energySpectra[layer-1] = Rechit.energy();
+			
+		}
+	}
+
+	for (size_t l=0; (int)l<m_NLayers; l++) UR->add("energy_chip1_layer"+std::to_string(l), cell_chip1_ch36_energySpectra[l]);
+
+	
+
+	/**********                                 ****************/
 	event.put(UR, m_UserRecordCollectionName);
-
-
 
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		delete (*it).second;
@@ -522,7 +585,14 @@ void VariableComputation::beginJob() {
 		}
 	}
 
-	
+	HGCalCondObjectTextIO io(0);
+	edm::FileInPath fip(m_electronicMap);
+	if (!io.load(fip.fullPath(), essource_.emap_)) {
+		throw cms::Exception("Unable to load electronics map");
+	};
+
+
+	ReadDWCWindows();
 }
 
 void VariableComputation::endJob() {
@@ -532,6 +602,152 @@ void VariableComputation::fillDescriptions(edm::ConfigurationDescriptions& descr
 	edm::ParameterSetDescription desc;
 	desc.setUnknown();
 	descriptions.addDefault(desc);
+}
+
+
+void VariableComputation::ReadDWCWindows() {
+  	
+	std::fstream file; 
+	char fragment[100];
+	int readCounter = -2;
+
+	WindowMap _parameters;
+	  	
+	std::cout<<"Opening: "<<"/afs/cern.ch/user/t/tquast/CMS_HGCal_Upgrade/workflows/tbAnalysis2017/configurations/MIP_DWC_Windows_1658_1683.txt"<<std::endl;
+	file.open("/afs/cern.ch/user/t/tquast/CMS_HGCal_Upgrade/workflows/tbAnalysis2017/configurations/MIP_DWC_Windows_1658_1683.txt", std::fstream::in);
+
+	int minRun, maxRun;
+	if (file.is_open()) {
+		file >> fragment;
+		minRun = atoi(fragment);
+		file >> fragment;
+		maxRun = atoi(fragment);
+	}
+
+	int iboard = -1, iskiroc = -1, ichannel = -1;
+	double DWC_x_min, DWC_x_max, DWC_y_min, DWC_y_max;
+
+	while (file.is_open() && !file.eof()) {		
+		if (readCounter!=-2) readCounter++;
+			file >> fragment;
+
+		if (std::string(fragment)=="y_max" ) readCounter = -1;  //first parameter is read out
+
+		if (readCounter==0) iboard = atoi(fragment);
+		if (readCounter==1) iskiroc = atoi(fragment); 
+		if (readCounter==2) ichannel = atoi(fragment);
+		if (readCounter==3) DWC_x_min = atof(fragment);
+		if (readCounter==4) DWC_x_max = atof(fragment);
+		if (readCounter==5) DWC_y_min = atof(fragment);
+		if (readCounter==6) { DWC_y_max = atof(fragment);
+			int key = iboard*1000+iskiroc*100+ichannel;
+			_parameters[key].push_back(DWC_x_min);
+			_parameters[key].push_back(DWC_x_max);
+			_parameters[key].push_back(DWC_y_min);
+			_parameters[key].push_back(DWC_y_max);
+			readCounter=-1;
+		}
+	}
+	
+	WindowMap ::iterator it;
+	#ifdef DEBUG
+		for (it=_parameters.begin(); it!=_parameters.end(); it++) {
+			std::cout<<"key: "<<it->first;
+			for (int i=0; i<4; i++) {
+				std::cout<<"  "<<it->second[i];
+			}
+			std::cout<<std::endl;
+		}
+	#endif
+
+	loadedDWCWindows[std::make_pair(minRun, maxRun)] = _parameters;
+
+	simPositions[136] = std::make_pair(0,  -11.2455);
+	simPositions[1136] = std::make_pair(0,  -11.2455);
+	simPositions[2136] = std::make_pair(0,  -11.2455);
+	simPositions[3136] = std::make_pair(0,  -11.2455);
+	simPositions[4136] = std::make_pair(0,  -11.2455);
+	simPositions[5136] = std::make_pair(0,  -11.2455);
+	simPositions[6136] = std::make_pair(0,  -11.2455);
+	simPositions[7136] = std::make_pair(9.73885,  5.62273);
+	simPositions[8136] = std::make_pair(9.73885,  5.62273);
+	simPositions[9136] = std::make_pair(9.73885,  5.62273);
+	simPositions[10136] = std::make_pair(9.73885,  5.62273);
+	simPositions[11136] = std::make_pair(9.73885,  5.62273);
+	simPositions[12136] = std::make_pair(9.73885,  5.62273);
+	simPositions[13136] = std::make_pair(9.73885,  5.62273);
+	simPositions[14136] = std::make_pair(9.73885,  5.62273);
+	simPositions[15136] = std::make_pair(9.73885,  5.62273);
+	simPositions[16136] = std::make_pair(9.73885,  5.62273);
+
+	simPositions[138] = std::make_pair(0, -22.4909);
+	simPositions[1138] = std::make_pair(0, -22.4909);
+	simPositions[2138] = std::make_pair(0, -22.4909);
+	simPositions[3138] = std::make_pair(0, -22.4909);
+	simPositions[4138] = std::make_pair(0, -22.4909);
+	simPositions[5138] = std::make_pair(0, -22.4909);
+	simPositions[6138] = std::make_pair(0, -22.4909);
+	simPositions[7138] = std::make_pair(19.4777, 11.2455);
+	simPositions[8138] = std::make_pair(19.4777, 11.2455);
+	simPositions[9138] = std::make_pair(19.4777, 11.2455);
+	simPositions[10138] = std::make_pair(19.4777, 11.2455);
+	simPositions[11138] = std::make_pair(19.4777, 11.2455);
+	simPositions[12138] = std::make_pair(19.4777, 11.2455);
+	simPositions[13138] = std::make_pair(19.4777, 11.2455);
+	simPositions[14138] = std::make_pair(19.4777, 11.2455);
+	simPositions[15138] = std::make_pair(19.4777, 11.2455);
+	simPositions[16138] = std::make_pair(19.4777, 11.2455);
+
+	simPositions[144] = std::make_pair(-9.73885, -5.62273);
+	simPositions[1144] = std::make_pair(-9.73885, -5.62273);
+	simPositions[2144] = std::make_pair(-9.73885, -5.62273);
+	simPositions[3144] = std::make_pair(-9.73885, -5.62273);
+	simPositions[4144] = std::make_pair(-9.73885, -5.62273);
+	simPositions[5144] = std::make_pair(-9.73885, -5.62273);
+	simPositions[6144] = std::make_pair(-9.73885, -5.62273);
+	simPositions[7144] = std::make_pair(9.73885, -5.62273);
+	simPositions[8144] = std::make_pair(9.73885, -5.62273);
+	simPositions[9144] = std::make_pair(9.73885, -5.62273);
+	simPositions[10144] = std::make_pair(9.73885, -5.62273);
+	simPositions[11144] = std::make_pair(9.73885, -5.62273);
+	simPositions[12144] = std::make_pair(9.73885, -5.62273);
+	simPositions[13144] = std::make_pair(9.73885, -5.62273);
+	simPositions[14144] = std::make_pair(9.73885, -5.62273);
+	simPositions[15144] = std::make_pair(9.73885, -5.62273);
+	simPositions[16144] = std::make_pair(9.73885, -5.62273);
+
+	simPositions[154] = std::make_pair(-9.73885, -16.8682);
+	simPositions[1154] = std::make_pair(-9.73885, -16.8682);
+	simPositions[2154] = std::make_pair(-9.73885, -16.8682);
+	simPositions[3154] = std::make_pair(-9.73885, -16.8682);
+	simPositions[4154] = std::make_pair(-9.73885, -16.8682);
+	simPositions[5154] = std::make_pair(9.73885, -16.8682);
+	simPositions[6154] = std::make_pair(-9.73885, -16.8682);
+	simPositions[7154] = std::make_pair(19.4777, 0);
+	simPositions[8154] = std::make_pair(19.4777, 0);
+	simPositions[9154] = std::make_pair(19.4777, 0);
+	simPositions[10154] = std::make_pair(19.4777, 0);
+	simPositions[11154] = std::make_pair(19.4777, 0);
+	simPositions[12154] = std::make_pair(19.4777, 0);
+	simPositions[13154] = std::make_pair(19.4777, 0);
+	simPositions[14154] = std::make_pair(19.4777, 0);
+	simPositions[15154] = std::make_pair(19.4777, 0);
+	simPositions[16154] = std::make_pair(19.4777, 0);
+
+}
+
+
+void VariableComputation::ReadCurrentDWCWindows(int this_run) {
+	std::map<std::pair<int, int> ,WindowMap  >::iterator it;
+	for (it=loadedDWCWindows.begin(); it!=loadedDWCWindows.end(); it++) {
+		int run_min = it->first.first;
+		int run_max = it->first.second;
+
+		if (this_run>=run_min && (this_run<=run_max || run_max==-1) ) {
+			currentDWCWindows = it->second;
+			break;
+		}
+	}
 }
 
 //define this as a plug-in
