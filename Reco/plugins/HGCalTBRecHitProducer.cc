@@ -146,6 +146,12 @@ void HGCalTBRecHitProducer::beginJob()
   if (!io.load(fip.fullPath(), essource_.adccalibmap_)) {
     throw cms::Exception("Unable to load ADC conversions map");
   };
+
+  //timingCalibrationNN = new dnn::tf::Graph("/tmp/model_board0_chip2");
+  //dnn::tf::Shape xShape[] = { 1, 3 };
+  //xNNInput = timingCalibrationNN->defineInput(new dnn::tf::Tensor("x_in:0", 2, xShape));
+  //yNNOutput = timingCalibrationNN->defineOutput(new dnn::tf::Tensor("y_out:0"));
+
 }
 
 void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iSetup)
@@ -181,12 +187,10 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
   for( auto rawhit : *rawhits ){
 
-  event_for_tree = rd->event;
-  run_for_tree = rd->run;
-  pdgID_for_tree = rd->pdgID;
-  beamEnergy_for_tree = rd->energy;
-
-
+    event_for_tree = rd->event;
+    run_for_tree = rd->run;
+    pdgID_for_tree = rd->pdgID;
+    beamEnergy_for_tree = rd->energy;
 
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid.rawId()) || std::find(m_noisyChannels.begin(),m_noisyChannels.end(),eid.rawId())!=m_noisyChannels.end() )
@@ -282,23 +286,22 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       iski = rawhit.skiroc()%4;
       ASIC_ADC_Conversions adcConv=essource_.adccalibmap_.getASICConversions(moduleId,iski);
 
+
       if( rawhit.lowGainADC(3) > adcConv.TOT_lowGain_transition() ){
         energy = totGain * adcConv.TOT_to_lowGain() * adcConv.lowGain_to_highGain();
         recHit.setEnergyTOT(totGain);
         recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
         recHit.setFlag(HGCalTBRecHit::kGood);
       } else {
-        
         fitter.run(sampleT, sampleLG, fitresultLG);
         fitter.run(sampleT, sampleHG, fitresultHG);
 
         if (fitresultLG.status==0) {
           m_h_LowGainVsTOTAmpl[10*iboard + iski%4]->Fill(totGain, fitresultLG.amplitude);   
           if (fitresultHG.status==0)
-            m_h_HighVsLowGainAmpl[10*iboard + iski%4]->Fill(fitresultLG.amplitude, fitresultHG.amplitude);   
-          
+            m_h_HighVsLowGainAmpl[10*iboard + iski%4]->Fill(fitresultLG.amplitude, fitresultHG.amplitude);    
         }
-
+        
         if( rawhit.highGainADC(3) > adcConv.lowGain_highGain_transition() ){
           recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
           if( fitresultLG.status==0 ){
@@ -307,6 +310,17 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
             _time = fitresultLG.tmax - fitresultLG.trise;
             recHit.setFlag(HGCalTBRecHit::kGood);
 
+            //set the time here
+            /*
+            if ((iboard==0) && ((iski % 4) == 2) && (fitresultLG.amplitude>10.)) {
+              std::vector<float> v_in = { toaRise, toaFall, (float)fitresultLG.amplitude };
+              xNNInput->setVector<float>(1, 0, v_in);
+
+              timingCalibrationNN->eval();
+              std::cout<<"Reconstructed time: "<<yNNOutput->getValue<float>(0, 0)<<" vs "<<fitresultLG.tmax<<std::endl;
+            } 
+            */           
+  
             LG_max_for_tree = fitresultLG.amplitude;
             TMax_LG_for_tree = fitresultLG.tmax;
             chi2_LG_for_tree = fitresultLG.chi2;

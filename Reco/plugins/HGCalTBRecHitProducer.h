@@ -24,11 +24,15 @@
 
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
+#include "DNN/Tensorflow/interface/Graph.h"
+#include "DNN/Tensorflow/interface/Tensor.h"
+
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "TH2F.h"
 #include "TTree.h"
 #include <sstream>
+#include <vector>
 
 
 //#define DEBUG
@@ -98,6 +102,12 @@ class HGCalTBRecHitProducer : public edm::EDProducer
 
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;
+
+  //https://gitlab.cern.ch/mrieger/CMSSW-DNN/tree/80X
+  dnn::tf::Graph* timingCalibrationNN;
+  dnn::tf::Tensor* xNNInput;
+  dnn::tf::Tensor* yNNOutput;
+
 
   #ifdef DEBUG
     int eventCounter;
