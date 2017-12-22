@@ -7,7 +7,7 @@
 
 static const int MASK_ADC = 0x0FFF;
 static const int MASK_ROLL = 0x1FFF;
-static const int MASK_GTS_MSB = 0x2FFF;
+static const int MASK_GTS_MSB = 0x3FFF;
 static const int MASK_GTS_LSB = 0x1FFF;
 static const int MASK_ID = 0xFF;
 static const int MASK_HEAD = 0xF000;
@@ -46,7 +46,7 @@ class HGCalTBSkiroc2CMS
   uint32_t globalTS_LSB() const { return ( (m_data.at(SKIROC_DATA_SIZE-2) & MASK_GTS_LSB)>>1 ); }
   
  public:
-  uint32_t globalTS()const{ return gray_to_brady( globalTS_MSB()<<12 | globalTS_LSB()); }
+  uint32_t globalTS()const{ return (gray_to_brady(globalTS_MSB()<<12) | gray_to_brady(globalTS_LSB())); }
   uint64_t triggerTimeStamp()const{ return m_triggerTimeStamp; }
   uint32_t triggerCounter()const{ return m_triggerCounter; }
   int skirocId()const{ return (m_data.at(SKIROC_DATA_SIZE-1) & MASK_ID); }
