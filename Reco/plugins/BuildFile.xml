@@ -10,6 +10,6 @@
 <use name="HGCal/Geometry"/>
 <use name="HGCal/CondObjects" />
 <use name="HGCal/Reco"/>
-<!--<use name="DNN/Tensorflow"/>-->
+<use name="DNN/TensorFlow"/>
 <use name="CommonTools/UtilAlgos"/>
 <flags EDM_PLUGIN="1"/>

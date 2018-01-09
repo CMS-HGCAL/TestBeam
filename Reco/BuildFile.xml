@@ -3,7 +3,6 @@
 <use name="HGCal/CondObjects" />
 <use name="HGCal/Geometry"/>
 <use name="HGCal/DataFormats"/>
-<use name="Alignment/ReferenceTrajectories"/>
 <use name="Alignment/MillePedeAlignmentAlgorithm"/>
 <use name="DataFormats/CaloRecHit"/>
 <export>

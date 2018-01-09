@@ -24,9 +24,6 @@
 
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
-//#include "DNN/Tensorflow/interface/Graph.h"
-//#include "DNN/Tensorflow/interface/Tensor.h"
-
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "TH2F.h"
@@ -37,6 +34,8 @@
 #include <map>
 
 
+#include "DNN/TensorFlow/interface/TensorFlow.h"
+
 //#define DEBUG
 
 class HGCalTBRecHitProducer : public edm::EDProducer
@@ -46,6 +45,7 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   virtual void produce(edm::Event&, const edm::EventSetup&);
  private:
   virtual void beginJob() override;
+  virtual void endJob() override;
   std::string m_CommonModeNoiseCollectionName;
   std::string m_outputCollectionName;
   std::string m_electronicMap;
@@ -105,16 +105,14 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;
 
-  //https://gitlab.cern.ch/mrieger/CMSSW-DNN/tree/80X
+  //https://gitlab.cern.ch/mrieger/CMSSW-DNN/blob/c_api/TensorFlow/interface/Graph.h
   std::string timingNNFilePath;
-  std::map<int, std::string> timingNNFilePaths;
-  //dnn::tf::Graph* timingCalibrationNN;
-  //dnn::tf::Tensor* xNNInput;
-  //dnn::tf::Tensor* xIN;
-  //dnn::tf::Tensor* yNNOutput;
-  //dnn::tf::Tensor* yIN;
-
-
+  std::map<int, tf::Graph*> timingCalibrationNNs;
+  std::map<int, tf::Session*> timingCalibrationNNSessions;
+  std::map<int, tf::Tensor*> xins;
+  std::map<int, tf::Tensor*> youts;
+  
+  
   #ifdef DEBUG
     int eventCounter;
   #endif

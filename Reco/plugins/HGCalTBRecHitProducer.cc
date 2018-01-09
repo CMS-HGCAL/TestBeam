@@ -153,15 +153,15 @@ void HGCalTBRecHitProducer::beginJob()
 }
 
 void HGCalTBRecHitProducer::setupTimingNNs(std::string filePath) {
-  //timingCalibrationNN = NULL;
-  //xNNInput = NULL;
-  //xIN = NULL;
-  //yNNOutput = NULL;
-  //yIN = NULL;
 
   std::fstream file; 
   char fragment[100];
   int readCounter = -1, currentBoard = -1, currentSkiroc = -1;
+
+  tf::Shape xShape[] = { 1, 3 }; // 1 = single batch
+  
+
+
 
   file.open(filePath.c_str(), std::fstream::in);
   std::cout<<"Reading file "<<filePath<<" -open: "<<file.is_open()<<std::endl;
@@ -179,8 +179,26 @@ void HGCalTBRecHitProducer::setupTimingNNs(std::string filePath) {
       default:
         std::string currentPath = fragment;
         std::cout<<"Assigning timing NN for board "<<currentBoard<<" and skiroc "<<currentSkiroc<<": "<<currentPath<<std::endl;
-        timingNNFilePaths[10*currentBoard+currentSkiroc] = currentPath;
-        //reset temprary variables
+        
+        int NNKey = 10*currentBoard+currentSkiroc;
+        tf::Tensor* x = new tf::Tensor(2, xShape);
+        xins[NNKey] = x;
+  
+        tf::Tensor* y = new tf::Tensor();
+        youts[NNKey] = y;
+
+        tf::Graph* new_graph = new tf::Graph(currentPath.c_str());
+        timingCalibrationNNs[NNKey] = new_graph;
+        
+        tf::Session* new_session = new tf::Session(&(*new_graph)); 
+        timingCalibrationNNSessions[NNKey] = new_session;
+        
+        std::ostringstream os( std::ostringstream::ate );
+        os.str("x_in_");os<<NNKey;
+        new_session->addInput(x, os.str().c_str());
+        os.str("y_out_");os<<NNKey;
+        new_session->addOutput(y, os.str().c_str());
+        
         currentBoard = currentSkiroc = readCounter = -1;
     }
   }
@@ -345,57 +363,14 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
             //set the time here
             int NNKey = 10*iboard+iski;
-            if ((fitresultLG.amplitude>10.)&&(timingNNFilePaths.find(NNKey)!=timingNNFilePaths.end())) {
-              std::cout<<"Set time here"<<std::endl;
-              /*
-              dnn::tf::Shape xShape[] = { 1, 3 };
-
-              if (xIN != NULL) {
-                std::cout<<"Deleting: xIN"<<std::endl;
-                delete xIN;
-                std::cout<<"Successfully"<<std::endl;
-              }
-              if (xNNInput != NULL) {
-                std::cout<<"Deleting: xNNInput"<<std::endl;
-                delete xNNInput;
-                std::cout<<"Successfully"<<std::endl;
-              }
-              if (yIN != NULL) {
-                std::cout<<"Deleting: yIN"<<std::endl;
-                delete yIN;
-                std::cout<<"Successfully"<<std::endl;
-              }
-              if (yNNOutput != NULL) {
-                std::cout<<"Deleting: yNNOutput"<<std::endl;
-                delete yNNOutput;
-                std::cout<<"Successfully"<<std::endl;
-              }
-              if (timingCalibrationNN != NULL) {
-                std::cout<<"Deleting: timingCalibrationNN"<<std::endl;
-                delete timingCalibrationNN;
-                std::cout<<"Successfully"<<std::endl;
-              }
-
-              std::ostringstream os( std::ostringstream::ate );
-              std::cout<<"making new Graph..."<<std::endl;
-              timingCalibrationNN = new dnn::tf::Graph(timingNNFilePaths[NNKey].c_str());
-              std::cout<<"Successfully"<<std::endl;
-
-              os.str("x_in_");os<<10*iboard+iski;os<<":0";
-              xIN = new dnn::tf::Tensor(os.str().c_str(), 2, xShape);
-              xNNInput = timingCalibrationNN->defineInput(xIN);
-              
-              os.str("y_out_");os<<10*iboard+iski;os<<":0";
-              yIN = new dnn::tf::Tensor(os.str().c_str());
-              yNNOutput = timingCalibrationNN->defineOutput(yIN);
-              
-              std::vector<float> v_in = { (float)toaRise, (float)fitresultLG.amplitude, (float)toaFall};
-              std::cout<<iboard<<"   "<<iski<<std::endl;
-              xNNInput->setVector<float>(1, 0, v_in);
-              timingCalibrationNN->eval();
-              _time = yNNOutput->getValue<float>(0, 0);
-              std::cout<<"Reconstructed time: "<<_time<<" vs "<<fitresultLG.tmax<<std::endl;
-              */
+            if ((fitresultLG.amplitude>10.)&&(timingCalibrationNNs.find(NNKey)!=timingCalibrationNNs.end())) {
+              std::vector<float> xvalues = { (float)toaRise, (float)fitresultLG.amplitude, (float)toaFall };
+              xins[NNKey]->setVector<float>(1, 0, xvalues); // axis 1, batch 0, values
+              timingCalibrationNNSessions[NNKey]->run();
+              _time = *(youts[NNKey])->getPtr<float>(0, 0);
+              #ifdef DEBUG
+                std::cout<<"Reconstructed time ("<<iboard<<", "<<iski<<"): "<<_time<<" vs "<<fitresultLG.tmax<<std::endl;
+              #endif
             } 
               
             LG_max_for_tree = fitresultLG.amplitude;
@@ -459,6 +434,24 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   #ifdef DEBUG
     eventCounter++;
   #endif
+}
+
+void HGCalTBRecHitProducer::endJob() {
+  for (std::map<int, tf::Graph*>::iterator it=timingCalibrationNNs.begin(); it!=timingCalibrationNNs.end(); it++) {
+    delete (*it).second;
+  };  timingCalibrationNNs.clear();
+  
+  for (std::map<int, tf::Session*>::iterator it=timingCalibrationNNSessions.begin(); it!=timingCalibrationNNSessions.end(); it++) {
+    delete (*it).second;
+  };  timingCalibrationNNSessions.clear();
+
+  for (std::map<int, tf::Tensor*>::iterator it=xins.begin(); it!=xins.end(); it++) {
+    delete (*it).second;
+  };  xins.clear();
+  
+  for (std::map<int, tf::Tensor*>::iterator it=youts.begin(); it!=youts.end(); it++) {
+    delete (*it).second;
+  };  youts.clear();
 }
 
 DEFINE_FWK_MODULE(HGCalTBRecHitProducer);
