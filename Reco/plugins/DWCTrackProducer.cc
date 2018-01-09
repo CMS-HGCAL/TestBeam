@@ -43,7 +43,7 @@ class DWCTrackProducer : public edm::EDProducer {
 	 private:
 		virtual void beginJob() override;
 
-		edm::EDGetTokenT<WireChambers> MWCToken;
+		edm::EDGetTokenT<std::map<int, WireChamberData> > MWCToken;
 		std::string m_outputTrackName;
 		std::string m_layerPositionFile;
 
@@ -55,7 +55,7 @@ class DWCTrackProducer : public edm::EDProducer {
 
 DWCTrackProducer::DWCTrackProducer(const edm::ParameterSet& iConfig) {	
 	
-	MWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
+	MWCToken= consumes<std::map<int, WireChamberData> >(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
 	m_outputTrackName = iConfig.getParameter<std::string>("OutputCollectionName");
 	m_layerPositionFile = iConfig.getParameter<std::string>("layerPositionFile");
 
@@ -87,7 +87,7 @@ DWCTrackProducer::DWCTrackProducer(const edm::ParameterSet& iConfig) {
 void DWCTrackProducer::produce(edm::Event& event, const edm::EventSetup& setup) {
 
 
-	edm::Handle<WireChambers> dwcs;
+	edm::Handle<std::map<int, WireChamberData> > dwcs;
 	event.getByToken(MWCToken, dwcs);
 
 	#ifdef DEBUG
@@ -117,7 +117,7 @@ void DWCTrackProducer::produce(edm::Event& event, const edm::EventSetup& setup) 
 
 	}
 
-	std::auto_ptr<HGCalTBDWCTrack> dwcTrack(new HGCalTBDWCTrack);
+	std::unique_ptr<HGCalTBDWCTrack> dwcTrack(new HGCalTBDWCTrack);
 
 	if (NgoodDWCs>=2) {
 		dwcTrack->valid = true;
@@ -149,7 +149,7 @@ void DWCTrackProducer::produce(edm::Event& event, const edm::EventSetup& setup) 
 	} else {
 		dwcTrack->valid = false;
 	}
-	event.put(dwcTrack, m_outputTrackName);
+	event.put(std::move(dwcTrack), m_outputTrackName);
 
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		delete (*it).second;

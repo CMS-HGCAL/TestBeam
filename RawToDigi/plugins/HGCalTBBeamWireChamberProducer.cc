@@ -7,7 +7,7 @@ HGCalTBBeamWireChamberProducer::HGCalTBBeamWireChamberProducer(const edm::Parame
 	inputFile = cfg.getParameter<std::string>("inputFile");
     outputCollectionName = cfg.getParameter<std::string>("OutputCollectionName");
 
-    produces<WireChambers>(outputCollectionName);
+    produces<std::map<int, WireChamberData> >(outputCollectionName);
     produces<RunData>("FullRunData");
 }
 
@@ -57,14 +57,14 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
         loadRun(rd->run);
     }
 
-    std::auto_ptr<WireChambers> dwcs(new WireChambers);
+    std::unique_ptr<std::map<int, WireChamberData> > dwcs(new std::map<int, WireChamberData>);
     WireChamberData* dwc1 = new WireChamberData();
     WireChamberData* dwc2 = new WireChamberData();
     WireChamberData* dwc3 = new WireChamberData();
     WireChamberData* dwc4 = new WireChamberData();
 
     //set the RunData
-    std::auto_ptr<RunData> rd_full(new RunData);
+    std::unique_ptr<RunData> rd_full(new RunData);
 
     rd_full->configuration = rd->configuration;
     rd_full->run = rd->run;
@@ -175,10 +175,10 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
         rd_full->doubleUserRecords.add("triggerDeltaT_to_TDC", triggerTimeDiff_loaded[event_nr]);
     }
 
-    dwcs->push_back(*dwc1);
-    dwcs->push_back(*dwc2);
-    dwcs->push_back(*dwc3);
-    dwcs->push_back(*dwc4);
+    (*dwcs)[0] = *dwc1;
+    (*dwcs)[1] = *dwc2;
+    (*dwcs)[2] = *dwc3;
+    (*dwcs)[3] = *dwc4;
 
     event.put(std::move(dwcs), "DelayWireChambers");
 

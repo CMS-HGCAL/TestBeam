@@ -32,7 +32,7 @@
 #include "HGCal/Reco/interface/Tracks.h"
 #include "HGCal/Reco/interface/Sensors.h"
 
-#include "Alignment/ReferenceTrajectories/interface/MilleBinary.h"
+#include "HGCal/Reco/interface/MilleBinary.h"
 #include "TTree.h"
 #include "TFile.h"
 
@@ -64,7 +64,7 @@ class MillepedeBinaryWriter : public edm::one::EDAnalyzer<edm::one::SharedResour
 		// ----------member data ---------------------------
 
 		edm::EDGetTokenT<RunData> RunDataToken;	
-		edm::EDGetTokenT<WireChambers> MWCToken;
+		edm::EDGetTokenT<std::map<int, WireChamberData> > MWCToken;
 		edm::Service<TFileService> fs;
 
 		int eventCounter;
@@ -100,7 +100,7 @@ MillepedeBinaryWriter::MillepedeBinaryWriter(const edm::ParameterSet& iConfig) {
 	usesResource("TFileService");
 
 	// initialization	
-	MWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
+	MWCToken= consumes<std::map<int, WireChamberData> >(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
 
 	//read the track fitting method
@@ -134,7 +134,7 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 	eventCounter++;
 
 	//get the multi wire chambers
-	edm::Handle<WireChambers> dwcs;
+	edm::Handle<std::map<int, WireChamberData> > dwcs;
 	event.getByToken(MWCToken, dwcs);
 	
 

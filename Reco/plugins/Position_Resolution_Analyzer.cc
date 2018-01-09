@@ -86,7 +86,7 @@ class Position_Resolution_Analyzer : public edm::one::EDAnalyzer<edm::one::Share
 		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;
 	 	
 		edm::EDGetTokenT<RunData> RunDataToken;	
-		edm::EDGetTokenT<WireChambers> MWCToken;
+		edm::EDGetTokenT<std::map<int, WireChamberData> > MWCToken;
 		
 		AlignmentParameters* alignmentParameters; //all entries are set to zero if no valid file is given 
 
@@ -137,7 +137,7 @@ Position_Resolution_Analyzer::Position_Resolution_Analyzer(const edm::ParameterS
 	usesResource("TFileService");
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
-	MWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
+	MWCToken= consumes<std::map<int, WireChamberData> >(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
 
 	//read the cell consideration option to calculate the central hit point
 	std::string methodString = iConfig.getParameter<std::string>("considerationMethod");
@@ -272,7 +272,7 @@ void Position_Resolution_Analyzer::analyze(const edm::Event& event, const edm::E
 		return;
 	}
 
-	edm::Handle<WireChambers> dwcs;
+	edm::Handle<std::map<int, WireChamberData> > dwcs;
 	event.getByToken(MWCToken, dwcs);
 
 	//initialize new fit counters in case this is a new run:

@@ -4,6 +4,7 @@
   </class>
   <class name="std::vector<HGCalTBTrack>"/>
   <class name="edm::Wrapper<vector<HGCalTBTrack> >"/>
+
   <class name="HGCalTBRecHit"/>
   <class name="std::vector<HGCalTBRecHit>"/>
   <class name="edm::SortedCollection<HGCalTBRecHit,edm::StrictWeakOrdering<HGCalTBRecHit> >"/>
@@ -14,6 +15,7 @@
 
   <class name="commonModeNoise"/>
   <class name="std::map<int, commonModeNoise>"/>
+  <class name="std::pair<const int, commonModeNoise>"/>
   <class name="edm::Wrapper<std::map<int, commonModeNoise> >"/>
 
   <class name="UserRecords<bool>"/>
@@ -36,17 +38,19 @@
   <class name="edm::Wrapper<edm::EDCollection<reco::HGCalTBCluster> >"/>
 
   <class name="HGCalTBSkiroc2CMS"/>
+  <class name="std::vector<HGCalTBSkiroc2CMS>"/>
   <class name="HGCalTBSkiroc2CMSCollection"/>
   <class name="edm::Wrapper<edm::EDCollection<HGCalTBSkiroc2CMS> >"/>
 
   <class name="HGCalTBRawHit"/>
+  <class name="std::vector<HGCalTBRawHit>"/>
   <class name="HGCalTBRawHitCollection"/>
   <class name="edm::Wrapper<edm::EDCollection<HGCalTBRawHit> >"/>
 
   <class name="WireChamberData"/>
-  <class name="edm::Wrapper<WireChamberData>"/>
-  <class name="std::vector<WireChamberData>"/>
-  <class name="edm::Wrapper<std::vector<WireChamberData> >"/>
-  
+  <class name="std::map<int, WireChamberData>"/>
+  <class name="std::pair<const int, WireChamberData>"/>
+  <class name="edm::Wrapper<std::map<int, WireChamberData> >"/>
+
 
 </lcgdict>

@@ -105,7 +105,7 @@ class VariableComputation : public edm::EDProducer {
 		// ----------member data ---------------------------
 		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;	 		
 		edm::EDGetTokenT<RunData> RunDataToken;	
-		edm::EDGetTokenT<WireChambers> DWCToken;		
+		edm::EDGetTokenT<std::map<int, WireChamberData> > DWCToken;		
 		edm::EDGetTokenT<HGCalTBDWCTrack> DWCTrackToken;		
 
 		std::string m_UserRecordCollectionName;
@@ -154,7 +154,7 @@ VariableComputation::VariableComputation(const edm::ParameterSet& iConfig) {
 	
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
-	DWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
+	DWCToken= consumes<std::map<int, WireChamberData> >(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
 	DWCTrackToken= consumes<HGCalTBDWCTrack>(iConfig.getParameter<edm::InputTag>("DWCTRACKS"));
 	
 	m_UserRecordCollectionName = iConfig.getUntrackedParameter<std::string>("UserRecordCollectionName","DoubleUserRecords");
@@ -184,13 +184,13 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	edm::Handle<HGCalTBDWCTrack> dwctrack;
 	event.getByToken(DWCTrackToken, dwctrack);
 
-	edm::Handle<WireChambers> dwcs;
+	edm::Handle<std::map<int, WireChamberData> > dwcs;
 	event.getByToken(DWCToken, dwcs);
 
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_Token, Rechits);
 
-	std::auto_ptr<UserRecords<double> > UR(new UserRecords<double>);
+	std::unique_ptr<UserRecords<double> > UR(new UserRecords<double>);
 	
 	/**********                                 ****************/
 	
@@ -540,7 +540,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	
 
 	/**********                                 ****************/
-	event.put(UR, m_UserRecordCollectionName);
+	event.put(std::move(UR), m_UserRecordCollectionName);
 
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		delete (*it).second;

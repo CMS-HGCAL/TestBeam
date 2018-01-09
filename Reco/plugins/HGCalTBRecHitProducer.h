@@ -24,8 +24,8 @@
 
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 
-#include "DNN/Tensorflow/interface/Graph.h"
-#include "DNN/Tensorflow/interface/Tensor.h"
+//#include "DNN/Tensorflow/interface/Graph.h"
+//#include "DNN/Tensorflow/interface/Tensor.h"
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
@@ -108,11 +108,11 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   //https://gitlab.cern.ch/mrieger/CMSSW-DNN/tree/80X
   std::string timingNNFilePath;
   std::map<int, std::string> timingNNFilePaths;
-  dnn::tf::Graph* timingCalibrationNN;
-  dnn::tf::Tensor* xNNInput;
-  dnn::tf::Tensor* xIN;
-  dnn::tf::Tensor* yNNOutput;
-  dnn::tf::Tensor* yIN;
+  //dnn::tf::Graph* timingCalibrationNN;
+  //dnn::tf::Tensor* xNNInput;
+  //dnn::tf::Tensor* xIN;
+  //dnn::tf::Tensor* yNNOutput;
+  //dnn::tf::Tensor* yIN;
 
 
   #ifdef DEBUG

@@ -54,9 +54,9 @@ HGCalTBClusterProducer::HGCalTBClusterProducer(const edm::ParameterSet& cfg) :
 void HGCalTBClusterProducer::produce(edm::Event& event, const edm::EventSetup& iSetup)
 {
 
-  std::auto_ptr<reco::HGCalTBClusterCollection> clusters(new reco::HGCalTBClusterCollection);
-  std::auto_ptr<reco::HGCalTBClusterCollection> clusters7(new reco::HGCalTBClusterCollection);
-  std::auto_ptr<reco::HGCalTBClusterCollection> clusters19(new reco::HGCalTBClusterCollection);
+  std::unique_ptr<reco::HGCalTBClusterCollection> clusters(new reco::HGCalTBClusterCollection);
+  std::unique_ptr<reco::HGCalTBClusterCollection> clusters7(new reco::HGCalTBClusterCollection);
+  std::unique_ptr<reco::HGCalTBClusterCollection> clusters19(new reco::HGCalTBClusterCollection);
 
   edm::Handle<HGCalTBRecHitCollection> rechits;
   event.getByToken(_rechitToken, rechits);
@@ -91,11 +91,11 @@ void HGCalTBClusterProducer::produce(edm::Event& event, const edm::EventSetup& i
     }
   }
   if( _runDynamicCluster )
-    event.put(clusters, _outputCollectionName);
+    event.put(std::move(clusters), _outputCollectionName);
   if( _runCluster7 )
-    event.put(clusters7, _outputCollectionName7);
+    event.put(std::move(clusters7), _outputCollectionName7);
   if( _runCluster19 )
-    event.put(clusters19, _outputCollectionName19);
+    event.put(std::move(clusters19), _outputCollectionName19);
 }
 
 void HGCalTBClusterProducer::createDynamicClusters(HGCalTBRecHitCollection rechits, std::vector<reco::HGCalTBCluster> &clusterCol)

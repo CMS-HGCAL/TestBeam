@@ -60,7 +60,7 @@ private:
 	virtual void produce(edm::Event & e);
   	virtual void beginJob() override;
   	virtual void endJob() override;
-	void makeRecHit(int, int, double, std::auto_ptr<HGCalTBRecHitCollection>&);
+	void makeRecHit(int, int, double, std::unique_ptr<HGCalTBRecHitCollection>&);
 	
 	std::string RechitOutputCollectionName;
 	std::string DWCOutputCollectionName;

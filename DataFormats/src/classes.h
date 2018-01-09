@@ -59,9 +59,9 @@ struct dictionary {
 	HGCalTBDWCTrack _aHGCalTBDWCTrack;
 	edm::Wrapper<HGCalTBDWCTrack> _aHGCalTBDWCTrackWrapper;
 
-	WireChamberData _aWireChamberData;
-	std::vector<WireChamberData> _aWireChamberDataVector;
-	edm::Wrapper<WireChamberData> __aWireChamberDataWrapper;
+  	WireChamberData _aWireChamberData;
+  	std::map<int, WireChamberData> _aWireChamberDataMap;
+  	edm::Wrapper<std::map<int, WireChamberData> > _aWireChamberDataWrapper;
 
 	HGCalTBTrack _aTrack;
 	std::vector<HGCalTBTrack> _HGCTBTRackVect;

@@ -48,7 +48,7 @@ class DWC_NTupelizer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		// ----------member data ---------------------------
 
 		edm::EDGetTokenT<RunData> RunDataToken;	
-		edm::EDGetTokenT<WireChambers> MWCToken;
+		edm::EDGetTokenT<std::map<int, WireChamberData> > MWCToken;
 		edm::Service<TFileService> fs;
 		bool writeMinimal;
 
@@ -84,7 +84,7 @@ DWC_NTupelizer::DWC_NTupelizer(const edm::ParameterSet& iConfig) {
 	usesResource("TFileService");
 
 	// initialization	
-	MWCToken = consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
+	MWCToken = consumes<std::map<int, WireChamberData> >(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
 	RunDataToken = consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
 
 	writeMinimal = iConfig.getParameter<bool>("writeMinimal");
@@ -120,7 +120,7 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 	event.getByToken(RunDataToken, rd);
 
 	//get the multi wire chambers
-	edm::Handle<WireChambers> dwcs;
+	edm::Handle<std::map<int, WireChamberData> > dwcs;
 	event.getByToken(MWCToken, dwcs);
 	
 	run = rd->run;

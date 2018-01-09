@@ -97,7 +97,7 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 		_enumPhysicsListUsed = HGCAL_TB_SIM;
 
 	produces <HGCalTBRecHitCollection>(RechitOutputCollectionName);
-	produces<WireChambers>(DWCOutputCollectionName);
+	produces<std::map<int, WireChamberData> >(DWCOutputCollectionName);
 	produces<RunData>(RunDataOutputCollectionName);
 
 	if (fileNames()[0] != "file:DUMMY") {
@@ -210,7 +210,7 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	eventCounter++;	//indexes each event chronologically passing this plugin 
 
 	//first: fill the rechits
-	std::auto_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection);
+	std::unique_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection);
 
 	//EE part
 	#ifdef DEBUG
@@ -247,11 +247,11 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 		
 	}	
 	
-	event.put(rechits, RechitOutputCollectionName);
+	event.put(std::move(rechits), RechitOutputCollectionName);
 
 	
 	//second: add fake dwcs from xBeam, yBeam
-	std::auto_ptr<WireChambers> dwcs(new WireChambers);	
+	std::unique_ptr<std::map<int, WireChamberData> > dwcs(new std::map<int, WireChamberData>);	
 	for (size_t d=0; d<dwc_zPositions.size(); d++) {
 		double dwc_x = beamX * 10. + randgen->Gaus(0, wc_resolutions[d]);
 		double dwc_y = beamY * 10. + randgen->Gaus(0, wc_resolutions[d]);
@@ -261,13 +261,13 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 		dwc->res_x = dwc->res_y = wc_resolutions[d];
 		dwc->averageHitMultiplicty = 1.;
 
-		dwcs->push_back(*dwc);
+		(*dwcs)[d] = *dwc;
 	}
 	event.put(std::move(dwcs), DWCOutputCollectionName);		
 
 
 	//third: fill the run data
-	std::auto_ptr<RunData> rd(new RunData);
+	std::unique_ptr<RunData> rd(new RunData);
 	rd->energy = (*fileIterator).energy;		//mean energy of the beam configuration
 	rd->configuration = (*fileIterator).config;
 	rd->pdgID = (*fileIterator).pdgID;
@@ -312,7 +312,7 @@ void HGCalTBGenSimSource::endJob() {
 	delete randgen;
 }
 
-void HGCalTBGenSimSource::makeRecHit(int layer, int cellno, double energy, std::auto_ptr<HGCalTBRecHitCollection> &rechits) {
+void HGCalTBGenSimSource::makeRecHit(int layer, int cellno, double energy, std::unique_ptr<HGCalTBRecHitCollection> &rechits) {
 		std::pair<double,double> xy = geomc->position_cell(cellno);
 		double x = xy.first / 10.;		//values are converted from mm to cm
 		double y =  xy.second / 10.;	//values are converted from mm to cm

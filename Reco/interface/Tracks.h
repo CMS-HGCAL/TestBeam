@@ -17,9 +17,9 @@
 #include "HGCal/Reco/interface/Sensors.h"
 #include "FWCore/Utilities/interface/Exception.h"
 
-#include "Alignment/ReferenceTrajectories/interface/GblTrajectory.h"
-#include "Alignment/ReferenceTrajectories/interface/GblPoint.h"
-#include "Alignment/ReferenceTrajectories/interface/MilleBinary.h"
+#include "HGCal/Reco/interface/GblTrajectory.h"
+#include "HGCal/Reco/interface/GblPoint.h"
+#include "HGCal/Reco/interface/MilleBinary.h"
 
 enum TrackFittingMethod {
   DEFAULTFITTING,

@@ -118,14 +118,14 @@ void HGCalTBRawHitProducer::beginJob()
 void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iSetup)
 {
 
-  std::auto_ptr<HGCalTBRawHitCollection> hits(new HGCalTBRawHitCollection);
-  std::auto_ptr<HGCalTBGlobalTimestamps> globalTimestamps(new HGCalTBGlobalTimestamps);
+  std::unique_ptr<HGCalTBRawHitCollection> hits(new HGCalTBRawHitCollection);
+  std::unique_ptr<HGCalTBGlobalTimestamps> globalTimestamps(new HGCalTBGlobalTimestamps);
 
   edm::Handle<HGCalTBSkiroc2CMSCollection> skirocs;
   event.getByToken(m_HGCalTBSkiroc2CMSCollection, skirocs);
 
   if( !skirocs->size() ){
-    event.put(hits, m_outputCollectionName);
+    event.put(std::move(hits), m_outputCollectionName);
     return;
   }
   
@@ -170,8 +170,8 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       hits->push_back(hit);
     }
   }
-  event.put(hits, m_outputCollectionName);
-  event.put(globalTimestamps, m_globalTimestampCollectionName);
+  event.put(std::move(hits), m_outputCollectionName);
+  event.put(std::move(globalTimestamps), m_globalTimestampCollectionName);
 }
 
 DEFINE_FWK_MODULE(HGCalTBRawHitProducer);

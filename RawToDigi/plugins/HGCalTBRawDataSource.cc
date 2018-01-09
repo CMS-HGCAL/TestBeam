@@ -259,7 +259,7 @@ void HGCalTBRawDataSource::readTimeStampFromRAW()
 
 void HGCalTBRawDataSource::produce(edm::Event & e)
 {
-  std::auto_ptr<HGCalTBSkiroc2CMSCollection> skirocs(new HGCalTBSkiroc2CMSCollection);
+  std::unique_ptr<HGCalTBSkiroc2CMSCollection> skirocs(new HGCalTBSkiroc2CMSCollection);
 
   for( size_t iski=0; iski<m_decodedData.size(); iski++){
     std::vector<HGCalTBDetId> detids;
@@ -285,14 +285,14 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
 
     skirocs->push_back(skiroc);
   }
-  e.put(skirocs, m_outputCollectionName);
+  e.put(std::move(skirocs), m_outputCollectionName);
 
 
   m_event++;
   
 
   //set the RunData
-  std::auto_ptr<RunData> rd(new RunData);
+  std::unique_ptr<RunData> rd(new RunData);
 
 
   rd->configuration = m_setupConfiguration;

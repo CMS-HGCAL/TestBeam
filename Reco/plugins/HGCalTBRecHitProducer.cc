@@ -153,11 +153,11 @@ void HGCalTBRecHitProducer::beginJob()
 }
 
 void HGCalTBRecHitProducer::setupTimingNNs(std::string filePath) {
-  timingCalibrationNN = NULL;
-  xNNInput = NULL;
-  xIN = NULL;
-  yNNOutput = NULL;
-  yIN = NULL;
+  //timingCalibrationNN = NULL;
+  //xNNInput = NULL;
+  //xIN = NULL;
+  //yNNOutput = NULL;
+  //yIN = NULL;
 
   std::fstream file; 
   char fragment[100];
@@ -197,7 +197,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   edm::Handle<HGCalTBGlobalTimestamps> gts;
   event.getByToken(HGCalTBGlobalTimestampsToken, gts);
 
-  std::auto_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection);
+  std::unique_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection);
 
   edm::Handle<HGCalTBRawHitCollection> rawhits;
   event.getByToken(m_HGCalTBRawHitCollection, rawhits);
@@ -207,7 +207,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   cm.Evaluate( rawhits );
 
   //..and at it to the edm event
-  std::auto_ptr<std::map<int, commonModeNoise> > cmMap(new std::map<int, commonModeNoise>);
+  std::unique_ptr<std::map<int, commonModeNoise> > cmMap(new std::map<int, commonModeNoise>);
   (*cmMap)=cm.CommonModeNoiseMap();
   
 
@@ -346,6 +346,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
             //set the time here
             int NNKey = 10*iboard+iski;
             if ((fitresultLG.amplitude>10.)&&(timingNNFilePaths.find(NNKey)!=timingNNFilePaths.end())) {
+              std::cout<<"Set time here"<<std::endl;
+              /*
               dnn::tf::Shape xShape[] = { 1, 3 };
 
               if (xIN != NULL) {
@@ -368,13 +370,11 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
                 delete yNNOutput;
                 std::cout<<"Successfully"<<std::endl;
               }
-              /*
               if (timingCalibrationNN != NULL) {
                 std::cout<<"Deleting: timingCalibrationNN"<<std::endl;
                 delete timingCalibrationNN;
                 std::cout<<"Successfully"<<std::endl;
               }
-              */
 
               std::ostringstream os( std::ostringstream::ate );
               std::cout<<"making new Graph..."<<std::endl;
@@ -395,6 +395,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
               timingCalibrationNN->eval();
               _time = yNNOutput->getValue<float>(0, 0);
               std::cout<<"Reconstructed time: "<<_time<<" vs "<<fitresultLG.tmax<<std::endl;
+              */
             } 
               
             LG_max_for_tree = fitresultLG.amplitude;
@@ -453,8 +454,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     }
 
   }
-  //event.put(cmMap, m_CommonModeNoiseCollectionName);
-  event.put(rechits, m_outputCollectionName);
+  //event.put(std::move(cmMap), m_CommonModeNoiseCollectionName);
+  event.put(std::move(rechits), m_outputCollectionName);
   #ifdef DEBUG
     eventCounter++;
   #endif

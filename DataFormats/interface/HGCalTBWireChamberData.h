@@ -18,7 +18,4 @@ struct WireChamberData {
   double averageHitMultiplicty;
 };
 
-typedef std::vector<WireChamberData> WireChambers;
-
-
 #endif

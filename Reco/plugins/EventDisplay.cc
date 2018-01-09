@@ -58,7 +58,7 @@ private:
   // ----------member data ---------------------------
   edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;      
   edm::EDGetTokenT<RunData> RunDataToken; 
-  edm::EDGetTokenT<WireChambers> DWCToken;    
+  edm::EDGetTokenT<std::map<int, WireChamberData> > DWCToken;    
   edm::EDGetTokenT<HGCalTBDWCTrack> DWCTrackToken;  
   struct {
     HGCalElectronicsMap emap_;
@@ -82,7 +82,7 @@ EventDisplay::EventDisplay(const edm::ParameterSet& iConfig) :
 {
   HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
   RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
-  DWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
+  DWCToken= consumes<std::map<int, WireChamberData> >(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
   DWCTrackToken= consumes<HGCalTBDWCTrack>(iConfig.getParameter<edm::InputTag>("DWCTRACKS"));
 
   eventsToPlot = iConfig.getParameter<std::vector<int> >("eventsToPlot");
@@ -128,7 +128,7 @@ void EventDisplay::analyze(const edm::Event& event, const edm::EventSetup& setup
   edm::Handle<HGCalTBDWCTrack> dwctrack;
   event.getByToken(DWCTrackToken, dwctrack);
 
-  edm::Handle<WireChambers> dwcs;
+  edm::Handle<std::map<int, WireChamberData> > dwcs;
   event.getByToken(DWCToken, dwcs);
 
   edm::Handle<HGCalTBRecHitCollection> Rechits;

@@ -53,7 +53,7 @@ class NumpyConverter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		edm::Service<TFileService> fs;
 		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;	 	
 		edm::EDGetTokenT<RunData> RunDataToken;	
-		edm::EDGetTokenT<WireChambers> DWCToken;		
+		edm::EDGetTokenT<std::map<int, WireChamberData> > DWCToken;		
 		edm::EDGetTokenT<HGCalTBDWCTrack> DWCTrackToken;		
 
 		std::string m_electronicMap;
@@ -96,7 +96,7 @@ NumpyConverter::NumpyConverter(const edm::ParameterSet& iConfig) {
 
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
 	RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
-	DWCToken= consumes<WireChambers>(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
+	DWCToken= consumes<std::map<int, WireChamberData> >(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
 	DWCTrackToken= consumes<HGCalTBDWCTrack>(iConfig.getParameter<edm::InputTag>("DWCTRACKS"));
 	
 	m_electronicMap = iConfig.getUntrackedParameter<std::string>("electronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt");
@@ -189,7 +189,7 @@ void NumpyConverter::analyze(const edm::Event& event, const edm::EventSetup& set
 	
 
 	//fill the DWC information
-	edm::Handle<WireChambers> dwcs;
+	edm::Handle<std::map<int, WireChamberData> > dwcs;
 	event.getByToken(DWCToken, dwcs);
 	for (int d=0; d<(int)m_NDWCs; d++) {
 		dwc_data.push_back((float)dwcs->at(d).x);

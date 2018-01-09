@@ -49,7 +49,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 		dwc_z4 = dwc_z4_H2;
 	}
 
-	produces<WireChambers>(outputCollectionName);
+	produces<std::map<int, WireChamberData> >(outputCollectionName);
 	produces<RunData>("RunData");
 
 	tree = NULL;
@@ -156,114 +156,113 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 void HGCalTBWireChamberSource::produce(edm::Event & event) {	
 	if (fileCounter==-1) return;
 	
-	std::auto_ptr<WireChambers> mwcs(new WireChambers);	
-
+	std::unique_ptr<std::map<int, WireChamberData> > dwcs(new std::map<int, WireChamberData>);
 
 	//make the wire chambers
 	int N_DWC_points = 0;
 
 	//DWC 1
-	WireChamberData* dwc1 = new WireChamberData();
-	dwc1->ID = 1;
-	dwc1->recordedTimeStamps=0;
-	dwc1->averagedTimeStamp=0;
-	dwc1->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC1_LEFT)) ? 1 : 0;
-	dwc1->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC1_LEFT)) ? dwc_timestamps->at(DWC1_LEFT) : 0;
-	dwc1->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC1_RIGHT)) ? 1 : 0;
-	dwc1->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC1_RIGHT)) ? dwc_timestamps->at(DWC1_RIGHT) : 0;
-	dwc1->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC1_DOWN)) ? 1 : 0;
-	dwc1->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC1_DOWN)) ? dwc_timestamps->at(DWC1_DOWN) : 0;
-	dwc1->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC1_UP)) ? 1 : 0;
-	dwc1->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC1_UP)) ? dwc_timestamps->at(DWC1_UP) : 0;
-	if (dwc1->recordedTimeStamps>0) dwc1->averagedTimeStamp /= dwc1->recordedTimeStamps;
+	WireChamberData dwc1;
+	dwc1.ID = 1;
+	dwc1.recordedTimeStamps=0;
+	dwc1.averagedTimeStamp=0;
+	dwc1.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC1_LEFT)) ? 1 : 0;
+	dwc1.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC1_LEFT)) ? dwc_timestamps->at(DWC1_LEFT) : 0;
+	dwc1.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC1_RIGHT)) ? 1 : 0;
+	dwc1.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC1_RIGHT)) ? dwc_timestamps->at(DWC1_RIGHT) : 0;
+	dwc1.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC1_DOWN)) ? 1 : 0;
+	dwc1.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC1_DOWN)) ? dwc_timestamps->at(DWC1_DOWN) : 0;
+	dwc1.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC1_UP)) ? 1 : 0;
+	dwc1.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC1_UP)) ? dwc_timestamps->at(DWC1_UP) : 0;
+	if (dwc1.recordedTimeStamps>0) dwc1.averagedTimeStamp /= dwc1.recordedTimeStamps;
 
-	dwc1->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC1_LEFT)) && validTimestamp(dwc_timestamps->at(DWC1_RIGHT));
-	dwc1->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC1_DOWN)) && validTimestamp(dwc_timestamps->at(DWC1_UP));
-	dwc1->x = dwc1->goodMeasurement_X ? slope_x.at(0) * (dwc_timestamps->at(DWC1_LEFT)-dwc_timestamps->at(DWC1_RIGHT)): -999;
-	dwc1->res_x = wc_resolutions[0];
-	dwc1->y = dwc1->goodMeasurement_Y ? slope_y.at(0) * (dwc_timestamps->at(DWC1_DOWN)-dwc_timestamps->at(DWC1_UP)): -999;
-	dwc1->res_y = wc_resolutions[0];
-	dwc1->z = dwc_z1;
+	dwc1.goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC1_LEFT)) && validTimestamp(dwc_timestamps->at(DWC1_RIGHT));
+	dwc1.goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC1_DOWN)) && validTimestamp(dwc_timestamps->at(DWC1_UP));
+	dwc1.x = dwc1.goodMeasurement_X ? slope_x.at(0) * (dwc_timestamps->at(DWC1_LEFT)-dwc_timestamps->at(DWC1_RIGHT)): -999;
+	dwc1.res_x = wc_resolutions[0];
+	dwc1.y = dwc1.goodMeasurement_Y ? slope_y.at(0) * (dwc_timestamps->at(DWC1_DOWN)-dwc_timestamps->at(DWC1_UP)): -999;
+	dwc1.res_y = wc_resolutions[0];
+	dwc1.z = dwc_z1;
 
 
 	//DWC 2
-	WireChamberData* dwc2 = new WireChamberData();
-	dwc2->ID = 2;
-	dwc2->recordedTimeStamps=0;
-	dwc2->averagedTimeStamp=0;
-	dwc2->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC2_LEFT)) ? 1 : 0;
-	dwc2->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC2_LEFT)) ? dwc_timestamps->at(DWC2_LEFT) : 0;
-	dwc2->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC2_RIGHT)) ? 1 : 0;
-	dwc2->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC2_RIGHT)) ? dwc_timestamps->at(DWC2_RIGHT) : 0;
-	dwc2->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC2_DOWN)) ? 1 : 0;
-	dwc2->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC2_DOWN)) ? dwc_timestamps->at(DWC2_DOWN) : 0;
-	dwc2->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC2_UP)) ? 1 : 0;
-	dwc2->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC2_UP)) ? dwc_timestamps->at(DWC1_UP) : 0;
-	if (dwc2->recordedTimeStamps>0) dwc2->averagedTimeStamp /= dwc2->recordedTimeStamps;
+	WireChamberData dwc2;
+	dwc2.ID = 2;
+	dwc2.recordedTimeStamps=0;
+	dwc2.averagedTimeStamp=0;
+	dwc2.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC2_LEFT)) ? 1 : 0;
+	dwc2.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC2_LEFT)) ? dwc_timestamps->at(DWC2_LEFT) : 0;
+	dwc2.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC2_RIGHT)) ? 1 : 0;
+	dwc2.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC2_RIGHT)) ? dwc_timestamps->at(DWC2_RIGHT) : 0;
+	dwc2.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC2_DOWN)) ? 1 : 0;
+	dwc2.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC2_DOWN)) ? dwc_timestamps->at(DWC2_DOWN) : 0;
+	dwc2.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC2_UP)) ? 1 : 0;
+	dwc2.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC2_UP)) ? dwc_timestamps->at(DWC1_UP) : 0;
+	if (dwc2.recordedTimeStamps>0) dwc2.averagedTimeStamp /= dwc2.recordedTimeStamps;
 
-	dwc2->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC2_LEFT)) && validTimestamp(dwc_timestamps->at(DWC2_RIGHT));
-	dwc2->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC2_DOWN)) && validTimestamp(dwc_timestamps->at(DWC2_UP));
-	dwc2->x = dwc2->goodMeasurement_X ? slope_x.at(1) * (dwc_timestamps->at(DWC2_LEFT)-dwc_timestamps->at(DWC2_RIGHT)): -999;
-	dwc2->res_x = wc_resolutions[1];
-	dwc2->y = dwc2->goodMeasurement_Y ? slope_y.at(1) * (dwc_timestamps->at(DWC2_DOWN)-dwc_timestamps->at(DWC2_UP)): -999;
-	dwc2->res_y = wc_resolutions[1];
-	dwc2->z = dwc_z2;
+	dwc2.goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC2_LEFT)) && validTimestamp(dwc_timestamps->at(DWC2_RIGHT));
+	dwc2.goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC2_DOWN)) && validTimestamp(dwc_timestamps->at(DWC2_UP));
+	dwc2.x = dwc2.goodMeasurement_X ? slope_x.at(1) * (dwc_timestamps->at(DWC2_LEFT)-dwc_timestamps->at(DWC2_RIGHT)): -999;
+	dwc2.res_x = wc_resolutions[1];
+	dwc2.y = dwc2.goodMeasurement_Y ? slope_y.at(1) * (dwc_timestamps->at(DWC2_DOWN)-dwc_timestamps->at(DWC2_UP)): -999;
+	dwc2.res_y = wc_resolutions[1];
+	dwc2.z = dwc_z2;
 
 
 	//DWC 3
-	WireChamberData* dwc3 = new WireChamberData();
-	dwc3->ID = 3;
-	dwc3->recordedTimeStamps=0;
-	dwc3->averagedTimeStamp=0;
-	dwc3->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC3_LEFT)) ? 1 : 0;
-	dwc3->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC3_LEFT)) ? dwc_timestamps->at(DWC3_LEFT) : 0;
-	dwc3->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC3_RIGHT)) ? 1 : 0;
-	dwc3->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC3_RIGHT)) ? dwc_timestamps->at(DWC3_RIGHT) : 0;
-	dwc3->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC3_DOWN)) ? 1 : 0;
-	dwc3->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC3_DOWN)) ? dwc_timestamps->at(DWC3_DOWN) : 0;
-	dwc3->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC3_UP)) ? 1 : 0;
-	dwc3->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC3_UP)) ? dwc_timestamps->at(DWC1_UP) : 0;
-	if (dwc3->recordedTimeStamps>0) dwc3->averagedTimeStamp /= dwc3->recordedTimeStamps;
+	WireChamberData dwc3;
+	dwc3.ID = 3;
+	dwc3.recordedTimeStamps=0;
+	dwc3.averagedTimeStamp=0;
+	dwc3.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC3_LEFT)) ? 1 : 0;
+	dwc3.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC3_LEFT)) ? dwc_timestamps->at(DWC3_LEFT) : 0;
+	dwc3.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC3_RIGHT)) ? 1 : 0;
+	dwc3.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC3_RIGHT)) ? dwc_timestamps->at(DWC3_RIGHT) : 0;
+	dwc3.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC3_DOWN)) ? 1 : 0;
+	dwc3.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC3_DOWN)) ? dwc_timestamps->at(DWC3_DOWN) : 0;
+	dwc3.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC3_UP)) ? 1 : 0;
+	dwc3.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC3_UP)) ? dwc_timestamps->at(DWC1_UP) : 0;
+	if (dwc3.recordedTimeStamps>0) dwc3.averagedTimeStamp /= dwc3.recordedTimeStamps;
 
-	dwc3->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC3_LEFT)) && validTimestamp(dwc_timestamps->at(DWC3_RIGHT));
-	dwc3->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC3_DOWN)) && validTimestamp(dwc_timestamps->at(DWC3_UP));
-	dwc3->x = dwc3->goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC3_LEFT)-dwc_timestamps->at(DWC3_RIGHT)): -999;
-	dwc3->res_x = wc_resolutions[2];
-	dwc3->y = dwc3->goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC3_DOWN)-dwc_timestamps->at(DWC3_UP)): -999;
-	dwc3->res_y = wc_resolutions[2];
-	dwc3->z = dwc_z3;
+	dwc3.goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC3_LEFT)) && validTimestamp(dwc_timestamps->at(DWC3_RIGHT));
+	dwc3.goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC3_DOWN)) && validTimestamp(dwc_timestamps->at(DWC3_UP));
+	dwc3.x = dwc3.goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC3_LEFT)-dwc_timestamps->at(DWC3_RIGHT)): -999;
+	dwc3.res_x = wc_resolutions[2];
+	dwc3.y = dwc3.goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC3_DOWN)-dwc_timestamps->at(DWC3_UP)): -999;
+	dwc3.res_y = wc_resolutions[2];
+	dwc3.z = dwc_z3;
 	
 	if ((n_run>=1195) && (n_run<=1333)) {//from run 1195, x-coordinate of DWC A was not connected anymore. TDC channels 14 and 15 were input by trigger signals.
 						//also the channels for the y-coordinate of DWCA must have been flipped
-		dwc3->goodMeasurement_X = dwc3->goodMeasurement = false;	
-		dwc3->x = -999;
-		dwc3->y = -dwc3->y;
+		dwc3.goodMeasurement_X = dwc3.goodMeasurement = false;	
+		dwc3.x = -999;
+		dwc3.y = -dwc3.y;
 	} 
 
 
 
 	//DWC 4
-	WireChamberData* dwc4 = new WireChamberData();
-	dwc4->ID = 4;
-	dwc4->recordedTimeStamps=0;
-	dwc4->averagedTimeStamp=0;
-	dwc4->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC4_LEFT)) ? 1 : 0;
-	dwc4->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC4_LEFT)) ? dwc_timestamps->at(DWC4_LEFT) : 0;
-	dwc4->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC4_RIGHT)) ? 1 : 0;
-	dwc4->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC4_RIGHT)) ? dwc_timestamps->at(DWC4_RIGHT) : 0;
-	dwc4->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC4_DOWN)) ? 1 : 0;
-	dwc4->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC4_DOWN)) ? dwc_timestamps->at(DWC4_DOWN) : 0;
-	dwc4->recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC4_UP)) ? 1 : 0;
-	dwc4->averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC4_UP)) ? dwc_timestamps->at(DWC1_UP) : 0;
-	if (dwc4->recordedTimeStamps>0) dwc4->averagedTimeStamp /= dwc4->recordedTimeStamps;
+	WireChamberData dwc4;
+	dwc4.ID = 4;
+	dwc4.recordedTimeStamps=0;
+	dwc4.averagedTimeStamp=0;
+	dwc4.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC4_LEFT)) ? 1 : 0;
+	dwc4.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC4_LEFT)) ? dwc_timestamps->at(DWC4_LEFT) : 0;
+	dwc4.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC4_RIGHT)) ? 1 : 0;
+	dwc4.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC4_RIGHT)) ? dwc_timestamps->at(DWC4_RIGHT) : 0;
+	dwc4.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC4_DOWN)) ? 1 : 0;
+	dwc4.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC4_DOWN)) ? dwc_timestamps->at(DWC4_DOWN) : 0;
+	dwc4.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC4_UP)) ? 1 : 0;
+	dwc4.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC4_UP)) ? dwc_timestamps->at(DWC1_UP) : 0;
+	if (dwc4.recordedTimeStamps>0) dwc4.averagedTimeStamp /= dwc4.recordedTimeStamps;
 	
-	dwc4->goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC4_LEFT)) && validTimestamp(dwc_timestamps->at(DWC4_RIGHT));
-	dwc4->goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC4_DOWN)) && validTimestamp(dwc_timestamps->at(DWC4_UP));
-	dwc4->x = dwc4->goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC4_LEFT)-dwc_timestamps->at(DWC4_RIGHT)): -999;
-	dwc4->res_x = wc_resolutions[3];
-	dwc4->y = dwc4->goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC4_DOWN)-dwc_timestamps->at(DWC4_UP)): -999;
-	dwc4->res_y = wc_resolutions[3];
-	dwc4->z = dwc_z4;
+	dwc4.goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC4_LEFT)) && validTimestamp(dwc_timestamps->at(DWC4_RIGHT));
+	dwc4.goodMeasurement_Y = validTimestamp(dwc_timestamps->at(DWC4_DOWN)) && validTimestamp(dwc_timestamps->at(DWC4_UP));
+	dwc4.x = dwc4.goodMeasurement_X ? slope_x.at(2) * (dwc_timestamps->at(DWC4_LEFT)-dwc_timestamps->at(DWC4_RIGHT)): -999;
+	dwc4.res_x = wc_resolutions[3];
+	dwc4.y = dwc4.goodMeasurement_Y ? slope_y.at(2) * (dwc_timestamps->at(DWC4_DOWN)-dwc_timestamps->at(DWC4_UP)): -999;
+	dwc4.res_y = wc_resolutions[3];
+	dwc4.z = dwc_z4;
 
 
 	//store multiplicities:
@@ -272,56 +271,58 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	if (hitsPerChannelStored[DWC1_RIGHT]==1) {N++;sumHits+=hits.at(DWC1_RIGHT)->size();}
 	if (hitsPerChannelStored[DWC1_DOWN]==1) {N++;sumHits+=hits.at(DWC1_DOWN)->size();}
 	if (hitsPerChannelStored[DWC1_UP]==1) {N++;sumHits+=hits.at(DWC1_UP)->size();}
-	dwc1->averageHitMultiplicty = (N > 0) ? sumHits*1.*1./N : -999; 
+	dwc1.averageHitMultiplicty = (N > 0) ? sumHits*1.*1./N : -999; 
 
 	N = 0; sumHits = 0;
 	if (hitsPerChannelStored[DWC2_LEFT]==1) {N++;sumHits+=hits.at(DWC2_LEFT)->size();}
 	if (hitsPerChannelStored[DWC2_RIGHT]==1) {N++;sumHits+=hits.at(DWC2_RIGHT)->size();}
 	if (hitsPerChannelStored[DWC2_DOWN]==1) {N++;sumHits+=hits.at(DWC2_DOWN)->size();}
 	if (hitsPerChannelStored[DWC2_UP]==1) {N++;sumHits+=hits.at(DWC2_UP)->size();}
-	dwc2->averageHitMultiplicty = (N > 0) ? sumHits*1./N : -999; 
+	dwc2.averageHitMultiplicty = (N > 0) ? sumHits*1./N : -999; 
 
 	N = 0; sumHits = 0;
 	if (hitsPerChannelStored[DWC3_LEFT]==1) {N++;sumHits+=hits.at(DWC3_LEFT)->size();}
 	if (hitsPerChannelStored[DWC3_RIGHT]==1) {N++;sumHits+=hits.at(DWC3_RIGHT)->size();}
 	if (hitsPerChannelStored[DWC3_DOWN]==1) {N++;sumHits+=hits.at(DWC3_DOWN)->size();}
 	if (hitsPerChannelStored[DWC3_UP]==1) {N++;sumHits+=hits.at(DWC3_UP)->size();}
-	dwc3->averageHitMultiplicty = (N > 0) ? sumHits*1./N : -999; 
+	dwc3.averageHitMultiplicty = (N > 0) ? sumHits*1./N : -999; 
 
 	N = 0; sumHits = 0;
 	if (hitsPerChannelStored[DWC4_LEFT]==1) {N++;sumHits+=hits.at(DWC4_LEFT)->size();}
 	if (hitsPerChannelStored[DWC4_RIGHT]==1) {N++;sumHits+=hits.at(DWC4_RIGHT)->size();}
 	if (hitsPerChannelStored[DWC4_DOWN]==1) {N++;sumHits+=hits.at(DWC4_DOWN)->size();}
 	if (hitsPerChannelStored[DWC4_UP]==1) {N++;sumHits+=hits.at(DWC4_UP)->size();}
-	dwc4->averageHitMultiplicty = (N > 0) ? sumHits*1./N : -999; 
+	dwc4.averageHitMultiplicty = (N > 0) ? sumHits*1./N : -999; 
 
 	//perform alignment
-	if (fabs(dwc1->x) <= 50.) dwc1->x = dwc1->x - currentAlignmentParameters[11] - dwc1->y*currentAlignmentParameters[21]; else dwc1->goodMeasurement_X=false;
-	if (fabs(dwc1->y) <= 50.) dwc1->y = dwc1->y - currentAlignmentParameters[12] +  dwc1->x*currentAlignmentParameters[21]; else dwc1->goodMeasurement_Y=false;
-	if (fabs(dwc2->x) <= 50.) dwc2->x = dwc2->x - currentAlignmentParameters[111] - dwc2->y*currentAlignmentParameters[121]; else dwc2->goodMeasurement_X=false;
-	if (fabs(dwc2->y) <= 50.) dwc2->y = dwc2->y - currentAlignmentParameters[112] +  dwc2->x*currentAlignmentParameters[121]; else dwc2->goodMeasurement_Y=false;
-	if (fabs(dwc3->x) <= 50.) dwc3->x = dwc3->x - currentAlignmentParameters[211] - dwc3->y*currentAlignmentParameters[221]; else dwc3->goodMeasurement_X=false;
-	if (fabs(dwc3->y) <= 50.) dwc3->y = dwc3->y - currentAlignmentParameters[212] +  dwc3->x*currentAlignmentParameters[221]; else dwc3->goodMeasurement_Y=false;
-	if (fabs(dwc4->x) <= 50.) dwc4->x = dwc4->x - currentAlignmentParameters[311] - dwc4->y*currentAlignmentParameters[321]; else dwc4->goodMeasurement_X=false;
-	if (fabs(dwc4->y) <= 50.) dwc4->y = dwc4->y - currentAlignmentParameters[312] +  dwc4->x*currentAlignmentParameters[321]; else dwc4->goodMeasurement_Y=false;
+	if (fabs(dwc1.x) <= 50.) dwc1.x = dwc1.x - currentAlignmentParameters[11] - dwc1.y*currentAlignmentParameters[21]; else dwc1.goodMeasurement_X=false;
+	if (fabs(dwc1.y) <= 50.) dwc1.y = dwc1.y - currentAlignmentParameters[12] +  dwc1.x*currentAlignmentParameters[21]; else dwc1.goodMeasurement_Y=false;
+	if (fabs(dwc2.x) <= 50.) dwc2.x = dwc2.x - currentAlignmentParameters[111] - dwc2.y*currentAlignmentParameters[121]; else dwc2.goodMeasurement_X=false;
+	if (fabs(dwc2.y) <= 50.) dwc2.y = dwc2.y - currentAlignmentParameters[112] +  dwc2.x*currentAlignmentParameters[121]; else dwc2.goodMeasurement_Y=false;
+	if (fabs(dwc3.x) <= 50.) dwc3.x = dwc3.x - currentAlignmentParameters[211] - dwc3.y*currentAlignmentParameters[221]; else dwc3.goodMeasurement_X=false;
+	if (fabs(dwc3.y) <= 50.) dwc3.y = dwc3.y - currentAlignmentParameters[212] +  dwc3.x*currentAlignmentParameters[221]; else dwc3.goodMeasurement_Y=false;
+	if (fabs(dwc4.x) <= 50.) dwc4.x = dwc4.x - currentAlignmentParameters[311] - dwc4.y*currentAlignmentParameters[321]; else dwc4.goodMeasurement_X=false;
+	if (fabs(dwc4.y) <= 50.) dwc4.y = dwc4.y - currentAlignmentParameters[312] +  dwc4.x*currentAlignmentParameters[321]; else dwc4.goodMeasurement_Y=false;
 
 	//set the good measurement flags
-	dwc1->goodMeasurement = (dwc1->goodMeasurement_X && dwc1->goodMeasurement_Y);
-	N_DWC_points = dwc1->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
-	dwc2->goodMeasurement = (dwc2->goodMeasurement_X && dwc2->goodMeasurement_Y);
-	N_DWC_points = dwc2->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
-	dwc3->goodMeasurement = (dwc3->goodMeasurement_X && dwc3->goodMeasurement_Y);
-	N_DWC_points = dwc3->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
-	dwc4->goodMeasurement = (dwc4->goodMeasurement_X && dwc4->goodMeasurement_Y);
-	N_DWC_points = dwc4->goodMeasurement ? N_DWC_points+1 : N_DWC_points;
+	dwc1.goodMeasurement = (dwc1.goodMeasurement_X && dwc1.goodMeasurement_Y);
+	N_DWC_points = dwc1.goodMeasurement ? N_DWC_points+1 : N_DWC_points;
+	dwc2.goodMeasurement = (dwc2.goodMeasurement_X && dwc2.goodMeasurement_Y);
+	N_DWC_points = dwc2.goodMeasurement ? N_DWC_points+1 : N_DWC_points;
+	dwc3.goodMeasurement = (dwc3.goodMeasurement_X && dwc3.goodMeasurement_Y);
+	N_DWC_points = dwc3.goodMeasurement ? N_DWC_points+1 : N_DWC_points;
+	dwc4.goodMeasurement = (dwc4.goodMeasurement_X && dwc4.goodMeasurement_Y);
+	N_DWC_points = dwc4.goodMeasurement ? N_DWC_points+1 : N_DWC_points;
 
 
-	mwcs->push_back(*dwc1);
-	mwcs->push_back(*dwc2);
-	mwcs->push_back(*dwc3);
-	mwcs->push_back(*dwc4);
+	(*dwcs)[0] = dwc1;
+	(*dwcs)[1] = dwc2;
+	(*dwcs)[2] = dwc3;
+	(*dwcs)[3] = dwc4;
 
-	event.put(std::move(mwcs), outputCollectionName);		
+	std::cout<<"Put DWC"<<std::endl;
+	event.put(std::move(dwcs), outputCollectionName);		
+	std::cout<<"Put DWC - done."<<std::endl;
 
 	bool oneHit = false;
 	for (size_t index=0; index<16; index++)
@@ -334,7 +335,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	#endif
 
 	//add the RunData
-	std::auto_ptr<RunData> rd(new RunData);
+	std::unique_ptr<RunData> rd(new RunData);
 
 	int n_trigger_orm = n_trigger_tdc-skipFirstNEvents[fileCounter]+skippedTDCTriggers;
 

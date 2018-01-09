@@ -66,7 +66,7 @@ class Energy_Sum_Analyzer : public edm::one::EDAnalyzer<edm::one::SharedResource
 		edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;
 	 	
 		edm::EDGetTokenT<RunData> RunDataToken;	
-		edm::EDGetTokenT<WireChambers> MWCToken;
+		edm::EDGetTokenT<std::map<int, WireChamberData> > MWCToken;
 		
 		std::string m_electronicMap;
 		struct {
