@@ -32,7 +32,9 @@
 #include "TH2F.h"
 #include "TTree.h"
 #include <sstream>
+#include <fstream>
 #include <vector>
+#include <map>
 
 
 //#define DEBUG
@@ -104,9 +106,13 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   HGCalTBCellVertices TheCell;
 
   //https://gitlab.cern.ch/mrieger/CMSSW-DNN/tree/80X
+  std::string timingNNFilePath;
+  std::map<int, std::string> timingNNFilePaths;
   dnn::tf::Graph* timingCalibrationNN;
   dnn::tf::Tensor* xNNInput;
+  dnn::tf::Tensor* xIN;
   dnn::tf::Tensor* yNNOutput;
+  dnn::tf::Tensor* yIN;
 
 
   #ifdef DEBUG
@@ -118,6 +124,8 @@ class HGCalTBRecHitProducer : public edm::EDProducer
     HGCalTBDetectorLayout layout_;
     HGCalTBADCConversionsMap adccalibmap_;
   } essource_;
+  
+  void setupTimingNNs(std::string);
   
 };
 

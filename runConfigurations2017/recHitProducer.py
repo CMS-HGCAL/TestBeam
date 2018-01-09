@@ -70,8 +70,14 @@ options.register('reportEvery',
                  'Path to the file from which the DWCs are read.'
                 )
 
+options.register('timingNetworks',
+                 '',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Paths to the neural network models to compute a reference time.')
 
-options.maxEvents = 200
+
+options.maxEvents = -1
 
 options.parseArguments()
 print options
@@ -130,7 +136,8 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         ChannelsToMaskFileName=cms.untracked.string(options.noisyChannelsFile),
                                         NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                         TimeSample3ADCCut = cms.untracked.double(15.),
-                                        investigatePulseShape = cms.untracked.bool(True)
+                                        investigatePulseShape = cms.untracked.bool(True),
+                                        timingNetworks = cms.untracked.string(options.timingNetworks)
 )
 
 process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",

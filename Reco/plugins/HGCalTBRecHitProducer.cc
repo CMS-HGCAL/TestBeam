@@ -25,6 +25,8 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) :
   investigatePulseShape = cfg.getUntrackedParameter<bool>("investigatePulseShape", false);
   std::cout << cfg.dump() << std::endl;
 
+  timingNNFilePath = cfg.getUntrackedParameter<std::string>("timingNetworks", "");
+
   produces <std::map<int, commonModeNoise> >(m_CommonModeNoiseCollectionName);
   produces <HGCalTBRecHitCollection>(m_outputCollectionName);
 }
@@ -147,10 +149,41 @@ void HGCalTBRecHitProducer::beginJob()
     throw cms::Exception("Unable to load ADC conversions map");
   };
 
-  //timingCalibrationNN = new dnn::tf::Graph("/tmp/model_board0_chip2");
-  //dnn::tf::Shape xShape[] = { 1, 3 };
-  //xNNInput = timingCalibrationNN->defineInput(new dnn::tf::Tensor("x_in:0", 2, xShape));
-  //yNNOutput = timingCalibrationNN->defineOutput(new dnn::tf::Tensor("y_out:0"));
+  setupTimingNNs(this->timingNNFilePath);
+}
+
+void HGCalTBRecHitProducer::setupTimingNNs(std::string filePath) {
+  timingCalibrationNN = NULL;
+  xNNInput = NULL;
+  xIN = NULL;
+  yNNOutput = NULL;
+  yIN = NULL;
+
+  std::fstream file; 
+  char fragment[100];
+  int readCounter = -1, currentBoard = -1, currentSkiroc = -1;
+
+  file.open(filePath.c_str(), std::fstream::in);
+  std::cout<<"Reading file "<<filePath<<" -open: "<<file.is_open()<<std::endl;
+  while (file.is_open() && !file.eof()) {
+    readCounter++;
+    file >> fragment;
+    
+    switch (readCounter) {
+      case 0:
+        currentBoard = atoi(fragment);
+        break;
+      case 1:
+        currentSkiroc = atoi(fragment);
+        break;
+      default:
+        std::string currentPath = fragment;
+        std::cout<<"Assigning timing NN for board "<<currentBoard<<" and skiroc "<<currentSkiroc<<": "<<currentPath<<std::endl;
+        timingNNFilePaths[10*currentBoard+currentSkiroc] = currentPath;
+        //reset temprary variables
+        currentBoard = currentSkiroc = readCounter = -1;
+    }
+  }
 
 }
 
@@ -307,20 +340,63 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
           if( fitresultLG.status==0 ){
             recHit.setEnergyLow(fitresultLG.amplitude);
             energy = fitresultLG.amplitude * adcConv.lowGain_to_highGain();
-            _time = fitresultLG.tmax - fitresultLG.trise;
+            //_time = fitresultLG.tmax - fitresultLG.trise;
             recHit.setFlag(HGCalTBRecHit::kGood);
 
             //set the time here
-            /*
-            if ((iboard==0) && ((iski % 4) == 2) && (fitresultLG.amplitude>10.)) {
-              std::vector<float> v_in = { toaRise, toaFall, (float)fitresultLG.amplitude };
-              xNNInput->setVector<float>(1, 0, v_in);
+            int NNKey = 10*iboard+iski;
+            if ((fitresultLG.amplitude>10.)&&(timingNNFilePaths.find(NNKey)!=timingNNFilePaths.end())) {
+              dnn::tf::Shape xShape[] = { 1, 3 };
 
+              if (xIN != NULL) {
+                std::cout<<"Deleting: xIN"<<std::endl;
+                delete xIN;
+                std::cout<<"Successfully"<<std::endl;
+              }
+              if (xNNInput != NULL) {
+                std::cout<<"Deleting: xNNInput"<<std::endl;
+                delete xNNInput;
+                std::cout<<"Successfully"<<std::endl;
+              }
+              if (yIN != NULL) {
+                std::cout<<"Deleting: yIN"<<std::endl;
+                delete yIN;
+                std::cout<<"Successfully"<<std::endl;
+              }
+              if (yNNOutput != NULL) {
+                std::cout<<"Deleting: yNNOutput"<<std::endl;
+                delete yNNOutput;
+                std::cout<<"Successfully"<<std::endl;
+              }
+              /*
+              if (timingCalibrationNN != NULL) {
+                std::cout<<"Deleting: timingCalibrationNN"<<std::endl;
+                delete timingCalibrationNN;
+                std::cout<<"Successfully"<<std::endl;
+              }
+              */
+
+              std::ostringstream os( std::ostringstream::ate );
+              std::cout<<"making new Graph..."<<std::endl;
+              timingCalibrationNN = new dnn::tf::Graph(timingNNFilePaths[NNKey].c_str());
+              std::cout<<"Successfully"<<std::endl;
+
+              os.str("x_in_");os<<10*iboard+iski;os<<":0";
+              xIN = new dnn::tf::Tensor(os.str().c_str(), 2, xShape);
+              xNNInput = timingCalibrationNN->defineInput(xIN);
+              
+              os.str("y_out_");os<<10*iboard+iski;os<<":0";
+              yIN = new dnn::tf::Tensor(os.str().c_str());
+              yNNOutput = timingCalibrationNN->defineOutput(yIN);
+              
+              std::vector<float> v_in = { (float)toaRise, (float)fitresultLG.amplitude, (float)toaFall};
+              std::cout<<iboard<<"   "<<iski<<std::endl;
+              xNNInput->setVector<float>(1, 0, v_in);
               timingCalibrationNN->eval();
-              std::cout<<"Reconstructed time: "<<yNNOutput->getValue<float>(0, 0)<<" vs "<<fitresultLG.tmax<<std::endl;
+              _time = yNNOutput->getValue<float>(0, 0);
+              std::cout<<"Reconstructed time: "<<_time<<" vs "<<fitresultLG.tmax<<std::endl;
             } 
-            */           
-  
+              
             LG_max_for_tree = fitresultLG.amplitude;
             TMax_LG_for_tree = fitresultLG.tmax;
             chi2_LG_for_tree = fitresultLG.chi2;
@@ -340,7 +416,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
           if( fitresultHG.status==0 ){
             recHit.setEnergyHigh(fitresultHG.amplitude);
             energy = fitresultHG.amplitude;
-            _time = fitresultHG.tmax - fitresultHG.trise;
+            //_time = fitresultHG.tmax - fitresultHG.trise;
             recHit.setFlag(HGCalTBRecHit::kGood);
 
 
@@ -368,8 +444,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       TOA_rise_for_tree = toaRise;
       TOA_fall_for_tree = toaFall;
       TOT_for_tree = totGain;   //is TOT slow
-      //recHit.setTime(_time);
-      recHit.setTime(toaRise);
+      recHit.setTime(_time);
+      //recHit.setTime(toaRise);
 
 
       outtree->Fill();
