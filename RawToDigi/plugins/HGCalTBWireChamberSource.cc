@@ -320,9 +320,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	(*dwcs)[2] = dwc3;
 	(*dwcs)[3] = dwc4;
 
-	std::cout<<"Put DWC"<<std::endl;
 	event.put(std::move(dwcs), outputCollectionName);		
-	std::cout<<"Put DWC - done."<<std::endl;
 
 	bool oneHit = false;
 	for (size_t index=0; index<16; index++)
