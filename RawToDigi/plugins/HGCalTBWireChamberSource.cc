@@ -62,7 +62,6 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 
 	for (int ch=0; ch<16; ch++) {
 		if (hitsPerChannelStored[ch]==1) {
-			hits[ch] = new std::vector<int>;
 			hits[ch] = 0;
 		}
 	}
@@ -122,7 +121,6 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 
 		for (int ch=0; ch<16; ch++) {
 			if (hitsPerChannelStored[ch]==1) {
-				b_hits[ch] = new TBranch;
 				b_hits[ch] = 0;
 				tree->SetBranchAddress(("dwc_hits_ch"+std::to_string(ch)).c_str(), &(hits.at(ch)), &(b_hits.at(ch)));
 			}
