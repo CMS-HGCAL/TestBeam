@@ -58,14 +58,17 @@ process.maxEvents = cms.untracked.PSet(
 
 numberOfBytesForTheHeader=48
 numberOfBytesForTheEventTrailers=2
+numberOfBytesPerReadOut=30784
+if options.compressedData==1:
+    numberOfBytesPerReadOut=15392
 process.source = cms.Source("HGCalTBRawDataSource",
                             ElectronicMap=cms.untracked.string(options.electronicMap),
                             fileNames=cms.untracked.vstring("file:%s/%s"%(options.dataFolder,options.fileName)),
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
-                            NumberOfBytesPerReadOut=cms.untracked.uint32(30784),
+                            NumberOfBytesPerReadOut=cms.untracked.uint32(numberOfBytesPerReadOut),
                             NumberOfBytesForTheHeader=cms.untracked.uint32(numberOfBytesForTheHeader),
                             NumberOfBytesForTheEventTrailers=cms.untracked.uint32(numberOfBytesForTheEventTrailers),
-                            NSkipEvents=cms.untracked.uint32(1),
+                            NSkipEvents=cms.untracked.uint32(0),
                             CompressedData=cms.untracked.bool(options.compressedData)
 )
 

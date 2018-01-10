@@ -65,7 +65,7 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
 
   uint64_t nBytesToSkip=m_headerSize+m_nSkipEvents*(m_nWords+m_eventTrailerSize);
   std::vector<uint16_t> rawData;
-  m_input.seekg( (std::streamoff)nBytesToSkip+(std::streamoff)m_event*(m_nWords+m_eventTrailerSize)+(std::streamoff)(m_event+1) );
+  m_input.seekg( (std::streamoff)nBytesToSkip+(std::streamoff)m_event*(m_nWords+m_eventTrailerSize) );
   m_input.read ( m_buffer, m_nWords+m_eventTrailerSize );
   if( !m_input.good() ){
     m_input.close();
