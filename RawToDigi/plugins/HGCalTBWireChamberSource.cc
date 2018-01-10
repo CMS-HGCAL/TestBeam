@@ -66,10 +66,6 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 		}
 	}
 	
-
-}
-
-void HGCalTBWireChamberSource::beginJob() {
 	fileCounter = -1;
 	rootTreeIndex = 0;
 	nextFileIndex = 0;

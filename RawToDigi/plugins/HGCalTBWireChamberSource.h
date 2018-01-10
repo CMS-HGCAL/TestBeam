@@ -54,7 +54,6 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 	private:
 		bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& type);
 		virtual void produce(edm::Event & e);
-	  	virtual void beginJob() override;
 	  	void ReadAlignmentParameters(int);
 	  	void ReadTimingFile(std::string, bool);
 		

@@ -58,7 +58,6 @@ private:
 	void fillConfiguredRuns(std::fstream& map_file);
 	bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&);
 	virtual void produce(edm::Event & e);
-  	virtual void beginJob() override;
   	virtual void endJob() override;
 	void makeRecHit(int, int, double, std::unique_ptr<HGCalTBRecHitCollection>&);
 	
