@@ -104,7 +104,7 @@ std::vector< std::array<uint16_t,1924> > HGCalTBRawDataSource::decode_raw(std::v
 	x = raw[i*16 + j];
 	x = x&0xf;
 	for (int sk = 0; sk < HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; sk++)
-	  decodedData[sk][i] = decodedData[sk][i] | (uint16_t) (((x >> (3-sk) ) & 1) << (15 - j));
+	  decodedData[sk][i] = decodedData[sk][i] | (uint16_t) ( ((x>>sk) & 1) << (15 - j));
       }
     }
   }
@@ -115,8 +115,8 @@ std::vector< std::array<uint16_t,1924> > HGCalTBRawDataSource::decode_raw(std::v
 	y = (x>>4)&0xf;
 	x = x&0xf;
 	for (int sk = 0; sk < HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; sk++){
-	  decodedData[sk][i] = decodedData[sk][i] | (uint16_t) (((x >> (3-sk) ) & 1) << (14 - j*2));
-	  decodedData[sk][i] = decodedData[sk][i] | (uint16_t) (((y >> (3-sk) ) & 1) << (15 - j*2));
+	  decodedData[sk][i] = decodedData[sk][i] | (uint16_t) ( ((x>>sk) & 1) << (14 - j*2));
+	  decodedData[sk][i] = decodedData[sk][i] | (uint16_t) ( ((y>>sk) & 1) << (15 - j*2));
 	}
       }
     }
