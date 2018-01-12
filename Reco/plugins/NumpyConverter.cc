@@ -115,10 +115,10 @@ NumpyConverter::NumpyConverter(const edm::ParameterSet& iConfig) {
     Nevents = 0;
 
     if (m_Sensorsize==128) {
-    	u_max = 7;
-    	u_min = -7;
-    	v_max = 7;
-    	v_min = -7;
+    	u_max = 8;		//12 Jan 2018, set to -8 - 8 to have 17x17 pictures
+    	u_min = -8;		//this will allow to perform deconvolutions from 3x3 -> 5x5 -> 9x9 -> 17x17 images
+    	v_max = 8;
+    	v_min = -8;
     } else {		//other geometries to be implemented
       	u_max = 7;
     	u_min = -7;
