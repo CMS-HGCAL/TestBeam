@@ -79,14 +79,14 @@ bool HGCalTBRawDataSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t
     char buf[] = {m_buffer[i]};
     memcpy(&aint, &buf, sizeof(aint));
     rawData.push_back(aint);
-    if( i<10 || i>=m_nWords-10 )
-      std::cout << std::setfill('0') << std::setw(4) << std::hex << (aint) << "\t";
+    // if( i<10 || i>=m_nWords-10 )
+    //   std::cout << std::setfill('0') << std::setw(4) << std::hex << (aint) << "\t";
   }
-  std::cout << std::endl;
-  uint16_t evtTrailer;
+  //std::cout << std::endl;
+
   char buf[] = {m_buffer[m_nWords],m_buffer[m_nWords+1]};
-  memcpy(&evtTrailer, &buf, sizeof(evtTrailer));
-  std::cout << "evtTrailer = " << std::setfill('0') << std::setw(4) << std::hex << evtTrailer << std::endl;
+  memcpy(&m_dacInj, &buf, sizeof(m_dacInj));
+  //std::cout << "daqInj = " << std::dec << m_dacInj << std::endl;
   
   m_decodedData.clear();
   std::vector< std::array<uint16_t,1924> > decodedData=decode_raw(rawData);
@@ -144,9 +144,11 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
     }
     std::vector<uint16_t> vdata;vdata.insert(vdata.end(),m_decodedData.at(iski).begin(),m_decodedData.at(iski).end());
     HGCalTBSkiroc2CMS skiroc( vdata,detids );
+    if(m_dacInj!=0xcdab)
+      skiroc.setDACInjection(m_dacInj);
 
     skirocs->push_back(skiroc);
-    std::cout << std::dec << skiroc << std::endl;
+    //std::cout << std::dec << skiroc << std::endl;
   }
   e.put(skirocs, m_outputCollectionName);
 

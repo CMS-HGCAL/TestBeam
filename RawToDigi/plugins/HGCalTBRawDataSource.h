@@ -50,6 +50,7 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   
   char* m_buffer;
   char* m_header;
+  uint16_t m_dacInj;
   std::ifstream m_input;
   std::vector< std::array<uint16_t,1924> > m_decodedData;
   struct {

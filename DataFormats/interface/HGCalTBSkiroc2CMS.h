@@ -26,7 +26,8 @@ class HGCalTBSkiroc2CMS
   m_data(data),
     m_id(ids),
     m_triggerTimeStamp(triggerTimeStamp),
-    m_triggerCounter(triggerCounter)
+    m_triggerCounter(triggerCounter),
+    m_dacInj(0)
     {;}
   uint16_t gray_to_brady(const uint16_t gray) const;
     
@@ -57,11 +58,14 @@ class HGCalTBSkiroc2CMS
     return HGCalTBDetId(m_id.at(chan));
   }
 
+  void setDACInjection(uint16_t val){m_dacInj=val;}
+  uint16_t dacInjection(){return m_dacInj;}
  private:
   std::vector<uint16_t> m_data;
   std::vector<HGCalTBDetId> m_id;
   uint64_t m_triggerTimeStamp;
   uint32_t m_triggerCounter;
+  uint16_t m_dacInj;
 };
 
 std::ostream& operator<<(std::ostream&, HGCalTBSkiroc2CMS&);
