@@ -81,17 +81,18 @@ process.pedestalplotter = cms.EDAnalyzer("PedestalPlotter",
                                          LowGainPedestalFileName=cms.untracked.string(pedestalLowGain),
                                          WriteNoisyChannelsFile=cms.untracked.bool(True),
                                          NoisyChannelsFileName=cms.untracked.string(noisyChannels),
-                                         NTSForPedestalComputation=cms.untracked.int32(2),
+                                         NTSForPedestalComputation=cms.untracked.int32(7),
 
 )
 
-process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
-                                        SensorSize=cms.untracked.int32(128),
-                                        EventPlotter=cms.untracked.bool(False),
-                                        InputCollection=cms.InputTag("source","skiroc2cmsdata")
+process.treeproducer = cms.EDAnalyzer("TreeProducer",
+                                      InputCollection=cms.InputTag("source","skiroc2cmsdata"),
+                                      SubtractPedestal=cms.untracked.bool(False),
+                                      HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
+                                      LowGainPedestalFileName=cms.untracked.string(pedestalLowGain),
 )
 
-process.p = cms.Path( process.pedestalplotter )
+process.p = cms.Path( process.pedestalplotter*process.treeproducer )
 
 process.end = cms.EndPath(process.output)
 
