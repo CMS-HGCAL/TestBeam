@@ -96,9 +96,7 @@ class VariableComputation : public edm::EDProducer {
 		static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 	private:
-		virtual void beginJob();
 		virtual void produce(edm::Event& , const edm::EventSetup&);
-		virtual void endJob();
 		void ReadDWCWindows();
 		void ReadCurrentDWCWindows(int);
 
@@ -169,6 +167,53 @@ VariableComputation::VariableComputation(const edm::ParameterSet& iConfig) {
 
 
 	MIP_cut_for_energy = 4.;
+
+
+	for( int ilayer=0; ilayer<m_NLayers; ilayer++ ){
+		energyAll_layer.push_back(0.);
+		energyE1_layer.push_back(0.);
+		energyE7_layer.push_back(0.);
+		energyE19_layer.push_back(0.);
+		energyE37_layer.push_back(0.);
+		energyE61_layer.push_back(0.);
+		NAll_layer.push_back(0);
+		NE1_layer.push_back(0);
+		NE7_layer.push_back(0);
+		NE19_layer.push_back(0);
+		NE37_layer.push_back(0);
+		NE61_layer.push_back(0);
+		mainCoreWidth.push_back(0.);
+		cellDistance_layer.push_back(0.);
+	}
+
+
+	std::fstream file; 
+	char fragment[100];
+	int readCounter = -1;
+
+	file.open(m_layerPositionFile.c_str(), std::fstream::in);
+
+	std::cout<<"Reading file "<<m_layerPositionFile<<" -open: "<<file.is_open()<<std::endl;
+	int layer=0;
+	while (file.is_open() && !file.eof()) {
+		readCounter++;
+		file >> fragment;
+		if (readCounter==0) layer=atoi(fragment);
+		if (readCounter==1) {
+			layerPositions[layer]=atof(fragment);
+			readCounter=-1;
+		}
+	}
+
+	HGCalCondObjectTextIO io(0);
+	edm::FileInPath fip(m_electronicMap);
+	if (!io.load(fip.fullPath(), essource_.emap_)) {
+		throw cms::Exception("Unable to load electronics map");
+	};
+
+
+	ReadDWCWindows();
+
 }
 
 VariableComputation::~VariableComputation() {
@@ -548,55 +593,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 
 }// analyze ends here
 
-void VariableComputation::beginJob() {	
-	for( int ilayer=0; ilayer<m_NLayers; ilayer++ ){
-		energyAll_layer.push_back(0.);
-		energyE1_layer.push_back(0.);
-		energyE7_layer.push_back(0.);
-		energyE19_layer.push_back(0.);
-		energyE37_layer.push_back(0.);
-		energyE61_layer.push_back(0.);
-		NAll_layer.push_back(0);
-		NE1_layer.push_back(0);
-		NE7_layer.push_back(0);
-		NE19_layer.push_back(0);
-		NE37_layer.push_back(0);
-		NE61_layer.push_back(0);
-		mainCoreWidth.push_back(0.);
-		cellDistance_layer.push_back(0.);
-	}
 
-
-	std::fstream file; 
-	char fragment[100];
-	int readCounter = -1;
-
-	file.open(m_layerPositionFile.c_str(), std::fstream::in);
-
-	std::cout<<"Reading file "<<m_layerPositionFile<<" -open: "<<file.is_open()<<std::endl;
-	int layer=0;
-	while (file.is_open() && !file.eof()) {
-		readCounter++;
-		file >> fragment;
-		if (readCounter==0) layer=atoi(fragment);
-		if (readCounter==1) {
-			layerPositions[layer]=atof(fragment);
-			readCounter=-1;
-		}
-	}
-
-	HGCalCondObjectTextIO io(0);
-	edm::FileInPath fip(m_electronicMap);
-	if (!io.load(fip.fullPath(), essource_.emap_)) {
-		throw cms::Exception("Unable to load electronics map");
-	};
-
-
-	ReadDWCWindows();
-}
-
-void VariableComputation::endJob() {
-}
 
 void VariableComputation::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
 	edm::ParameterSetDescription desc;
