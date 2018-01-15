@@ -65,8 +65,11 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             CompressedData=cms.untracked.bool(options.compressedData)
 )
 
-filename = options.outputFolder+"/PedestalOutput.root"
-process.TFileService = cms.Service("TFileService", fileName=cms.string(filename))
+outputFileName=os.path.basename(options.fileName)
+outputFileName,extent=os.path.splitext(outputFileName)
+outputFileName=options.outputFolder+outputFileName+".root"
+#filename = options.outputFolder+"/PedestalOutput.root"
+process.TFileService = cms.Service("TFileService", fileName=cms.string(outputFileName))
 
 process.output = cms.OutputModule("PoolOutputModule",fileName = cms.untracked.string(options.output))
 
@@ -74,12 +77,12 @@ process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in
 
 process.pedestalplotter = cms.EDAnalyzer("PedestalPlotter",
                                          SensorSize=cms.untracked.int32(128),
-                                         WritePedestalFile=cms.untracked.bool(True),
+                                         WritePedestalFile=cms.untracked.bool(False),
                                          InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                          ElectronicMap=cms.untracked.string(options.electronicMap),
                                          HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
                                          LowGainPedestalFileName=cms.untracked.string(pedestalLowGain),
-                                         WriteNoisyChannelsFile=cms.untracked.bool(True),
+                                         WriteNoisyChannelsFile=cms.untracked.bool(False),
                                          NoisyChannelsFileName=cms.untracked.string(noisyChannels),
                                          NTSForPedestalComputation=cms.untracked.int32(7),
 
