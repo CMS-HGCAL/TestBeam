@@ -40,14 +40,14 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
   			N_layers_BH = 12;
   			break;
     	case 3:
-  			N_layers_EE = 4;		//not sure about this number, 31.10.18 (T. Quast)
-  			N_layers_FH = 6;		//not sure about this number, 31.10.18 (T. Quast)
-  			N_layers_BH = 12;		//fix
+  			N_layers_EE = 4;		
+  			N_layers_FH = 6;		
+  			N_layers_BH = 12;		
   			break;
   		default:
     	case 4:
-  			N_layers_EE = 4;		//not sure about this number, 31.10.18 (T. Quast)
-  			N_layers_FH = 6;		//not sure about this number, 31.10.18 (T. Quast)
+  			N_layers_EE = 4;		
+  			N_layers_FH = 6;		
   			N_layers_BH = 12;
   			break;
   	}

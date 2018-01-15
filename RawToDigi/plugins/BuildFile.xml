@@ -11,5 +11,6 @@
 <use name="HGCal/CondObjects"/>
 <use name="HGCal/RawToDigi"/>
 <use name="HGCal/Geometry"/>
+<use name="DNN/TensorFlow"/>
 <use name="CommonTools/UtilAlgos"/>
 <flags EDM_PLUGIN="1"/>
