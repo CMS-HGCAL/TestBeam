@@ -62,6 +62,10 @@ private:
 
 	std::vector<double> wc_resolutions;
   int sensorSize;
+  int u_max;
+  int u_min;
+  int v_max;
+  int v_min;
 
   std::string areaSpecification;
   unsigned int beamEnergy;

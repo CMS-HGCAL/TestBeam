@@ -27,7 +27,7 @@ options.register('electronicMap',
                  'Name of the electronic map file in HGCal/CondObjects/data/')
 
 options.register('beamEnergy',
-                250,
+                32,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Beam energy.'

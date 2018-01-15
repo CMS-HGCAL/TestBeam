@@ -18,6 +18,18 @@ HGCalTBGANSimSource::HGCalTBGANSimSource(const edm::ParameterSet & pset, edm::In
 	wc_resolutions = pset.getUntrackedParameter<std::vector<double> >("wc_resolutions", v1);
 	sensorSize = pset.getUntrackedParameter<int> ("sensorSize", 128);
 
+  if (sensorSize==128) {
+    	u_max = 7;
+  	u_min = -7;
+  	v_max = 7;
+  	v_min = -7;  
+  } else {		//other geometries to be implemented
+    	u_max = 7;
+  	u_min = -7;
+  	v_max = 7;
+  	v_min = -7;  	
+  }
+
 	NEvents = pset.getUntrackedParameter<unsigned int> ("NEvents", 20);
 	zDim = pset.getUntrackedParameter<unsigned int> ("zDim", 15);
 	beamEnergy = pset.getUntrackedParameter<unsigned int> ("beamEnergy", 250);
@@ -156,10 +168,16 @@ void HGCalTBGANSimSource::produce(edm::Event & event) {
 	//first: fill the rechits
 	std::unique_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection);
 
-	for(int l=0; l<N_layers_HGCal; l++) for(int u=0; u<15; u++) for(int v=0; v<15; v++) {
-		float energy = *(simImage->getPtr<float>(0, u, v, l));
-		if (HGCalDetectorTopology.iu_iv_valid(l+1, 0, 0, u, v, sensorSize))
-			makeRecHit(l+1, u, v, energy, rechits);
+	int layer; int u; int v; 
+	for(int l=0; l<N_layers_HGCal; l++) for(int u_index=0; u_index<15; u_index++) for(int v_index=0; v_index<15; v_index++) {
+		//conversion logic
+		layer = l+1;
+		u = u_index+u_min;
+		v = v_index+v_min;
+		if (HGCalDetectorTopology.iu_iv_valid(layer, 0, 0, u, v, sensorSize)){
+			float energy = *(simImage->getPtr<float>(0, u, v, l));
+			makeRecHit(layer, u, v, energy, rechits);
+		}
 	} 
 	event.put(std::move(rechits), RechitOutputCollectionName);
 
@@ -168,11 +186,11 @@ void HGCalTBGANSimSource::produce(edm::Event & event) {
 	//dwcs still not part of the GAN
 	std::unique_ptr<std::map<int, WireChamberData> > dwcs(new std::map<int, WireChamberData>);	
 	for (size_t d=0; d<dwc_zPositions.size(); d++) {
-		double dwc_x = -999;
-		double dwc_y = -999;
+		double dwc_x = 0.;
+		double dwc_y = 0.;
 
 		WireChamberData* dwc = new WireChamberData(d+1, dwc_x , dwc_y, dwc_zPositions[d]);
-		dwc->goodMeasurement_X = dwc->goodMeasurement_Y = dwc->goodMeasurement = false;
+		dwc->goodMeasurement_X = dwc->goodMeasurement_Y = dwc->goodMeasurement = true;
 		dwc->res_x = dwc->res_y = wc_resolutions[d];
 		dwc->averageHitMultiplicty = 1.;
 
@@ -192,7 +210,7 @@ void HGCalTBGANSimSource::produce(edm::Event & event) {
 	rd->event = currentEvent;
 	rd->booleanUserRecords.add("hasDanger", false);
 	rd->doubleUserRecords.add("trueEnergy", beamParticlePDGID);
-	rd->booleanUserRecords.add("hasValidDWCMeasurement", false);
+	rd->booleanUserRecords.add("hasValidDWCMeasurement", true);
 	event.put(std::move(rd), RunDataOutputCollectionName);	
 
 }
@@ -207,7 +225,6 @@ void HGCalTBGANSimSource::endJob() {
 }
 
 void HGCalTBGANSimSource::makeRecHit(int layer, int u, int v, float energy, std::unique_ptr<HGCalTBRecHitCollection> &rechits) {
-				
 		HGCalTBRecHit recHit(HGCalTBDetId(layer, 0, 0, u, v, 0), 0., 0., 0., 0., 0); 
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(layer, 0, 0, u, v, sensorSize );
     double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA);
