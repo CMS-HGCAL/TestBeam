@@ -38,9 +38,7 @@ class NTupelizer : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 	private:
-		virtual void beginJob() override;
 		void analyze(const edm::Event& , const edm::EventSetup&) override;
-		virtual void endJob() override;
 
 		// ----------member data ---------------------------
 		edm::Service<TFileService> fs;
@@ -61,6 +59,9 @@ NTupelizer::NTupelizer(const edm::ParameterSet& iConfig) {
 	usesResource("TFileService");
 	outTree = fs->make<TTree>("variables", "variables");
 	for (size_t i=0; i<N_keys; i++) dataToFill.push_back(-1.);
+
+	for (size_t i=0; i<N_keys; i++) 
+		outTree->Branch(UserRecordKeys[i].c_str(), &dataToFill[i], (UserRecordKeys[i]+"/D").c_str());
 }
 
 NTupelizer::~NTupelizer() {
@@ -89,17 +90,7 @@ void NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& setup) 
 	
 }// analyze ends here
 
-void NTupelizer::beginJob() {	
-	for (size_t i=0; i<N_keys; i++) {
-		outTree->Branch(UserRecordKeys[i].c_str(), &dataToFill[i], (UserRecordKeys[i]+"/D").c_str());
-	}
-	//for (size_t i=0; i<N_keys; i++) {
-	//}
-}
 
-void NTupelizer::endJob() {
-	
-}
 
 void NTupelizer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
 	edm::ParameterSetDescription desc;
