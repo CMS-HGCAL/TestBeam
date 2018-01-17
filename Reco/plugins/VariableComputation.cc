@@ -427,6 +427,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		UR->add("EAll_layer"+std::to_string(it->first), energyAll_layer[it->first-1]);
 	
 		UR->add("E1PerE7_layer"+std::to_string(it->first), energyE1_layer[it->first-1]/energyE7_layer[it->first-1]);
+		UR->add("E1PerE19_layer"+std::to_string(it->first), energyE1_layer[it->first-1]/energyE19_layer[it->first-1]);
 		UR->add("E7PerE19_layer"+std::to_string(it->first), energyE7_layer[it->first-1]/energyE19_layer[it->first-1]);
 		UR->add("E19PerE37_layer"+std::to_string(it->first), energyE19_layer[it->first-1]/energyE37_layer[it->first-1]);
 		UR->add("E37PerE61_layer"+std::to_string(it->first), energyE37_layer[it->first-1]/energyE61_layer[it->first-1]);
