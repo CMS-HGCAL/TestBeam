@@ -46,10 +46,10 @@ private:
   int m_timesamp[13];
   int m_hg[13][64];
   int m_lg[13][64];
-  int m_tot_fast[13][64];
-  int m_tot_slow[13][64];
-  int m_toa_rise[13][64];
-  int m_toa_fall[13][64];
+  int m_tot_fast[64];
+  int m_tot_slow[64];
+  int m_toa_rise[64];
+  int m_toa_fall[64];
 
   edm::EDGetTokenT<HGCalTBSkiroc2CMSCollection> m_HGCalTBSkiroc2CMSCollection;
 };
@@ -113,15 +113,17 @@ void TreeProducer::analyze(const edm::Event& event, const edm::EventSetup& setup
       m_timesamp[its]=(*it);
       its++;
     }
-    for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-      for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
+    for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
+      //      if( ichan==10 )
+      //	std::cout << std::dec << iski << " " << skiroc.TOTSlow(ichan) << std::endl;
+      for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
 	m_hg[it][ichan]=skiroc.ADCHigh(ichan,it);
 	m_lg[it][ichan]=skiroc.ADCLow(ichan,it);
-	m_tot_fast[iski][ichan]=skiroc.TOTFast(ichan);
-	m_tot_slow[iski][ichan]=skiroc.TOTSlow(ichan);
-	m_toa_rise[iski][ichan]=skiroc.TOARise(ichan);
-	m_toa_fall[iski][ichan]=skiroc.TOAFall(ichan);
       }
+      m_tot_fast[ichan]=skiroc.TOTFast(ichan);
+      m_tot_slow[ichan]=skiroc.TOTSlow(ichan);
+      m_toa_rise[ichan]=skiroc.TOARise(ichan);
+      m_toa_fall[ichan]=skiroc.TOAFall(ichan);
     }
     m_tree->Fill();
   }

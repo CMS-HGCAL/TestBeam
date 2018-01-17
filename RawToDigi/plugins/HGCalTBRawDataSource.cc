@@ -152,7 +152,7 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
   }
   e.put(skirocs, m_outputCollectionName);
 
-
+  //getchar();
   m_event++;
 }
 
