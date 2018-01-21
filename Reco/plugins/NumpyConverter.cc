@@ -61,6 +61,8 @@ class NumpyConverter : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 			HGCalElectronicsMap emap_;
 		} essource_;
 
+    double energyNoiseCut;
+
 		//relevant for rechits storage
 		uint m_NHexaBoards;
     	uint m_Sensorsize;
@@ -102,7 +104,8 @@ NumpyConverter::NumpyConverter(const edm::ParameterSet& iConfig) {
 	m_electronicMap = iConfig.getUntrackedParameter<std::string>("electronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt");
 	m_NHexaBoards= iConfig.getUntrackedParameter<uint>("NHexaBoards", 10);
     m_Sensorsize=iConfig.getUntrackedParameter<uint>("Sensorsize", 128);
-    
+    energyNoiseCut=iConfig.getUntrackedParameter<double>("energyNoiseCut", 4);
+
     m_NLayers=iConfig.getUntrackedParameter<uint>("NLayers", 10);
     m_NDWCs=iConfig.getUntrackedParameter<uint>("NDWCs", 4);
 
@@ -164,12 +167,15 @@ void NumpyConverter::analyze(const edm::Event& event, const edm::EventSetup& set
 		}
 	}
 	for(auto Rechit : *Rechits) {	
+    float energy = Rechit.energy();
+    if ((energyNoiseCut>-1) && (energy < energyNoiseCut)) continue;   //noise cut
+
 		HGCalTBElectronicsId eid( essource_.emap_.detId2eid( Rechit.id().rawId() ) );
 		HGCalTBDetId detId = HGCalTBDetId(Rechit.id().rawId());
 		int b = eid.iskiroc_rawhit() / 4;
 		int u = detId.iu()-u_min;
 		int v = detId.iv()-v_min;
-		data[b][u][v][0] = Rechit.energy();
+		data[b][u][v][0] = energy;
 		data[b][u][v][1] = Rechit.time();
 	}
 	for (uint b=0; b<m_NHexaBoards; b++) for (uint u=0; u<(range_u); u++) for (uint v=0; v<(range_v); v++) {		

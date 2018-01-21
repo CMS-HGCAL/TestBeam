@@ -86,6 +86,7 @@ process.numpyconverter = cms.EDAnalyzer("NumpyConverter",
                                 NLayers=cms.untracked.uint32(options.NLayers),
                                 NDWCs=cms.untracked.uint32(options.NDWCs),
                                 Sensorsize=cms.untracked.uint32(128),
+                                energyNoiseCut=cms.untracked.double(4.), #cut in reconstructed energy [MIPs]
                                 outputFilePath=cms.string(options.outputFile),
                                 eventIdentifier=cms.untracked.string("event"),
                                 rechitsIdentifier=cms.untracked.string("rechits"),
