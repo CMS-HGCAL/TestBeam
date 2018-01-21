@@ -2,6 +2,7 @@
 #include "HGCal/Reco/interface/PulseFitter.h"
 #include "HGCal/Reco/interface/CommonMode.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
+//source before compilation: source /cvmfs/cms.cern.ch/slc7_amd64_gcc630/external/tensorflow-c/1.1.0/etc/profile.d/init.sh;
 
 #include <iostream>
 
