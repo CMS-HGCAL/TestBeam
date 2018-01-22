@@ -157,12 +157,12 @@ void NumpyConverter::analyze(const edm::Event& event, const edm::EventSetup& set
 	//initialize data with zeros
 	float**** data = new float***[m_NHexaBoards];
 	for (uint b=0; b<m_NHexaBoards; b++) {
-		data[b] = new float**[range_x];
-		for (uint x=0; x<(range_x); x++) {
-			data[b][x] = new float*[range_y];
-			for (uint y=0; y<(range_y); y++) {
-				data[b][x][y] = new float[2];
-				data[b][x][y][0] = data[b][x][y][1] = 0.;
+		data[b] = new float**[range_y];
+		for (uint y=0; y<(range_y); y++) {
+			data[b][y] = new float*[range_x];
+			for (uint x=0; x<(range_x); x++) {
+				data[b][y][x] = new float[2];
+				data[b][y][x][0] = data[b][y][x][1] = 0.;
 			}
 		}
 	}
@@ -177,20 +177,20 @@ void NumpyConverter::analyze(const edm::Event& event, const edm::EventSetup& set
 		int x = detId.iv()-x_min;
 		int y = (2*detId.iu()+detId.iv()-y_min) / 2;
 
-		data[b][x][y][0] = energy;
-		data[b][x][y][1] = Rechit.time();
+		data[b][y][x][0] = energy;
+		data[b][y][x][1] = Rechit.time();
 
 	}
 	for (uint b=0; b<m_NHexaBoards; b++) for (uint x=0; x<(range_x); x++) for (uint y=0; y<(range_y); y++) {		
-		rechit_data.push_back(data[b][x][y][0]);
-		rechit_data.push_back(data[b][x][y][1]);
+		rechit_data.push_back(data[b][y][x][0]);
+		rechit_data.push_back(data[b][y][x][1]);
 	}
 	for (uint b=0; b<m_NHexaBoards; b++) {
-		for (uint x=0; x<(range_x); x++) {
-			for (uint y=0; y<(range_y); y++) {
-				delete[] data[b][x][y];
+		for (uint y=0; y<(range_y); y++) {
+			for (uint x=0; x<(range_x); x++) {
+				delete[] data[b][y][x];
 			}
-			delete[] data[b][x];
+			delete[] data[b][y];
 		}
 		delete[] data[b];
 	}		
@@ -235,12 +235,10 @@ void NumpyConverter::beginJob() {
 
 void NumpyConverter::endJob() {
 	cnpy::npz_save(m_outputFilePath, m_eventDataIdentifier.c_str(), &event_data[0],{Nevents, 4}, "w");
-	cnpy::npz_save(m_outputFilePath, m_rechitIdentifier.c_str(), &rechit_data[0],{Nevents, m_NHexaBoards, range_x, range_y, 2}, "a");
+	cnpy::npz_save(m_outputFilePath, m_rechitIdentifier.c_str(), &rechit_data[0],{Nevents, m_NHexaBoards, range_y, range_x, 2}, "a");
 	cnpy::npz_save(m_outputFilePath, m_dwcIdentifier.c_str(), &dwc_data[0],{Nevents, m_NDWCs, 3}, "a");
 	cnpy::npz_save(m_outputFilePath, m_dwcReferenceIdentifier.c_str(), &dwc_track_data[0],{Nevents, 1+m_NLayers+1, 2}, "a");
 
-	std::cout<<"xMin: "<<x_min<<"   xMax: "<<x_max<<std::endl;
-	std::cout<<"yMin: "<<y_min<<"   yMax: "<<y_max<<std::endl;
 }
 
 void NumpyConverter::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
