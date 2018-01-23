@@ -26,6 +26,7 @@
 #include "DNN/TensorFlow/interface/TensorFlow.h"
 #include "TRandom.h"
 
+//#define DEBUG
 
 /**
  *
@@ -49,9 +50,9 @@ private:
 	void fillConfiguredRuns(std::fstream& map_file);
 	bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&);
 	virtual void produce(edm::Event & e);
-  virtual void endJob() override;
+	virtual void endJob() override;
 	void makeRecHit(int, int, int, float, std::unique_ptr<HGCalTBRecHitCollection>&);
-	
+
 	std::string RechitOutputCollectionName;
 	std::string DWCOutputCollectionName;
 	std::string RunDataOutputCollectionName;
@@ -60,40 +61,55 @@ private:
 	std::string m_channelsToMask_filename;
 	std::vector<int> m_noisyChannels;
 
-	std::vector<double> wc_resolutions;
-  int sensorSize;
-  int u_max;
-  int u_min;
-  int v_max;
-  int v_min;
+	//gaussian beam profile
+	double beamX_mu;
+	double beamY_mu;
+	double beamX_sigma;
+	double beamY_sigma;
 
-  std::string areaSpecification;
-  unsigned int beamEnergy;
-  int beamParticlePDGID;
-  unsigned int setupConfiguration;
+	double impactX; 
+	double impactY;
+
+	std::vector<double> wc_resolutions;
+	int sensorSize;
+	int x_max;
+	int x_min;
+	uint range_x;
+	int y_max;
+	int y_min;
+	uint range_y;
+
+	int NColorsInputImage;
+
+	std::string areaSpecification;
+	unsigned int beamEnergy;
+	int beamParticlePDGID;
+	unsigned int setupConfiguration;
 
 	std::string GANModelIndex;
 	RUNTYPES _enumPhysicsListUsed;
 
 	std::vector<double> dwc_zPositions;		//filled by area specification
 
-  int NEvents;
-  int zDim;	
+	int NEvents;
+	int zDim;	
 	int currentEvent;
 
 	//getting the required electronic mapping
 	std::string _e_mapFile;
 
 	HGCalTBCellVertices TheCell;
-  std::pair<double, double> CellCentreXY;
-  HGCalTBTopology HGCalDetectorTopology;
+	std::pair<double, double> CellCentreXY;
+	HGCalTBTopology HGCalDetectorTopology;
 
 	TRandom* randgen;
-  tf::Tensor* energy_tensor;
-  tf::Tensor* z_tensor;
-  tf::Tensor* simImage;
-  tf::Graph* GAN_graph;
-  tf::Session* GAN_session;
+	tf::Tensor* energy_tensor;
+	tf::Tensor* z_tensor;
+	tf::Tensor* z_start_tensor;
+	tf::Tensor* position_tensor;
+	tf::Tensor* simImage;
+	tf::Graph* GAN_graph;
+	tf::Session* GAN_session;
 
 
 	int N_layers_HGCal, N_layers_BH;

@@ -60,8 +60,15 @@ options.register('GANModelIndex',
                  'Specify the used GAN model as "physics list" to be passed forward to the run data object.'
                 )
 
+options.register('NColorsInputImage',
+                17,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Number of colours of input image for DNN analysis.'
+                )
+
 options.register('zDim',
-                15,
+                1,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Dimension of the random noise input vector.'
@@ -143,9 +150,14 @@ process.source = cms.Source("HGCalTBGANSimSource",
                         ChannelsToMaskFileName=cms.untracked.string(options.noisyChannelsFile),
                         beamEnergy=cms.untracked.uint32(options.beamEnergy),
                         beamParticlePDGID=cms.untracked.int32(options.beamParticlePDGID),                        
+                        beamX_mu=cms.untracked.double(0.0),     #hard coded numbers, could be tuned
+                        beamY_mu=cms.untracked.double(0.0),
+                        beamX_sigma=cms.untracked.double(20.0),
+                        beamY_sigma=cms.untracked.double(20.0),
                         setupConfiguration=cms.untracked.uint32(options.setupConfiguration),
                         areaSpecification = cms.untracked.string(options.areaSpecification),
                         GANModelIndex = cms.untracked.string(options.GANModelIndex),
+                        NColorsInputImage = cms.untracked.uint32(NColorsInputImage),
                         NEvents = cms.untracked.uint32(options.NEvents),
                         zDim = cms.untracked.uint32(options.zDim),
                         wc_resolutions = cms.untracked.vdouble([0.2, 0.2, 0.2, 0.2])        #set to the expected resolutions according to the manual
