@@ -57,6 +57,21 @@ options.register('NLayers',
                  'Number of layers for analysis.'
                 )
 
+options.register('DNNInputFile',
+                 '',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'File to the trained tensorflow networks for DNN analysis.')
+
+
+options.register('NColorsInputImage',
+                17,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Number of colours of input image for DNN analysis.'
+                )
+
+                                 
 options.register('simulation',
                  0,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -119,7 +134,9 @@ process.variablecomputation = cms.EDProducer("VariableComputation",
                                 DetectorLayout=cms.untracked.string(hgcalLayout),
                                 layerPositionFile=cms.string(options.layerPositionFile),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
-                                NLayers=cms.untracked.int32(options.NLayers)
+                                NLayers=cms.untracked.int32(options.NLayers),
+                                DNNInputFile = cms.untracked.string(options.DNNInputFile),
+                                NColorsInputImage = cms.untracked.int32(options.NColorsInputImage)
                               )
 
 process.ntupelizer = cms.EDAnalyzer("NTupelizer",
