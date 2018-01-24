@@ -181,7 +181,7 @@ void NumpyConverter::analyze(const edm::Event& event, const edm::EventSetup& set
 		data[b][y][x][1] = Rechit.time();
 
 	}
-	for (uint b=0; b<m_NHexaBoards; b++) for (uint x=0; x<(range_x); x++) for (uint y=0; y<(range_y); y++) {		
+	for (uint b=0; b<m_NHexaBoards; b++) for (uint y=0; y<(range_y); y++) for (uint x=0; x<(range_x); x++) {		
 		rechit_data.push_back(data[b][y][x][0]);
 		rechit_data.push_back(data[b][y][x][1]);
 	}
