@@ -157,6 +157,7 @@ class VariableComputation : public edm::EDProducer {
   		tf::Tensor* rec_energy_tensor;
   		tf::Tensor* rec_position_tensor;
   		tf::Tensor* inputImage_tensor;
+  		tf::Tensor* pkeep_tensor;
   		tf::Graph* DNN_graph;
   		tf::Session* DNN_session;
   		//coordinate system transformation
@@ -247,12 +248,16 @@ VariableComputation::VariableComputation(const edm::ParameterSet& iConfig) {
 		tf::Shape eShape[] = {1, 1};
 	  	rec_energy_tensor = new tf::Tensor(2, eShape);
 		tf::Shape pShape[] = {1, 2};
-	  	rec_position_tensor = new tf::Tensor(2, pShape);
+	  	rec_position_tensor = new tf::Tensor(2, pShape);	
+		tf::Shape pkeepShape[] = {1, 1};
+	  	pkeep_tensor = new tf::Tensor(2, pkeepShape);
 		tf::Shape inputShape[] = {1, 12, 15, NColorsInputImage};
 	  	inputImage_tensor = new tf::Tensor(4, inputShape);
 	  	DNN_graph = new tf::Graph(DNN_InputFile.c_str());
 	  	DNN_session = new tf::Session(&(*DNN_graph));
 
+	
+	  	DNN_session->addInput(pkeep_tensor, "pkeep_dp");	//must match the name in the training
 	  	DNN_session->addInput(inputImage_tensor, "real_images");	//must match the name in the training
 	  	DNN_session->addOutput(fake_discriminator_tensor, "discriminator/realDiscriminator");	//must match the name in the training
 	  	DNN_session->addOutput(rec_energy_tensor, "energy_regressor/energy_regressor");	//must match the name in the training
@@ -277,6 +282,7 @@ VariableComputation::~VariableComputation() {
 		delete rec_energy_tensor;
 		delete rec_position_tensor;
 		delete inputImage_tensor;
+		delete pkeep_tensor;
 		delete DNN_graph;
 		delete DNN_session;
 	}
@@ -338,7 +344,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 				double x = Rechit.getCellCenterCartesianCoordinate(0)*10.;		//conversion to mm
 				double y = Rechit.getCellCenterCartesianCoordinate(1)*10.;		//conversion to mm
 				double z = layerPositions[layer];
-				//std::cout<<"Layer: "<<layer<<" z: "<<z<<std::endl;
 				double m = Rechit.energy();
 				M += m;
 				xmean += m*x;
@@ -395,7 +400,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 				double x = Rechit.getCellCenterCartesianCoordinate(0)*10.;
 				double y = Rechit.getCellCenterCartesianCoordinate(1)*10.;
 				double z = layerPositions[layer];
-				//std::cout<<"Layer: "<<layer<<" z: "<<z<<std::endl;
 				double m = Rechit.energy();
 
 				Ixx += m*(pow(y-ymean, 2)+pow(z-zmean, 2));
@@ -522,9 +526,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 
 		//position resolution
 		if (dwctrack->valid&&(dwctrack->referenceType>10)) { 
-			//std::cout<<"Layer: "<<it->first<<std::endl;
-			//std::cout<<"DWC X: "<<dwctrack->DWCExtrapolation_XY(it->first).first<<"  reco X: "<<it->second->getLabHitPosition().first<<std::endl;
-			//std::cout<<"DWC Y: "<<dwctrack->DWCExtrapolation_XY(it->first).second<<"  reco Y: "<<it->second->getLabHitPosition().second<<std::endl;
 			it->second->calculateCenterPosition(CONSIDERNINETEEN, LOGWEIGHTING_35_10);
 			//investigate here
 			//x = -x in DWC coordinate system
@@ -542,7 +543,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		UR->add("dwctrack_chi2x", dwctrack->chi2_x);
 		UR->add("dwctrack_chi2y", dwctrack->chi2_y);
 	}
-	//std::cout<<std::endl;
 
 	depthX0 /= energyAll_tot;
 	depthLambda0 /= energyAll_tot;
@@ -676,14 +676,18 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 			int y = (2*detId.iu()+detId.iv()-y_min) / 2;		//coordinate transformation as performed for the input images
 
 			image_data[y][x][layer-1] = energy;
+			
 
 		}
+
+		std::vector<float> pkeep_value = {1.0};
+		pkeep_tensor->setVector(1, 0, pkeep_value);
 
 		for (uint y=0; y<(range_y); y++) for (uint x=0; x<(range_x); x++) {
 			std::vector<float> layer_values;
 			for (uint b=0; b<NColorsInputImage; b++) layer_values.push_back(image_data[y][x][b]);
 			inputImage_tensor->setVector<float>(3, 0, y, x, layer_values);
-			
+			layer_values.clear();
 		}
 		DNN_session->run();
 
@@ -691,6 +695,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		float DNN_rec_posX = *(rec_position_tensor->getPtr<float>(0, 0));
 		float DNN_rec_posY = *(rec_position_tensor->getPtr<float>(0, 1));
 		float DNN_fake_discr = *(fake_discriminator_tensor->getPtr<float>(0, 0));
+
 
 		UR->add("DNNEnergy", DNN_rec_energy);
 		UR->add("DNNPosX", DNN_rec_posX);
