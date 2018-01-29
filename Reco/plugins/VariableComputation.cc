@@ -134,7 +134,7 @@ class VariableComputation : public edm::EDProducer {
 		std::vector<double> energyAll_layer, energyE1_layer, energyE7_layer, energyE19_layer, energyE37_layer, energyE61_layer;
 		std::vector<int> NAll_layer, NE1_layer, NE7_layer, NE19_layer, NE37_layer, NE61_layer;
 
-		double depthX0, depthLambda0;
+		double depthX0, depthLambda0, showerStartDepth;
 
 		//distance information
 		std::vector<double> mainCoreWidth;
@@ -439,6 +439,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	energyE1_weight = energyE7_weight = energyE19_weight = energyE37_weight = energyE61_weight = energyAll_weight = 0.;
 	
 	depthX0 = 0, depthLambda0 = 0;
+	showerStartDepth = -1.;
 
 	std::vector<std::pair<double, double> > relevantHitPositions;
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
@@ -464,6 +465,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		energyE19_layer[it->first-1] = it->second->getTotalWeight();
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
 		NE19_layer[it->first-1] = (int)relevantHitPositions.size();
+		
 		relevantHitPositions.clear();
 	
 		//three rings around
@@ -516,6 +518,10 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		depthX0 += X0*energyAll_layer[it->first-1];
 		depthLambda0 += lambda0*energyAll_layer[it->first-1];
 
+		if ((showerStartDepth==-1.)&&(energyE19_layer[it->first-1] > 10.)&&(NE19_layer[it->first-1]>1)) {
+			showerStartDepth = lambda0;
+		}
+
 		energyE1_weight += energyE1_layer[it->first-1]*(MIP2GeV+weight); 
 		energyE7_weight += energyE7_layer[it->first-1]*(MIP2GeV+weight); 
 		energyE19_weight += energyE19_layer[it->first-1]*(MIP2GeV+weight); 
@@ -563,6 +569,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 
 	UR->add("depthX0", depthX0);
 	UR->add("depthLambda0", depthLambda0);
+	UR->add("showerStartDepth", showerStartDepth);
 
 	double E_EE = 0, E_FH = 0;
 	int last_layer_EE = 2; int last_layer_FH = 6;
@@ -617,8 +624,8 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 			int channel = eid.ichan();
 			
 
-			if (skiroc!=1)	continue;
-			if ((channel!=36)&&(channel!=38)&&(channel!=44)&&(channel!=54)) continue;
+			if (skiroc!=1)	continue;	//specific for September 2017 setup (7EE, 10FH layers)
+			if ((channel!=36)&&(channel!=38)&&(channel!=44)&&(channel!=46)&&(channel!=52)&&(channel!=54)&&(channel!=56)) continue;
 
 			int key = board*1000+skiroc*100+channel;
 
@@ -636,8 +643,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 				if (!((dwc_x_layer>simPositions[key].first-4.)&&(dwc_x_layer<simPositions[key].first+4.))) continue;
 				if (!((dwc_y_layer>simPositions[key].second-4.)&&(dwc_y_layer<simPositions[key].second+4.))) continue;
 			}
-
-
 			
 			cell_chip1_ch36_energySpectra[layer-1] = Rechit.energy();
 			
@@ -798,16 +803,7 @@ void VariableComputation::ReadDWCWindows() {
 	simPositions[4136] = std::make_pair(0,  -11.2455);
 	simPositions[5136] = std::make_pair(0,  -11.2455);
 	simPositions[6136] = std::make_pair(0,  -11.2455);
-	simPositions[7136] = std::make_pair(9.73885,  5.62273);
-	simPositions[8136] = std::make_pair(9.73885,  5.62273);
-	simPositions[9136] = std::make_pair(9.73885,  5.62273);
-	simPositions[10136] = std::make_pair(9.73885,  5.62273);
-	simPositions[11136] = std::make_pair(9.73885,  5.62273);
-	simPositions[12136] = std::make_pair(9.73885,  5.62273);
-	simPositions[13136] = std::make_pair(9.73885,  5.62273);
-	simPositions[14136] = std::make_pair(9.73885,  5.62273);
-	simPositions[15136] = std::make_pair(9.73885,  5.62273);
-	simPositions[16136] = std::make_pair(9.73885,  5.62273);
+
 
 	simPositions[138] = std::make_pair(0, -22.4909);
 	simPositions[1138] = std::make_pair(0, -22.4909);
@@ -816,52 +812,51 @@ void VariableComputation::ReadDWCWindows() {
 	simPositions[4138] = std::make_pair(0, -22.4909);
 	simPositions[5138] = std::make_pair(0, -22.4909);
 	simPositions[6138] = std::make_pair(0, -22.4909);
-	simPositions[7138] = std::make_pair(19.4777, 11.2455);
-	simPositions[8138] = std::make_pair(19.4777, 11.2455);
-	simPositions[9138] = std::make_pair(19.4777, 11.2455);
-	simPositions[10138] = std::make_pair(19.4777, 11.2455);
-	simPositions[11138] = std::make_pair(19.4777, 11.2455);
-	simPositions[12138] = std::make_pair(19.4777, 11.2455);
-	simPositions[13138] = std::make_pair(19.4777, 11.2455);
-	simPositions[14138] = std::make_pair(19.4777, 11.2455);
-	simPositions[15138] = std::make_pair(19.4777, 11.2455);
-	simPositions[16138] = std::make_pair(19.4777, 11.2455);
+
 
 	simPositions[144] = std::make_pair(-9.73885, -5.62273);
 	simPositions[1144] = std::make_pair(-9.73885, -5.62273);
 	simPositions[2144] = std::make_pair(-9.73885, -5.62273);
 	simPositions[3144] = std::make_pair(-9.73885, -5.62273);
 	simPositions[4144] = std::make_pair(-9.73885, -5.62273);
-	simPositions[5144] = std::make_pair(-9.73885, -5.62273);
+	simPositions[5144] = std::make_pair( 9.73885, -5.62273);
 	simPositions[6144] = std::make_pair(-9.73885, -5.62273);
-	simPositions[7144] = std::make_pair(9.73885, -5.62273);
-	simPositions[8144] = std::make_pair(9.73885, -5.62273);
-	simPositions[9144] = std::make_pair(9.73885, -5.62273);
-	simPositions[10144] = std::make_pair(9.73885, -5.62273);
-	simPositions[11144] = std::make_pair(9.73885, -5.62273);
-	simPositions[12144] = std::make_pair(9.73885, -5.62273);
-	simPositions[13144] = std::make_pair(9.73885, -5.62273);
-	simPositions[14144] = std::make_pair(9.73885, -5.62273);
-	simPositions[15144] = std::make_pair(9.73885, -5.62273);
-	simPositions[16144] = std::make_pair(9.73885, -5.62273);
+
+
+	simPositions[146] = std::make_pair(-29.2165, -28.1136);
+	simPositions[1146] = std::make_pair(-29.2165, -28.1136);
+	simPositions[2146] = std::make_pair(-29.2165, -28.1136);
+	simPositions[3146] = std::make_pair(-29.2165, -28.1136);
+	simPositions[4146] = std::make_pair(-29.2165, -28.1136);
+	simPositions[5146] = std::make_pair( 29.2165, -28.1136);
+	simPositions[6146] = std::make_pair(-29.2165, -28.1136);
+
+
+	simPositions[152] = std::make_pair(-19.4777, -22.4909);
+	simPositions[1152] = std::make_pair(-19.4777, -22.4909);
+	simPositions[2152] = std::make_pair(-19.4777, -22.4909);
+	simPositions[3152] = std::make_pair(-19.4777, -22.4909);
+	simPositions[4152] = std::make_pair(-19.4777, -22.4909);
+	simPositions[5152] = std::make_pair( 19.4777, -22.4909);
+	simPositions[6152] = std::make_pair(-19.4777, -22.4909);
+
 
 	simPositions[154] = std::make_pair(-9.73885, -16.8682);
 	simPositions[1154] = std::make_pair(-9.73885, -16.8682);
 	simPositions[2154] = std::make_pair(-9.73885, -16.8682);
 	simPositions[3154] = std::make_pair(-9.73885, -16.8682);
 	simPositions[4154] = std::make_pair(-9.73885, -16.8682);
-	simPositions[5154] = std::make_pair(9.73885, -16.8682);
+	simPositions[5154] = std::make_pair( 9.73885, -16.8682);
 	simPositions[6154] = std::make_pair(-9.73885, -16.8682);
-	simPositions[7154] = std::make_pair(19.4777, 0);
-	simPositions[8154] = std::make_pair(19.4777, 0);
-	simPositions[9154] = std::make_pair(19.4777, 0);
-	simPositions[10154] = std::make_pair(19.4777, 0);
-	simPositions[11154] = std::make_pair(19.4777, 0);
-	simPositions[12154] = std::make_pair(19.4777, 0);
-	simPositions[13154] = std::make_pair(19.4777, 0);
-	simPositions[14154] = std::make_pair(19.4777, 0);
-	simPositions[15154] = std::make_pair(19.4777, 0);
-	simPositions[16154] = std::make_pair(19.4777, 0);
+
+
+	simPositions[156] = std::make_pair(-9.73885, -28.1136);
+	simPositions[1156] = std::make_pair(-9.73885, -28.1136);
+	simPositions[2156] = std::make_pair(-9.73885, -28.1136);
+	simPositions[3156] = std::make_pair(-9.73885, -28.1136);
+	simPositions[4156] = std::make_pair(-9.73885, -28.1136);
+	simPositions[5156] = std::make_pair( 9.73885, -28.1136);
+	simPositions[6156] = std::make_pair(-9.73885, -28.1136);
 
 }
 
