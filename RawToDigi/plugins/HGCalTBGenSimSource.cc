@@ -124,15 +124,15 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 	geomc = new HexGeometry(false);
 
 	tree = 0;
-  	simHitCellIdEE = 0;
-  	simHitCellEnEE = 0;
-  	simHitCellIdFH = 0;
-  	simHitCellEnFH = 0;
-   	simHitCellIdBH = 0;
-  	simHitCellEnBH = 0;
-  	beamX	 = 0;
-  	beamY 	 = 0;
-  	beamP 	 = 0;
+	simHitCellIdEE = 0;
+	simHitCellEnEE = 0;
+	simHitCellIdFH = 0;
+	simHitCellEnFH = 0;
+ 	simHitCellIdBH = 0;
+	simHitCellEnBH = 0;
+	beamX	 = 0;
+	beamY 	 = 0;
+	beamP 	 = 0;
 
   	randgen = new TRandom();
 
@@ -166,11 +166,12 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 
 bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType& evType)
 {	
-
 	if (fileIterator ==_fileNames.end()) {
+		std::cout<<"End of the files in the setRundAndEvent is reached..."<<std::endl;
+		delete randgen;
 		return false; 		//end of files is reached
 	}
-
+	
 	if (currentRun == -1) {		//initial loading of a file
 		currentRun = (*fileIterator).index;
 		currentEvent = 0;
@@ -182,7 +183,7 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 			std::cout<<fileName<<" does not exist and is skipped"<<std::endl;
 			fileIterator++;
 			currentRun = -1;
-			setRunAndEventInfo(id, time, evType);
+			if (! setRunAndEventInfo(id, time, evType)) return false;
 		}
 		/*
 		if (rootFile != NULL)
@@ -211,9 +212,9 @@ bool HGCalTBGenSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 	if (currentEvent == tree->GetEntries()) {
 		fileIterator++;
 		currentRun = -1;
-		setRunAndEventInfo(id, time, evType);
+		if (! setRunAndEventInfo(id, time, evType)) return false;
 	}
-	
+
 	tree->GetEntry(currentEvent);
 
 	currentEvent++;
@@ -305,10 +306,6 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 	rd->booleanUserRecords.add("hasValidDWCMeasurement", true);
 	event.put(std::move(rd), RunDataOutputCollectionName);	
 
-}
-
-void HGCalTBGenSimSource::endJob() {
-	delete randgen;
 }
 
 void HGCalTBGenSimSource::makeRecHit(int layer, int cellno, double energy, std::unique_ptr<HGCalTBRecHitCollection> &rechits) {
