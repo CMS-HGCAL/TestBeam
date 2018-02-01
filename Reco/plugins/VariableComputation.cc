@@ -7,6 +7,7 @@
 		22 November 2017
 		thorben.quast@cern.ch / thorben.quast@rwth-aachen.de
 */
+//source /cvmfs/cms.cern.ch/cmsset_default.sh
 //source before compilation: source /cvmfs/cms.cern.ch/slc7_amd64_gcc630/external/tensorflow-c/1.1.0-cms/etc/profile.d/init.sh;
 
 // system include files
@@ -121,6 +122,9 @@ class VariableComputation : public edm::EDProducer {
 
 		int m_NHexaBoards;
 		int m_NLayers;
+		int N_layers_EE;		
+		int N_layers_FH;
+		int N_layers_BH;
 
 
 		std::map<int, double> layerPositions;
@@ -322,6 +326,38 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 
 
 	/**********                                 ****************/
+	//selecting rechits certain layers
+	switch(rd->configuration) {
+		case 1:
+			N_layers_EE = 2;		//must shift remove layer 0 artificially
+			N_layers_FH = 4;
+			N_layers_BH = 12;
+			break;
+  	case 2:
+			N_layers_EE = 7;
+			N_layers_FH = 10;
+			N_layers_BH = 12;
+			break;
+  	case 3:
+			N_layers_EE = 4;		
+			N_layers_FH = 6;		
+			N_layers_BH = 12;		
+			break;
+		default:
+  	case 4:
+			N_layers_EE = 4;		
+			N_layers_FH = 6;		
+			N_layers_BH = 12;
+			break;
+	}
+	std::vector<HGCalTBRecHit> rechits_selected;
+	for(auto Rechit : *Rechits) {
+		if ((abs(rd->pdgID)==11) && (Rechit.id()).layer()>=N_layers_EE) continue;
+		rechits_selected.push_back(Rechit);
+	}
+		
+
+	/**********                                 ****************/
 	//filling and sorting of the rechits:
 
 	std::vector<double> rechit_energies;
@@ -331,7 +367,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 
 	double M=0, xmean=0, ymean=0, zmean=0;
 
-	for(auto Rechit : *Rechits) {	
+	for(auto Rechit : rechits_selected) {	
 		int layer = (Rechit.id()).layer();
 		if ( Sensors.find(layer) == Sensors.end() ) {
 			Sensors[layer] = new SensorHitMap(layer);
@@ -393,7 +429,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	/**********                                 ****************/
 	//determine inertia tensor:
 	Ixx=Iyy=Izz=Ixy=Ixz=Iyz=0;
-	for(auto Rechit : *Rechits) {	
+	for(auto Rechit : rechits_selected) {	
 		int layer = (Rechit.id()).layer();
 		if (Rechit.energy() > MIP_cut_for_energy) {
 			if ((Rechit.id()).cellType() == 0) {
@@ -571,15 +607,10 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	UR->add("depthLambda0", depthLambda0);
 	UR->add("showerStartDepth", showerStartDepth);
 
-	double E_EE = 0, E_FH = 0;
-	int last_layer_EE = 2; int last_layer_FH = 6;
-	if (rd->configuration==2) {
-		last_layer_EE=7;
-		last_layer_FH=17;
-	} //todo: October setup
 
-	for (int l=0; l<last_layer_EE; l++) E_EE += energyAll_layer[l];
-	for (int l=last_layer_EE; l<last_layer_FH; l++) E_FH += energyAll_layer[l];
+	double E_EE = 0, E_FH = 0;
+	for (int l=0; l<N_layers_EE; l++) E_EE += energyAll_layer[l];
+	for (int l=N_layers_EE; l<N_layers_EE+N_layers_FH; l++) E_FH += energyAll_layer[l];
 
 	UR->add("E_EE", E_EE);
 	UR->add("E_FH", E_FH);
@@ -616,7 +647,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	
 	if (dwctrack->valid&&(dwctrack->referenceType>=7) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) {
 
-		for(auto Rechit : *Rechits) {	
+		for(auto Rechit : rechits_selected) {	
 
 			HGCalTBElectronicsId eid( essource_.emap_.detId2eid( Rechit.id().rawId() ) );
 			int board = eid.iskiroc_rawhit() / 4;
@@ -668,7 +699,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 			}
 		}
 
-		for(auto Rechit : *Rechits) {	
+		for(auto Rechit : rechits_selected) {	
 	    	float energy = Rechit.energy();
 	    	if ((MIP_cut_for_energy>-1) && (energy < MIP_cut_for_energy)) continue;   //noise cut
 			int layer = (Rechit.id()).layer();
