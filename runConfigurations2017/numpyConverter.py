@@ -13,7 +13,7 @@ options.register('dataFile',
                  'folder containing raw input')
 
 options.register('outputFile',
-                 '/home/tquast/tb2017/analysis/MIPs_1259.root',
+                 '/home/tquast/tb2017/numpy/numpy_1259.root',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output file where analysis output are stored')
@@ -46,6 +46,13 @@ options.register('NDWCs',
                  'Number of Delay Wire chambers in beam line.'
                 )
 
+options.register('simulation',
+                 0,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 '1=Analysis is run on simulated samples'
+                 )
+
 options.register('reportEvery',
                 1000,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -76,11 +83,22 @@ process.source = cms.Source("PoolSource",
                             fileNames=cms.untracked.vstring("file:%s"%options.dataFile)
 )
 
+if options.simulation==1:
+    rundata_tag = cms.InputTag("source", "FullRunData", "rechitproducer") 
+    rechit_tag = cms.InputTag("source", "HGCALTBRECHITS", "rechitproducer")
+    dwc_tag = cms.InputTag("source","DelayWireChambers" )
+    dwc_track_tag = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" )
+else:
+    rundata_tag = cms.InputTag("wirechamberproducer","FullRunData")
+    rechit_tag = cms.InputTag("rechitproducer","HGCALTBRECHITS" )
+    dwc_tag = cms.InputTag("wirechamberproducer","DelayWireChambers" )
+    dwc_track_tag = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" )
+
 process.numpyconverter = cms.EDAnalyzer("NumpyConverter",
-                                RUNDATA = cms.InputTag("wirechamberproducer", "FullRunData" ), 
-                                MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
-                                DWCTRACKS = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" ), 
-                                HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
+                                RUNDATA = rundata_tag,
+                                MWCHAMBERS = dwc_tag,
+                                DWCTRACKS = dwc_track_tag,
+                                HGCALTBRECHITS = rechit_tag,
                                 electronicMap = cms.untracked.string(electronicMap),
                                 NHexaBoards=cms.untracked.uint32(options.NHexaBoards),
                                 NLayers=cms.untracked.uint32(options.NLayers),
