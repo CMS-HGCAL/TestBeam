@@ -41,8 +41,8 @@ HGCalTBGANSimSource::HGCalTBGANSimSource(const edm::ParameterSet & pset, edm::In
 	//gaussian beam profile, indicated in mm
 	beamX_mu = pset.getUntrackedParameter<double>("beamX_mu", 0.0); 
 	beamY_mu = pset.getUntrackedParameter<double>("beamY_mu", 0.0); 
-	beamX_sigma = pset.getUntrackedParameter<double>("beamX_sigma", 20.0); 
-	beamY_sigma = pset.getUntrackedParameter<double>("beamY_sigma", 20.0); 
+	beamX_sigma = pset.getUntrackedParameter<double>("beamX_sigma", 0.0); 
+	beamY_sigma = pset.getUntrackedParameter<double>("beamY_sigma", 0.0); 
 	
 	setupConfiguration = pset.getUntrackedParameter<unsigned int> ("setupConfiguration", 1);
 
@@ -177,7 +177,6 @@ bool HGCalTBGANSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 	std::vector<float> pvalues = {(float)impactX, (float)impactY};
 	position_tensor->setVector<float>(1, 0, pvalues); // axis 1, batch 0, values
 
-
 	GAN_session->run();
 
 	currentEvent++;
@@ -203,8 +202,10 @@ void HGCalTBGANSimSource::produce(edm::Event & event) {
 		if (v%2 == 1) y += 1;
 		u = y + y_min - v; 
 		
+
+		//09 February: ensured that output images here are identical to the ones computed from the python interface
+		float energy = *(simImage->getPtr<float>(0, y_index, x_index, l));
 		if (HGCalDetectorTopology.iu_iv_valid(layer, 0, 0, u, v, sensorSize)){
-			float energy = *(simImage->getPtr<float>(0, u, v, l));
 			#ifdef DEBUG
 				std::cout<<"Generated: "<<u<<"   "<<v<<"  energy: "<<energy<<std::endl;
 			#endif
