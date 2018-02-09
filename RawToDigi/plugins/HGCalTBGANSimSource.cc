@@ -35,7 +35,7 @@ HGCalTBGANSimSource::HGCalTBGANSimSource(const edm::ParameterSet & pset, edm::In
     NColorsInputImage = pset.getUntrackedParameter<uint>("NColorsInputImage", 17);
 
 	NEvents = pset.getUntrackedParameter<unsigned int> ("NEvents", 20);
-	zDim = pset.getUntrackedParameter<unsigned int> ("zDim", 1);
+	zDim = pset.getUntrackedParameter<unsigned int> ("zDim", 100);
 	beamEnergy = pset.getUntrackedParameter<unsigned int> ("beamEnergy", 250);
 	beamParticlePDGID = pset.getUntrackedParameter<int> ("beamParticlePDGID", 211);
 	//gaussian beam profile, indicated in mm
@@ -140,8 +140,6 @@ bool HGCalTBGANSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 		tf::Shape eShape[] = { 1, 1 }; // 1 = single batch
 		energy_tensor = new tf::Tensor(2, eShape);
 
-		tf::Shape zStartShape[] = { 1, 1 }; // 1 = single batch, must ensure that batch size is set to one
-  		z_start_tensor = new tf::Tensor(2, zStartShape);
   		tf::Shape positionShape[] = { 1, 2 };
   		position_tensor = new tf::Tensor(2, positionShape);
 
@@ -152,10 +150,9 @@ bool HGCalTBGANSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 	  	GAN_session = new tf::Session(&(*GAN_graph)); 
 			
 	  	GAN_session->addInput(z_tensor, "z");
-	  	GAN_session->addInput(z_start_tensor, "z_start");
 	  	GAN_session->addInput(energy_tensor, "energy_real");
 	  	GAN_session->addInput(position_tensor, "impactPoint");
-	  	GAN_session->addOutput(simImage, "generator_1/sampler");
+	  	GAN_session->addOutput(simImage, "generator/generator");
 		
 		currentEvent=0;
 	}
@@ -167,13 +164,9 @@ bool HGCalTBGANSimSource::setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t&
 	*/
 	//noise
 	std::vector<float> zvalues;
-	for (int i=0; i<zDim; i++) zvalues.push_back(randgen->Uniform(0., 10.));
-	
+	for (int i=0; i<zDim; i++) zvalues.push_back(randgen->Uniform(-1., 1.));	
 	z_tensor->setVector<float>(1, 0, zvalues); // axis 1, batch 0, values
-	//noise representing shower start (?)
-	std::vector<float> zstartvalues;
-	for (int i=0; i<zDim; i++) zstartvalues.push_back(randgen->Exp(10.));
-	
+
 	//energy
 	std::vector<float> evalue = {(float)beamEnergy};
 	energy_tensor->setVector<float>(1, 0, evalue); // axis 1, batch 0, values

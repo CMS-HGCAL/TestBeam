@@ -68,7 +68,7 @@ options.register('NColorsInputImage',
                 )
 
 options.register('zDim',
-                1,
+                100,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Dimension of the random noise input vector.'

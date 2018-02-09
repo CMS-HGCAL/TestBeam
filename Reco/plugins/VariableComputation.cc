@@ -157,7 +157,6 @@ class VariableComputation : public edm::EDProducer {
 		bool performDNNAnalysis;
 		std::string DNN_InputFile;
 		uint NColorsInputImage;
-  		tf::Tensor* fake_discriminator_tensor;
   		tf::Tensor* rec_energy_tensor;
   		tf::Tensor* rec_position_tensor;
   		tf::Tensor* inputImage_tensor;
@@ -247,8 +246,6 @@ VariableComputation::VariableComputation(const edm::ParameterSet& iConfig) {
 
 	//for DNN evaluations
 	if (performDNNAnalysis) {
-		tf::Shape dShape[] = {1, 1};
-	  	fake_discriminator_tensor = new tf::Tensor(2, dShape);
 		tf::Shape eShape[] = {1, 1};
 	  	rec_energy_tensor = new tf::Tensor(2, eShape);
 		tf::Shape pShape[] = {1, 2};
@@ -263,7 +260,6 @@ VariableComputation::VariableComputation(const edm::ParameterSet& iConfig) {
 	
 	  	DNN_session->addInput(pkeep_tensor, "pkeep_dp");	//must match the name in the training
 	  	DNN_session->addInput(inputImage_tensor, "real_images");	//must match the name in the training
-	  	DNN_session->addOutput(fake_discriminator_tensor, "discriminator/realDiscriminator");	//must match the name in the training
 	  	DNN_session->addOutput(rec_energy_tensor, "energy_regressor/energy_regressor");	//must match the name in the training
 	  	DNN_session->addOutput(rec_position_tensor, "position_regressor/position_regressor");	//must match the name in the training	
 	
@@ -282,7 +278,6 @@ VariableComputation::VariableComputation(const edm::ParameterSet& iConfig) {
 
 VariableComputation::~VariableComputation() {
 	if (performDNNAnalysis) {
-		delete fake_discriminator_tensor;
 		delete rec_energy_tensor;
 		delete rec_position_tensor;
 		delete inputImage_tensor;
@@ -730,13 +725,11 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		float DNN_rec_energy = *(rec_energy_tensor->getPtr<float>(0, 0));
 		float DNN_rec_posX = *(rec_position_tensor->getPtr<float>(0, 0));
 		float DNN_rec_posY = *(rec_position_tensor->getPtr<float>(0, 1));
-		float DNN_fake_discr = *(fake_discriminator_tensor->getPtr<float>(0, 0));
 
 
 		UR->add("DNNEnergy", DNN_rec_energy);
 		UR->add("DNNPosX", DNN_rec_posX);
 		UR->add("DNNPosY", DNN_rec_posY);
-		UR->add("DNNFakeDiscriminator", DNN_fake_discr);
 		
 		if (dwctrack->valid&&(dwctrack->referenceType>10)) { 
 			UR->add("PosResX_DNN",(DNN_rec_posX-dwctrack->DWCExtrapolation_XY(1).first));		//comparison to the extrapolation to the first layer
