@@ -199,9 +199,9 @@ void HGCalTBGANSimSource::produce(edm::Event & event) {
 		v = x+x_min;
 		int y = y_index;
 		y*=2;
-		if (v%2 == 1) y += 1;
-		u = y + y_min - v; 
-		
+		y += y_min;
+		if ((v-y_min)%2 == 1) y += 1;
+		u = (y - v)/2; 
 
 		//09 February: ensured that output images here are identical to the ones computed from the python interface
 		float energy = *(simImage->getPtr<float>(0, y_index, x_index, l));
