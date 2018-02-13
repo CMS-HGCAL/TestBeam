@@ -169,6 +169,8 @@ void NumpyConverter::analyze(const edm::Event& event, const edm::EventSetup& set
 	for(auto Rechit : *Rechits) {	
     float energy = Rechit.energy();
     if ((energyNoiseCut>-1) && (energy < energyNoiseCut)) continue;   //noise cut
+    int cellType = (Rechit.id()).cellType();
+    if ((cellType!=0)&&(cellType!=2)) continue;   //only half and full cells
 
 		HGCalTBElectronicsId eid( essource_.emap_.detId2eid( Rechit.id().rawId() ) );
 		HGCalTBDetId detId = HGCalTBDetId(Rechit.id().rawId());
