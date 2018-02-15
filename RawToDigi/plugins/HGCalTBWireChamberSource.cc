@@ -191,7 +191,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc2.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC2_DOWN)) ? 1 : 0;
 	dwc2.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC2_DOWN)) ? dwc_timestamps->at(DWC2_DOWN) : 0;
 	dwc2.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC2_UP)) ? 1 : 0;
-	dwc2.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC2_UP)) ? dwc_timestamps->at(DWC1_UP) : 0;
+	dwc2.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC2_UP)) ? dwc_timestamps->at(DWC2_UP) : 0;
 	if (dwc2.recordedTimeStamps>0) dwc2.averagedTimeStamp /= dwc2.recordedTimeStamps;
 
 	dwc2.goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC2_LEFT)) && validTimestamp(dwc_timestamps->at(DWC2_RIGHT));
@@ -215,7 +215,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc3.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC3_DOWN)) ? 1 : 0;
 	dwc3.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC3_DOWN)) ? dwc_timestamps->at(DWC3_DOWN) : 0;
 	dwc3.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC3_UP)) ? 1 : 0;
-	dwc3.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC3_UP)) ? dwc_timestamps->at(DWC1_UP) : 0;
+	dwc3.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC3_UP)) ? dwc_timestamps->at(DWC3_UP) : 0;
 	if (dwc3.recordedTimeStamps>0) dwc3.averagedTimeStamp /= dwc3.recordedTimeStamps;
 
 	dwc3.goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC3_LEFT)) && validTimestamp(dwc_timestamps->at(DWC3_RIGHT));
@@ -247,7 +247,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc4.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC4_DOWN)) ? 1 : 0;
 	dwc4.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC4_DOWN)) ? dwc_timestamps->at(DWC4_DOWN) : 0;
 	dwc4.recordedTimeStamps+=validTimestamp(dwc_timestamps->at(DWC4_UP)) ? 1 : 0;
-	dwc4.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC4_UP)) ? dwc_timestamps->at(DWC1_UP) : 0;
+	dwc4.averagedTimeStamp+=validTimestamp(dwc_timestamps->at(DWC4_UP)) ? dwc_timestamps->at(DWC4_UP) : 0;
 	if (dwc4.recordedTimeStamps>0) dwc4.averagedTimeStamp /= dwc4.recordedTimeStamps;
 	
 	dwc4.goodMeasurement_X = validTimestamp(dwc_timestamps->at(DWC4_LEFT)) && validTimestamp(dwc_timestamps->at(DWC4_RIGHT));
