@@ -159,8 +159,10 @@ class VariableComputation : public edm::EDProducer {
 		uint NColorsInputImage;
   		tf::Tensor* rec_energy_tensor;
   		tf::Tensor* rec_position_tensor;
+  		tf::Tensor* discriminator_tensor;
   		tf::Tensor* inputImage_tensor;
-  		tf::Tensor* pkeep_tensor;
+	  	tf::Tensor* energyInput_tensor;
+	  	tf::Tensor* positionInput_tensor;
   		tf::Graph* DNN_graph;
   		tf::Session* DNN_session;
   		//coordinate system transformation
@@ -248,20 +250,31 @@ VariableComputation::VariableComputation(const edm::ParameterSet& iConfig) {
 	if (performDNNAnalysis) {
 		tf::Shape eShape[] = {1, 1};
 	  	rec_energy_tensor = new tf::Tensor(2, eShape);
+		
 		tf::Shape pShape[] = {1, 2};
 	  	rec_position_tensor = new tf::Tensor(2, pShape);	
-		tf::Shape pkeepShape[] = {1, 1};
-	  	pkeep_tensor = new tf::Tensor(2, pkeepShape);
+		
+		tf::Shape dShape[] = {1, 1};
+	  	discriminator_tensor = new tf::Tensor(2, dShape);
+		
 		tf::Shape inputShape[] = {1, 12, 15, NColorsInputImage};
 	  	inputImage_tensor = new tf::Tensor(4, inputShape);
+		
+	  	energyInput_tensor = new tf::Tensor(2, eShape);
+
+	  	positionInput_tensor = new tf::Tensor(2, pShape);
+
 	  	DNN_graph = new tf::Graph(DNN_InputFile.c_str());
 	  	DNN_session = new tf::Session(&(*DNN_graph));
 
 	
-	  	DNN_session->addInput(pkeep_tensor, "pkeep_dp");	//must match the name in the training
 	  	DNN_session->addInput(inputImage_tensor, "real_images");	//must match the name in the training
+	  	DNN_session->addInput(energyInput_tensor, "energy_real");	//must match the name in the training
+	  	DNN_session->addInput(positionInput_tensor, "impactPoint");	//must match the name in the training
 	  	DNN_session->addOutput(rec_energy_tensor, "energy_regressor/energy_regressor");	//must match the name in the training
 	  	DNN_session->addOutput(rec_position_tensor, "position_regressor/position_regressor");	//must match the name in the training	
+	  	//todo: feed energy and impact position in
+	  	DNN_session->addOutput(discriminator_tensor, "discriminator/discriminator");	//must match the name in the training
 	
 	    x_max = 7;
 	    x_min = -7;
@@ -280,8 +293,10 @@ VariableComputation::~VariableComputation() {
 	if (performDNNAnalysis) {
 		delete rec_energy_tensor;
 		delete rec_position_tensor;
+		delete discriminator_tensor;
 		delete inputImage_tensor;
-		delete pkeep_tensor;
+	  	delete energyInput_tensor;
+	  	delete positionInput_tensor;
 		delete DNN_graph;
 		delete DNN_session;
 	}
@@ -711,25 +726,36 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 
 		}
 
-		std::vector<float> pkeep_value = {1.0};
-		pkeep_tensor->setVector(1, 0, pkeep_value);
-
+		//set the images
 		for (uint y=0; y<(range_y); y++) for (uint x=0; x<(range_x); x++) {
 			std::vector<float> layer_values;
 			for (uint b=0; b<NColorsInputImage; b++) layer_values.push_back(image_data[y][x][b]);
 			inputImage_tensor->setVector<float>(3, 0, y, x, layer_values);
 			layer_values.clear();
 		}
+
+		//set the conditions
+		std::vector<float> energy_values;
+		energy_values.push_back(rd->energy);
+		energyInput_tensor->setVector<float>(1, 0, energy_values);
+		std::vector<float> impactPosition_values;
+		impactPosition_values.push_back(dwctrack->DWCExtrapolation_XY(0).first);	//reference is the dwc track extrapolated impact point
+		impactPosition_values.push_back(dwctrack->DWCExtrapolation_XY(0).second);	//reference is the dwc track extrapolated impact point
+		positionInput_tensor->setVector<float>(1, 0, impactPosition_values);
+
+
 		DNN_session->run();
 
 		float DNN_rec_energy = *(rec_energy_tensor->getPtr<float>(0, 0));
 		float DNN_rec_posX = *(rec_position_tensor->getPtr<float>(0, 0));
 		float DNN_rec_posY = *(rec_position_tensor->getPtr<float>(0, 1));
+		float DNN_discriminator = *(discriminator_tensor->getPtr<float>(0, 0));
 
 
 		UR->add("DNNEnergy", DNN_rec_energy);
 		UR->add("DNNPosX", DNN_rec_posX);
 		UR->add("DNNPosY", DNN_rec_posY);
+		UR->add("DNNFakeDiscriminator", DNN_discriminator);
 		
 		if (dwctrack->valid&&(dwctrack->referenceType>10)) { 
 			UR->add("PosResX_DNN",(DNN_rec_posX-dwctrack->DWCExtrapolation_XY(1).first));		//comparison to the extrapolation to the first layer
