@@ -214,7 +214,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	
 	int evId = event.id().event();
 	int run = rd->run;
-	int pdgID = rd->pdgID;
+	//int pdgID = rd->pdgID;
 	double energy = rd->energy;
 	
 	if (rd->booleanUserRecords.has("hasDanger")&&rd->booleanUserRecords.get("hasDanger")) {
@@ -223,10 +223,12 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	}
 
 	#ifndef DEBUG
+		/*
 		if (pdgID != 13) {
 			std::cout<<"Run is not a dedicated muon run."<<std::endl;
 			return;
 		}
+		*/
 	#endif
 
 	#ifdef DEBUG
@@ -243,13 +245,14 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	}
 
 	//obtain the track information
-	edm::Handle<HGCalTBDWCTrack> dwctrack;
-	event.getByToken(DWCTrackToken, dwctrack);
+	//edm::Handle<HGCalTBDWCTrack> dwctrack;
+	//event.getByToken(DWCTrackToken, dwctrack);
 	//Obtain the wire chamber information
-	edm::Handle<std::map<int, WireChamberData> > dwcs;
-	event.getByToken(DWCToken, dwcs);
+	//edm::Handle<std::map<int, WireChamberData> > dwcs;
+	//event.getByToken(DWCToken, dwcs);
 	
 	bool vetoEvent = true;
+	/*
 	if (dwctrack->valid) {
 		if ((dwctrack->referenceType==15) && (dwctrack->chi2_x<=10.) && (dwctrack->chi2_y<=10.)) { 
 			vetoEvent = vetoEvent&&false;
@@ -263,12 +266,13 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	} else if (dwcs->at(1).goodMeasurement) {
 		vetoEvent = vetoEvent&&false;
 	}
+	*/vetoEvent = false;
 
 	if (vetoEvent) return;
 
 	std::map<int, double> layer_ref_x;
 	std::map<int, double> layer_ref_y;
-
+	/*
 	for(int ib = 0; ib<m_NHexaBoards; ib++) {
 
 		int layer=essource_.layout_.getLayerWithModuleIndex(ib).layerID()+1;
@@ -308,7 +312,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 			}
 		}
 	}
-
+	*/
 	//opening Rechits
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_Token, Rechits);
@@ -316,7 +320,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	
 	//fill the rechits:
 	for(auto Rechit : *Rechits) {	
-		int layer = (Rechit.id()).layer();
+		//int layer = (Rechit.id()).layer();
 
 		HGCalTBElectronicsId eid( essource_.emap_.detId2eid( Rechit.id().rawId() ) );
 		int skiroc = eid.iskiroc_rawhit();
@@ -328,8 +332,10 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
   		int key = board*1000+skiroc*100+channel;
   		double energy = (Rechit.checkFlag(HGCalTBRecHit::kGood)&&(!Rechit.checkFlag(HGCalTBRecHit::kHighGainSaturated))) ? Rechit.energyHigh() : 0;
 		
-  		double DUT_x = layer_ref_x[layer];
-  		double DUT_y = layer_ref_y[layer];
+  		//double DUT_x = layer_ref_x[layer];
+  		double DUT_x = 0.;
+  		//double DUT_y = layer_ref_y[layer];
+  		double DUT_y = 0.;
 
 
 		#ifdef DEBUG
