@@ -43,6 +43,7 @@ class UserRecords {
         return (it!=elements.end());
       };                
       T get(const std::string key) const{
+        if (!has(key)) return 0;
         return this->elements.at(key);  //"[]" operator is a non-const labelled operator
       };              
 }; 
