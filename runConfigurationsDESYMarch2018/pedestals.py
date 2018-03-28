@@ -4,36 +4,13 @@ import FWCore.ParameterSet.VarParsing as VarParsing
 import os,sys
 
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
-options.register('dataFile',
-                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/ORM_raw/HexaData_Run0492.raw',
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 'file containing raw input')
 
-options.register('outputFile',
-                 '/afs/cern.ch/user/t/tquast/Desktop/tb2018_DESY/quickAnalysis/pedestals/pedestal_0492.root',
+options.register('runNumber',
+                496,
                  VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 'Output file where pedestal histograms are stored')
-
-
-options.register('pedestalHighGainFile',
-                 '/afs/cern.ch/user/t/tquast/Desktop/tb2018_DESY/quickAnalysis/pedestals/pedestalHG_0492.txt',
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 'Output file where pedestal histograms are stored')
-
-options.register('pedestalLowGainFile',
-                 '/afs/cern.ch/user/t/tquast/Desktop/tb2018_DESY/quickAnalysis/pedestals/pedestalLG_0492.txt',
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 'Output file where pedestal histograms are stored')
-
-options.register('noisyChannelsFile',
-                 '/afs/cern.ch/user/t/tquast/Desktop/tb2018_DESY/quickAnalysis/pedestals/noisyChannels_0492.txt',
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 'Output file where pedestal histograms are stored')
+                 VarParsing.VarParsing.varType.int,
+                 'RunNumber.'
+                )
 
 
 options.register('electronicMap',
@@ -94,10 +71,10 @@ options.register('NHexaBoards',
 
 
 options.register('reportEvery',
-                1000,
+                1,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
-                 'Path to the file from which the DWCs are read.'
+                 ''
                 )
 
 options.maxEvents = -1
@@ -143,7 +120,7 @@ elif options.dataFormat==1 :
 
 process.source = cms.Source("HGCalTBRawDataSource",
                             ElectronicMap=cms.untracked.string(electronicMap),
-                            fileNames=cms.untracked.vstring("file:%s"%(options.dataFile)),
+                            fileNames=cms.untracked.vstring("file:/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/ORM_raw/HexaData_Run%04d.raw"%(options.runNumber)),
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
                             NumberOf32BitsWordsPerReadOut=cms.untracked.uint32(30787),
                             NumberOfBytesForTheHeader=cms.untracked.uint32(numberOfBytesForTheHeader),          #for the new headers/trailers from run 1241 onward: 12
@@ -170,7 +147,7 @@ process.maxEvents = cms.untracked.PSet(
 
 process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in cms.Path if you want to check which collections are in the event
 
-process.TFileService = cms.Service("TFileService", fileName=cms.string(options.outputFile))
+process.TFileService = cms.Service("TFileService", fileName=cms.string('/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/pedestals/pedestal_%04d.root'%(options.runNumber)))
 process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         SensorSize=cms.untracked.int32(128),
                                         EventPlotter=cms.untracked.bool(False),
@@ -184,10 +161,10 @@ process.pedestalplotter = cms.EDAnalyzer("PedestalPlotter",
                                          InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                          ElectronicMap=cms.untracked.string(electronicMap),
                                          NTSForPedestalComputation=cms.untracked.int32(options.NTSForPedestalComputation),
-                                         HighGainPedestalFileName=cms.untracked.string(options.pedestalHighGainFile),
-                                         LowGainPedestalFileName=cms.untracked.string(options.pedestalLowGainFile),
+                                         HighGainPedestalFileName=cms.untracked.string("/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/pedestals/pedestalHG_%04d.txt"%(options.runNumber)),
+                                         LowGainPedestalFileName=cms.untracked.string("/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/pedestals/pedestalLG_%04d.txt"%(options.runNumber)),
                                          WriteNoisyChannelsFile=cms.untracked.bool(True),
-                                         NoisyChannelsFileName=cms.untracked.string(options.noisyChannelsFile),
+                                         NoisyChannelsFileName=cms.untracked.string("/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/pedestals/noisyChannels_%04d.txt"%(options.runNumber)),
 )
 
 

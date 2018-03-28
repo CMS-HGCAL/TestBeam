@@ -67,6 +67,12 @@ double Lambda0PosSeptember2017[18] = {0.15558,0.237188,0.318797,0.400405,0.48201
 double weightsSeptember2017[18] = {24.523, 17.461, 17.461, 17.461, 27.285, 38.737, 75.867, 83.382, 55.394, 55.823, 55.823, 55.394, 66.824, 67.253, 56.252, 56.252, 79.871, 103.49};
 double MIP2GeVSeptember2017 = 84.9e-6;
 
+//to be configured
+double X0PosMarch2018[3] = {0.08, 4.7+0.28, 4.7+0.28+0.01};
+double Lambda0PosMarch2018[3] = {1., 1., 1.};
+double weightsMarch2018[3] = {1., 1., 1.};
+double MIP2GeVMarch2018 = 84.9e-6;
+
 std::vector<double> getEigenValuesOfSymmetrix3x3(double A11, double A22, double A33, double A12, double A13, double A23) {
 	//eigenvalue computation: https://arxiv.org/pdf/1306.6291.pdf
 	double b = A11 + A22 + A33;
@@ -308,12 +314,14 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	edm::Handle<RunData> rd;
 	event.getByToken(RunDataToken, rd);
 	
-
 	edm::Handle<HGCalTBDWCTrack> dwctrack;
-	event.getByToken(DWCTrackToken, dwctrack);
-
 	edm::Handle<std::map<int, WireChamberData> > dwcs;
-	event.getByToken(DWCToken, dwcs);
+	try {
+		event.getByToken(DWCTrackToken, dwctrack);
+		event.getByToken(DWCToken, dwcs);
+	} catch(const std::exception& e) {
+	}
+
 
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_Token, Rechits);
@@ -358,6 +366,11 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 			N_layers_EE = 4;		
 			N_layers_FH = 6;		
 			N_layers_BH = 12;
+			break;
+  	case 5:
+			N_layers_EE = 3;		
+			N_layers_FH = 0;		
+			N_layers_BH = 0;
 			break;
 	}
 	std::vector<HGCalTBRecHit> rechits_selected;
@@ -435,7 +448,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	UR->add("50PercentQuantileRechitSpectrum", (NRechits>4) ? rechit_energies[N50PercentsRechits-1] : -1.);
 	UR->add("75PercentQuantileRechitSpectrum", (NRechits>4) ? rechit_energies[N75PercentsRechits-1] : -1.);
 
-
 	/**********                                 ****************/
 	//determine inertia tensor:
 	Ixx=Iyy=Izz=Ixy=Ixz=Iyz=0;
@@ -492,6 +504,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		//most intensive cell
 		it->second->calculateCenterPosition(CONSIDERALL, MOSTINTENSIVE);
 		energyE1_tot += it->second->getTotalWeight();
+		
 		energyE1_layer[it->first-1] = it->second->getTotalWeight();
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
 		NE1_layer[it->first-1] = (int)relevantHitPositions.size();
@@ -560,6 +573,12 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 			X0 = X0PosSeptember2017[it->first-1];
 			lambda0 = Lambda0PosSeptember2017[it->first-1];
 		}
+		else if (rd->configuration==5) {
+			weight = weightsMarch2018[it->first-1]*1e-3;
+			MIP2GeV = MIP2GeVMarch2018;
+			X0 = X0PosMarch2018[it->first-1];
+			lambda0 = Lambda0PosMarch2018[it->first-1];
+		}
 
 		depthX0 += X0*energyAll_layer[it->first-1];
 		depthLambda0 += lambda0*energyAll_layer[it->first-1];
@@ -575,9 +594,8 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		energyE61_weight += energyE61_layer[it->first-1]*(MIP2GeV+weight); 
 		energyAll_weight += energyAll_layer[it->first-1]*(MIP2GeV+weight); 
 
-
 		//position resolution
-		if (dwctrack->valid&&(dwctrack->referenceType>10)) { 
+		if (rd->booleanUserRecords.get("hasValidDWCMeasurement")&&dwctrack->valid&&(dwctrack->referenceType>10)) { 
 			it->second->calculateCenterPosition(CONSIDERNINETEEN, LOGWEIGHTING_35_10);
 			//investigate here
 			//x = -x in DWC coordinate system
@@ -655,7 +673,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	ReadCurrentDWCWindows(1680);
 	std::vector<double> cell_chip1_ch36_energySpectra; for (size_t l=0; (int)l<m_NLayers; l++) cell_chip1_ch36_energySpectra.push_back(-1.);
 	
-	if (dwctrack->valid&&(dwctrack->referenceType>=7) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) {
+	if (rd->booleanUserRecords.get("hasValidDWCMeasurement")&&dwctrack->valid&&(dwctrack->referenceType>=7) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) {
 
 		for(auto Rechit : rechits_selected) {	
 

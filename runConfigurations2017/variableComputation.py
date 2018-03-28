@@ -38,7 +38,7 @@ options.register('hgcalLayout',
                  'Name of the hgcal layout file in HGCal/CondObjects/data/')
 
 options.register('layerPositionFile',
-                 '/afs/cern.ch/user/t/tquast/CMSSW_8_0_0_pre5/src/HGCal/CondObjects/data/layer_distances_CERN_Hexaboard_September_7EELayers_10FHLayers_V0.txt',
+                 '/afs/cern.ch/user/t/tquast/CMSSW_9_3_0_/src/HGCal/CondObjects/data/layer_distances_CERN_Hexaboard_September_7EELayers_10FHLayers_V0.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'File indicating the layer positions in mm.')
