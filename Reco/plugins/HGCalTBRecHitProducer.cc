@@ -54,10 +54,15 @@ void HGCalTBRecHitProducer::beginJob()
 
         int key = ib * 10000 + iski * 100 + ichan;
 
+        os.str("");os<<"Channel"<<ichan<<"__LGDistr";
+        distrLG[key] = dir.make<TH1F>(os.str().c_str(),os.str().c_str(), 100, 0., 50 );
+        os.str("");os<<"Channel"<<ichan<<"__HGDistr";
+        distrHG[key] = dir.make<TH1F>(os.str().c_str(),os.str().c_str(), 100, 0., 500);
+
         os.str("");os<<"Channel"<<ichan<<"__LGShape";
-        shapesLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 0, 225, 100, -0.2, 1.);
+        shapesLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, -75, 225, 150, -0.75, 1.);
         os.str("");os<<"Channel"<<ichan<<"__HGShape";
-        shapesHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 0, 225, 100, -0.2, 1.);
+        shapesHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, -75, 225, 150, -0.75, 1.);
         
         os.str("");os<<"Channel"<<ichan<<"__ToARiseVsTMaxLG";
         ToARisevsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
@@ -347,6 +352,9 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       } else {
         fitter.run(sampleT, sampleLG, fitresultLG);
         fitter.run(sampleT, sampleHG, fitresultHG);
+
+	distrHG[key]->Fill(fitresultHG.amplitude);
+	distrLG[key]->Fill(fitresultLG.amplitude);
 
         if (fitresultLG.status==0) {
           m_h_LowGainVsTOTAmpl[10*iboard + iski%4]->Fill(totGain, fitresultLG.amplitude);   
