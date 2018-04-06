@@ -62,6 +62,8 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   int m_NHexaBoards;
 
   bool investigatePulseShape;
+  std::map<int, TH1F*> distrLG;
+  std::map<int, TH1F*> distrHG;
   std::map<int, TH2F*> shapesLG;
   std::map<int, TH2F*> shapesHG;
   std::map<int, TH2F*> ToARisevsTMaxLG;
