@@ -219,7 +219,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
 
   edm::Handle<HGCalTBGlobalTimestamps> gts;
-  event.getByToken(HGCalTBGlobalTimestampsToken, gts);
+  //event.getByToken(HGCalTBGlobalTimestampsToken, gts);
 
   std::unique_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection);
 
@@ -261,9 +261,10 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     channel_for_tree = ichannel;
     int key = iboard * 10000 + (iski % 4) * 100 + ichannel;
 
-    uint32_t globalTimestamp = gts->skiroc_to_timestamps.at(iski);
+    //uint32_t globalTimestamp = gts->skiroc_to_timestamps.at(iski);
 
-    globalTimestamp_for_tree = globalTimestamp;
+    //globalTimestamp_for_tree = globalTimestamp;
+    globalTimestamp_for_tree = -1;
 
     MIPEnergy_for_tree =  HG_max_for_tree =  LG_max_for_tree =  TMax_HG_for_tree =  TMax_LG_for_tree =  TOT_for_tree =  TOA_rise_for_tree =  TOA_fall_for_tree =  chi2_HG_for_tree =  chi2_LG_for_tree =  trise_HG_for_tree =  trise_LG_for_tree =  errortmax_HG_for_tree =  errortmax_LG_for_tree =  erroramplitude_HG_for_tree =  erroramplitude_LG_for_tree = -999;
 
