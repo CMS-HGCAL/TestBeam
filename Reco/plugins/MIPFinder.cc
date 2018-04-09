@@ -1,5 +1,5 @@
 /* 
- * Finding MIP spectra as a function of reconstructed impact positions from DWC measurements.
+ * Determination of the position resolution of the setup.
  */
 
 /**
@@ -46,7 +46,19 @@
 #include <set>
 
 
+bool rejectFromCommonModeNoise(edm::Handle<std::map<int, commonModeNoise> > &cmMap, int iski, int criterion=0) {
+	if (criterion==0) return false;
+	else if (criterion==1) {
+		for (size_t ts=1; ts<=6; ts++)	if (fabs(cmMap->at(iski).fullHG[ts]) > 200.) return true;
+		return false;
+	}
+	else if (criterion==2) {
+		for (size_t ts=1; ts<=6; ts++)	if (cmMap->at(iski).fullHG[ts] < -200.) return true;
+		return false;
+	}
+	else return false;
 
+}
  
 
 typedef std::map<int, std::vector<double> > WindowMap;
@@ -105,7 +117,6 @@ class MIPFinder : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		double max_dim_y_DUT;
 
 		int commonModeNoiseRejectionType;
-		bool rejectFromCommonModeNoise(edm::Handle<std::map<int, commonModeNoise> > &cmMap, int iski, int criterion);
 };
 
 MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {	
@@ -231,7 +242,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 		event.getByToken(CommonModeNoiseMap_Token, cmMap);
 	}
 
-	//Obtain the track information
+	//obtain the track information
 	edm::Handle<HGCalTBDWCTrack> dwctrack;
 	event.getByToken(DWCTrackToken, dwctrack);
 	//Obtain the wire chamber information
@@ -239,7 +250,6 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	event.getByToken(DWCToken, dwcs);
 	
 	bool vetoEvent = true;
-	
 	if (dwctrack->valid) {
 		if ((dwctrack->referenceType==15) && (dwctrack->chi2_x<=10.) && (dwctrack->chi2_y<=10.)) { 
 			vetoEvent = vetoEvent&&false;
@@ -253,13 +263,12 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	} else if (dwcs->at(1).goodMeasurement) {
 		vetoEvent = vetoEvent&&false;
 	}
-	vetoEvent = false;
 
 	if (vetoEvent) return;
 
 	std::map<int, double> layer_ref_x;
 	std::map<int, double> layer_ref_y;
-	
+
 	for(int ib = 0; ib<m_NHexaBoards; ib++) {
 
 		int layer=essource_.layout_.getLayerWithModuleIndex(ib).layerID()+1;
@@ -299,7 +308,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 			}
 		}
 	}
-	
+
 	//opening Rechits
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_Token, Rechits);
@@ -447,20 +456,6 @@ void MIPFinder::ReadCurrentDWCWindows(int this_run) {
 		}
 	}
 }
-
-bool MIPFinder::rejectFromCommonModeNoise(edm::Handle<std::map<int, commonModeNoise> > &cmMap, int iski, int criterion=0) {
-	if (criterion==0) return false;
-	else if (criterion==1) {
-		for (size_t ts=1; ts<=6; ts++)	if (fabs(cmMap->at(iski).fullHG[ts]) > 200.) return true;
-		return false;
-	}
-	else if (criterion==2) {
-		for (size_t ts=1; ts<=6; ts++)	if (cmMap->at(iski).fullHG[ts] < -200.) return true;
-		return false;
-	}
-	else return false;
-}
-
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(MIPFinder);
