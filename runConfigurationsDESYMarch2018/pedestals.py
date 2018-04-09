@@ -14,7 +14,7 @@ options.register('runNumber',
 
 
 options.register('electronicMap',
-                 'map_CERN_Hexaboard_July_6Layers.txt',
+                 'map_DESY_March2018_config4_V0.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Name of the electronic map file in HGCal/CondObjects/data/')
@@ -62,16 +62,15 @@ options.register('dataFormat',
 
 
 options.register('NHexaBoards',
-                4,
+                3,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Number of hexaboards for analysis.'
                 )
 
 
-
 options.register('reportEvery',
-                1,
+                1000,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  ''
@@ -147,7 +146,7 @@ process.maxEvents = cms.untracked.PSet(
 
 process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in cms.Path if you want to check which collections are in the event
 
-process.TFileService = cms.Service("TFileService", fileName=cms.string('/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/pedestals/pedestal_%04d.root'%(options.runNumber)))
+process.TFileService = cms.Service("TFileService", fileName=cms.string('/home/tquast/pedestals/pedestal_%04d.root'%(options.runNumber)))
 process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         SensorSize=cms.untracked.int32(128),
                                         EventPlotter=cms.untracked.bool(False),
@@ -161,10 +160,10 @@ process.pedestalplotter = cms.EDAnalyzer("PedestalPlotter",
                                          InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                          ElectronicMap=cms.untracked.string(electronicMap),
                                          NTSForPedestalComputation=cms.untracked.int32(options.NTSForPedestalComputation),
-                                         HighGainPedestalFileName=cms.untracked.string("/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/pedestals/pedestalHG_%04d.txt"%(options.runNumber)),
-                                         LowGainPedestalFileName=cms.untracked.string("/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/pedestals/pedestalLG_%04d.txt"%(options.runNumber)),
+                                         HighGainPedestalFileName=cms.untracked.string("/home/tquast/tbMarch2018_DESY/pedestals/pedestalHG_%04d.txt"%(options.runNumber)),
+                                         LowGainPedestalFileName=cms.untracked.string("/home/tquast/tbMarch2018_DESY/pedestals/pedestalLG_%04d.txt"%(options.runNumber)),
                                          WriteNoisyChannelsFile=cms.untracked.bool(True),
-                                         NoisyChannelsFileName=cms.untracked.string("/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/pedestals/noisyChannels_%04d.txt"%(options.runNumber)),
+                                         NoisyChannelsFileName=cms.untracked.string("/home/tquast/tbMarch2018_DESY/pedestals/noisyChannels_%04d.txt"%(options.runNumber)),
 )
 
 

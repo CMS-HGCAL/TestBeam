@@ -196,6 +196,8 @@ VariableComputation::VariableComputation(const edm::ParameterSet& iConfig) {
 	m_NHexaBoards= iConfig.getUntrackedParameter<int>("NHexaBoards", 17);
 	m_NLayers= iConfig.getUntrackedParameter<int>("NLayers", 17);
 
+	MIP_cut_for_energy = iConfig.getUntrackedParameter<double>("CellEnergyCut", 4.);
+	
 	DNN_InputFile = iConfig.getUntrackedParameter<std::string>("DNNInputFile", "");
 	NColorsInputImage = iConfig.getUntrackedParameter<int>("NColorsInputImage", 17);
 	performDNNAnalysis = !(DNN_InputFile=="");
@@ -203,7 +205,6 @@ VariableComputation::VariableComputation(const edm::ParameterSet& iConfig) {
 	produces <UserRecords<double> >(m_UserRecordCollectionName);
 
 
-	MIP_cut_for_energy = 4.;
 
 
 	for( int ilayer=0; ilayer<m_NLayers; ilayer++ ){

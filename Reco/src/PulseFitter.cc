@@ -12,6 +12,8 @@ double _alpha=10.;
 double _trise=50.;
 double _noise=8.;
 
+//new shape motivated here: H. Spieler - Semiconductor Detector Systems, pg. 179 for a CR2-RC
+//implemented by A. Lobanov, suggested by F. Pitters, 06 April 2018
 double pulseShape_fcn(double t, double tmax, double amp, double amp0 = 0., double tau = 19., int n_ord = 3){
 
     const double ampl_norm = 1.85; // amplitude normalization factor for tau = 19, n = 3
@@ -36,7 +38,7 @@ double pulseShape_chi2(const double *x)
 }
 
 /*
-/// Old pulse shape
+/// Old pulse shape before 06 April 2018
 double pulseShape_fcn(double t, double tmax, double amp)
 {
   if( t>tmax-_trise ) return amp*std::pow( (t-(tmax-_trise))/_trise,_alpha )*std::exp(-_alpha*(t-tmax)/_trise);

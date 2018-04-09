@@ -42,7 +42,7 @@ options.register('setupConfiguration',
                 )
 
 options.register('NHexaBoards',
-                4,
+                3,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Number of hexaboards for analysis.'
@@ -56,7 +56,7 @@ options.register('SubtractPedestal',
                 )
 
 options.register('electronicMap',
-                 'map_CERN_Hexaboard_July_6Layers.txt',
+                 'map_DESY_March2018_config4_V0.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Name of the electronic map file in HGCal/CondObjects/data/')
@@ -68,7 +68,7 @@ options.register('adcCalibrations',
                  'Name of the hgcal ADC to MIP calibration file in HGCal/CondObjects/data/')
 
 options.register('hgcalLayout',
-                 'layerGeom_oct2017_h2_17layers.txt',
+                 'layerGeom_desymarch2018_configuration4.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Name of the hgcal layout file in HGCal/CondObjects/data/')
@@ -79,34 +79,6 @@ options.register('layerPositionFile',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'File indicating the layer positions in mm.')
-
-options.register('pathsToMIPWindowFiles',
-                 '',
-                 VarParsing.VarParsing.multiplicity.list,
-                 VarParsing.VarParsing.varType.string,
-                 'Paths to the file containing the corresponding cuts on the reconstructed impact positions on DWC E.'
-                )
-
-options.register('NBins',
-                60,
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.int,
-                 'Bins for the DWC search window.'
-                )
-
-options.register('DimXDUT',
-                30.,
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.float,
-                 'MIP search window on DWCE in x-coordinate [mm].'
-                )
-
-options.register('DimYDUT',
-                30.,
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.float,
-                 'MIP search window on DWCE in y-coordinate [mm].'
-                )
 
 options.register('reportEvery',
                 1000,
@@ -126,7 +98,7 @@ hgcalLayout="HGCal/CondObjects/data/%s" % options.hgcalLayout
 adcCalibrations="HGCal/CondObjects/data/%s" % options.adcCalibrations
 
 ################################
-process = cms.Process("mipfindinganalysis")
+process = cms.Process("analysis")
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)
 )
@@ -149,9 +121,9 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             fileNames=cms.untracked.vstring("file:/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/ORM_raw/HexaData_Run%04d.raw"%options.runNumber),
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
                             NumberOf32BitsWordsPerReadOut=cms.untracked.uint32(30787),
-                            NumberOfBytesForTheHeader=cms.untracked.uint32(12),          #for the new headers/trailers from run 1241 onward: 12
-                            NumberOfBytesForTheTrailer=cms.untracked.uint32(4),         #for the new headers/trailers from run 1241 onward: 4
-                            NumberOfBytesForTheEventTrailers=cms.untracked.uint32(12),   #for the new headers/trailers from run 1241 onward: 12
+                            NumberOfBytesForTheHeader=cms.untracked.uint32(12),          
+                            NumberOfBytesForTheTrailer=cms.untracked.uint32(4),         
+                            NumberOfBytesForTheEventTrailers=cms.untracked.uint32(12),  
                             NSkipEvents=cms.untracked.uint32(0),
                             ReadTimeStamps=cms.untracked.bool(readTimeStamps),
                             DataFormats=cms.untracked.uint32(1),
@@ -162,7 +134,7 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             setupConfiguration=cms.untracked.uint32(options.setupConfiguration)
 )
 
-process.TFileService = cms.Service("TFileService", fileName = cms.string("/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/analysis/analysed_%04d.root"%options.runNumber))
+process.TFileService = cms.Service("TFileService", fileName = cms.string("/home/tquast/tbMarch2018_DESY/analysis/analysed_%04d.root"%options.runNumber))
 
 
 process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
@@ -172,9 +144,9 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         ElectronicMap=cms.untracked.string(electronicMap),
                                         SubtractPedestal=cms.untracked.bool(bool(1)),
                                         MaskNoisyChannels=cms.untracked.bool(bool(0)),
-                                        HighGainPedestalFileName=cms.untracked.string("/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/pedestals/pedestalHG_%04d.txt"%(options.runNumber)),
-                                        LowGainPedestalFileName=cms.untracked.string("/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/pedestals/pedestalLG_%04d.txt"%(options.runNumber)),
-                                        NoisyChannelsFileName=cms.untracked.string("/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/pedestals/noisyChannels_%04d.txt"%(options.runNumber))
+                                        HighGainPedestalFileName=cms.untracked.string("/home/tquast/tbMarch2018_DESY/pedestals/pedestalHG_%04d.txt"%(options.runNumber)),
+                                        LowGainPedestalFileName=cms.untracked.string("/home/tquast/tbMarch2018_DESY//pedestals/pedestalLG_%04d.txt"%(options.runNumber)),
+                                        NoisyChannelsFileName=cms.untracked.string("/home/tquast/tbMarch2018_DESY/pedestals/noisyChannels_%04d.txt"%(options.runNumber))
 )
 
 process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
@@ -196,7 +168,7 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         DetectorLayout = cms.untracked.string(hgcalLayout),
                                         ADCCalibrations = cms.untracked.string(adcCalibrations),                                       
                                         MaskNoisyChannels=cms.untracked.bool(bool(0)),
-                                        ChannelsToMaskFileName=cms.untracked.string("/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/pedestals/noisyChannels_%04d.txt"%(options.runNumber)),
+                                        ChannelsToMaskFileName=cms.untracked.string("/home/tquast/pedestals/noisyChannels_%04d.txt"%(options.runNumber)),
                                         NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                         TimeSample3ADCCut = cms.untracked.double(15.),
                                         investigatePulseShape = cms.untracked.bool(True),
@@ -214,22 +186,15 @@ process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",
 )
 
 
-process.mipfindinganalysis = cms.EDAnalyzer("MIPFinder",
+process.cellenergyplotting = cms.EDAnalyzer("CellEnergyPlotter",
                                 RUNDATA = cms.InputTag("source", "RunData" ), 
-                                MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
-                                DWCTRACKS = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" ), 
                                 HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
                                 HGCALTBCOMMONMODENOISE = cms.InputTag("rechitproducer","HGCALTBCOMMONMODENOISEMAP" ),
                                 ElectronicMap = cms.untracked.string(electronicMap),
                                 DetectorLayout=cms.untracked.string(hgcalLayout),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
-                                n_bins_DWCE = cms.int32(options.NBins),
-                                max_dim_x_DUT = cms.double(options.DimXDUT),
-                                max_dim_y_DUT = cms.double(options.DimYDUT),
-                                pathsToMIPWindowFiles = cms.vstring(options.pathsToMIPWindowFiles),
                                 commonModeNoiseRejectionType = cms.int32(0)       #0: none, else 1-..., default: 0 
-
-                              )
+)
 
 process.variablecomputation = cms.EDProducer("VariableComputation",
                                 RUNDATA = cms.InputTag("source", "RunData" ), 
@@ -243,13 +208,14 @@ process.variablecomputation = cms.EDProducer("VariableComputation",
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                 NLayers=cms.untracked.int32(options.NHexaBoards),
                                 DNNInputFile = cms.untracked.string(""),
-                                NColorsInputImage = cms.untracked.int32(-1)
-                              )
+                                NColorsInputImage = cms.untracked.int32(-1),
+                                CellEnergyCut = cms.untracked.double(0.5)
+)
 
 process.ntupelizer = cms.EDAnalyzer("NTupelizer",
                                 USERRECORDS = cms.InputTag("variablecomputation","VariableUserRecords" ),
-                                UserRecordKeys = cms.vstring(["NRechits", "I_EV1", "I_EV2", "E1_tot", "E7_tot", "E19_tot", "E19_tot", "E37_tot", "EAll_tot", "depthX0", "NAll_layer1", "NAll_layer2", "NAll_layer3", "E1PerE7_layer1", "E1PerE7_layer2", "E1PerE7_layer3", "E7PerE19_layer1", "E7PerE19_layer2", "E7PerE19_layer3"])
-                            )
+                                UserRecordKeys = cms.vstring(["NRechits", "I_EV1", "I_EV2", "E1_tot", "E7_tot", "E19_tot", "E19_tot", "E37_tot", "EAll_tot", "depthX0", "EAll_layer1", "EAll_layer2", "EAll_layer3", "NAll_layer1", "NAll_layer2", "NAll_layer3", "E1PerE7_layer1", "E1PerE7_layer2", "E1PerE7_layer3", "E7PerE19_layer1", "E7PerE19_layer2", "E7PerE19_layer3"])
+)
 
 
 
@@ -260,5 +226,6 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 ####################################
 
 
-process.p = cms.Path(process.rawhitproducer*process.rawhitplotter*process.rechitproducer*process.rechitplotter*process.mipfindinganalysis*process.variablecomputation*process.ntupelizer)
+#process.p = cms.Path(process.rawhitproducer*process.rawhitplotter*process.rechitproducer*process.rechitplotter*process.cellenergyplotting*process.variablecomputation*process.ntupelizer)
+process.p = cms.Path(process.rawhitproducer*process.rawhitplotter*process.rechitproducer*process.rechitplotter*process.cellenergyplotting*process.variablecomputation*process.ntupelizer)
 

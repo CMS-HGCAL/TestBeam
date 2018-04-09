@@ -353,14 +353,15 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
         fitter.run(sampleT, sampleLG, fitresultLG);
         fitter.run(sampleT, sampleHG, fitresultHG);
 
-	distrHG[key]->Fill(fitresultHG.amplitude);
-	distrLG[key]->Fill(fitresultLG.amplitude);
+	       distrHG[key]->Fill(fitresultHG.amplitude);
+	       distrLG[key]->Fill(fitresultLG.amplitude);
 
         if (fitresultLG.status==0) {
           m_h_LowGainVsTOTAmpl[10*iboard + iski%4]->Fill(totGain, fitresultLG.amplitude);   
-          if (fitresultHG.status==0)
-            m_h_HighVsLowGainAmpl[10*iboard + iski%4]->Fill(fitresultLG.amplitude, fitresultHG.amplitude);    
+          recHit.setEnergyLow(fitresultLG.amplitude);
+          if (fitresultHG.status==0) m_h_HighVsLowGainAmpl[10*iboard + iski%4]->Fill(fitresultLG.amplitude, fitresultHG.amplitude);    
         }
+        if (fitresultHG.status==0) recHit.setEnergyHigh(fitresultHG.amplitude);
         
         if( rawhit.highGainADC(3) > adcConv.lowGain_highGain_transition() ){
           recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
