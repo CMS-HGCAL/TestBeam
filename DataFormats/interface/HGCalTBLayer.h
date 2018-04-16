@@ -30,10 +30,10 @@ class HGCalTBLayer
     for(std::vector<HGCalTBModule>::iterator it=_modules.begin(); it!=_modules.end(); ++it)
       if( (*it).sensorIU()==IU && (*it).sensorIV()==IV )
 	return (*it);
-    for(std::vector<HGCalTBModule>::iterator it=_modules.begin(); it!=_modules.end(); ++it)
-      (*it).print();
-    std::cout << "Major problems in method at(int IU, int IV) from HGCalTBLayer.h (" << IU << "," << IV << ") is not valid -> exit(1)" << std::endl;
-    exit(1);
+    //for(std::vector<HGCalTBModule>::iterator it=_modules.begin(); it!=_modules.end(); ++it)
+      //(*it).print();
+    //std::cout << "Major problems in method at(int IU, int IV) from HGCalTBLayer.h (" << IU << "," << IV << ") is not valid -> exit(1)" << std::endl;
+    //exit(1);
     return _modules.at(0);
   }
   const float z(){return _z;}
