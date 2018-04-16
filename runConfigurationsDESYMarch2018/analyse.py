@@ -119,6 +119,16 @@ process.ntupelizer = cms.EDAnalyzer("NTupelizer",
                                 UserRecordKeys = cms.vstring(options.VariablesToPlot)
 )
 
+process.eventdisplay = cms.EDAnalyzer("EventDisplay",
+                                RUNDATA = cms.InputTag("source", "RunData" ), 
+                                HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
+                                MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
+                                DWCTRACKS = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" ), 
+                                electronicsMap = cms.untracked.string(electronicMap),
+                                NHexaBoards=cms.untracked.int32(options.NHexaBoards),
+                                eventsToPlot=cms.vint32([1, 2, 3])
+                              )
+
 
 
 ####################################
@@ -128,5 +138,5 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 ####################################
 
 
-process.p = cms.Path(process.cellenergyplotting*process.variablecomputation*process.ntupelizer)
+process.p = cms.Path(process.cellenergyplotting*process.variablecomputation*process.ntupelizer*process.eventdisplay)
 
