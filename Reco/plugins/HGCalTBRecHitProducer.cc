@@ -344,30 +344,48 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       iski = rawhit.skiroc()%4;
       ASIC_ADC_Conversions adcConv=essource_.adccalibmap_.getASICConversions(moduleId,iski);
 
+      //fit in any case
+      fitter.run(sampleT, sampleLG, fitresultLG);
+      fitter.run(sampleT, sampleHG, fitresultHG);
+      
+      recHit.setEnergyTOT(totGain);
 
+      if (fitresultLG.status==0) {
+        distrLG[key]->Fill(fitresultLG.amplitude);
+        m_h_LowGainVsTOTAmpl[10*iboard + iski%4]->Fill(totGain, fitresultLG.amplitude);   
+        recHit.setEnergyLow(fitresultLG.amplitude);
+        if (fitresultHG.status==0) m_h_HighVsLowGainAmpl[10*iboard + iski%4]->Fill(fitresultLG.amplitude, fitresultHG.amplitude);    
+        LG_max_for_tree = fitresultLG.amplitude;
+        TMax_LG_for_tree = fitresultLG.tmax;
+        chi2_LG_for_tree = fitresultLG.chi2;
+        trise_LG_for_tree = fitresultLG.trise;
+        errortmax_LG_for_tree = fitresultLG.errortmax;
+        erroramplitude_LG_for_tree = fitresultLG.erroramplitude;        
+      }
+      if (fitresultHG.status==0) {
+        distrHG[key]->Fill(fitresultHG.amplitude);
+        recHit.setEnergyHigh(fitresultHG.amplitude);
+        HG_max_for_tree = fitresultHG.amplitude;
+        TMax_HG_for_tree = fitresultHG.tmax;
+        chi2_HG_for_tree = fitresultHG.chi2;
+        trise_HG_for_tree = fitresultHG.trise;
+        errortmax_HG_for_tree = fitresultHG.errortmax;
+        erroramplitude_HG_for_tree = fitresultHG.erroramplitude;
+      }
+
+
+      //switches between the gains for the rechit
       if( rawhit.lowGainADC(3) > adcConv.TOT_lowGain_transition() ){
         energy = totGain * adcConv.TOT_to_lowGain() * adcConv.lowGain_to_highGain();
-        recHit.setEnergyTOT(totGain);
         recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
         recHit.setFlag(HGCalTBRecHit::kGood);
       } else {
-        fitter.run(sampleT, sampleLG, fitresultLG);
-        fitter.run(sampleT, sampleHG, fitresultHG);
 
-	       distrHG[key]->Fill(fitresultHG.amplitude);
-	       distrLG[key]->Fill(fitresultLG.amplitude);
-
-        if (fitresultLG.status==0) {
-          m_h_LowGainVsTOTAmpl[10*iboard + iski%4]->Fill(totGain, fitresultLG.amplitude);   
-          recHit.setEnergyLow(fitresultLG.amplitude);
-          if (fitresultHG.status==0) m_h_HighVsLowGainAmpl[10*iboard + iski%4]->Fill(fitresultLG.amplitude, fitresultHG.amplitude);    
-        }
-        if (fitresultHG.status==0) recHit.setEnergyHigh(fitresultHG.amplitude);
         
+
         if( rawhit.highGainADC(3) > adcConv.lowGain_highGain_transition() ){
           recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
           if( fitresultLG.status==0 ){
-            recHit.setEnergyLow(fitresultLG.amplitude);
             energy = fitresultLG.amplitude * adcConv.lowGain_to_highGain();
             //_time = fitresultLG.tmax - fitresultLG.trise;
             recHit.setFlag(HGCalTBRecHit::kGood);
@@ -384,12 +402,6 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
               #endif
             } 
               
-            LG_max_for_tree = fitresultLG.amplitude;
-            TMax_LG_for_tree = fitresultLG.tmax;
-            chi2_LG_for_tree = fitresultLG.chi2;
-            trise_LG_for_tree = fitresultLG.trise;
-            errortmax_LG_for_tree = fitresultLG.errortmax;
-            erroramplitude_LG_for_tree = fitresultLG.erroramplitude;
 
             if (investigatePulseShape) {
               for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) {
@@ -401,18 +413,9 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
           }
         } else{
           if( fitresultHG.status==0 ){
-            recHit.setEnergyHigh(fitresultHG.amplitude);
             energy = fitresultHG.amplitude;
             //_time = fitresultHG.tmax - fitresultHG.trise;
             recHit.setFlag(HGCalTBRecHit::kGood);
-
-
-            HG_max_for_tree = fitresultHG.amplitude;
-            TMax_HG_for_tree = fitresultHG.tmax;
-            chi2_HG_for_tree = fitresultHG.chi2;
-            trise_HG_for_tree = fitresultHG.trise;
-            errortmax_HG_for_tree = fitresultHG.errortmax;
-            erroramplitude_HG_for_tree = fitresultHG.erroramplitude;
 
             if (investigatePulseShape) {
               for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) {

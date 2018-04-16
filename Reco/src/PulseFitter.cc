@@ -9,12 +9,12 @@
 const int numTS = 8;
 double _time[numTS],_energy[numTS];double _maxTime=225.; //seems to be mandatory since we need static function
 double _alpha=10.;
-double _trise=50.;
+double _trise=50.;    //mattermost discussion on 13 April 2018: trise=39 is favored
 double _noise=8.;
 
 //new shape motivated here: H. Spieler - Semiconductor Detector Systems, pg. 179 for a CR2-RC
 //implemented by A. Lobanov, suggested by F. Pitters, 06 April 2018
-double pulseShape_fcn(double t, double tmax, double amp, double amp0 = 0., double tau = 19., int n_ord = 3){
+double pulseShape_fcn(double t, double tmax, double amp, double amp0 = 0., double tau = 19., int n_ord = 3){     //tau = 18 instead of 19 [ns] mattermost discussion on 13 April 2018
 
     const double ampl_norm = 1.85; // amplitude normalization factor for tau = 19, n = 3
 

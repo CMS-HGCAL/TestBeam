@@ -65,7 +65,7 @@ class HGCalTBRawDataSource : public edm::ProducerSourceFromFiles
   unsigned int m_dataFormats; //0 when time stamps were save in separated .txt files, 1 since the timestamp are saved in the raw data
   bool m_readTimeStamps;
 
-  int m_beamEnergy;
+  double m_beamEnergy;
   int m_beamParticlePDGID;
   std::string m_runType;
   RUNTYPES runType;

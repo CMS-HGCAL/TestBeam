@@ -140,6 +140,7 @@ class VariableComputation : public edm::EDProducer {
 		std::map<int, SensorHitMap*> Sensors;
 
 		double energyAll_tot, energyE1_tot, energyE7_tot, energyE19_tot, energyE37_tot, energyE61_tot;
+		double energyAllHG_tot, energyAllLG_tot, energyAllTOT_tot;
 		double energyAll_weight, energyE1_weight, energyE7_weight, energyE19_weight, energyE37_weight, energyE61_weight;
 		std::vector<double> energyAll_layer, energyE1_layer, energyE7_layer, energyE19_layer, energyE37_layer, energyE61_layer;
 		std::vector<int> NAll_layer, NE1_layer, NE7_layer, NE19_layer, NE37_layer, NE61_layer;
@@ -494,7 +495,18 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	/**********                                 ****************/
 	
 	//Energy information
-	energyE1_tot = energyE7_tot = energyE19_tot = energyE37_tot = energyE61_tot = energyAll_tot = 0.;
+	energyAllHG_tot = energyAllLG_tot = energyAllTOT_tot = 0;
+	for(auto Rechit : rechits_selected) {
+		energyAllHG_tot+=Rechit.energyHigh();
+		energyAllLG_tot+=Rechit.energyLow();
+		energyAllTOT_tot+=Rechit.energyTot();
+	}
+	UR->add("EAllHG_tot", energyAllHG_tot);
+	UR->add("EAllLG_tot", energyAllLG_tot);
+	UR->add("EAllTOT_tot", energyAllTOT_tot);
+
+
+	energyE1_tot = energyE7_tot = energyE19_tot = energyE37_tot = energyE61_tot = energyAll_tot = 0.;	
 	energyE1_weight = energyE7_weight = energyE19_weight = energyE37_weight = energyE61_weight = energyAll_weight = 0.;
 	
 	depthX0 = 0, depthLambda0 = 0;
@@ -624,7 +636,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	UR->add("E37_tot", energyE37_tot);
 	UR->add("E61_tot", energyE61_tot);
 	UR->add("EAll_tot", energyAll_tot);
-
+	
 	UR->add("E1_weight", energyE1_weight);
 	UR->add("E7_weight", energyE7_weight);
 	UR->add("E19_weight", energyE19_weight);
