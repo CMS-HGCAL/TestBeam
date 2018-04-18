@@ -251,7 +251,7 @@ VariableComputation::VariableComputation(const edm::ParameterSet& iConfig) {
 	};
 
 	//for single cell spectra
-	ReadDWCWindows();
+	//ReadDWCWindows();
 
 
 	//for DNN evaluations
