@@ -205,6 +205,7 @@ void PedestalPlotter::endJob()
     os<<"ChannelMapping";
     h->SetName(os.str().c_str());
     h->SetTitle(os.str().c_str());
+    h->SetOption("colztext");
     InitTH2Poly(*h, ib, 0, 0);
     chanMap.insert( std::pair<int,TH2Poly*>(ib,h) );
     TFileDirectory hgpdir = dir.mkdir( "HighGainPedestal" );
@@ -218,6 +219,7 @@ void PedestalPlotter::endJob()
       os<<"SCA_"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
+      h->SetOption("colztext");
       InitTH2Poly(*h, ib, 0, 0);
       hgMeanMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
 
@@ -227,6 +229,7 @@ void PedestalPlotter::endJob()
       os<<"SCA"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
+      h->SetOption("colztext");
       InitTH2Poly(*h, ib, 0, 0);
       lgMeanMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
 
@@ -235,6 +238,7 @@ void PedestalPlotter::endJob()
       os<<"SCA"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
+      h->SetOption("colztext");
       InitTH2Poly(*h, ib, 0, 0);
       hgRMSMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
 
@@ -243,6 +247,7 @@ void PedestalPlotter::endJob()
       os<<"SCA"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
+      h->SetOption("colztext");
       InitTH2Poly(*h, ib, 0, 0);
       lgRMSMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
     }

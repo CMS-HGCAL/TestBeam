@@ -19,7 +19,7 @@ options.register('outputFolder',
                  'Output folder where analysis output are stored')
 
 options.register('compressedData',
-                 False,
+                 True,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.bool,
                  'Option to set if the data have beem compressed')
@@ -30,11 +30,27 @@ options.register('electronicMap',
                  VarParsing.VarParsing.varType.string,
                  'path to the electronic map')
 
+options.register('writePedestal',
+                 False,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 'set to true if pedestal files have to be created')
+
+options.register('writeNoise',
+                 False,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.bool,
+                 'set to true if noise files have to be created')
 
 options.maxEvents = -1
-options.output = "cmsswEvents.root"
 
 options.parseArguments()
+
+aname=os.path.basename(options.fileName)
+aname,extent=os.path.splitext(aname)
+aname=aname+"_edm.root"
+options.output=options.outputFolder+aname
+
 print options
 
 pedestalHighGain=options.outputFolder+"/pedestalHG.txt"
@@ -67,22 +83,22 @@ process.source = cms.Source("HGCalTBRawDataSource",
 
 outputFileName=os.path.basename(options.fileName)
 outputFileName,extent=os.path.splitext(outputFileName)
-outputFileName=options.outputFolder+outputFileName+".root"
-#filename = options.outputFolder+"/PedestalOutput.root"
+outputFileName=options.outputFolder+outputFileName+"_pedestal.root"
 process.TFileService = cms.Service("TFileService", fileName=cms.string(outputFileName))
 
 process.output = cms.OutputModule("PoolOutputModule",fileName = cms.untracked.string(options.output))
 
 process.content = cms.EDAnalyzer("EventContentAnalyzer") #add process.content in cms.Path if you want to check which collections are in the event
 
+
 process.pedestalplotter = cms.EDAnalyzer("PedestalPlotter",
                                          SensorSize=cms.untracked.int32(128),
-                                         WritePedestalFile=cms.untracked.bool(False),
+                                         WritePedestalFile=cms.untracked.bool(options.writePedestal),
                                          InputCollection=cms.InputTag("source","skiroc2cmsdata"),
                                          ElectronicMap=cms.untracked.string(options.electronicMap),
                                          HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
                                          LowGainPedestalFileName=cms.untracked.string(pedestalLowGain),
-                                         WriteNoisyChannelsFile=cms.untracked.bool(False),
+                                         WriteNoisyChannelsFile=cms.untracked.bool(options.writeNoise),
                                          NoisyChannelsFileName=cms.untracked.string(noisyChannels),
                                          NTSForPedestalComputation=cms.untracked.int32(7),
 
