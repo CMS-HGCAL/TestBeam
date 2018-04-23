@@ -1,9 +1,6 @@
 #ifndef HGCAL_TB_GEOMETRY_PARAMETERS_H
 #define HGCAL_TB_GEOMETRY_PARAMETERS_H
 
-//old stuff to be removed
-#define MAXSKIROCS 40
-#define MAXLAYERS 6
 
 namespace HGCAL_TB_GEOMETRY
 {
