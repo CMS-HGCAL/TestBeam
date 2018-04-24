@@ -46,7 +46,7 @@ options.register('hgcalLayout',
 
 
 options.register('layerPositionFile',
-                 '/afs/cern.ch/user/t/tquast/CMSSW_8_3_0/src/HGCal/CondObjects/data/layer_distances_DESY_March2018_config4.txt',
+                 '/afs/cern.ch/user/t/tquast/CMSSW_9_3_0/src/HGCal/CondObjects/data/layer_distances_DESY_March2018_config4.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'File indicating the layer positions in mm.')
@@ -66,6 +66,8 @@ print options
 
 electronicMap="HGCal/CondObjects/data/%s" % options.electronicMap
 hgcalLayout="HGCal/CondObjects/data/%s" % options.hgcalLayout
+layerPositionFile=options.layerPositionFile
+
 
 ################################
 process = cms.Process("analysis")
@@ -89,7 +91,7 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(options
 
 
 process.cellenergyplotting = cms.EDAnalyzer("CellEnergyPlotter",
-                                RUNDATA = cms.InputTag("source", "RunData" ), 
+                                RUNDATA = cms.InputTag("daturaproducer", "FullRunData" ), 
                                 HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
                                 HGCALTBCOMMONMODENOISE = cms.InputTag("rechitproducer","HGCALTBCOMMONMODENOISEMAP" ),
                                 ElectronicMap = cms.untracked.string(electronicMap),
@@ -98,15 +100,32 @@ process.cellenergyplotting = cms.EDAnalyzer("CellEnergyPlotter",
                                 commonModeNoiseRejectionType = cms.int32(0)       #0: none, else 1-..., default: 0 
 )
 
+process.mipfindinganalysis = cms.EDAnalyzer("MIPFinder",
+                                RUNDATA = cms.InputTag("daturaproducer", "FullRunData" ), 
+                                MWCHAMBERS = cms.InputTag("daturaproducer","DaturaTelescopeClusters" ), 
+                                DWCTRACKS = cms.InputTag("telescopetrackproducer","HGCalTBDATURATracks" ), 
+                                HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
+                                HGCALTBCOMMONMODENOISE = cms.InputTag("rechitproducer","HGCALTBCOMMONMODENOISEMAP" ),
+                                ElectronicMap = cms.untracked.string(electronicMap),
+                                DetectorLayout=cms.untracked.string(hgcalLayout),
+                                NHexaBoards=cms.untracked.int32(options.NHexaBoards),
+                                n_bins_DWCE = cms.int32(50),
+                                max_dim_x_DUT = cms.double(10),
+                                max_dim_y_DUT = cms.double(10.),
+                                pathsToMIPWindowFiles = cms.vstring(""),
+                                commonModeNoiseRejectionType = cms.int32(0),
+                                DWCs_CERNSPS = cms.untracked.bool(False) 
+                              )
+
 process.variablecomputation = cms.EDProducer("VariableComputation",
-                                RUNDATA = cms.InputTag("source", "RunData" ), 
-                                MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
-                                DWCTRACKS = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" ), 
+                                RUNDATA = cms.InputTag("daturaproducer", "FullRunData" ), 
+                                MWCHAMBERS = cms.InputTag("daturaproducer","DaturaTelescopeClusters" ), 
+                                DWCTRACKS = cms.InputTag("telescopetrackproducer","HGCalTBDATURATracks" ), 
                                 HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
                                 UserRecordCollectionName=cms.untracked.string("VariableUserRecords"),
                                 ElectronicMap = cms.untracked.string(electronicMap),
                                 DetectorLayout=cms.untracked.string(hgcalLayout),
-                                layerPositionFile=cms.string(options.layerPositionFile),
+                                layerPositionFile=cms.string(layerPositionFile),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                 NLayers=cms.untracked.int32(options.NHexaBoards),
                                 DNNInputFile = cms.untracked.string(""),
@@ -120,10 +139,10 @@ process.ntupelizer = cms.EDAnalyzer("NTupelizer",
 )
 
 process.eventdisplay = cms.EDAnalyzer("EventDisplay",
-                                RUNDATA = cms.InputTag("source", "RunData" ), 
+                                RUNDATA = cms.InputTag("daturaproducer", "FullRunData" ), 
                                 HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
-                                MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
-                                DWCTRACKS = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" ), 
+                                MWCHAMBERS = cms.InputTag("daturaproducer","DaturaTelescopeClusters" ), 
+                                DWCTRACKS = cms.InputTag("telescopetrackproducer","HGCalTBDATURATracks" ), 
                                 electronicsMap = cms.untracked.string(electronicMap),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                 eventsToPlot=cms.vint32([1, 2, 3])
@@ -138,5 +157,5 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 ####################################
 
 
-process.p = cms.Path(process.cellenergyplotting*process.variablecomputation*process.ntupelizer*process.eventdisplay)
+process.p = cms.Path(process.cellenergyplotting*process.mipfindinganalysis*process.variablecomputation*process.ntupelizer*process.eventdisplay)
 

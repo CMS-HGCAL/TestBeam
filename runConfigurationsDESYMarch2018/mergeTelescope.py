@@ -46,6 +46,8 @@ options.maxEvents = -1
 options.parseArguments()
 print options
 
+layerPositionFile=options.layerPositionFile
+
 ################################
 process = cms.Process("TelescopeMerger")
 process.maxEvents = cms.untracked.PSet(
@@ -68,8 +70,8 @@ process.source = cms.Source("PoolSource",
 )
 
 process.output = cms.OutputModule("PoolOutputModule",
-                                  fileName = cms.untracked.string(options.processedFile),
-                                  outputCommands = cms.untracked.vstring('drop *_*_RunData_*')#,
+                                  fileName = cms.untracked.string(options.processedFile)#,
+                                  #outputCommands = cms.untracked.vstring('drop *_*_RunData_*')#,
                                   #                                       'keep *_*_HGCALTBRECHITS_*',
                                   #                                       'keep *_*_DelayWireChambers_*',
                                   #                                       'keep *_*_HGCalTBDWCTracks_*',
@@ -81,14 +83,14 @@ process.output = cms.OutputModule("PoolOutputModule",
 process.daturaproducer.OutputCollectionName = cms.string("DaturaTelescopeClusters") 
 process.daturaproducer.RUNDATA = cms.InputTag("source","RunData")
 process.daturaproducer.inputFile = cms.string(options.TelescopeFile)
-process.daturaproducer.SkipFirstNEventsInTelescopeFile = cms.int32(0)
+process.daturaproducer.SkipFirstNEventsInTelescopeFile = cms.int32(1)
 
 
 
 process.telescopetrackproducer = cms.EDProducer("DWCTrackProducer",
                                         MWCHAMBERS = cms.InputTag("daturaproducer","DaturaTelescopeClusters" ), 
                                         OutputCollectionName=cms.string("HGCalTBDATURATracks"),
-                                        layerPositionFile=cms.string(options.layerPositionFile)
+                                        layerPositionFile=cms.string(layerPositionFile)
 )
 
 

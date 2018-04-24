@@ -47,8 +47,6 @@
 
 
 
- 
-
 typedef std::map<int, std::vector<double> > WindowMap;
 
 //#define DEBUG
@@ -93,6 +91,7 @@ class MIPFinder : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		
 		std::map<int,TH2F*> m_h_rechitEnergyPerDUT;
 		std::map<int,TH1F*> m_h_rechitEnergy;
+		std::map<int, TH2F*> m_h_rechitEnergyPerDUTAveraged;
 		
 		std::map<int,TH2F*> m_h_rechitEnergyPerDUT_selected;
 		std::map<int,TH1F*> m_h_rechitEnergy_selected;
@@ -103,6 +102,8 @@ class MIPFinder : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		int n_bins_DWCE;
 		double max_dim_x_DUT;
 		double max_dim_y_DUT;
+
+		bool DWCs_CERNSPS;
 
 		int commonModeNoiseRejectionType;
 		bool rejectFromCommonModeNoise(edm::Handle<std::map<int, commonModeNoise> > &cmMap, int iski, int criterion);
@@ -126,6 +127,8 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 	n_bins_DWCE = iConfig.getParameter<int>("n_bins_DWCE");
 	max_dim_x_DUT = iConfig.getParameter<double>("max_dim_x_DUT");
 	max_dim_y_DUT = iConfig.getParameter<double>("max_dim_y_DUT");
+
+	DWCs_CERNSPS = iConfig.getUntrackedParameter<bool>("DWCs_CERNSPS", true);
 
 	commonModeNoiseRejectionType = iConfig.getParameter<int>("commonModeNoiseRejectionType");
 
@@ -161,6 +164,11 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 				htmp2=channel_dir.make<TH2F>("RechitEnergyVsDUT", os.str().c_str(), n_bins_DWCE, -max_dim_x_DUT, max_dim_x_DUT, n_bins_DWCE, -max_dim_y_DUT, max_dim_y_DUT);
 				m_h_rechitEnergyPerDUT.insert( std::pair<int,TH2F*>(key, htmp2) );
 		
+				os.str("");
+				os << "AverageRechitEnergyPerDUT"<<ib<<"_chip_"<<iski<<"_channel_"<<ichan;
+				htmp2 = channel_dir.make<TH2F>("AverageRechitEnergyPerDUT", os.str().c_str(), n_bins_DWCE, -max_dim_x_DUT, max_dim_x_DUT, n_bins_DWCE, -max_dim_y_DUT, max_dim_y_DUT);
+				m_h_rechitEnergyPerDUTAveraged.insert( std::pair<int,TH2F*>(key, htmp2));
+
 				os.str("");
 				os << "Energy_board_"<<ib<<"_chip_"<<iski<<"_channel_"<<ichan;
 				htmp1=channel_dir.make<TH1F>("RechitEnergy",os.str().c_str(), 33, 1., 100.);
@@ -212,8 +220,8 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	}
 
 	#ifndef DEBUG
-		if (pdgID != 13) {
-			std::cout<<"Run is not a dedicated muon run."<<std::endl;
+		if (DWCs_CERNSPS&&(pdgID != 13)) {
+			std::cout<<"Run taken at CERN's SPS but is not a dedicated muon run."<<std::endl;
 			return;
 		}
 	#endif
@@ -223,7 +231,6 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 		std::cout<<"run: "<<run<<"  energy: "<<energy<<"  pdgID:" << pdgID<<"   eventCounter: "<<eventCounter<<std::endl;
 		std::cout<<rd->doubleUserRecords.has("triggerDeltaT_to_TDC")<<"   "<<rd->booleanUserRecords.has("hasValidDWCMeasurement")<<"   "<<rd->booleanUserRecords.has("hasDanger")<<std::endl;
 	#endif
-
 	ReadCurrentDWCWindows(run);
 
 	edm::Handle<std::map<int, commonModeNoise>> cmMap;
@@ -239,48 +246,62 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	event.getByToken(DWCToken, dwcs);
 	
 	bool vetoEvent = true;
-	if (dwctrack->valid) {
-		if ((dwctrack->referenceType==15) && (dwctrack->chi2_x<=10.) && (dwctrack->chi2_y<=10.)) { 
+
+	if (DWCs_CERNSPS) {	
+		if (dwctrack->valid) {
+			if ((dwctrack->referenceType==15) && (dwctrack->chi2_x<=10.) && (dwctrack->chi2_y<=10.)) { 
+				vetoEvent = vetoEvent&&false;
+			} else if ((dwctrack->referenceType==13) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) { 
+				vetoEvent = vetoEvent&&false;
+			} else if ((dwctrack->referenceType==14) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) { 
+				vetoEvent = vetoEvent&&false;
+			}
+		} else if (dwcs->at(0).goodMeasurement) {
 			vetoEvent = vetoEvent&&false;
-		} else if ((dwctrack->referenceType==13) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) { 
-			vetoEvent = vetoEvent&&false;
-		} else if ((dwctrack->referenceType==14) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) { 
+		} else if (dwcs->at(1).goodMeasurement) {
 			vetoEvent = vetoEvent&&false;
 		}
-	} else if (dwcs->at(0).goodMeasurement) {
-		vetoEvent = vetoEvent&&false;
-	} else if (dwcs->at(1).goodMeasurement) {
-		vetoEvent = vetoEvent&&false;
+	} else {
+		if (dwctrack->valid && (dwctrack->chi2_x<=100.) && (dwctrack->chi2_y<=100.)) vetoEvent = false;
 	}
-
+	#ifdef DEBUG
+		std::cout<<"vetoEvent: "<<vetoEvent<<std::endl;
+	#endif
 	if (vetoEvent) return;
 
 	std::map<int, double> layer_ref_x;
 	std::map<int, double> layer_ref_y;
 
 	for(int ib = 0; ib<m_NHexaBoards; ib++) {
-
 		int layer=essource_.layout_.getLayerWithModuleIndex(ib).layerID()+1;
-  		if (dwctrack->valid) {
-	  		if (dwctrack->valid&&(dwctrack->referenceType==15) && (dwctrack->chi2_x<=10.) && (dwctrack->chi2_y<=10.)) { 
-	  			layer_ref_x[layer] = dwctrack->DWCExtrapolation_XY(layer).first;
-	  			layer_ref_y[layer] = dwctrack->DWCExtrapolation_XY(layer).second;
-	  		} else if (dwctrack->valid&&(dwctrack->referenceType==13) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) { 
-	  			layer_ref_x[layer] = dwctrack->DWCExtrapolation_XY(layer).first;
-	  			layer_ref_y[layer] = dwctrack->DWCExtrapolation_XY(layer).second;
-	  		} else if (dwctrack->valid&&(dwctrack->referenceType==14) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) { 
-	  			layer_ref_x[layer] = dwctrack->DWCExtrapolation_XY(layer).first;
-	  			layer_ref_y[layer] = dwctrack->DWCExtrapolation_XY(layer).second;
-	  		} 
-  		} else if (dwcs->at(0).goodMeasurement) {
-			layer_ref_x[layer] = dwcs->at(0).x;
-			layer_ref_y[layer] = dwcs->at(0).y;
+		if (DWCs_CERNSPS) {
+	  		if (dwctrack->valid) {
+		  		if ((dwctrack->referenceType==15) && (dwctrack->chi2_x<=10.) && (dwctrack->chi2_y<=10.)) { 
+		  			layer_ref_x[layer] = dwctrack->DWCExtrapolation_XY(layer).first;
+		  			layer_ref_y[layer] = dwctrack->DWCExtrapolation_XY(layer).second;
+		  		} else if ((dwctrack->referenceType==13) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) { 
+		  			layer_ref_x[layer] = dwctrack->DWCExtrapolation_XY(layer).first;
+		  			layer_ref_y[layer] = dwctrack->DWCExtrapolation_XY(layer).second;
+		  		} else if ((dwctrack->referenceType==14) && (dwctrack->chi2_x<=5.) && (dwctrack->chi2_y<=5.)) { 
+		  			layer_ref_x[layer] = dwctrack->DWCExtrapolation_XY(layer).first;
+		  			layer_ref_y[layer] = dwctrack->DWCExtrapolation_XY(layer).second;
+		  		} 
+	  		} else if (dwcs->at(0).goodMeasurement) {
+				layer_ref_x[layer] = dwcs->at(0).x;
+				layer_ref_y[layer] = dwcs->at(0).y;
+			}
+			else if (dwcs->at(1).goodMeasurement) {
+				layer_ref_x[layer] = dwcs->at(1).x;
+				layer_ref_y[layer] = dwcs->at(1).y;
+			}
+			layer_ref_x[layer] = - layer_ref_x[layer];		//necessary due to rotation of coordinate system for September TB data
+		} else {
+			if (dwctrack->valid && (dwctrack->chi2_x<=100.) && (dwctrack->chi2_y<=100.)) {
+				layer_ref_x[layer] = dwctrack->DWCExtrapolation_XY(layer).first;
+				layer_ref_y[layer] = dwctrack->DWCExtrapolation_XY(layer).second;
+			}
 		}
-		else if (dwcs->at(1).goodMeasurement) {
-			layer_ref_x[layer] = dwcs->at(1).x;
-			layer_ref_y[layer] = dwcs->at(1).y;
-		}
-		layer_ref_x[layer] = - layer_ref_x[layer];		//necessary due to rotation of coordinate system for September TB data
+
 		bool _boardFilled = false;
 		for( size_t _iskiroc=0; _iskiroc<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; _iskiroc++ ) {
 			if (commonModeNoiseRejectionType&&rejectFromCommonModeNoise(cmMap, _iskiroc, commonModeNoiseRejectionType)) continue;
@@ -358,7 +379,18 @@ void MIPFinder::beginJob() {
 }
 
 void MIPFinder::endJob() {
-	
+	for(int ib = 0; ib<m_NHexaBoards; ib++) {
+		for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
+			for( size_t ichan=0; ichan<=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
+				if (ichan%2==1) continue;
+				int key = ib*1000+iski*100+ichan;
+				m_h_rechitEnergyPerDUTAveraged[key]->Add(m_h_rechitEnergyPerDUT[key]);
+				m_h_rechitEnergyPerDUTAveraged[key]->Divide(h_DUT_occupancy[key]);
+				m_h_rechitEnergyPerDUTAveraged[key]->SetStats(false);
+				m_h_rechitEnergyPerDUTAveraged[key]->GetZaxis()->SetRangeUser(0., 120.);		//skiroc2-cms: usual scale for MIPs are ~50 HG ADC  		
+			}
+		}
+	}	
 }
 
 void MIPFinder::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
