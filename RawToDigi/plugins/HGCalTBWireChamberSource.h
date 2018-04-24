@@ -40,7 +40,7 @@ enum DWC_to_TDC_MAP {
 	DWC4_UP = 8
 };
 
-
+//indication in cm
 double dwc_z1_H2 = -109.;	//z=0 is the HGCal table, unit is cm
 double dwc_z2_H2 = -235.;
 double dwc_z3_H2 = -1509.;

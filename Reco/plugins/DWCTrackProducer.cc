@@ -91,10 +91,8 @@ void DWCTrackProducer::produce(edm::Event& event, const edm::EventSetup& setup) 
 	event.getByToken(MWCToken, dwcs);
 
 	#ifdef DEBUG
-		std::cout<<dwcs->at(0).x<<"  "<<dwcs->at(0).y<<"   "<<dwcs->at(0).z<<"  "<<dwcs->at(0).goodMeasurement<<std::endl;
-		std::cout<<dwcs->at(1).x<<"  "<<dwcs->at(1).y<<"   "<<dwcs->at(1).z<<"  "<<dwcs->at(1).goodMeasurement<<std::endl;
-		std::cout<<dwcs->at(2).x<<"  "<<dwcs->at(2).y<<"   "<<dwcs->at(2).z<<"  "<<dwcs->at(2).goodMeasurement<<std::endl;
-		std::cout<<dwcs->at(3).x<<"  "<<dwcs->at(3).y<<"   "<<dwcs->at(3).z<<"  "<<dwcs->at(3).goodMeasurement<<std::endl;
+		for (size_t i=0; i<dwcs->size(); i++) std::cout<<dwcs->at(i).x<<"  "<<dwcs->at(i).y<<"   "<<dwcs->at(i).z<<"  "<<dwcs->at(i).goodMeasurement<<std::endl;
+		std::cout<<std::endl;
 	#endif
 
 
@@ -124,7 +122,7 @@ void DWCTrackProducer::produce(edm::Event& event, const edm::EventSetup& setup) 
 
 		DWCParticleTrack->fitTrack(LINEFITANALYTICAL);
 		#ifdef DEBUG
-			std::cout<<"DWC reference type: "<<DWCReferenceType<<std::endl;
+			std::cout<<"DWC reference type: "<<DWCReferenceType<<std::endl<<std::endl;
 		#endif
 
 		dwcTrack->b_x = DWCParticleTrack->calculatePositionXY(0., 0).first;
@@ -145,7 +143,9 @@ void DWCTrackProducer::produce(edm::Event& event, const edm::EventSetup& setup) 
 				std::cout<<"With position: "<<dwcTrack->DWCExtrapolation_XY(layerIt->first).first<<"  vs.  "<<dwcTrack->DWCExtrapolation_XY(layerIt->first).second<<std::endl;
 			#endif
 		}
-
+		#ifdef DEBUG
+			std::cout<<std::endl;
+		#endif
 	} else {
 		dwcTrack->valid = false;
 	}

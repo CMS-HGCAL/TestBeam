@@ -1,5 +1,5 @@
-#ifndef HGCALTBRECHITPRODUCER_H
-#define HGCALTBRECHITPRODUCER_H
+#ifndef HGCALTBBEAMWIRECHAMBERPRODUCER_H
+#define HGCALTBBEAMWIRECHAMBERPRODUCER_H
 
 #include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
