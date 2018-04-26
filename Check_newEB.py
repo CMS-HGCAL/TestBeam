@@ -6,7 +6,7 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 #Change the data folder appropriately to where you wish to access the files from:
 options.register('dataFolder',
-                 '/afs/cern.ch/work/r/rchatter/2016DAQ_TestStand/CMSSW_8_0_1/src/HGCal/DATA_Files/ReArranged/',#modify path appropriately to where eos is mounted
+                 '/afs/cern.ch/work/r/rchatter/2016DAQ_TestStand/CMSSW_8_0_1/src/HGCal/DATA_Files/ReArrangedFiles/',#modify path appropriately to where eos is mounted
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw text input')

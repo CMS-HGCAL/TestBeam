@@ -46,6 +46,7 @@ do
 		#boards=`ls ${dir}/RUN_${run}/SPILL_${spill}/*.txt | sed 's|.*-BOARD_||;s|.txt||' | sort | uniq`
 		
 		events=`ls ${splitDir}/RUN_${run}/SPILL_${spill}/*.txt | sed 's|.*EVENT_\([0-9]*\)-BOARD_.*|\1|;s|.txt||' | sort | uniq`
+		wait
 		for event in $events
 		do
 			(paste $splitDir/RUN_${run}/SPILL_${spill}/SPILL_${spill}-EVENT_${event}-BOARD_* | sed -e 's|[[:space:]]RUN.*BOARD{,1}|\tBOARD|g' > $mergeDir/RUN_${run}/SPILL_${spill}-EVENT_${event}.txt) &
