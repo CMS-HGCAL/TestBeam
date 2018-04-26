@@ -211,36 +211,7 @@ bool HGCalTBTextSource::readLines()
 
 void HGCalTBTextSource::produce(edm::Event & event){
 	eventCounter++;	//indexes each event chronologically passing this plugin
-
 	//add the multi-wire chambers only if available
-	bool _hasValidMWCMeasurement = true;
-	std::auto_ptr<MultiWireChambers> mwcs(new MultiWireChambers);	
-	if (mwcCounter < (int)EventMultiWireChambers.size()) {
-		for (size_t _imwc=0; _imwc < (size_t)EventMultiWireChambers[mwcCounter].size(); _imwc++) {
-			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].x != -999) && _hasValidMWCMeasurement;
-			_hasValidMWCMeasurement = (EventMultiWireChambers[mwcCounter][_imwc].y != -999) && _hasValidMWCMeasurement;
-			double rotAngle = mwcRotation*M_PI/180.;
-			double x_preRot = EventMultiWireChambers[mwcCounter][_imwc].x/10.;		//conersion from mm to cm 
-			double y_preRot = EventMultiWireChambers[mwcCounter][_imwc].y/10.; 
-			EventMultiWireChambers[mwcCounter][_imwc].x = cos(rotAngle) * x_preRot + sin(rotAngle) * y_preRot; 	//apply the rotation just here because the filtering for -999 must occur first
-			EventMultiWireChambers[mwcCounter][_imwc].y = -sin(rotAngle) * x_preRot + cos(rotAngle) * y_preRot; 
-			
-			if (_imwc==1) {//i.e. the second MWC
-				EventMultiWireChambers[mwcCounter][_imwc].x += mwc2DeltaX;
-				EventMultiWireChambers[mwcCounter][_imwc].y += mwc2DeltaY;
-			}
-
-			mwcs->push_back(EventMultiWireChambers[mwcCounter][_imwc]);
-		}
-		mwcCounter++;
-	} else {
-		_hasValidMWCMeasurement = false;
-		//push some dummy value for the MWCs, subsequent plugins using this information should check the _hadValidMWCMeasurement flag
-		mwcs->push_back(MultiWireChamberData(1, -999, -999, 0));
-	}
-	event.put(std::move(mwcs), "MultiWireChambers");		
-
-
 	//add the DAQ data
 	std::auto_ptr<FEDRawDataCollection> bare_product(new  FEDRawDataCollection());
 	// here we parse the data
@@ -285,7 +256,6 @@ void HGCalTBTextSource::produce(edm::Event & event){
 	}
 	eventsPerRun[m_run].first++;
 	rd->hasDanger = _hasDanger;
-	rd->hasValidMWCMeasurement = _hasValidMWCMeasurement;
 
 	event.put(std::move(rd), "RunData");	
 }

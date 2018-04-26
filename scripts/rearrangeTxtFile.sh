@@ -49,6 +49,7 @@ do
 		for event in $events
 		do
 			(paste $splitDir/RUN_${run}/SPILL_${spill}/SPILL_${spill}-EVENT_${event}-BOARD_* | sed -e 's|[[:space:]]RUN.*BOARD{,1}|\tBOARD|g' > $mergeDir/RUN_${run}/SPILL_${spill}-EVENT_${event}.txt) &
+			wait
 		done
 		wait
 	done

@@ -1,0 +1,30 @@
+Checkout the branch "newTextInputFormat_Working":
+
+Ensure the shell is bash
+
+RELEASE=CMSSW_8_0_1
+scram project ${RELEASE}
+cd ${RELEASE}/src/
+cmsenv 
+git cms-init
+git clone git@github.com:CMS-HGCAL/TestBeam.git HGCal/
+cd ${RELEASE}/src/HGCal
+git fetch
+git checkout newTextInputFormat_Working
+git pull
+scram b
+
+
+Please ensure that you have not appended more than one run into the RAW file:-
+
+1) Re-arrange RAW file into the format accepted by the unpacker:-
+    ./scripts/rearrangeTxtFile.sh HGC_Output_1.txt /tmp/rchatter [First parameter is the RAW file. Second the path where the re-arranged file for the unpacker is written]
+
+    ---> Rename the re-arranged file to have a "000" before the run-number as is default in the python run cfg file: eg HGC_Output_401.txt ----> HGC_Output_000401.txt
+
+  In Check_newEB.py change the "inputFolder" and "OutputFolder" appropriately
+
+2) Run the Digi step to create the PED files:-
+    cmsRun Check_newEB.py chainSequence=1 nSpills=42 pedestalsHighGain=CondObjects/data/Ped_HighGain_L1_400.txt pedestalsLowGain=CondObjects/data/Ped_LowGain_L1_400.txt runNumber=400 runType=PED [ DONT take runs greater than 6000 events, hence nSpills MUST EXCEED 40]
+3) Run the Reco step[This is the analyzer Reco/plugins/RecHitPlotter_HighGain_Correlation_CM.cc . Note this is an example which has several quantities including CM subtracted histograms per channel.]
+     cmsRun Check_newEB.py chainSequence=2 nSpills=40 pedestalsHighGain=CondObjects/data/Ped_HighGain_L1_400.txt pedestalsLowGain=CondObjects/data/Ped_LowGain_L1_400.txt runNumber=400 runType=HGCRun 

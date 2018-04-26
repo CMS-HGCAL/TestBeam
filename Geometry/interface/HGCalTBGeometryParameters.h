@@ -1,4 +1,4 @@
 /* now we have only 2 layers */
-#define MAXSKIROCS 16
+#define MAXSKIROCS 2
 /* MAXLAYERS = MAXSKIROCS/2 */
-#define MAXLAYERS 8
+#define MAXLAYERS 1

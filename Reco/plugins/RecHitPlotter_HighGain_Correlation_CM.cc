@@ -529,11 +529,11 @@ RecHitPlotter_HighGain_Correlation_CM::endJob()
   //==========================================================================*/
 
   //=========================All Layers Correlation===========================
-  for(int layer=0;layer<8;++layer){
+  for(int layer=0;layer < MAXLAYERS;++layer){
     if(Eventnumber==0)break; 
     for(int ChX=0;ChX<128;++ChX){
       // Calculate_Correlation-> Reset();
-      for(int layer2=layer;layer2<8;++layer2){
+      for(int layer2=layer;layer2 < MAXLAYERS;++layer2){
 	for(int ChY=ChX;ChY<128;ChY++){
 	  double sumxy[4]={0},sumx[4]={0},sumy[4]={0},sumx2[4]={0},sumy2[4]={0},correlation[4]={0};
 	  for(int Event=0;Event<Eventnumber;++Event){

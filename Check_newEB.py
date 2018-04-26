@@ -6,13 +6,13 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 #Change the data folder appropriately to where you wish to access the files from:
 options.register('dataFolder',
-                 '/afs/cern.ch/user/r/rchatter/eos/cms/store/group/upgrade/HGCAL/TestBeam/CERN/Sept2016/',#modify path appropriately to where eos is mounted
+                 '/afs/cern.ch/work/r/rchatter/2016DAQ_TestStand/CMSSW_8_0_1/src/HGCal/DATA_Files/ReArranged/',#modify path appropriately to where eos is mounted
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw text input')
 
 options.register('outputFolder',
-                 '/tmp/',#Choose the output directly where you wish the output root files to be written
+                 '/tmp/rchatter/',#Choose the output directly where you wish the output root files to be written
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Result of processing')
@@ -42,7 +42,7 @@ options.register('chainSequence',
                  '0: if runType is PED then do Digi, if runType is HGC_Run then do Digi and Reco (not implemented yet); 1: do Digi; 2: only Reco (not implemented yet); 3: Digi + highgain_correlation_cm; 4: event display sequence; 5: highgain_correlation_cm + event display sequence')
 
 options.register('nSpills',
-                 15,
+                 70,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Number of spills in run')
@@ -60,7 +60,7 @@ options.register('pedestalsLowGain',
                  'Path to low gain pedestals file')
 
 options.register('configuration',
-                 -1,
+                 0,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  '-1 ADCtoMIP CERN; 0 ADCtoMIP FNAL; 1 if 8Layers with 5X0 sampling the center of the shower only; 2 if 8Layers with 25X0 sampling up to the tail of the shower')
@@ -103,8 +103,8 @@ process.load('HGCal.StandardSequences.dqm_cff')
 
 process.source = cms.Source("HGCalTBTextSource",
                             run=cms.untracked.int32(options.runNumber), ### maybe this should be read from the file
-                            #fileNames=cms.untracked.vstring("file:Raw_data_New.txt") ### here a vector is provided, but in the .cc only the first one is used TO BE FIXE
-                            fileNames=cms.untracked.vstring(["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber), "file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber)]), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
+                            fileNames=cms.untracked.vstring("file:%s/HGC_Output_%06d.txt"%(options.dataFolder,options.runNumber)), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXE
+#                            fileNames=cms.untracked.vstring(["file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber), "file:%s/%s_Output_%06d.txt"%(options.dataFolder,options.runType,options.runNumber)]), ### here a vector is provided, but in the .cc only the first one is used TO BE FIXED
                             nSpills=cms.untracked.uint32(options.nSpills),
                             inputPathFormat = cms.untracked.string(""),
                             MWCInputPathFormat = cms.untracked.string(""),
@@ -141,37 +141,11 @@ if (options.chainSequence == 7):
 # process.TFileService = cms.Service("TFileService", fileName = cms.string("HGC_Output_6_Reco_Display.root") )
 if (options.chainSequence == 1):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Digi.root"%(options.outputFolder,options.runType,options.runNumber)))
-elif (options.chainSequence == 3):
-    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Unpacker_Check.root"%(options.outputFolder,options.runType,options.runNumber)))
-elif (options.chainSequence == 4):
-    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco_EventDisplay.root"%(options.outputFolder,options.runType,options.runNumber)))
-elif (options.chainSequence == 5):
+elif (options.chainSequence == 2):
     process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco.root"%(options.outputFolder,options.runType,options.runNumber)))
-elif (options.chainSequence == 6):
-    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Reco_Cluster.root"%(options.outputFolder,options.runType,options.runNumber)))
-elif (options.chainSequence == 7):
-    process.TFileService = cms.Service("TFileService", fileName = cms.string("%s/%s_Output_%06d_Display_Cluster.root"%(options.outputFolder,options.runType,options.runNumber)))
 
 
 
-if(options.configuration == "-1"):
-    process.BadSpillFilter.layers_config = cms.int32(-1)
-    process.LayerSumAnalyzer.layers_config = cms.int32(-1)
-    process.hgcaltbrechits.layers_config = cms.int32(-1)
-elif(options.configuration == "0"):
-    process.BadSpillFilter.layers_config = cms.int32(0)
-    process.LayerSumAnalyzer.layers_config = cms.int32(0)
-    process.hgcaltbrechits.layers_config = cms.int32(0)
-elif(options.configuration == "1"):
-    process.BadSpillFilter.layers_config = cms.int32(1)
-    process.LayerSumAnalyzer.layers_config = cms.int32(1)
-    process.hgcaltbrechits.layers_config = cms.int32(1)
-elif(options.configuration == "2"):
-    process.BadSpillFilter.layers_config = cms.int32(2)
-    process.LayerSumAnalyzer.layers_config = cms.int32(2)
-    process.hgcaltbrechits.layers_config = cms.int32(2)
-else:
-    sys.exit("Error: Configuarion % is not supported in the position resolution analysis" % options.configuration)
 
 ########Activate this to produce event displays#########################################
 #process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
@@ -190,17 +164,6 @@ else:
 
 if (options.chainSequence == 1):
     process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbdigisplotter)
-elif (options.chainSequence == 3):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter)
-elif (options.chainSequence == 4):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_new)
-elif (options.chainSequence == 5):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm*process.hgcaltbrechitsplotter_highgain_new)
-elif (options.chainSequence == 6):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits*process.LayerSumAnalyzer)
-elif (options.chainSequence == 7):
-    process.p =cms.Path(process.hgcaltbdigis*process.BadSpillFilter*process.hgcaltbrechits)
+elif (options.chainSequence == 2):
+    process.p =cms.Path(process.hgcaltbdigis*process.hgcaltbrechits*process.hgcaltbrechitsplotter_highgain_correlation_cm)
 
-
-if (options.chainSequence == 7):
-    process.end = cms.EndPath(process.output)
