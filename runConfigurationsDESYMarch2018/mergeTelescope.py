@@ -33,12 +33,21 @@ options.register('layerPositionFile',
                  'File indicating the layer positions in mm.')
 
 
+options.register('SkipFirstNEventsInTelescopeFile',
+                1,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'SkipFirstNEventsInTelescopeFile'
+                )
+
+
 options.register('reportEvery',
                 1000,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  '.'
                 )
+
 
 
 options.maxEvents = -1
@@ -83,7 +92,7 @@ process.output = cms.OutputModule("PoolOutputModule",
 process.daturaproducer.OutputCollectionName = cms.string("DaturaTelescopeClusters") 
 process.daturaproducer.RUNDATA = cms.InputTag("source","RunData")
 process.daturaproducer.inputFile = cms.string(options.TelescopeFile)
-process.daturaproducer.SkipFirstNEventsInTelescopeFile = cms.int32(1)
+process.daturaproducer.SkipFirstNEventsInTelescopeFile = cms.int32(options.SkipFirstNEventsInTelescopeFile)
 
 
 

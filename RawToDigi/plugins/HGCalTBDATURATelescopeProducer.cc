@@ -74,7 +74,7 @@ void HGCalTBDATURATelescopeProducer::produce(edm::Event& event, const edm::Event
     if (rd->booleanUserRecords.has("hasDanger")) rd_full->booleanUserRecords.add("hasDanger", rd->booleanUserRecords.get("hasDanger"));
     if (rd->doubleUserRecords.has("trueEnergy")) rd_full->doubleUserRecords.add("trueEnergy", rd->doubleUserRecords.get("trueEnergy"));
 
-    if (tree_Ntracks==0) {
+    if (tree_Ntracks!=1) {
         rd_full->booleanUserRecords.add("hasValidDWCMeasurement", false);
         
     }
