@@ -43,8 +43,6 @@
 #include "HGCal/Reco/interface/PositionResolutionHelpers.h"
 #include "HGCal/Reco/interface/Sensors.h"
 
-#include "DNN/TensorFlow/interface/TensorFlow.h"		//to evaluate reconstructed energies
-
 #include "TFile.h"
 #include "TH2F.h"
 #include "TH1F.h"  
@@ -160,18 +158,6 @@ class VariableComputation : public edm::EDProducer {
 		std::map<int, std::pair<double, double> > simPositions;
 
 
-		//DNN evaluation
-		bool performDNNAnalysis;
-		std::string DNN_InputFile;
-		uint NColorsInputImage;
-  		tf::Tensor* rec_energy_tensor;
-  		tf::Tensor* rec_position_tensor;
-  		tf::Tensor* discriminator_tensor;
-  		tf::Tensor* inputImage_tensor;
-	  	tf::Tensor* energyInput_tensor;
-	  	tf::Tensor* positionInput_tensor;
-  		tf::Graph* DNN_graph;
-  		tf::Session* DNN_session;
   		//coordinate system transformation
      	int x_max;
     	int x_min;
@@ -199,10 +185,6 @@ VariableComputation::VariableComputation(const edm::ParameterSet& iConfig) {
 
 	MIP_cut_for_energy = iConfig.getUntrackedParameter<double>("CellEnergyCut", 4.);
 	
-	DNN_InputFile = iConfig.getUntrackedParameter<std::string>("DNNInputFile", "");
-	NColorsInputImage = iConfig.getUntrackedParameter<int>("NColorsInputImage", 17);
-	performDNNAnalysis = !(DNN_InputFile=="");
-
 	produces <UserRecords<double> >(m_UserRecordCollectionName);
 
 
@@ -253,61 +235,10 @@ VariableComputation::VariableComputation(const edm::ParameterSet& iConfig) {
 	//for single cell spectra
 	//ReadDWCWindows();
 
-
-	//for DNN evaluations
-	if (performDNNAnalysis) {
-		tf::Shape eShape[] = {1, 1};
-	  	rec_energy_tensor = new tf::Tensor(2, eShape);
-		
-		tf::Shape pShape[] = {1, 2};
-	  	rec_position_tensor = new tf::Tensor(2, pShape);	
-		
-		tf::Shape dShape[] = {1, 1};
-	  	discriminator_tensor = new tf::Tensor(2, dShape);
-		
-		tf::Shape inputShape[] = {1, 12, 15, NColorsInputImage};
-	  	inputImage_tensor = new tf::Tensor(4, inputShape);
-		
-	  	energyInput_tensor = new tf::Tensor(2, eShape);
-
-	  	positionInput_tensor = new tf::Tensor(2, pShape);
-
-	  	DNN_graph = new tf::Graph(DNN_InputFile.c_str());
-	  	DNN_session = new tf::Session(&(*DNN_graph));
-
-	
-	  	DNN_session->addInput(inputImage_tensor, "real_images");	//must match the name in the training
-	  	DNN_session->addInput(energyInput_tensor, "energy_real");	//must match the name in the training
-	  	DNN_session->addInput(positionInput_tensor, "impactPoint");	//must match the name in the training
-	  	DNN_session->addOutput(rec_energy_tensor, "energy_regressor/energy_regressor");	//must match the name in the training
-	  	DNN_session->addOutput(rec_position_tensor, "position_regressor/position_regressor");	//must match the name in the training	
-	  	//todo: feed energy and impact position in
-	  	DNN_session->addOutput(discriminator_tensor, "discriminator/discriminator");	//must match the name in the training
-	
-	    x_max = 7;
-	    x_min = -7;
-	    y_max = 11;
-	    y_min = -11;  
-	    range_x = x_max-x_min + 1;
-	    range_y = ceil((y_max-y_min + 1)/2.);
-
-	    std::cout<<"Successfully prepared evaluation of graphs in: "<<DNN_InputFile<<std::endl;
-	}
-
 }
 
 
 VariableComputation::~VariableComputation() {
-	if (performDNNAnalysis) {
-		delete rec_energy_tensor;
-		delete rec_position_tensor;
-		delete discriminator_tensor;
-		delete inputImage_tensor;
-	  	delete energyInput_tensor;
-	  	delete positionInput_tensor;
-		delete DNN_graph;
-		delete DNN_session;
-	}
 	return;
 }
 
@@ -722,85 +653,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	}
 
 	for (size_t l=0; (int)l<m_NLayers; l++) UR->add("energy_chip1_layer"+std::to_string(l), cell_chip1_ch36_energySpectra[l]);
-
-	
-
-
-	/**********     DNN analysis                            ****************/
-	//indexing in input images is height-width-dept (aka. colour channels)
-	if (performDNNAnalysis) {
-		float*** image_data = new float**[range_y];
-		for (uint y=0; y<(range_y); y++) {
-			image_data[y] = new float*[range_x];
-			for (uint x=0; x<(range_x); x++) {
-				image_data[y][x] = new float[NColorsInputImage];
-				for (uint b=0; b<NColorsInputImage; b++) {
-					image_data[y][x][b] = 0.;
-				}
-			}
-		}
-
-		for(auto Rechit : rechits_selected) {	
-	    	float energy = Rechit.energy();
-	    	if ((MIP_cut_for_energy>-1) && (energy < MIP_cut_for_energy)) continue;   //noise cut
-			int layer = (Rechit.id()).layer();
-	    	if (layer > (int)NColorsInputImage) continue;   
-
-			HGCalTBElectronicsId eid( essource_.emap_.detId2eid( Rechit.id().rawId() ) );
-			HGCalTBDetId detId = HGCalTBDetId(Rechit.id().rawId());
-				
-			int x = detId.iv()-x_min;
-			int y = (2*detId.iu()+detId.iv()-y_min) / 2;		//coordinate transformation as performed for the input images
-
-			image_data[y][x][layer-1] = energy;
-			
-
-		}
-
-		//set the images
-		for (uint y=0; y<(range_y); y++) for (uint x=0; x<(range_x); x++) {
-			std::vector<float> layer_values;
-			for (uint b=0; b<NColorsInputImage; b++) layer_values.push_back(image_data[y][x][b]);
-			inputImage_tensor->setVector<float>(3, 0, y, x, layer_values);
-			layer_values.clear();
-		}
-
-		//set the conditions
-		std::vector<float> energy_values;
-		energy_values.push_back(rd->energy);
-		energyInput_tensor->setVector<float>(1, 0, energy_values);
-		std::vector<float> impactPosition_values;
-		impactPosition_values.push_back(dwctrack->DWCExtrapolation_XY(0).first);	//reference is the dwc track extrapolated impact point
-		impactPosition_values.push_back(dwctrack->DWCExtrapolation_XY(0).second);	//reference is the dwc track extrapolated impact point
-		positionInput_tensor->setVector<float>(1, 0, impactPosition_values);
-
-
-		DNN_session->run();
-
-		float DNN_rec_energy = *(rec_energy_tensor->getPtr<float>(0, 0));
-		float DNN_rec_posX = *(rec_position_tensor->getPtr<float>(0, 0));
-		float DNN_rec_posY = *(rec_position_tensor->getPtr<float>(0, 1));
-		float DNN_discriminator = *(discriminator_tensor->getPtr<float>(0, 0));
-
-
-		UR->add("DNNEnergy", DNN_rec_energy);
-		UR->add("DNNPosX", DNN_rec_posX);
-		UR->add("DNNPosY", DNN_rec_posY);
-		UR->add("DNNFakeDiscriminator", DNN_discriminator);
-		
-		if (dwctrack->valid&&(dwctrack->referenceType>10)) { 
-			UR->add("PosResX_DNN",(DNN_rec_posX-dwctrack->DWCExtrapolation_XY(1).first));		//comparison to the extrapolation to the first layer
-			UR->add("PosResY_DNN",(DNN_rec_posY-dwctrack->DWCExtrapolation_XY(1).second));		//comparison to the extrapolation to the first layer
-		}
-
-		for (uint y=0; y<(range_y); y++) {
-			for (uint x=0; x<(range_x); x++) {
-				delete[] image_data[y][x];
-			}
-			delete[] image_data[y];
-		}		
-		delete[] image_data;	
-	}
 
 	/**********                                 ****************/
 	event.put(std::move(UR), m_UserRecordCollectionName);

@@ -26,8 +26,6 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) :
   investigatePulseShape = cfg.getUntrackedParameter<bool>("investigatePulseShape", false);
   std::cout << cfg.dump() << std::endl;
 
-  timingNNFilePath = cfg.getUntrackedParameter<std::string>("timingNetworks", "");
-
   produces <std::map<int, commonModeNoise> >(m_CommonModeNoiseCollectionName);
   produces <HGCalTBRecHitCollection>(m_outputCollectionName);
 }
@@ -154,60 +152,6 @@ void HGCalTBRecHitProducer::beginJob()
   if (!io.load(fip.fullPath(), essource_.adccalibmap_)) {
     throw cms::Exception("Unable to load ADC conversions map");
   };
-
-  setupTimingNNs(this->timingNNFilePath);
-}
-
-void HGCalTBRecHitProducer::setupTimingNNs(std::string filePath) {
-
-  std::fstream file; 
-  char fragment[100];
-  int readCounter = -1, currentBoard = -1, currentSkiroc = -1;
-
-  tf::Shape xShape[] = { 1, 3 }; // 1 = single batch
-  
-
-
-
-  file.open(filePath.c_str(), std::fstream::in);
-  std::cout<<"Reading file "<<filePath<<" -open: "<<file.is_open()<<std::endl;
-  while (file.is_open() && !file.eof()) {
-    readCounter++;
-    file >> fragment;
-    
-    switch (readCounter) {
-      case 0:
-        currentBoard = atoi(fragment);
-        break;
-      case 1:
-        currentSkiroc = atoi(fragment);
-        break;
-      default:
-        std::string currentPath = fragment;
-        std::cout<<"Assigning timing NN for board "<<currentBoard<<" and skiroc "<<currentSkiroc<<": "<<currentPath<<std::endl;
-        
-        int NNKey = 10*currentBoard+currentSkiroc;
-        tf::Tensor* x = new tf::Tensor(2, xShape);
-        xins[NNKey] = x;
-  
-        tf::Tensor* y = new tf::Tensor();
-        youts[NNKey] = y;
-
-        tf::Graph* new_graph = new tf::Graph(currentPath.c_str());
-        timingCalibrationNNs[NNKey] = new_graph;
-        
-        tf::Session* new_session = new tf::Session(&(*new_graph)); 
-        timingCalibrationNNSessions[NNKey] = new_session;
-        
-        std::ostringstream os( std::ostringstream::ate );
-        os.str("x_in_");os<<NNKey;
-        new_session->addInput(x, os.str().c_str());
-        os.str("y_out_");os<<NNKey;
-        new_session->addOutput(y, os.str().c_str());
-        
-        currentBoard = currentSkiroc = readCounter = -1;
-    }
-  }
 
 }
 
@@ -390,19 +334,6 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
             //_time = fitresultLG.tmax - fitresultLG.trise;
             recHit.setFlag(HGCalTBRecHit::kGood);
 
-            //set the time here
-            int NNKey = 10*iboard+iski;
-            if ((fitresultLG.amplitude>10.)&&(timingCalibrationNNs.find(NNKey)!=timingCalibrationNNs.end())) {
-              std::vector<float> xvalues = { (float)toaRise, (float)fitresultLG.amplitude, (float)toaFall };
-              xins[NNKey]->setVector<float>(1, 0, xvalues); // axis 1, batch 0, values
-              timingCalibrationNNSessions[NNKey]->run();
-              _time = *(youts[NNKey])->getPtr<float>(0, 0);
-              #ifdef DEBUG
-                std::cout<<"Reconstructed time ("<<iboard<<", "<<iski<<"): "<<_time<<" vs "<<fitresultLG.tmax<<std::endl;
-              #endif
-            } 
-              
-
             if (investigatePulseShape) {
               for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) {
                 shapesLG[key]->Fill(25*it+12.5-(fitresultLG.tmax - fitresultLG.trise), sampleLG[it]/fitresultLG.amplitude);
@@ -451,21 +382,6 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 }
 
 void HGCalTBRecHitProducer::endJob() {
-  for (std::map<int, tf::Graph*>::iterator it=timingCalibrationNNs.begin(); it!=timingCalibrationNNs.end(); it++) {
-    delete (*it).second;
-  };  timingCalibrationNNs.clear();
-  
-  for (std::map<int, tf::Session*>::iterator it=timingCalibrationNNSessions.begin(); it!=timingCalibrationNNSessions.end(); it++) {
-    delete (*it).second;
-  };  timingCalibrationNNSessions.clear();
-
-  for (std::map<int, tf::Tensor*>::iterator it=xins.begin(); it!=xins.end(); it++) {
-    delete (*it).second;
-  };  xins.clear();
-  
-  for (std::map<int, tf::Tensor*>::iterator it=youts.begin(); it!=youts.end(); it++) {
-    delete (*it).second;
-  };  youts.clear();
 }
 
 DEFINE_FWK_MODULE(HGCalTBRecHitProducer);

@@ -34,8 +34,6 @@
 #include <map>
 
 
-#include "DNN/TensorFlow/interface/TensorFlow.h"
-
 //#define DEBUG
 
 class HGCalTBRecHitProducer : public edm::EDProducer
@@ -107,12 +105,6 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;
 
-  //https://gitlab.cern.ch/mrieger/CMSSW-DNN/blob/c_api/TensorFlow/interface/Graph.h
-  std::string timingNNFilePath;
-  std::map<int, tf::Graph*> timingCalibrationNNs;
-  std::map<int, tf::Session*> timingCalibrationNNSessions;
-  std::map<int, tf::Tensor*> xins;
-  std::map<int, tf::Tensor*> youts;
   
   
   #ifdef DEBUG

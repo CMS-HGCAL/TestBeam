@@ -144,7 +144,6 @@ process.variablecomputation = cms.EDProducer("VariableComputation",
                                 layerPositionFile=cms.string(layerPositionFile),
                                 NHexaBoards=cms.untracked.int32(NHexaBoards),
                                 NLayers=cms.untracked.int32(NHexaBoards),
-                                DNNInputFile = cms.untracked.string(""),
                                 NColorsInputImage = cms.untracked.int32(-1),
                                 CellEnergyCut = cms.untracked.double(0.5)
 )
