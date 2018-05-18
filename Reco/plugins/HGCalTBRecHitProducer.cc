@@ -89,33 +89,6 @@ void HGCalTBRecHitProducer::beginJob()
     }
   }
 
-  outtree = fs->make<TTree>("timeInvestigationTree", "timeInvestigationTree");
-
-  outtree->Branch("event", &event_for_tree);
-  outtree->Branch("run", &run_for_tree);
-  outtree->Branch("pdgID", &pdgID_for_tree);
-  outtree->Branch("beamEnergy", &beamEnergy_for_tree);
-  outtree->Branch("board", &board_for_tree);
-  outtree->Branch("skiroc", &skiroc_for_tree);
-  outtree->Branch("channel", &channel_for_tree);
-  outtree->Branch("globalTimestamp", &globalTimestamp_for_tree);
-  outtree->Branch("MIPEnergy", &MIPEnergy_for_tree);
-  outtree->Branch("HG_max", &HG_max_for_tree);
-  outtree->Branch("LG_max", &LG_max_for_tree);
-  outtree->Branch("TMax_HG", &TMax_HG_for_tree);
-  outtree->Branch("TMax_LG", &TMax_LG_for_tree);
-  outtree->Branch("TOT", &TOT_for_tree);
-  outtree->Branch("TOA_rise", &TOA_rise_for_tree);
-  outtree->Branch("TOA_fall", &TOA_fall_for_tree);
-  outtree->Branch("chi2_HG", &chi2_HG_for_tree);
-  outtree->Branch("chi2_LG", &chi2_LG_for_tree);
-  outtree->Branch("trise_HG", &trise_HG_for_tree);
-  outtree->Branch("trise_LG", &trise_LG_for_tree);
-  outtree->Branch("errortmax_HG", &errortmax_HG_for_tree);
-  outtree->Branch("errortmax_LG", &errortmax_LG_for_tree);
-  outtree->Branch("erroramplitude_HG", &erroramplitude_HG_for_tree);
-  outtree->Branch("erroramplitude_LG", &erroramplitude_LG_for_tree);
-
   if( m_maskNoisyChannels ){
     FILE* file;
     char buffer[300];
@@ -188,10 +161,6 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
   for( auto rawhit : *rawhits ){
 
-    event_for_tree = rd->event;
-    run_for_tree = rd->run;
-    pdgID_for_tree = rd->pdgID;
-    beamEnergy_for_tree = rd->energy;
 
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid().rawId()) );
     if( !essource_.emap_.existsEId(eid.rawId()) || std::find(m_noisyChannels.begin(),m_noisyChannels.end(),eid.rawId())!=m_noisyChannels.end() )
@@ -200,17 +169,11 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     int iski=rawhit.skiroc();
     int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     int ichannel=eid.ichan();
-    board_for_tree = iboard;
-    skiroc_for_tree = iski;
-    channel_for_tree = ichannel;
     int key = iboard * 10000 + (iski % 4) * 100 + ichannel;
 
     //uint32_t globalTimestamp = gts->skiroc_to_timestamps.at(iski);
 
-    //globalTimestamp_for_tree = globalTimestamp;
-    globalTimestamp_for_tree = -1;
 
-    MIPEnergy_for_tree =  HG_max_for_tree =  LG_max_for_tree =  TMax_HG_for_tree =  TMax_LG_for_tree =  TOT_for_tree =  TOA_rise_for_tree =  TOA_fall_for_tree =  chi2_HG_for_tree =  chi2_LG_for_tree =  trise_HG_for_tree =  trise_LG_for_tree =  errortmax_HG_for_tree =  errortmax_LG_for_tree =  erroramplitude_HG_for_tree =  erroramplitude_LG_for_tree = -999;
 
     std::vector<double> sampleHG, sampleLG, sampleT;
 
@@ -299,22 +262,10 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
         m_h_LowGainVsTOTAmpl[10*iboard + iski%4]->Fill(totGain, fitresultLG.amplitude);   
         recHit.setEnergyLow(fitresultLG.amplitude);
         if (fitresultHG.status==0) m_h_HighVsLowGainAmpl[10*iboard + iski%4]->Fill(fitresultLG.amplitude, fitresultHG.amplitude);    
-        LG_max_for_tree = fitresultLG.amplitude;
-        TMax_LG_for_tree = fitresultLG.tmax;
-        chi2_LG_for_tree = fitresultLG.chi2;
-        trise_LG_for_tree = fitresultLG.trise;
-        errortmax_LG_for_tree = fitresultLG.errortmax;
-        erroramplitude_LG_for_tree = fitresultLG.erroramplitude;        
       }
       if (fitresultHG.status==0) {
         distrHG[key]->Fill(fitresultHG.amplitude);
         recHit.setEnergyHigh(fitresultHG.amplitude);
-        HG_max_for_tree = fitresultHG.amplitude;
-        TMax_HG_for_tree = fitresultHG.tmax;
-        chi2_HG_for_tree = fitresultHG.chi2;
-        trise_HG_for_tree = fitresultHG.trise;
-        errortmax_HG_for_tree = fitresultHG.errortmax;
-        erroramplitude_HG_for_tree = fitresultHG.erroramplitude;
       }
 
 
@@ -331,7 +282,6 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
           recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
           if( fitresultLG.status==0 ){
             energy = fitresultLG.amplitude * adcConv.lowGain_to_highGain();
-            //_time = fitresultLG.tmax - fitresultLG.trise;
             recHit.setFlag(HGCalTBRecHit::kGood);
 
             if (investigatePulseShape) {
@@ -361,15 +311,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
       //std::cout<<"Setting energy and time of: "<<detid.layer()<<"  "<<detid.iu()+7<<"  "<<detid.iv()+7<<"  "<<energy*adcConv.adc_to_MIP()<<"  "<<_time<<std::endl;
       recHit.setEnergy(energy*adcConv.adc_to_MIP());
-      MIPEnergy_for_tree = energy*adcConv.adc_to_MIP();
-      TOA_rise_for_tree = toaRise;
-      TOA_fall_for_tree = toaFall;
-      TOT_for_tree = totGain;   //is TOT slow
-      recHit.setTime(_time);
-      //recHit.setTime(toaRise);
+      recHit.setTime(toaRise);
 
-
-      outtree->Fill();
       rechits->push_back(recHit);
     }
 

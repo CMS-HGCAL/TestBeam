@@ -75,32 +75,6 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   std::map<int, TH2F*> m_h_HighVsLowGainAmpl;
   std::map<int, TH2F*> m_h_LowGainVsTOTAmpl;
 
-  TTree* outtree;
-  int event_for_tree;
-  int run_for_tree;
-  int pdgID_for_tree;
-  double beamEnergy_for_tree;
-  int board_for_tree;
-  int skiroc_for_tree;
-  int channel_for_tree;
-  uint32_t globalTimestamp_for_tree;
-  double MIPEnergy_for_tree;
-  double HG_max_for_tree;
-  double LG_max_for_tree;
-  double TMax_HG_for_tree;
-  double TMax_LG_for_tree;
-  double TOT_for_tree;
-  double TOA_rise_for_tree;
-  double TOA_fall_for_tree;
-  double chi2_HG_for_tree;
-  double chi2_LG_for_tree;
-  double trise_HG_for_tree;
-  double trise_LG_for_tree;
-  double errortmax_HG_for_tree;
-  double errortmax_LG_for_tree;
-  double erroramplitude_HG_for_tree;
-  double erroramplitude_LG_for_tree;
-
 
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;
