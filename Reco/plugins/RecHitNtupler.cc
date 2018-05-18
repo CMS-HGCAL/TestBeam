@@ -21,6 +21,7 @@
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
+#include "HGCal/DataFormats/interface/HGCalTBRunData.h" //for the runData type definition
 
 #include <iomanip>
 #include <set>
@@ -54,6 +55,7 @@ private:
     double m_noiseThreshold;
 
     // ---------- member data ---------------------------
+    edm::EDGetTokenT<RunData> RunDataToken; 
     edm::EDGetTokenT<HGCalTBRecHitCollection> m_HGCalTBRecHitCollection;
 
     HGCalTBTopology IsCellValid;
@@ -120,6 +122,7 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
     m_noiseThreshold(iConfig.getUntrackedParameter<double>("NoiseThreshold",0.5))
 {
     m_HGCalTBRecHitCollection = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
+    RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
 
     m_evtID=0;
 
@@ -143,7 +146,7 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
 
     // event info
     tree_->Branch("event", &ev_event_);
-    tree_->Branch("event", &ev_run_);
+    tree_->Branch("run", &ev_run_);
 
     // rechit
     tree_->Branch("rechit_detid",&rechit_detid_);
@@ -176,14 +179,14 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
 {
     clearVariables();
 
-    usesResource("TFileService");
-    edm::Service<TFileService> fs;
-
     edm::Handle<HGCalTBRecHitCollection> rhits;
     event.getByToken(m_HGCalTBRecHitCollection, rhits);
 
-    ev_run_ = event.id().run();
-    ev_event_ = event.id().event();
+    edm::Handle<RunData> rd;
+    event.getByToken(RunDataToken, rd);    
+
+    ev_run_ = rd->run;
+    ev_event_ = rd->event;
 
     for( auto hit : *rhits ){
 
