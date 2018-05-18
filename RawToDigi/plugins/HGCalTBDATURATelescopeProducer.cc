@@ -122,18 +122,24 @@ void HGCalTBDATURATelescopeProducer::produce(edm::Event& event, const edm::Event
             TripletTrack2X.fit();       TripletTrack2Y.fit();
 
             for (std::map<int, double>::iterator layerIt=layerPositions.begin(); layerIt!=layerPositions.end(); layerIt++) {
-                LineFitter* TripletTrackX;
-                LineFitter* TripletTrackY;
+                double layer_ref_x = TripletTrack2X.eval(layerIt->second);
+                double layer_ref_y = TripletTrack2Y.eval(layerIt->second);
+                double layer_ref_x_chi2 = TripletTrack2X.GetChisquare();
+                double layer_ref_y_chi2 = TripletTrack2Y.GetChisquare();
+                
+                //mean between two triplets for the intermediate layer
                 if (layerIt->first <=1 ) {
-                    TripletTrackX = &TripletTrack1X;
-                    TripletTrackY = &TripletTrack1Y;
-                } else {
-                    TripletTrackX = &TripletTrack2X;
-                    TripletTrackY = &TripletTrack2Y;
+                    layer_ref_x += TripletTrack1X.eval(layerIt->second);
+                    layer_ref_y += TripletTrack1Y.eval(layerIt->second);
+                    layer_ref_x_chi2 += TripletTrack1X.GetChisquare();
+                    layer_ref_y_chi2 += TripletTrack1Y.GetChisquare();
+
+                    layer_ref_x /= 2.;
+                    layer_ref_y /= 2.;
+                    layer_ref_x_chi2 /= 2.;
+                    layer_ref_y_chi2 /= 2.;
                 }
-                double layer_ref_x = TripletTrackX->eval(layerIt->second);
-                double layer_ref_y = TripletTrackY->eval(layerIt->second);
-                DATURATelescopeTrack.addLayerReference(layerIt->first, layer_ref_x, layer_ref_y, TripletTrackX->GetChisquare(), TripletTrackY->GetChisquare());
+                DATURATelescopeTrack.addLayerReference(layerIt->first, layer_ref_x, layer_ref_y, layer_ref_x_chi2, layer_ref_y_chi2);
             }
             DATURATracks->push_back(DATURATelescopeTrack);
         }
