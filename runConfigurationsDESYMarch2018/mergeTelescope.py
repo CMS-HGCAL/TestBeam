@@ -79,31 +79,20 @@ process.source = cms.Source("PoolSource",
 )
 
 process.output = cms.OutputModule("PoolOutputModule",
-                                  fileName = cms.untracked.string(options.processedFile)#,
-                                  #outputCommands = cms.untracked.vstring('drop *_*_RunData_*')#,
-                                  #                                       'keep *_*_HGCALTBRECHITS_*',
-                                  #                                       'keep *_*_DelayWireChambers_*',
-                                  #                                       'keep *_*_HGCalTBDWCTracks_*',
-                                  #                                       'keep *_*_FullRunData_*',
-                                  #                                       'keep *_*_HGCALTBCOMMONMODENOISEMAP_*')
+                                  fileName = cms.untracked.string(options.processedFile)
 )
 
 
-process.daturaproducer.OutputCollectionName = cms.string("DaturaTelescopeClusters") 
+process.daturaproducer.OutputCollectionName = cms.string("HGCalTBDATURATracks") 
 process.daturaproducer.RUNDATA = cms.InputTag("source","RunData")
 process.daturaproducer.inputFile = cms.string(options.TelescopeFile)
 process.daturaproducer.SkipFirstNEventsInTelescopeFile = cms.int32(options.SkipFirstNEventsInTelescopeFile)
+process.daturaproducer.layerPositionFile = cms.string(layerPositionFile)
 
 
 
-process.telescopetrackproducer = cms.EDProducer("DWCTrackProducer",
-                                        MWCHAMBERS = cms.InputTag("daturaproducer","DaturaTelescopeClusters" ), 
-                                        OutputCollectionName=cms.string("HGCalTBDATURATracks"),
-                                        layerPositionFile=cms.string(layerPositionFile)
-)
 
-
-process.p = cms.Path( process.daturaproducer * process.telescopetrackproducer )
+process.p = cms.Path( process.daturaproducer )
 
 
 process.end = cms.EndPath(process.output)

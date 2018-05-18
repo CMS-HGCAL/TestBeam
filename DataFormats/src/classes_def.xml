@@ -53,4 +53,12 @@
   <class name="edm::Wrapper<std::map<int, WireChamberData> >"/>
 
 
+  <class name="HGCalTBDATURATelescopeData"/>
+  <class name="std::vector<HGCalTBDATURATelescopeData>"/>
+  <class name="edm::Wrapper<std::vector<HGCalTBDATURATelescopeData> >"/>
+  <!-- 
+  <class name="std::map<int, HGCalTBDATURATelescopeData>"/>
+  <class name="edm::Wrapper<std::map<int, HGCalTBDATURATelescopeData> >"/>
+  -->
+
 </lcgdict>

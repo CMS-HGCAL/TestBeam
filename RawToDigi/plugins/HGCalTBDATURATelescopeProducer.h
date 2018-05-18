@@ -1,3 +1,8 @@
+//author: Thorben Quast
+//date: 18th May 2018
+//producer reading reconstructed DATURA telescope data and additing to the root file
+//v1 (18th May 2018) also implements a preliminary straight line tracking to compute reference points on the sensors
+
 #ifndef HGCALTBDATURATELESCOPEPRODUCER_H
 #define HGCALTBDATURATELESCOPEPRODUCER_H
 
@@ -11,7 +16,10 @@
 
 #include <iostream>
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"
-#include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
+#include "HGCal/DataFormats/interface/HGCalTBDATURATelescopeData.h"
+
+//for sttraight line tracking
+#include "HGCal/Reco/interface/PositionResolutionHelpers.h"
 
 #include "TFile.h"
 #include "TTree.h"
@@ -51,6 +59,10 @@ class HGCalTBDATURATelescopeProducer : public edm::EDProducer{
     std::map<int, std::vector<double>* > tree_clusterY;       //in mm
     std::map<int, std::vector<double>* > tree_clusterZ;       //in mm
     std::map<int, std::vector<double>* > tree_absorber;       //in X0
+
+    //for computation of reference positions at each layer
+    std::string m_layerPositionFile;
+    std::map<int, double> layerPositions;
     
 };
 #endif

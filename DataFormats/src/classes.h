@@ -14,6 +14,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBGlobalTimestamps.h"
 #include "HGCal/DataFormats/interface/HGCalTBDWCTrack.h"
 #include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
+#include "HGCal/DataFormats/interface/HGCalTBDATURATelescopeData.h"
 
 #include "DataFormats/Common/interface/RefProd.h"
 #include "DataFormats/Common/interface/Wrapper.h"
@@ -62,6 +63,10 @@ struct dictionary {
   	WireChamberData _aWireChamberData;
   	std::map<int, WireChamberData> _aWireChamberDataMap;
   	edm::Wrapper<std::map<int, WireChamberData> > _aWireChamberDataWrapper;
+
+  	HGCalTBDATURATelescopeData _aHGCalTBDATURATelescopeData;
+  	std::vector<HGCalTBDATURATelescopeData> _HGCTBHGCalTBDATURATelescopeDataVect;
+  	edm::Wrapper<std::vector<HGCalTBDATURATelescopeData> > _aHGCalTBDATURATelescopeDataVecWrapper;
 
 	HGCalTBTrack _aTrack;
 	std::vector<HGCalTBTrack> _HGCTBTRackVect;

@@ -99,7 +99,7 @@ process.source = cms.Source("PoolSource",
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
 
 
-process.mipfindinganalysis = cms.EDAnalyzer("MIPFinder",
+process.mipfindinganalysis = cms.EDAnalyzer("DWCCorrelator",
                                 RUNDATA = cms.InputTag("wirechamberproducer", "FullRunData" ), 
                                 MWCHAMBERS = cms.InputTag("wirechamberproducer","DelayWireChambers" ), 
                                 DWCTRACKS = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" ), 

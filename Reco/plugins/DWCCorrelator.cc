@@ -1,5 +1,6 @@
 /* 
- * Determination of the position resolution of the setup.
+ * Finds cells which are hit by MIPs using extrapolations with DWC data.
+ * Dedicated cuts on reconstructed DWC references lower the noise integral in energy spectra.
  */
 
 /**
@@ -51,10 +52,10 @@ typedef std::map<int, std::vector<double> > WindowMap;
 
 //#define DEBUG
 
-class MIPFinder : public edm::one::EDAnalyzer<edm::one::SharedResources> {
+class DWCCorrelator : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 	public:
-		explicit MIPFinder(const edm::ParameterSet&);
-		~MIPFinder();
+		explicit DWCCorrelator(const edm::ParameterSet&);
+		~DWCCorrelator();
 		static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
 	private:
@@ -109,7 +110,7 @@ class MIPFinder : public edm::one::EDAnalyzer<edm::one::SharedResources> {
 		bool rejectFromCommonModeNoise(edm::Handle<std::map<int, commonModeNoise> > &cmMap, int iski, int criterion);
 };
 
-MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {	
+DWCCorrelator::DWCCorrelator(const edm::ParameterSet& iConfig) {	
 	
 	usesResource("TFileService");
 	HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
@@ -198,12 +199,12 @@ MIPFinder::MIPFinder(const edm::ParameterSet& iConfig) {
 
 }
 
-MIPFinder::~MIPFinder() {
+DWCCorrelator::~DWCCorrelator() {
 	return;
 }
 
 // ------------ method called for each event  ------------
-void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
+void DWCCorrelator::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 
 	edm::Handle<RunData> rd;
  	//get the relevant event information
@@ -262,7 +263,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 			vetoEvent = vetoEvent&&false;
 		}
 	} else {
-		if (dwctrack->valid && (dwctrack->chi2_x<=100.) && (dwctrack->chi2_y<=100.)) vetoEvent = false;
+		 //no DWCs elsewhere --> veto
 	}
 	#ifdef DEBUG
 		std::cout<<"vetoEvent: "<<vetoEvent<<std::endl;
@@ -296,10 +297,6 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 			}
 			layer_ref_x[layer] = - layer_ref_x[layer];		//necessary due to rotation of coordinate system for September TB data
 		} else {
-			if (dwctrack->valid && (dwctrack->chi2_x<=100.) && (dwctrack->chi2_y<=100.)) {
-				layer_ref_x[layer] = dwctrack->DWCExtrapolation_XY(layer).first;
-				layer_ref_y[layer] = dwctrack->DWCExtrapolation_XY(layer).second;
-			}
 		}
 
 		bool _boardFilled = false;
@@ -363,7 +360,7 @@ void MIPFinder::analyze(const edm::Event& event, const edm::EventSetup& setup) {
 	
 }// analyze ends here
 
-void MIPFinder::beginJob() {	
+void DWCCorrelator::beginJob() {	
 	ReadDWCWindows(0);
 
 	HGCalCondObjectTextIO io(0);
@@ -378,7 +375,7 @@ void MIPFinder::beginJob() {
 	};
 }
 
-void MIPFinder::endJob() {
+void DWCCorrelator::endJob() {
 	for(int ib = 0; ib<m_NHexaBoards; ib++) {
 		for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
 			for( size_t ichan=0; ichan<=HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
@@ -393,14 +390,14 @@ void MIPFinder::endJob() {
 	}	
 }
 
-void MIPFinder::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
+void DWCCorrelator::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
 	edm::ParameterSetDescription desc;
 	desc.setUnknown();
 	descriptions.addDefault(desc);
 }
 
 
-void MIPFinder::ReadDWCWindows(int fileIndex) {
+void DWCCorrelator::ReadDWCWindows(int fileIndex) {
   	if (fileIndex==(int)pathsToMIPWindowFiles.size()) return;
 
 	std::fstream file; 
@@ -465,7 +462,7 @@ void MIPFinder::ReadDWCWindows(int fileIndex) {
 }
 
 
-void MIPFinder::ReadCurrentDWCWindows(int this_run) {
+void DWCCorrelator::ReadCurrentDWCWindows(int this_run) {
 	std::map<std::pair<int, int> ,WindowMap  >::iterator it;
 	for (it=loadedDWCWindows.begin(); it!=loadedDWCWindows.end(); it++) {
 		int run_min = it->first.first;
@@ -479,7 +476,7 @@ void MIPFinder::ReadCurrentDWCWindows(int this_run) {
 }
 
 
-bool MIPFinder::rejectFromCommonModeNoise(edm::Handle<std::map<int, commonModeNoise> > &cmMap, int iski, int criterion=0) {
+bool DWCCorrelator::rejectFromCommonModeNoise(edm::Handle<std::map<int, commonModeNoise> > &cmMap, int iski, int criterion=0) {
 	if (criterion==0) return false;
 	else if (criterion==1) {
 		for (size_t ts=1; ts<=6; ts++)	if (fabs(cmMap->at(iski).fullHG[ts]) > 200.) return true;
@@ -494,4 +491,4 @@ bool MIPFinder::rejectFromCommonModeNoise(edm::Handle<std::map<int, commonModeNo
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(MIPFinder);
+DEFINE_FWK_MODULE(DWCCorrelator);

@@ -21,10 +21,8 @@
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h" //for the runData type definition
-#include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
-#include "HGCal/DataFormats/interface/HGCalTBDWCTrack.h"
 
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
@@ -58,8 +56,7 @@ private:
   // ----------member data ---------------------------
   edm::EDGetTokenT<HGCalTBRecHitCollection> HGCalTBRecHitCollection_Token;      
   edm::EDGetTokenT<RunData> RunDataToken; 
-  edm::EDGetTokenT<std::map<int, WireChamberData> > DWCToken;    
-  edm::EDGetTokenT<HGCalTBDWCTrack> DWCTrackToken;  
+  
   struct {
     HGCalElectronicsMap emap_;
   } essource_;
@@ -82,9 +79,7 @@ EventDisplay::EventDisplay(const edm::ParameterSet& iConfig) :
 {
   HGCalTBRecHitCollection_Token = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("HGCALTBRECHITS"));
   RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
-  DWCToken= consumes<std::map<int, WireChamberData> >(iConfig.getParameter<edm::InputTag>("MWCHAMBERS"));
-  DWCTrackToken= consumes<HGCalTBDWCTrack>(iConfig.getParameter<edm::InputTag>("DWCTRACKS"));
-
+  
   eventsToPlot = iConfig.getParameter<std::vector<int> >("eventsToPlot");
 
   usesResource("TFileService");
@@ -124,12 +119,6 @@ void EventDisplay::analyze(const edm::Event& event, const edm::EventSetup& setup
   event.getByToken(RunDataToken, rd);
  
   if (std::find(eventsToPlot.begin(), eventsToPlot.end(), rd->event)==eventsToPlot.end()) return;
-
-  edm::Handle<HGCalTBDWCTrack> dwctrack;
-  event.getByToken(DWCTrackToken, dwctrack);
-
-  edm::Handle<std::map<int, WireChamberData> > dwcs;
-  event.getByToken(DWCToken, dwcs);
 
   edm::Handle<HGCalTBRecHitCollection> Rechits;
   event.getByToken(HGCalTBRecHitCollection_Token, Rechits);

@@ -249,10 +249,13 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	
 	edm::Handle<HGCalTBDWCTrack> dwctrack;
 	edm::Handle<std::map<int, WireChamberData> > dwcs;
-	try {
-		event.getByToken(DWCTrackToken, dwctrack);
-		event.getByToken(DWCToken, dwcs);
-	} catch(const std::exception& e) {
+	if (rd->booleanUserRecords.has("hasValidDWCMeasurement")&&rd->booleanUserRecords.get("hasValidDWCMeasurement")) {	
+		std::cout<<"Hello"<<std::endl;
+		try {
+			event.getByToken(DWCTrackToken, dwctrack);
+			event.getByToken(DWCToken, dwcs);
+		} catch(const std::exception& e) {
+		}
 	}
 
 

@@ -100,27 +100,22 @@ process.cellenergyplotting = cms.EDAnalyzer("CellEnergyPlotter",
                                 commonModeNoiseRejectionType = cms.int32(0)       #0: none, else 1-..., default: 0 
 )
 
-process.mipfindinganalysis = cms.EDAnalyzer("MIPFinder",
+process.correlationanalysis = cms.EDAnalyzer("DATURATelescopeCorrelator",
                                 RUNDATA = cms.InputTag("daturaproducer", "FullRunData" ), 
-                                MWCHAMBERS = cms.InputTag("daturaproducer","DaturaTelescopeClusters" ), 
-                                DWCTRACKS = cms.InputTag("telescopetrackproducer","HGCalTBDATURATracks" ), 
+                                DATURATelescopeData = cms.InputTag("daturaproducer","HGCalTBDATURATracks" ), 
                                 HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
-                                HGCALTBCOMMONMODENOISE = cms.InputTag("rechitproducer","HGCALTBCOMMONMODENOISEMAP" ),
                                 ElectronicMap = cms.untracked.string(electronicMap),
                                 DetectorLayout=cms.untracked.string(hgcalLayout),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
-                                n_bins_DWCE = cms.int32(50),
+                                n_bins = cms.int32(50),
                                 max_dim_x_DUT = cms.double(10),
-                                max_dim_y_DUT = cms.double(10.),
-                                pathsToMIPWindowFiles = cms.vstring(""),
-                                commonModeNoiseRejectionType = cms.int32(0),
-                                DWCs_CERNSPS = cms.untracked.bool(False) 
+                                max_dim_y_DUT = cms.double(10.)
                               )
 
 process.variablecomputation = cms.EDProducer("VariableComputation",
-                                RUNDATA = cms.InputTag("daturaproducer", "FullRunData" ), 
-                                MWCHAMBERS = cms.InputTag("daturaproducer","DaturaTelescopeClusters" ), 
-                                DWCTRACKS = cms.InputTag("telescopetrackproducer","HGCalTBDATURATracks" ), 
+                                RUNDATA = cms.InputTag("daturaproducer", "FullRunData" ),  
+                                MWCHAMBERS = cms.InputTag("","" ), 
+                                DWCTRACKS = cms.InputTag("","" ),                                 
                                 HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
                                 UserRecordCollectionName=cms.untracked.string("VariableUserRecords"),
                                 ElectronicMap = cms.untracked.string(electronicMap),
@@ -140,8 +135,6 @@ process.ntupelizer = cms.EDAnalyzer("NTupelizer",
 process.eventdisplay = cms.EDAnalyzer("EventDisplay",
                                 RUNDATA = cms.InputTag("daturaproducer", "FullRunData" ), 
                                 HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
-                                MWCHAMBERS = cms.InputTag("daturaproducer","DaturaTelescopeClusters" ), 
-                                DWCTRACKS = cms.InputTag("telescopetrackproducer","HGCalTBDATURATracks" ), 
                                 electronicsMap = cms.untracked.string(electronicMap),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                 eventsToPlot=cms.vint32([1, 2, 3])
@@ -156,5 +149,5 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 ####################################
 
 
-process.p = cms.Path(process.cellenergyplotting*process.mipfindinganalysis*process.variablecomputation*process.ntupelizer*process.eventdisplay)
+process.p = cms.Path(process.cellenergyplotting*process.correlationanalysis*process.variablecomputation*process.ntupelizer*process.eventdisplay)
 
