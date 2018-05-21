@@ -47,6 +47,9 @@ private:
 	HGCalTBDetectorLayout layout_;
     } essource_;
 
+    std::string m_layerPositionFile;
+    std::map<int, double> layerPositions;
+
     // parameters
     int m_sensorsize;
     bool m_eventPlotter;
@@ -67,6 +70,8 @@ private:
     TTree* tree_;
 
     void clearVariables(); // function to clear tree variables/vectors
+
+
 
     // Variables for branches
 
@@ -116,6 +121,7 @@ void RecHitNtupler::clearVariables(){
 RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
     m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt")),
     m_detectorLayoutFile(iConfig.getUntrackedParameter<std::string>("DetectorLayout","HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt")),
+    m_layerPositionFile(iConfig.getUntrackedParameter<std::string>("layerPositionFile","")),
     m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
     m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
     m_mipThreshold(iConfig.getUntrackedParameter<double>("MipThreshold",5.0)),
@@ -123,7 +129,6 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
 {
     m_HGCalTBRecHitCollection = consumes<HGCalTBRecHitCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
     RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
-
     m_evtID=0;
 
     std::cout << iConfig.dump() << std::endl;
@@ -137,6 +142,25 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
     if (!io.load(fip.fullPath(), essource_.layout_)) {
 	throw cms::Exception("Unable to load detector layout file");
     };
+
+    //read the layer positions for z-position of rechits
+    std::fstream file; 
+    char fragment[100];
+    int readCounter = -1;
+
+    file.open(m_layerPositionFile.c_str(), std::fstream::in);
+
+    std::cout<<"Reading file "<<m_layerPositionFile<<" -open: "<<file.is_open()<<std::endl;
+    int layer=0;
+    while (file.is_open() && !file.eof()) {
+        readCounter++;
+        file >> fragment;
+        if (readCounter==0) layer=atoi(fragment);
+        if (readCounter==1) {
+            layerPositions[layer]=atof(fragment);
+            readCounter=-1;
+        }
+    }
 
     usesResource("TFileService");
     edm::Service<TFileService> fs;
@@ -220,7 +244,8 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
 	rechit_layer_.push_back(hit.id().layer());
 
 	rechit_x_.push_back( CellCentreXY.first );
-	rechit_y_.push_back( CellCentreXY.second );
+    rechit_y_.push_back( CellCentreXY.second );
+	rechit_z_.push_back( layerPositions[hit.id().layer()] );
 
 	/*
 	// or instead?
