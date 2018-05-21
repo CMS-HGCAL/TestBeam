@@ -25,9 +25,9 @@ telescope_dataFolder = "/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/b
 beamParticlePDGID = 11
 runType = "Beam"
 
-pedestalHighGainFile = "/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/pedestals/pedestalsHG_1174.txt"
-pedestalLowGainFile = "/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/pedestals/pedestalsLG_1174.txt"
-noisyChannelsFile = "/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/quickAnalysis_thorben/pedestals/noisyChannels_1174.txt"
+pedestalHighGainFile = "/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/pedestals/v1/pedestalsHG_%s.txt" % runNumber
+pedestalLowGainFile = "/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/pedestals/v1/pedestalsLG_%s.txt" % runNumber
+noisyChannelsFile = "/eos/cms/store/group/dpg_hgcal/tb_hgcal/desy_march2018/pedestals/v1/noisyChannels_%s.txt" % runNumber
 VariablesToPlot = ["xmean", "ymean", "NRechits", "E7_tot", "E19_tot", "EAll_tot", "EAllHG_tot", "EAllLG_tot", "EAllTOT_tot", "EAll_layer1", "EAll_layer2", "EAll_layer3" ]
 eventNumbersToDisplay = range(1, 11)        #displays for the first ten events
 outputFile = "output_%s.root" % runNumber
