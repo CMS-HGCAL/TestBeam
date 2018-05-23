@@ -19,6 +19,7 @@
   <class name="edm::Wrapper<std::map<int, commonModeNoise> >"/>
 
   <class name="UserRecords<bool>"/>
+  <class name="UserRecords<float>"/>
   <class name="UserRecords<double>"/>
   <class name="edm::Wrapper<UserRecords<double> >"/>
   

@@ -47,6 +47,7 @@ struct dictionary {
   	edm::Wrapper<std::map<int, commonModeNoise> > _acommonModeNoiseMapWrapper;
 
 	UserRecords<bool> _aBooleanUserRecord;
+	UserRecords<float> _aFloatUserRecord;
 	UserRecords<double> _aDoubleUserRecord;
   	edm::Wrapper<UserRecords<double> > _aDoubleUserRecordWrapper;
 

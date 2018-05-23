@@ -38,7 +38,7 @@ electronicMap = "HGCal/CondObjects/data/map_CERN_Hexaboard_DESY_3Sensors_3EELaye
 hgcalLayout = "HGCal/CondObjects/data/layerGeom_desymarch2018_configuration4.txt"
 adcCalibrations = "HGCal/CondObjects/data/hgcal_calibration_DESYMarch2018.txt"
 layerPositions = "/afs/cern.ch/user/t/tquast/CMSSW_9_3_0/src/HGCal/CondObjects/data/layer_distances_DESY_March2018_config4.txt"     #needs to be the absolute path
-
+PIStagePositionFile = "/afs/cern.ch/user/t/tquast/CMSSW_9_3_0/src/HGCal/CondObjects/data/pi_stage_positions_DESYMarch2018.txt"     #needs to be the absolute path
 
 reportEvery = 1000
 maxEvents = -1 #-1 for analysing all events                 
@@ -132,7 +132,8 @@ process.daturaproducer = cms.EDProducer("HGCalTBDATURATelescopeProducer",
                             RUNDATA = cms.InputTag("source","RunData"),
                             inputFile = cms.string("%s/reco_%06d.root"%(telescope_dataFolder, runNumber)),
                             SkipFirstNEventsInTelescopeFile = cms.int32(SkipFirstNEventsInTelescopeFile),  #first event in the beam telescope file is a BORE event
-                            layerPositionFile = cms.string(layerPositions)
+                            layerPositionFile = cms.string(layerPositions),
+                            PIStagePositionFile = cms.string(PIStagePositionFile)
 )
 
 process.cellenergyplotting = cms.EDAnalyzer("CellEnergyPlotter",

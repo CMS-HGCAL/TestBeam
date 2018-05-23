@@ -8,6 +8,7 @@ HGCalTBDATURATelescopeProducer::HGCalTBDATURATelescopeProducer(const edm::Parame
     outputCollectionName = cfg.getParameter<std::string>("OutputCollectionName");
     SkipFirstNEvents = cfg.getParameter<int>("SkipFirstNEventsInTelescopeFile");
     m_layerPositionFile = cfg.getParameter<std::string>("layerPositionFile");
+    m_PIStagePositionFile = cfg.getParameter<std::string>("PIStagePositionFile");
 
 
     produces<std::vector<HGCalTBDATURATelescopeData> >(outputCollectionName);
@@ -62,7 +63,30 @@ void HGCalTBDATURATelescopeProducer::beginJob() {
             readCounter=-1;
         }
     }
-    
+    file.close();
+
+    //reads the PI stage positions
+    readCounter = -1;
+    file.open(m_PIStagePositionFile.c_str(), std::fstream::in);
+    std::cout<<"Reading file "<<m_PIStagePositionFile<<" -open: "<<file.is_open()<<std::endl;
+    int run=0;
+    float pos_x = 0;
+    float pos_y = 0;
+    while (file.is_open() && !file.eof()) {
+        readCounter++;
+        file >> fragment;
+        if (readCounter==0) continue;
+        if (readCounter==1) run=atoi(fragment);
+        if (readCounter==2) continue;
+        if (readCounter==3) pos_x=atof(fragment);
+        if (readCounter==4) continue;
+        if (readCounter==5) {
+            pos_y=atof(fragment);
+            PIStagePositions[run]=std::make_pair(pos_x, pos_y);
+            readCounter=-1;
+        }
+    }
+
 }
 
 void HGCalTBDATURATelescopeProducer::produce(edm::Event& event, const edm::EventSetup& iSetup) {
@@ -94,7 +118,12 @@ void HGCalTBDATURATelescopeProducer::produce(edm::Event& event, const edm::Event
     rd_full->pdgID = rd->pdgID;
     if (rd->booleanUserRecords.has("hasDanger")) rd_full->booleanUserRecords.add("hasDanger", rd->booleanUserRecords.get("hasDanger"));
     if (rd->doubleUserRecords.has("trueEnergy")) rd_full->doubleUserRecords.add("trueEnergy", rd->doubleUserRecords.get("trueEnergy"));
-
+    
+    if (PIStagePositions.find((int)rd->run) != PIStagePositions.end()) {
+        rd_full->doubleUserRecords.add("PIStagePosition_X", PIStagePositions[(int)rd->run].first);
+        rd_full->doubleUserRecords.add("PIStagePosition_Y", PIStagePositions[(int)rd->run].second);
+    }
+        
     
     if (tree_Ntracks<1) {
         rd_full->booleanUserRecords.add("hasValidDATURAMeasurement", false);   

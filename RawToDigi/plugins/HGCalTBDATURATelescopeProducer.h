@@ -64,5 +64,7 @@ class HGCalTBDATURATelescopeProducer : public edm::EDProducer{
     std::string m_layerPositionFile;
     std::map<int, double> layerPositions;
     
+    std::string m_PIStagePositionFile;
+    std::map<int, std::pair<float, float> > PIStagePositions;
 };
 #endif

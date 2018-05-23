@@ -38,6 +38,12 @@ options.register('layerPositionFile',
                  VarParsing.VarParsing.varType.string,
                  'File indicating the layer positions in mm.')
 
+options.register('PIStagePositionFile',
+                 '/afs/cern.ch/user/t/tquast/CMSSW_9_3_0/src/HGCal/CondObjects/data/pi_stage_positions_DESYMarch2018.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'File indicating the PI stage positions in mm.')
+
 options.register('electronicMap',
                  'map_DESY_March2018_config4_V0.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -82,6 +88,7 @@ print options
 layerPositionFile=options.layerPositionFile
 electronicMap="HGCal/CondObjects/data/%s" % options.electronicMap
 hgcalLayout="HGCal/CondObjects/data/%s" % options.hgcalLayout
+PIStagePositionFile=options.PIStagePositionFile
 
 ################################
 process = cms.Process("TelescopeMerger")
@@ -116,6 +123,7 @@ process.daturaproducer.RUNDATA = cms.InputTag("source","RunData")
 process.daturaproducer.inputFile = cms.string(options.TelescopeFile)
 process.daturaproducer.SkipFirstNEventsInTelescopeFile = cms.int32(options.SkipFirstNEventsInTelescopeFile)
 process.daturaproducer.layerPositionFile = cms.string(layerPositionFile)
+process.daturaproducer.PIStagePositionFile = cms.string(PIStagePositionFile)
 
 
 process.rechitntupler = cms.EDAnalyzer("RecHitNtupler",
