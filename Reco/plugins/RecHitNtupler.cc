@@ -79,9 +79,17 @@ private:
     unsigned int ev_run_;
     unsigned int ev_event_;
 
+    int pdgID;
+    double beamEnergy;
+
+    float PI_positionX;
+    float PI_positionY;
+
     // rechits
     std::vector<unsigned int> rechit_detid_;
     std::vector<unsigned int> rechit_module_;
+    std::vector<unsigned int> rechit_skiroc_;
+    std::vector<unsigned int> rechit_channel_;
     std::vector<unsigned int> rechit_layer_;
     std::vector<float> rechit_x_;
     std::vector<float> rechit_y_;
@@ -104,6 +112,8 @@ void RecHitNtupler::clearVariables(){
     // rechits
     rechit_detid_.clear();
     rechit_module_.clear();
+    rechit_skiroc_.clear();
+    rechit_channel_.clear();    
     rechit_layer_.clear();
     rechit_x_.clear();
     rechit_y_.clear();
@@ -172,10 +182,18 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
     tree_->Branch("event", &ev_event_);
     tree_->Branch("run", &ev_run_);
 
+    tree_->Branch("pdgID", &pdgID);
+    tree_->Branch("beamEnergy", &beamEnergy);
+
+    tree_->Branch("PI_positionX", &PI_positionX);
+    tree_->Branch("PI_positionY", &PI_positionY);
+
     // rechit
     tree_->Branch("rechit_detid",&rechit_detid_);
     tree_->Branch("rechit_module",&rechit_module_);
     tree_->Branch("rechit_layer",&rechit_layer_);
+    tree_->Branch("rechit_skiroc",&rechit_skiroc_);
+    tree_->Branch("rechit_channel",&rechit_channel_);
     tree_->Branch("rechit_x",&rechit_x_);
     tree_->Branch("rechit_y",&rechit_y_);
     tree_->Branch("rechit_z",&rechit_z_);
@@ -212,10 +230,19 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
     ev_run_ = rd->run;
     ev_event_ = rd->event;
 
+    pdgID = rd->pdgID;
+    beamEnergy = rd->energy;
+
+    PI_positionX = rd->doubleUserRecords.has("PIStagePosition_X") ? rd->doubleUserRecords.get("PIStagePosition_X") : -999;
+    PI_positionY = rd->doubleUserRecords.has("PIStagePosition_Y") ? rd->doubleUserRecords.get("PIStagePosition_Y") : -999;
+
     for( auto hit : *rhits ){
 
 	// get electronics channel
 	HGCalTBElectronicsId eid( essource_.emap_.detId2eid( hit.id().rawId() ) );
+    rechit_skiroc_.push_back(eid.iskiroc_rawhit());
+    rechit_channel_.push_back(eid.ichan());
+
 
 	// get geometric channel
 	if ( !IsCellValid.iu_iv_valid(
