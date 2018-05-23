@@ -53,6 +53,8 @@ private:
     std::map<int, std::vector<float> >impactY;
     std::map<int, std::vector<float> >impactX_associatedChi2;
     std::map<int, std::vector<float> >impactY_associatedChi2;
+    std::vector<float> kinkAngleX_DUT1;
+    std::vector<float> kinkAngleY_DUT1;
 
 
     int m_nLayers;
@@ -68,8 +70,10 @@ void ImpactPointNtupler::clearVariables(){
         impactX[layer].clear();
         impactY[layer].clear();
         impactX_associatedChi2[layer].clear();
-        impactY_associatedChi2[layer].clear();
+        impactY_associatedChi2[layer].clear();        
     }
+    kinkAngleX_DUT1.clear();
+    kinkAngleY_DUT1.clear();    
 };
 
 ImpactPointNtupler::ImpactPointNtupler(const edm::ParameterSet& iConfig) 
@@ -102,7 +106,9 @@ ImpactPointNtupler::ImpactPointNtupler(const edm::ParameterSet& iConfig)
         tree_->Branch(("impactY_HGCal_layer_"+std::to_string(layer)).c_str(), &impactY[layer]);
         tree_->Branch(("impactX_associatedChi2_HGCal_layer_"+std::to_string(layer)).c_str(), &impactX_associatedChi2[layer]);
         tree_->Branch(("impactY_associatedChi2_HGCal_layer_"+std::to_string(layer)).c_str(), &impactY_associatedChi2[layer]);
-    }    
+    }  
+    tree_->Branch("kinkAngleX_DUT1", &kinkAngleX_DUT1);  
+    tree_->Branch("kinkAngleY_DUT1", &kinkAngleY_DUT1);  
 }
 
 
@@ -141,6 +147,9 @@ void ImpactPointNtupler::analyze(const edm::Event& event, const edm::EventSetup&
             impactX_associatedChi2[layer].push_back(daturatrack.Extrapolation_XY_Chi2(layer).first);
             impactY_associatedChi2[layer].push_back(daturatrack.Extrapolation_XY_Chi2(layer).second);
         }
+
+        if(daturatrack.floatUserRecords.has("kinkAngleX_DUT1")) kinkAngleX_DUT1.push_back(daturatrack.floatUserRecords.get("kinkAngleX_DUT1"));
+        if(daturatrack.floatUserRecords.has("kinkAngleY_DUT1")) kinkAngleY_DUT1.push_back(daturatrack.floatUserRecords.get("kinkAngleY_DUT1"));
     }
     
     tree_->Fill();

@@ -2,6 +2,8 @@
 //data: 17th May
 //structure representing reconstructed DATURA Telescope data. Reconstruction is performed using NtletTracking within the corryvreckan framework
 
+#include "HGCal/DataFormats/interface/HGCalTBRunData.h"
+
 #ifndef HGCalTBDATURATelescopeData_H
 #define HGCalTBDATURATelescopeData_H
 
@@ -44,6 +46,8 @@ class HGCalTBDATURATelescopeData {
         else
             return std::make_pair(-999., -999.); 
     }   
+
+    UserRecords<float> floatUserRecords;
 
   private:  
     int N_hitMultiplicity; 

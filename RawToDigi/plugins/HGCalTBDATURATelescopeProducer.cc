@@ -141,6 +141,11 @@ void HGCalTBDATURATelescopeProducer::produce(edm::Event& event, const edm::Event
                 }
                 DATURATelescopeTrack.addLayerReference(layerIt->first, layer_ref_x, layer_ref_y, layer_ref_x_chi2, layer_ref_y_chi2);
             }
+
+            float kinkAngleX_DUT1 = atan(TripletTrack1X.getM())-atan(TripletTrack2X.getM());
+            float kinkAngleY_DUT1 = atan(TripletTrack1Y.getM())-atan(TripletTrack2Y.getM());
+            DATURATelescopeTrack.floatUserRecords.add("kinkAngleX_DUT1", kinkAngleX_DUT1);
+            DATURATelescopeTrack.floatUserRecords.add("kinkAngleY_DUT1", kinkAngleY_DUT1);
             DATURATracks->push_back(DATURATelescopeTrack);
         }
 
