@@ -51,6 +51,13 @@ options.register('layerPositionFile',
                  VarParsing.VarParsing.varType.string,
                  'File indicating the layer positions in mm.')
 
+options.register('isSimulation',
+                0,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 ''
+                )
+
 options.register('reportEvery',
                 1000,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -88,12 +95,22 @@ process.source = cms.Source("PoolSource",
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
 
+if options.isSimulation==0:
+    rundata_tag = cms.InputTag("daturaproducer", "FullRunData" )
+    rechit_tag = cms.InputTag("rechitproducer","HGCALTBRECHITS" )
+    commonModeNoise_tag = cms.InputTag("rechitproducer","HGCALTBCOMMONMODENOISEMAP" )
+    datura_tag = cms.InputTag("daturaproducer","HGCalTBDATURATracks" )
+else:
+    rundata_tag = cms.InputTag("source", "FullRunData" )
+    rechit_tag = cms.InputTag("source","HGCALTBRECHITS" )
+    commonModeNoise_tag = cms.InputTag("","" )
+    datura_tag = cms.InputTag("source","HGCalTBDATURATracks" )  
 
 
 process.cellenergyplotting = cms.EDAnalyzer("CellEnergyPlotter",
-                                RUNDATA = cms.InputTag("daturaproducer", "FullRunData" ), 
-                                HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
-                                HGCALTBCOMMONMODENOISE = cms.InputTag("rechitproducer","HGCALTBCOMMONMODENOISEMAP" ),
+                                RUNDATA = rundata_tag, 
+                                HGCALTBRECHITS = rechit_tag,
+                                HGCALTBCOMMONMODENOISE = commonModeNoise_tag,
                                 ElectronicMap = cms.untracked.string(electronicMap),
                                 DetectorLayout=cms.untracked.string(hgcalLayout),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
@@ -101,9 +118,9 @@ process.cellenergyplotting = cms.EDAnalyzer("CellEnergyPlotter",
 )
 
 process.correlationanalysis = cms.EDAnalyzer("DATURATelescopeCorrelator",
-                                RUNDATA = cms.InputTag("daturaproducer", "FullRunData" ), 
-                                DATURATelescopeData = cms.InputTag("daturaproducer","HGCalTBDATURATracks" ), 
-                                HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
+                                RUNDATA = rundata_tag, 
+                                DATURATelescopeData = datura_tag, 
+                                HGCALTBRECHITS = rechit_tag,
                                 ElectronicMap = cms.untracked.string(electronicMap),
                                 DetectorLayout=cms.untracked.string(hgcalLayout),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
@@ -113,10 +130,10 @@ process.correlationanalysis = cms.EDAnalyzer("DATURATelescopeCorrelator",
                               )
 
 process.variablecomputation = cms.EDProducer("VariableComputation",
-                                RUNDATA = cms.InputTag("daturaproducer", "FullRunData" ),  
+                                RUNDATA = rundata_tag,  
                                 MWCHAMBERS = cms.InputTag("","" ), 
                                 DWCTRACKS = cms.InputTag("","" ),                                 
-                                HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
+                                HGCALTBRECHITS = rechit_tag,
                                 UserRecordCollectionName=cms.untracked.string("VariableUserRecords"),
                                 ElectronicMap = cms.untracked.string(electronicMap),
                                 DetectorLayout=cms.untracked.string(hgcalLayout),
@@ -133,8 +150,8 @@ process.ntupelizer = cms.EDAnalyzer("NTupelizer",
 )
 
 process.eventdisplay = cms.EDAnalyzer("EventDisplay",
-                                RUNDATA = cms.InputTag("daturaproducer", "FullRunData" ), 
-                                HGCALTBRECHITS = cms.InputTag("rechitproducer","HGCALTBRECHITS" ),
+                                RUNDATA = rundata_tag, 
+                                HGCALTBRECHITS = rechit_tag,
                                 electronicsMap = cms.untracked.string(electronicMap),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                 eventsToPlot=cms.vint32([1, 2, 3])

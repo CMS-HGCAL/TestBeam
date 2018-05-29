@@ -8,11 +8,13 @@
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h"
+#include "HGCal/DataFormats/interface/HGCalTBDATURATelescopeData.h"
 #include "HGCal/DataFormats/interface/HGCalTBWireChamberData.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
 #include "HGCal/Geometry/interface/HGCalWaferGeometry.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
+#include "HGCal/Reco/interface/PositionResolutionHelpers.h"
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
@@ -61,8 +63,11 @@ private:
 	void makeRecHit(int, int, double, std::unique_ptr<HGCalTBRecHitCollection>&);
 	
 	std::string RechitOutputCollectionName;
-	std::string DWCOutputCollectionName;
 	std::string RunDataOutputCollectionName;
+	
+	bool produceDATURATracksInsteadOfDWCs;
+	std::string DWCOutputCollectionName;
+	std::string DATURAOutputCollectionName;
 
 	bool m_maskNoisyChannels;
 	std::string m_channelsToMask_filename;
@@ -70,10 +75,17 @@ private:
 
 	double energyNoise;
 	double energyNoiseResolution;
+
+	//options related to the dwc
 	std::vector<double> wc_resolutions;
+	std::vector<double> referenceTracking_zPositions;		//filled by area specification
 
+	//options related to the datura
+	std::vector<double> datura_resolutions;
+    std::string m_layerPositionFile;
+    std::map<int, double> layerPositions;	
 
-  	unsigned int beamEnergy;
+  	double beamEnergy;
   	int beamParticlePDGID;
   	unsigned int setupConfiguration;
   	double GeVToMip;
@@ -82,7 +94,6 @@ private:
 	std::string physicsListUsed;
 	RUNTYPES _enumPhysicsListUsed;
 
-	std::vector<double> dwc_zPositions;		//filled by area specification
 
 	
 	std::vector<FileInfo> _fileNames;
