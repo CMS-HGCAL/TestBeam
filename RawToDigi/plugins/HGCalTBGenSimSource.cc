@@ -122,6 +122,8 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 		_enumPhysicsListUsed = HGCAL_TB_SIM_FTFP_BERT_EML ;
 	else if (physicsListUsed=="FTFP_BERT_EMM") 
 		_enumPhysicsListUsed = HGCAL_TB_SIM_FTFP_BERT_EMM;
+	else if (physicsListUsed=="FTFP_BERT_EMZ") 
+		_enumPhysicsListUsed = HGCAL_TB_SIM_FTFP_BERT_EMZ;	
 	else if (physicsListUsed=="FTFP_BERT_HP_EML") 
 		_enumPhysicsListUsed = HGCAL_TB_SIM_FTFP_BERT_HP_EML;
 	else if (physicsListUsed=="FTFP_BERT_EMY") 
