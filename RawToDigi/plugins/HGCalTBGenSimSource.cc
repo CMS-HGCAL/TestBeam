@@ -65,11 +65,16 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
   			break;	
   		case 11:	//DESY March 2018, configs #5.1/5.2
   		case 12:
-  		default:
   			N_layers_EE = 2;		
   			N_layers_FH = 0;		
   			N_layers_BH = 0;		
   			break;	
+  		case 13:
+  		default:
+  			N_layers_EE = 28;		
+  			N_layers_FH = 0;		
+  			N_layers_BH = 0;		
+  			break;	  		
   	}
 
   	GeVToMip = pset.getUntrackedParameter<double>("GeVToMip", 1./(86.5e-6));			//value from Shilpi
