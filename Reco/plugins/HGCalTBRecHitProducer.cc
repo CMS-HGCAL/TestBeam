@@ -53,7 +53,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
   std::vector<std::pair<double, double> > CellXY;
 
-  PulseFitter fitter(0,150);
+  PulseFitter fitter(0,200);
   PulseFitterResult fitresult;
   for( auto rawhit : *rawhits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(rawhit.detid().rawId()) );
