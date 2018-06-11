@@ -124,6 +124,7 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
   
   for( size_t iski=0;iski<skirocs->size(); iski++ ){
     HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
+    //std::cout << skiroc << std::endl;
     std::vector<int> rollpositions=skiroc.rollPositions();
     int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
@@ -135,7 +136,7 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
       }
       else continue;
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-	if( rollpositions[it]<=m_NTSForPedestalComputation ){ //consider only a certain number of time samples for pedestal subtraction
+	if( rollpositions[it]<m_NTSForPedestalComputation ){ //consider only a certain number of time samples for pedestal subtraction
 	  uint32_t key=iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it;
 	  std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
 	  if( iter==m_channelMap.end() ){
@@ -204,6 +205,7 @@ void PedestalPlotter::endJob()
     os<<"ChannelMapping";
     h->SetName(os.str().c_str());
     h->SetTitle(os.str().c_str());
+    h->SetOption("colztext");
     InitTH2Poly(*h, ib, 0, 0);
     chanMap.insert( std::pair<int,TH2Poly*>(ib,h) );
     TFileDirectory hgpdir = dir.mkdir( "HighGainPedestal" );
@@ -217,6 +219,7 @@ void PedestalPlotter::endJob()
       os<<"SCA_"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
+      h->SetOption("colztext");
       InitTH2Poly(*h, ib, 0, 0);
       hgMeanMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
 
@@ -226,6 +229,7 @@ void PedestalPlotter::endJob()
       os<<"SCA"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
+      h->SetOption("colztext");
       InitTH2Poly(*h, ib, 0, 0);
       lgMeanMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
 
@@ -234,6 +238,7 @@ void PedestalPlotter::endJob()
       os<<"SCA"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
+      h->SetOption("colztext");
       InitTH2Poly(*h, ib, 0, 0);
       hgRMSMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
 
@@ -242,6 +247,7 @@ void PedestalPlotter::endJob()
       os<<"SCA"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
+      h->SetOption("colztext");
       InitTH2Poly(*h, ib, 0, 0);
       lgRMSMap.insert( std::pair<int,TH2Poly*>(100*ib+it,h) );
     }
@@ -251,15 +257,13 @@ void PedestalPlotter::endJob()
     std::sort( it->second.highGain.begin(),it->second.highGain.end() );
     std::sort( it->second.lowGain.begin(),it->second.lowGain.end() );
     unsigned int size = it->second.highGain.size();
-    int medianIndex = size%2==0 ? size/2-1 : size/2 ;
+    int medianIndex = int( 0.5*(size-1) );
     it->second.medianHG = it->second.highGain.at(medianIndex) ;
     it->second.medianLG = it->second.lowGain.at(medianIndex) ;
-    for( unsigned int ii=medianIndex; ii<size; ii++ ){
-      it->second.rmsHG+=(it->second.medianHG-it->second.highGain.at(ii))*(it->second.medianHG-it->second.highGain.at(ii));
-      it->second.rmsLG+=(it->second.medianLG-it->second.lowGain.at(ii))*(it->second.medianLG-it->second.lowGain.at(ii));
-    }
-    it->second.rmsHG=std::sqrt(2*it->second.rmsHG/size);
-    it->second.rmsLG=std::sqrt(2*it->second.rmsLG/size);
+    int sigma_1_Index = int( 0.16*(size-1) );
+    int sigma_3_Index = int( 0.84*(size-1) );
+    it->second.rmsHG=0.5*(it->second.highGain.at(sigma_3_Index)-it->second.highGain.at(sigma_1_Index));
+    it->second.rmsLG=0.5*(it->second.lowGain.at(sigma_3_Index)-it->second.lowGain.at(sigma_1_Index));    
   }
 
   
@@ -334,7 +338,7 @@ void PedestalPlotter::endJob()
 
       if( m_writePedestalFile ){
       	pedestalHG << " " << hgMean << " " << hgRMS;
-	      pedestalLG << " " << lgMean << " " << lgRMS;;
+	pedestalLG << " " << lgMean << " " << lgRMS;
       }
     }
     chanMap[ iboard ]->Fill(iux , iuy, iski*1000+ichan );
