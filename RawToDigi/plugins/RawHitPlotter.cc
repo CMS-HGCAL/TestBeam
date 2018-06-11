@@ -492,6 +492,7 @@ void RawHitPlotter::endJob()
       os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
+      h->SetOption("colztext");
       InitTH2Poly(*h, subdetId, il);
       hgMeanMap.insert( std::pair<int,TH2Poly*>(100*il+it,h) );
 
@@ -500,6 +501,7 @@ void RawHitPlotter::endJob()
       os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
+      h->SetOption("colztext");
       InitTH2Poly(*h, subdetId, il);
       lgMeanMap.insert( std::pair<int,TH2Poly*>(100*il+it,h) );
 
@@ -508,6 +510,7 @@ void RawHitPlotter::endJob()
       os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
+      h->SetOption("colztext");
       InitTH2Poly(*h, subdetId, il);
       hgRMSMap.insert( std::pair<int,TH2Poly*>(100*il+it,h) );
 
@@ -516,6 +519,7 @@ void RawHitPlotter::endJob()
       os<<"TS"<<it;
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
+      h->SetOption("colztext");
       InitTH2Poly(*h, subdetId, il);
       lgRMSMap.insert( std::pair<int,TH2Poly*>(100*il+it,h) );
     }

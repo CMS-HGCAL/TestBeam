@@ -65,19 +65,10 @@ process.source = cms.Source("HGCalTBRawDataSource",
                             fileNames=cms.untracked.vstring("file:%s/run%06d.root"%(options.dataFolder,options.runNumber)),
                             OutputCollectionName=cms.untracked.string("skiroc2cmsdata"),
                             NSkipEvents=cms.untracked.uint32(0),
-<<<<<<< HEAD
-                            ReadTimeStamps=cms.untracked.bool(True),
-                            DataFormats=cms.untracked.uint32(options.dataFormat),
-                            timingFiles=cms.vstring("%s/HexaData_Run%04d_TIMING_RDOUT_ORM0.txt"%(options.dataFolder,options.runNumber),
-                                                    "%s/HexaData_Run%04d_TIMING_RDOUT_ORM1.txt"%(options.dataFolder,options.runNumber),
-                                                    "%s/HexaData_Run%04d_TIMING_RDOUT_ORM2.txt"%(options.dataFolder,options.runNumber))
-=======
                             beamEnergy=cms.untracked.double(options.beamEnergy),
                             beamParticlePDGID=cms.untracked.int32(options.beamParticlePDGID),
                             runType=cms.untracked.string(options.runType),
                             setupConfiguration=cms.untracked.uint32(options.setupConfiguration)
-
->>>>>>> 7415d43... update HGCalTBRawDataSource to read root file from eudaq instead of binary files
 )
 
 filename = options.pedestalOutputFolder+"/PedestalOutput_"+str(options.runNumber)+".root"

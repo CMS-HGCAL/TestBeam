@@ -6,57 +6,65 @@ import os,sys
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 #Change the data folder appropriately to where you wish to access the files from:
 options.register('dataFolder',
-                 './',
+                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/2018/cern_h2_june/HGCalTBSkiroc2CMS',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'folder containing raw input')
 
 options.register('runNumber',
-                 106,
+                 24,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Input run to process')
 
-options.register('outputFolder',
-                 '/afs/cern.ch/work/r/rchatter/TestBeam_July_Fix/CMSSW_8_0_21/src/HGCal/',
+options.register('pedestalFolder',
+                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/2018/cern_h2_june/pedestals',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'folder containing raw input')
+
+options.register('edmOutputFolder',
+                 './',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Output folder where analysis output are stored')
+
+options.register('rawhitOutputFolder',
+                 './',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output folder where analysis output are stored')
 
 options.register('electronicMap',
-                 'HGCal/CondObjects/data/map_CERN_Hexaboard_September_17Sensors_7EELayers_10FHLayers_V1.txt',
+                 "HGCal/CondObjects/data/map_CERN_Hexaboard_June_28Sensors_28EELayers_V0.txt",
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'path to the electronic map')
-# Available options: 
-# "HGCal/CondObjects/data/map_CERN_Hexaboard_July_6Layers.txt"
-# "HGCal/CondObjects/data/map_CERN_Hexaboard_September_17Sensors_7EELayers_10FHLayers_V1.txt" # end of september
-# "HGCal/CondObjects/data/map_CERN_Hexaboard_October_17Sensors_5EELayers_6FHLayers_V1.txt" # october 18-22, 1st conf
-# "HGCal/CondObjects/data/map_CERN_Hexaboard_October_20Sensors_5EELayers_7FHLayers_V1.txt" # october 18-22, 2nd conf
 
 options.register('hgcalLayout',
-                 'HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt',
+                 'HGCal/CondObjects/data/layerGeom_june2018_h2_28layers.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'path to hgcal layout file')
-# Available options: 
-# "HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt"
-# "HGCal/CondObjects/data/layerGeom_oct2017_h6_17layers.txt"
-# "HGCal/CondObjects/data/layerGeom_oct2017_h6_20layers.txt"
 
 options.maxEvents = -1
 options.output = "cmsswEvents.root"
 
 options.parseArguments()
-print options
 if not os.path.isdir(options.dataFolder):
     sys.exit("Error: Data folder not found or inaccessible!")
 
+options.output = options.edmOutputFolder + "run%06d.root"%(options.runNumber)
+
+print options
 
 
-pedestalHighGain="pedestalHG_"+str(options.runNumber)+".txt"
-pedestalLowGain="pedestalLG_"+str(options.runNumber)+".txt"
-noisyChannels="noisyChannels_"+str(options.runNumber)+".txt"
+pedestalHighGain=options.pedestalFolder+"/pedestalHG_"+str(options.runNumber)+".txt"
+pedestalLowGain=options.pedestalFolder+"/pedestalLG_"+str(options.runNumber)+".txt"
+noisyChannels=options.pedestalFolder+"/noisyChannels_"+str(options.runNumber)+".txt"
+
+print pedestalHighGain
+print pedestalLowGain
 
 ################################
 process = cms.Process("rawhitprod")
@@ -67,10 +75,10 @@ process.maxEvents = cms.untracked.PSet(
 ####################################
 
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring("file:%s/cmsswEvents_Run%d.root"%(options.dataFolder,options.runNumber))
+                            fileNames=cms.untracked.vstring("file:%s/run%06d.root"%(options.dataFolder,options.runNumber))
 )
 
-filename = options.outputFolder+"/HexaOutput_"+str(options.runNumber)+".root"
+filename = options.rawhitOutputFolder+"/HexaOutput_"+str(options.runNumber)+".root"
 process.TFileService = cms.Service("TFileService",
                                    fileName = cms.string(filename)
 )
