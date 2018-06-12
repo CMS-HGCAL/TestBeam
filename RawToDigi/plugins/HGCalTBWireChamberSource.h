@@ -30,24 +30,23 @@ enum DWC_to_TDC_MAP {
 	DWC2_RIGHT = 5,
 	DWC2_DOWN = 6,
 	DWC2_UP = 7,
-	DWC3_LEFT = 14,		//default: 15 --> but mind the flip for these chambers
-	DWC3_RIGHT = 15,	//default: 14 --> but mind the flip for these chambers
-	DWC3_DOWN = 13,
-	DWC3_UP = 12,
-	DWC4_LEFT = 10,		//defalt: 10 --> but mind the flip for these chambers
-	DWC4_RIGHT = 11,	//default: 11 --> but mind the flip for these chambers
-	DWC4_DOWN = 9,
-	DWC4_UP = 8
+	DWC3_LEFT = 9,		//default: 15 --> but mind the flip for these chambers
+	DWC3_RIGHT = 8,	//default: 14 --> but mind the flip for these chambers
+	DWC3_DOWN = 10,
+	DWC3_UP = 11,
+	DWC4_LEFT = 13,		//defalt: 10 --> but mind the flip for these chambers
+	DWC4_RIGHT = 12,	//default: 11 --> but mind the flip for these chambers
+	DWC4_DOWN = 14,
+	DWC4_UP = 15
 };
 
 //indication in cm
-double dwc_z1_H2 = -109.;	//z=0 is the HGCal table, unit is cm
-double dwc_z2_H2 = -235.;
-double dwc_z3_H2 = -1509.;
-double dwc_z4_H2 = -1769.;
+double dwc_z1_H2 = -120.;	//z=0 is the HGCal table, unit is cm
+double dwc_z2_H2 = -246.;
+double dwc_z3_H2 = -1520.;
+double dwc_z4_H2 = -1780.;
 
 double dwc_z1_H6A = -500.;	//z=0 is the HGCal table, unit is cm
-
 
 //to the EDM::Event via auxiliary information
 class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {

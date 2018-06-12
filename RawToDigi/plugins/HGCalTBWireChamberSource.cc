@@ -1,6 +1,6 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBWireChamberSource.h"
 
-//#define DEBUG
+#define DEBUG
 
 
 bool validTimestamp(int ts) {

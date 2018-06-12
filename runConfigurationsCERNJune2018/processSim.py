@@ -67,7 +67,6 @@ for layer in range(1, 29):
     variables.append("E37PerE61_layer%s"%layer)
 
 
-
 electronicMap = "HGCal/CondObjects/data/map_CERN_Hexaboard_June2018_28Layers_dummy.txt"
 setupConfiguration = 13
 layerPositionFile = "/afs/cern.ch/user/t/tquast/CMSSW_9_3_0/src/HGCal/CondObjects/data/layer_distances_CERN_Hexaboard_June2018_28Layers_dummy.txt"  #attention: this path is hard coded and must be absolute
