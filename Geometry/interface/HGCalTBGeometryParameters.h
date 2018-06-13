@@ -3,13 +3,13 @@
 
 
 //old stuff to be removed
-#define MAXSKIROCS 68
-#define MAXLAYERS 17
+#define MAXSKIROCS 114
+#define MAXLAYERS 28
 
 
 namespace HGCAL_TB_GEOMETRY
 {
-  static const uint16_t NUMBER_OF_LAYERS = 6;
+  static const uint16_t NUMBER_OF_LAYERS = 28;
   static const uint16_t NUMBER_OF_HEXABOARD = 28;
   static const uint16_t N_SKIROC_PER_HEXA = 4;
   static const uint16_t N_CHANNELS_PER_SKIROC = 64;

@@ -1,4 +1,5 @@
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
 #include "math.h"
 #include <stdlib.h>
@@ -14,7 +15,7 @@ bool HGCalTBTopology::iu_iv_valid(int layer, int sensor_iu, int sensor_iv, int i
 //	  There are no offcentral layers in the DESY TB
         int aiv = abs(iv);
         int iuc = (iv < 0) ? (-iu) : (iu);
-	if(layer <= 3 && Is_Valid_sensor_iu_iv) {
+	if(layer <= HGCAL_TB_GEOMETRY::NUMBER_OF_LAYERS && Is_Valid_sensor_iu_iv) {
 		if(sensorSize == 128) {
 			if (iv == 0) return (iu >= -5 && iu <= 5);
 			else if (aiv == 1) return (iuc >= -6 && iuc <= 5);
