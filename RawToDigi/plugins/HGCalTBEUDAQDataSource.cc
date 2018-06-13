@@ -16,6 +16,7 @@ HGCalTBEUDAQDataSource::HGCalTBEUDAQDataSource(const edm::ParameterSet & pset, e
   m_electronicMap(pset.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers.txt")),
   m_outputCollectionName(pset.getUntrackedParameter<std::string>("OutputCollectionName","SKIROC2CMSDATA")),
   m_nSkipEvents(pset.getUntrackedParameter<unsigned int> ("NSkipEvents",0)),
+  m_run(pset.getUntrackedParameter<int> ("runNumber", 0)),
   m_beamEnergy(pset.getUntrackedParameter<double> ("beamEnergy", 0)),
   m_beamParticlePDGID(pset.getUntrackedParameter<int> ("beamParticlePDGID", 0)),
   m_runType(pset.getUntrackedParameter<std::string> ("runType", "Beam")),
@@ -158,6 +159,7 @@ void HGCalTBEUDAQDataSource::fillDescriptions(edm::ConfigurationDescriptions& de
   desc.addUntracked<std::string>("ElectronicMap");
   desc.addUntracked<std::string>("OutputCollectionName");
   desc.addUntracked<unsigned int> ("NSkipEvents");
+  desc.addUntracked<int> ("runNumber");
   desc.addUntracked<double> ("beamEnergy");
   desc.addUntracked<int> ("beamParticlePDGID");
   desc.addUntracked<std::string>("runType");
