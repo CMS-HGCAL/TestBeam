@@ -13,10 +13,16 @@
 
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "HGCal/DataFormats/interface/HGCalTBDATURATelescopeData.h"
+#include "HGCal/DataFormats/interface/HGCalTBDWCTrack.h"
 #include "HGCal/DataFormats/interface/HGCalTBRunData.h" //for the runData type definition
 
 #include <iomanip>
 #include <set>
+
+enum ExtrapolationType {
+    DATURA = 0,
+    DWC 
+};
 
 class ImpactPointNtupler : public edm::one::EDAnalyzer<edm::one::SharedResources>
 {
@@ -34,7 +40,12 @@ private:
 
     // ---------- member data ---------------------------
     edm::EDGetTokenT<std::vector<HGCalTBDATURATelescopeData> > DATURATrackToken;    
+    edm::EDGetTokenT<HGCalTBDWCTrack> DWCTrackToken;    
     edm::EDGetTokenT<RunData> RunDataToken;
+
+    //DWC track or DATURA track
+    std::string extrapolationTypeString;
+    ExtrapolationType _extrapolationType;
 
     // Output tree
     TTree* tree_;
@@ -53,9 +64,13 @@ private:
     std::map<int, std::vector<float> >impactY;
     std::map<int, std::vector<float> >impactX_associatedChi2;
     std::map<int, std::vector<float> >impactY_associatedChi2;
+    
+    //specific to 6 plane DATURA
     std::vector<float> kinkAngleX_DUT1;
     std::vector<float> kinkAngleY_DUT1;
 
+    //specific to DWC in H2
+    int dwcReferenceType;
 
     int m_nLayers;
 };
@@ -78,8 +93,13 @@ void ImpactPointNtupler::clearVariables(){
 
 ImpactPointNtupler::ImpactPointNtupler(const edm::ParameterSet& iConfig) 
 {
+    extrapolationTypeString= iConfig.getUntrackedParameter<std::string>("extrapolationDevice", "DATURA");
+    if (extrapolationTypeString=="DATURA") _extrapolationType = DATURA;
+    else if (extrapolationTypeString=="DWC") _extrapolationType = DWC;
+    else _extrapolationType = DATURA;
 
     DATURATrackToken= consumes<std::vector<HGCalTBDATURATelescopeData> >(iConfig.getParameter<edm::InputTag>("DATURATelescopeData"));
+    DWCTrackToken= consumes<HGCalTBDWCTrack >(iConfig.getParameter<edm::InputTag>("DWCTrackToken"));
     RunDataToken= consumes<RunData>(iConfig.getParameter<edm::InputTag>("RUNDATA"));
     m_nLayers= iConfig.getUntrackedParameter<int>("nLayers", 10);
 
@@ -107,8 +127,14 @@ ImpactPointNtupler::ImpactPointNtupler(const edm::ParameterSet& iConfig)
         tree_->Branch(("impactX_associatedChi2_HGCal_layer_"+std::to_string(layer)).c_str(), &impactX_associatedChi2[layer]);
         tree_->Branch(("impactY_associatedChi2_HGCal_layer_"+std::to_string(layer)).c_str(), &impactY_associatedChi2[layer]);
     }  
-    tree_->Branch("kinkAngleX_DUT1", &kinkAngleX_DUT1);  
-    tree_->Branch("kinkAngleY_DUT1", &kinkAngleY_DUT1);  
+
+
+    if (_extrapolationType == DATURA) {
+        tree_->Branch("kinkAngleX_DUT1", &kinkAngleX_DUT1);  
+        tree_->Branch("kinkAngleY_DUT1", &kinkAngleY_DUT1);  
+    } else if (_extrapolationType == DWC) {
+        tree_->Branch("dwcReferenceType", &dwcReferenceType);  
+    }
 }
 
 
@@ -130,26 +156,41 @@ void ImpactPointNtupler::analyze(const edm::Event& event, const edm::EventSetup&
     ev_run_ = rd->run;
     ev_event_ = rd->event;
 
+    if (_extrapolationType == DATURA) {
+        edm::Handle<std::vector<HGCalTBDATURATelescopeData> > daturatracks; 
+        event.getByToken(DATURATrackToken, daturatracks);
+        nTrackCounter=0;
+        
+        for(auto daturatrack : *daturatracks) {
+            nTrackCounter++;
+            for(int layer=1; layer<=m_nLayers; layer++) {        
+                impactX[layer].push_back(daturatrack.Extrapolation_XY(layer).first);
+                impactY[layer].push_back(daturatrack.Extrapolation_XY(layer).second);
+                impactX_associatedChi2[layer].push_back(daturatrack.Extrapolation_XY_Chi2(layer).first);
+                impactY_associatedChi2[layer].push_back(daturatrack.Extrapolation_XY_Chi2(layer).second);
+            } 
+            if(daturatrack.floatUserRecords.has("kinkAngleX_DUT1")) kinkAngleX_DUT1.push_back(daturatrack.floatUserRecords.get("kinkAngleX_DUT1"));
+            if(daturatrack.floatUserRecords.has("kinkAngleY_DUT1")) kinkAngleY_DUT1.push_back(daturatrack.floatUserRecords.get("kinkAngleY_DUT1"));
 
-    edm::Handle<std::vector<HGCalTBDATURATelescopeData> > daturatracks; 
-    event.getByToken(DATURATrackToken, daturatracks);
-    nTrackCounter=0;
-    
-    for(auto daturatrack : *daturatracks) {
-        nTrackCounter++;
-        for(int layer=1; layer<=m_nLayers; layer++) {        
-            if (daturatrack.Extrapolation_XY_Chi2(layer).first > 100.) continue;
-            if (daturatrack.Extrapolation_XY_Chi2(layer).second > 100.) continue;
-            daturatrack.Extrapolation_XY(layer).first;
-
-            impactX[layer].push_back(daturatrack.Extrapolation_XY(layer).first);
-            impactY[layer].push_back(daturatrack.Extrapolation_XY(layer).second);
-            impactX_associatedChi2[layer].push_back(daturatrack.Extrapolation_XY_Chi2(layer).first);
-            impactY_associatedChi2[layer].push_back(daturatrack.Extrapolation_XY_Chi2(layer).second);
         }
+    } else if (_extrapolationType == DWC) {
+        edm::Handle<HGCalTBDWCTrack> dwctrack;
+        event.getByToken(DWCTrackToken, dwctrack);
+        if (! dwctrack->valid) {
+            nTrackCounter=0;
+            dwcReferenceType=0;
+        }
+        else {
+            nTrackCounter=1;
+            dwcReferenceType = dwctrack->referenceType;
+            for(int layer=1; layer<=m_nLayers; layer++) {        
+                impactX[layer].push_back(dwctrack->DWCExtrapolation_XY(layer).first);
+                impactY[layer].push_back(dwctrack->DWCExtrapolation_XY(layer).second);
+                impactX_associatedChi2[layer].push_back(dwctrack->chi2_x);
+                impactY_associatedChi2[layer].push_back(dwctrack->chi2_y);
+            }   
 
-        if(daturatrack.floatUserRecords.has("kinkAngleX_DUT1")) kinkAngleX_DUT1.push_back(daturatrack.floatUserRecords.get("kinkAngleX_DUT1"));
-        if(daturatrack.floatUserRecords.has("kinkAngleY_DUT1")) kinkAngleY_DUT1.push_back(daturatrack.floatUserRecords.get("kinkAngleY_DUT1"));
+        } 
     }
     
     tree_->Fill();

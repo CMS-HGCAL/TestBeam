@@ -139,6 +139,8 @@ process.rechitntupler = cms.EDAnalyzer("RecHitNtupler",
 )
 
 process.trackimpactntupler = cms.EDAnalyzer("ImpactPointNtupler",
+                                       extrapolationDevice=cms.untracked.string("DATURA"),
+                                       DWCTrackToken = cms.InputTag("","" ),
                                        DATURATelescopeData = cms.InputTag("daturaproducer","HGCalTBDATURATracks" ),
                                        RUNDATA = cms.InputTag("daturaproducer", "FullRunData" ),
                                        nLayers=cms.untracked.int32(options.NHexaBoards)
