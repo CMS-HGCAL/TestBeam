@@ -23,17 +23,10 @@ options.register('reportEvery',
                 )
 
 options.register('outputFile',
-                '/home/tquast/tbJune2018_H2/dwcReco/dwcReco_265.root',
+                '/home/tquast/tbJune2018_H2/dwcReco/dwcReco_223.root',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Path to the output file.'
-                )
-
-options.register('writeMinimal',
-                1,
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.int,
-                 'Write minimal in the DWC NTupelizer (1:yes, 0:no).'
                 )
 
 options.register('performAlignment',
@@ -51,14 +44,14 @@ options.register('alignmentFiles',
                 )
 
 options.register('inputFiles',
-                ['/eos/cms/store/group/dpg_hgcal/tb_hgcal/2018/cern_h2_june/dwc/dwc_run_265.root'],
+                ['/eos/cms/store/group/dpg_hgcal/tb_hgcal/2018/cern_h2_june/dwc/dwc_run_223.root'],
                  VarParsing.VarParsing.multiplicity.list,
                  VarParsing.VarParsing.varType.string,
                  'Paths to the input files.'
                 )
 
 options.register('timingFiles',
-                ['/home/tquast/tbJune2018_H2/timingFiles/timing000265.txt'],
+                ['/home/tquast/tbJune2018_H2/timingFiles/timing000223.txt'],
                  VarParsing.VarParsing.multiplicity.list,
                  VarParsing.VarParsing.varType.string,
                  'Paths to the timing files.'
@@ -93,7 +86,7 @@ options.register('skipFirstNEvents',
                 )
 
 options.register('triggerCountOffsets',
-                [237747],
+                [204],
                  VarParsing.VarParsing.multiplicity.list,
                  VarParsing.VarParsing.varType.int,
                  'Indicate where the trigger count starts in the timing file.'
@@ -134,13 +127,6 @@ options.register('triggerTimingFormats',
                  'Trigger timing stored in microseconds (=1) or milliseconds (default).'
                 )
 
-options.register('hitsPerChannelStoreds',
-                [1],
-                 VarParsing.VarParsing.multiplicity.list,
-                 VarParsing.VarParsing.varType.int,
-                 'Are the hits per channel stored (=1) or not (default).'
-                )
-
 options.register('areaSpecification',
                 "H2",
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -176,7 +162,7 @@ options.parseArguments()
 ################################
 # Setting an upper limit for the events to be processed, e.g. for debugging
 options.maxEvents = -1
-process = cms.Process("unpack")
+process = cms.Process("dwcReco")
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)
 )
@@ -209,7 +195,7 @@ process.source = cms.Source("HGCalTBWireChamberSource",
     pdgIDs = cms.vint32([pdgID[0] for pdgID in options.pdgIDs]),
     beamEnergies = cms.vdouble([energies[0] for energies in options.beamEnergies]),
     triggerTimingFormat = cms.vint32([triggerTimingFormat[0] for triggerTimingFormat in options.triggerTimingFormats]),
-    hitsPerChannelStored = cms.vint32([hitsPerChannelStored[0] for hitsPerChannelStored in options.hitsPerChannelStoreds]),
+    hitsPerChannelStored = cms.vint32([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]),
     areaSpecification = cms.untracked.string(options.areaSpecification),
     wc_resolutions = cms.untracked.vdouble([1.0, 1.0, 1.0, 1.0]),
     performAlignment = cms.untracked.bool(bool(options.performAlignment)),
@@ -230,12 +216,14 @@ process.millepede_binarywriter.fittingMethod = cms.string("lineAnalytical")
              
 #DWC NTupelizer
 '''
-process.dwc_ntupelizer.writeMinimal = cms.bool(bool(options.writeMinimal))
+process.dwc_ntupelizer.MWCHAMBERS = cms.InputTag("source","WireChambers","dwcReco" )
+process.dwc_ntupelizer.RUNDATA = cms.InputTag("source","RunData","dwcReco" )
+process.dwc_ntupelizer.writeMinimal = cms.bool(True)
 
 
 #Wire chamber producer
 process.wirechamberproducer.OutputCollectionName = cms.string("DelayWireChambers") 
-process.wirechamberproducer.RUNDATA = cms.InputTag("source","RunData","unpack")
+process.wirechamberproducer.RUNDATA = cms.InputTag("source","RunData","dwcReco")
 process.wirechamberproducer.inputFile = cms.string("")
 
 
