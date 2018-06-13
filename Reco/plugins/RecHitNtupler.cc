@@ -102,6 +102,8 @@ private:
     std::vector<float> rechit_energyLow_;
     std::vector<float> rechit_energyTot_;
     std::vector<float> rechit_time_;
+    std::vector<float> rechit_toaRise_;
+    std::vector<float> rechit_toaFall_;
 
 };
 
@@ -127,6 +129,8 @@ void RecHitNtupler::clearVariables(){
     rechit_energyLow_.clear();
     rechit_energyTot_.clear();
     rechit_time_.clear();
+    rechit_toaRise_.clear();
+    rechit_toaFall_.clear();
 
 };
 
@@ -208,6 +212,8 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
     tree_->Branch("rechit_energyLow",&rechit_energyLow_);
     tree_->Branch("rechit_energyTot",&rechit_energyTot_);
     tree_->Branch("rechit_time",&rechit_time_);
+    tree_->Branch("rechit_toaRise",&rechit_toaRise_);
+    tree_->Branch("rechit_toaFall",&rechit_toaFall_);
 
 }
 
@@ -300,6 +306,8 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
 	rechit_energyTot_.push_back( hit.energyTot() );
 
 	rechit_time_.push_back( hit.time() );
+    rechit_toaRise_.push_back( hit.toaRise() );
+    rechit_toaFall_.push_back( hit.toaFall() );
 
     } // end rechit loop
 

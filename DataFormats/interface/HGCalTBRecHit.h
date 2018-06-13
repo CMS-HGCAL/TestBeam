@@ -44,6 +44,7 @@ public:
 	float cellCenter_y;
 	float _time;
 
+	int _toaRise, _toaFall;
 
 	float energyLow() const
 	{
@@ -61,6 +62,8 @@ public:
 	};
 
 	void setTime(float time);
+	void setToaRise(float toaRise) { _toaRise = toaRise; } ;
+	void setToaFall(float toaFall) { _toaFall = toaFall; } ;
 
 	void setEnergyTOT(float _energy) {_energyTot=_energy;};
 	void setEnergyLow(float _energy) {_energyLow=_energy;};
@@ -69,6 +72,8 @@ public:
 	float time(){ 
 	  return _time; 
 	} 
+	float toaRise() const { return _toaRise; };
+	float toaFall() const { return _toaFall; };
 
 	// set the flags
 	void setFlag(int flag)

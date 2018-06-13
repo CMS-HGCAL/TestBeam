@@ -135,8 +135,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   event.getByToken(RunDataToken, rd);
 
 
-  edm::Handle<HGCalTBGlobalTimestamps> gts;
-  //event.getByToken(HGCalTBGlobalTimestampsToken, gts);
+  //edm::Handle<HGCalTBGlobalTimestamps> gts;
+  ////event.getByToken(HGCalTBGlobalTimestampsToken, gts);
 
   std::unique_ptr<HGCalTBRecHitCollection> rechits(new HGCalTBRecHitCollection);
 
@@ -282,6 +282,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
           recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
           if( fitresultLG.status==0 ){
             energy = fitresultLG.amplitude * adcConv.lowGain_to_highGain();
+            _time = fitresultLG.tmax - fitresultLG.trise;
             recHit.setFlag(HGCalTBRecHit::kGood);
 
             if (investigatePulseShape) {
@@ -295,7 +296,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
         } else{
           if( fitresultHG.status==0 ){
             energy = fitresultHG.amplitude;
-            //_time = fitresultHG.tmax - fitresultHG.trise;
+            _time = fitresultHG.tmax - fitresultHG.trise;
             recHit.setFlag(HGCalTBRecHit::kGood);
 
             if (investigatePulseShape) {
@@ -311,7 +312,11 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
       //std::cout<<"Setting energy and time of: "<<detid.layer()<<"  "<<detid.iu()+7<<"  "<<detid.iv()+7<<"  "<<energy*adcConv.adc_to_MIP()<<"  "<<_time<<std::endl;
       recHit.setEnergy(energy*adcConv.adc_to_MIP());
-      recHit.setTime(toaRise);
+      recHit.setTime(_time);
+
+
+      recHit.setToaRise(rawhit.toaRise());
+      recHit.setToaFall(rawhit.toaFall());
 
       rechits->push_back(recHit);
     }
