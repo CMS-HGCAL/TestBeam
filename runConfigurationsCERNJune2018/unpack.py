@@ -92,7 +92,7 @@ options.register('electronicMap',
                  'path to the electronic map')
 
 options.register('reportEvery',
-                1000,
+                100,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  '.'

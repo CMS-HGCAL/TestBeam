@@ -5,9 +5,9 @@ import os,sys
 
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 
-VariablesToPlot = ["xmean", "ymean", "NRechits", "E7_tot", "E19_tot", "EAll_tot", "EAllHG_tot", "EAllLG_tot", "EAllTOT_tot"]
-for layer in range(1, 29):
-    VariablesToPlot+=["EAll_layer%s"%layer, "EAll_layer%s"%layer, "EAll_layer%s"%layer]
+#VariablesToPlot = ["xmean", "ymean", "NRechits", "E7_tot", "E19_tot", "EAll_tot", "EAllHG_tot", "EAllLG_tot", "EAllTOT_tot"]
+#for layer in range(1, 29):
+#    VariablesToPlot+=["EAll_layer%s"%layer, "EAll_layer%s"%layer, "EAll_layer%s"%layer]
 
 options.register('dataFile',
                  '/home/tquast/tbJune2018_H2/reco/merged_000223.root',
@@ -174,7 +174,7 @@ process.trackimpactntupler = cms.EDAnalyzer("ImpactPointNtupler",
 
 process.observablentupler = cms.EDAnalyzer("NTupelizer",
                                 USERRECORDS = cms.InputTag("variablecomputation","VariableUserRecords" ),
-                                UserRecordKeys = cms.vstring(VariablesToPlot)
+                                UserRecordKeys = cms.vstring(options.VariablesToPlot)
 )
 
 ####################################
