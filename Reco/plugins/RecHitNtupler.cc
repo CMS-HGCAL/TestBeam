@@ -85,6 +85,7 @@ private:
     float PI_positionX;
     float PI_positionY;
 
+    int NRechits_;
     // rechits
     std::vector<unsigned int> rechit_detid_;
     std::vector<unsigned int> rechit_module_;
@@ -109,6 +110,7 @@ void RecHitNtupler::clearVariables(){
     ev_run_ = 0;
     ev_event_ = 0;
 
+    NRechits_=0;
     // rechits
     rechit_detid_.clear();
     rechit_module_.clear();
@@ -188,6 +190,8 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
     tree_->Branch("PI_positionX", &PI_positionX);
     tree_->Branch("PI_positionY", &PI_positionY);
 
+
+    tree_->Branch("NRechits", &NRechits_);
     // rechit
     tree_->Branch("rechit_detid",&rechit_detid_);
     tree_->Branch("rechit_module",&rechit_module_);
@@ -236,6 +240,8 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
     PI_positionX = rd->doubleUserRecords.has("PIStagePosition_X") ? rd->doubleUserRecords.get("PIStagePosition_X") : -999;
     PI_positionY = rd->doubleUserRecords.has("PIStagePosition_Y") ? rd->doubleUserRecords.get("PIStagePosition_Y") : -999;
 
+
+    NRechits_ = (*rhits).size();
     for( auto hit : *rhits ){
 
 	// get electronics channel
