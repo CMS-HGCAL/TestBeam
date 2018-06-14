@@ -60,21 +60,12 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   int m_NHexaBoards;
 
   bool investigatePulseShape;
-  std::map<int, TH1F*> distrLG;
-  std::map<int, TH1F*> distrHG;
+  
+  
   std::map<int, TH2F*> shapesLG;
   std::map<int, TH2F*> shapesHG;
-  std::map<int, TH2F*> ToARisevsTMaxLG;
-  std::map<int, TH2F*> ToARisevsTMaxHG;
-  std::map<int, TH2F*> ToAFallvsTMaxLG;
-  std::map<int, TH2F*> ToAFallvsTMaxHG;
-  std::map<int, TH2F*> TMaxHGvsTMaxLG;
 
   std::vector<int> m_noisyChannels;
-
-  std::map<int, TH2F*> m_h_HighVsLowGainAmpl;
-  std::map<int, TH2F*> m_h_LowGainVsTOTAmpl;
-
 
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;

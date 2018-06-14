@@ -20,13 +20,13 @@ HGCalTBRecHit::HGCalTBRecHit(const DetId& id, float energy, float energyLow, flo
   m_underSaturationHG(false),
   m_underSaturationLG(false)
 {
+  _toaRise = -1;
+  _toaFall = -1;
+  _timeMaxHG = -1;
+  _timeMaxLG = -1;
 }
 
 
-void HGCalTBRecHit::setTime(float time){
-  _time = time;
-  return;
-}
 
 void HGCalTBRecHit::setCellCenterCoordinate(float x, float y) {
   cellCenter_x = x;

@@ -60,6 +60,16 @@ private:
   TH1F* m_h_lgSum;
   TH1F* m_h_enSum;
 
+  std::map<int, TH1F*> distrHG;
+  std::map<int, TH1F*> distrLG;
+  std::map<int, TH2F*> ToARisevsTMaxHG;
+  std::map<int, TH2F*> ToAFallvsTMaxLG;
+  std::map<int, TH2F*> ToARisevsTMaxLG;
+  std::map<int, TH2F*> ToAFallvsTMaxHG;
+  std::map<int, TH2F*> TMaxHGvsTMaxLG;
+  std::map<int, TH2F*> m_h_HighVsLowGainAmpl;
+  std::map<int, TH2F*> m_h_LowGainVsTOTAmpl;
+
   edm::EDGetTokenT<HGCalTBRecHitCollection> m_HGCalTBRecHitCollection;
 
   HGCalTBTopology IsCellValid;
@@ -113,6 +123,54 @@ void RecHitPlotter::beginJob()
   m_h_lgSum=fs->make<TH1F>("LowGainSum","LowGainSum",5000,0,10000);
   m_h_enSum=fs->make<TH1F>("EnergySum","EnergySum",5000,0,10000);
 
+
+  std::ostringstream os( std::ostringstream::ate );
+  TH2F* htmp2;
+  for(int ib = 0; ib<m_NHexaBoards; ib++) {
+    for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
+      int key = ib * 1000 + iski * 100;
+
+      os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
+      TFileDirectory dir = fs->mkdir( os.str().c_str() );
+      os.str("");os<<"ToARiseVsTMaxLG";
+      ToARisevsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
+      os.str("");os<<"ToARiseVsTMaxHG";
+      ToARisevsTMaxHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
+
+      os.str("");os<<"ToAFallVsTMaxLG";
+      ToAFallvsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
+      os.str("");os<<"ToAFallVsTMaxHG";
+      ToAFallvsTMaxHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
+      
+      os.str("");os<<"TMaxHGVsTMaxLG";
+      TMaxHGvsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 50., 150.);
+      
+      TFileDirectory gaindir = dir.mkdir( "Gains" );
+      htmp2=gaindir.make<TH2F>("HighGainVsLowGainAmpl","HighGainVsLowGainAmpl",200,-500.,1500,200,-500.,3500);
+      htmp2->GetXaxis()->SetTitle("Low Gain Amplitude [ADC]"); 
+      htmp2->GetYaxis()->SetTitle("High Gain Amplitude [ADC]"); 
+      m_h_HighVsLowGainAmpl.insert( std::pair<int,TH2F*>(key, htmp2) );  
+
+      htmp2=gaindir.make<TH2F>("LowGainVsTOTAmpl","LowGainVsTOTAmpl",150, 0.,1500,175,-500.,3000);
+      htmp2->GetXaxis()->SetTitle("TOT [ADC]");   
+      htmp2->GetYaxis()->SetTitle("Low Gain Amplitude [ADC]"); 
+      m_h_LowGainVsTOTAmpl.insert( std::pair<int,TH2F*>(key, htmp2) ); 
+      
+
+      for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
+        if ((ichan % 2) == 1) continue;
+        key = ib * 1000 + iski * 100 + ichan;
+
+        os.str("");os<<"Channel"<<ichan<<"__LGDistr";
+        distrLG[key] = dir.make<TH1F>(os.str().c_str(),os.str().c_str(), 100, 0., 50 );
+        os.str("");os<<"Channel"<<ichan<<"__HGDistr";
+        distrHG[key] = dir.make<TH1F>(os.str().c_str(),os.str().c_str(), 100, 0., 500);
+                
+      }
+
+    }
+  }
+
 }
 
 void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
@@ -158,6 +216,13 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   float energyHighSum(0),energyLowSum(0),energySum(0);
   for( auto hit : *hits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid( hit.id().rawId() ) );
+    
+    int skiroc = eid.iskiroc_rawhit();
+    int board = skiroc / 4;
+    skiroc = eid.iskiroc_rawhit() % 4;
+    int channel = eid.ichan();
+    int key = board*1000+skiroc*100+channel;
+
     if( hit.energy()>m_noiseThreshold && !hit.isUnderSaturationForLowGain() && !hit.isUnderSaturationForHighGain() && hit.id().cellType()!=5 ){
       energyHighSum+=hit.energyHigh();
       energyLowSum+=hit.energyLow();
@@ -174,6 +239,19 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       polyMapHG[ hit.id().layer()-1 ]->Fill(CellCentreXY.first , CellCentreXY.second, hit.energyHigh());
       polyMapLG[ hit.id().layer()-1 ]->Fill(CellCentreXY.first , CellCentreXY.second, hit.energyLow());
     }
+  
+
+
+    distrLG[key]->Fill(hit.energyLow());
+    distrHG[key]->Fill(hit.energyHigh());
+    ToARisevsTMaxLG[board*1000+skiroc*100]->Fill(hit.timeMaxLG(), hit.toaRise());
+    ToARisevsTMaxHG[board*1000+skiroc*100]->Fill(hit.timeMaxHG(), hit.toaRise());
+    ToAFallvsTMaxLG[board*1000+skiroc*100]->Fill(hit.timeMaxLG(), hit.toaFall());
+    ToAFallvsTMaxHG[board*1000+skiroc*100]->Fill(hit.timeMaxHG(), hit.toaFall());
+    TMaxHGvsTMaxLG[board*1000+skiroc*100]->Fill(hit.timeMaxLG(), hit.timeMaxHG());
+    m_h_HighVsLowGainAmpl[board*1000+skiroc*100]->Fill(hit.energyLow(), hit.energyHigh());
+    m_h_LowGainVsTOTAmpl[board*1000+skiroc*100]->Fill(hit.energyTot(), hit.energyLow());
+
   }
   m_h_hgSum->Fill( energyHighSum );
   m_h_lgSum->Fill( energyLowSum );

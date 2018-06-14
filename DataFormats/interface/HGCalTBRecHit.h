@@ -43,6 +43,8 @@ public:
 	float cellCenter_x;
 	float cellCenter_y;
 	float _time;
+  	float _timeMaxHG;
+  	float _timeMaxLG;
 
 	int _toaRise, _toaFall;
 
@@ -61,7 +63,9 @@ public:
 		return _energyTot;
 	};
 
-	void setTime(float time);
+	void setTime(float time){_time = time;return;}
+	void setTimeMaxHG(float time){_timeMaxHG = time;return;}
+	void setTimeMaxLG(float time){_timeMaxLG = time;return;}
 	void setToaRise(float toaRise) { _toaRise = toaRise; } ;
 	void setToaFall(float toaFall) { _toaFall = toaFall; } ;
 
@@ -72,6 +76,12 @@ public:
 	float time(){ 
 	  return _time; 
 	} 
+	float timeMaxHG(){ 
+	  return _timeMaxHG; 
+	} 	
+	float timeMaxLG(){ 
+	  return _timeMaxLG; 
+	} 	
 	float toaRise() const { return _toaRise; };
 	float toaFall() const { return _toaFall; };
 

@@ -42,7 +42,6 @@ void HGCalTBRecHitProducer::beginJob()
 
 
   std::ostringstream os( std::ostringstream::ate );
-  TH2F* htmp2;
   for(int ib = 0; ib<m_NHexaBoards; ib++) {
     for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){
       os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
@@ -52,40 +51,12 @@ void HGCalTBRecHitProducer::beginJob()
 
         int key = ib * 10000 + iski * 100 + ichan;
 
-        os.str("");os<<"Channel"<<ichan<<"__LGDistr";
-        distrLG[key] = dir.make<TH1F>(os.str().c_str(),os.str().c_str(), 100, 0., 50 );
-        os.str("");os<<"Channel"<<ichan<<"__HGDistr";
-        distrHG[key] = dir.make<TH1F>(os.str().c_str(),os.str().c_str(), 100, 0., 500);
-
         os.str("");os<<"Channel"<<ichan<<"__LGShape";
         shapesLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, -75, 225, 150, -0.75, 1.);
         os.str("");os<<"Channel"<<ichan<<"__HGShape";
         shapesHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, -75, 225, 150, -0.75, 1.);
         
-        os.str("");os<<"Channel"<<ichan<<"__ToARiseVsTMaxLG";
-        ToARisevsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
-        os.str("");os<<"Channel"<<ichan<<"__ToARiseVsTMaxHG";
-        ToARisevsTMaxHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
-
-        os.str("");os<<"Channel"<<ichan<<"__ToAFallVsTMaxLG";
-        ToAFallvsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
-        os.str("");os<<"Channel"<<ichan<<"__ToAFallVsTMaxHG";
-        ToAFallvsTMaxHG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 4., 3500.);
-        
-        
-        os.str("");os<<"Channel"<<ichan<<"__TMaxHGVsTMaxLG";
-        TMaxHGvsTMaxLG[key] = dir.make<TH2F>(os.str().c_str(),os.str().c_str(), 100, 50., 150., 100, 50., 150.);
       }
-      TFileDirectory gaindir = dir.mkdir( "Gains" );
-      htmp2=gaindir.make<TH2F>("HighGainVsLowGainAmpl","HighGainVsLowGainAmpl",200,-500.,1500,200,-500.,3500);
-      htmp2->GetXaxis()->SetTitle("Low Gain Amplitude [ADC]"); 
-      htmp2->GetYaxis()->SetTitle("High Gain Amplitude [ADC]"); 
-      m_h_HighVsLowGainAmpl.insert( std::pair<int,TH2F*>(ib*10+iski, htmp2) );  
-
-      htmp2=gaindir.make<TH2F>("LowGainVsTOTAmpl","LowGainVsTOTAmpl",150, 0.,1500,175,-500.,3000);
-      htmp2->GetXaxis()->SetTitle("TOT [ADC]");   
-      htmp2->GetYaxis()->SetTitle("Low Gain Amplitude [ADC]"); 
-      m_h_LowGainVsTOTAmpl.insert( std::pair<int,TH2F*>(ib*10+iski, htmp2) ); 
     }
   }
 
@@ -258,14 +229,12 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       recHit.setEnergyTOT(totGain);
 
       if (fitresultLG.status==0) {
-        distrLG[key]->Fill(fitresultLG.amplitude);
-        m_h_LowGainVsTOTAmpl[10*iboard + iski%4]->Fill(totGain, fitresultLG.amplitude);   
         recHit.setEnergyLow(fitresultLG.amplitude);
-        if (fitresultHG.status==0) m_h_HighVsLowGainAmpl[10*iboard + iski%4]->Fill(fitresultLG.amplitude, fitresultHG.amplitude);    
+        recHit.setTimeMaxLG(fitresultLG.tmax - fitresultLG.trise);
       }
       if (fitresultHG.status==0) {
-        distrHG[key]->Fill(fitresultHG.amplitude);
         recHit.setEnergyHigh(fitresultHG.amplitude);
+        recHit.setTimeMaxHG(fitresultHG.tmax - fitresultHG.trise);
       }
 
 
@@ -289,8 +258,6 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
               for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) {
                 shapesLG[key]->Fill(25*it+12.5-(fitresultLG.tmax - fitresultLG.trise), sampleLG[it]/fitresultLG.amplitude);
               }
-              ToARisevsTMaxLG[key]->Fill(fitresultLG.tmax, toaRise);
-              ToAFallvsTMaxLG[key]->Fill(fitresultLG.tmax, toaFall);
             }
           }
         } else{
@@ -303,8 +270,6 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
               for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++) {
                 shapesHG[key]->Fill(25*it+12.5-(fitresultHG.tmax - fitresultHG.trise), sampleHG[it]/fitresultHG.amplitude);
               }
-              ToARisevsTMaxHG[key]->Fill(fitresultHG.tmax, toaRise);
-              ToAFallvsTMaxHG[key]->Fill(fitresultHG.tmax, toaFall);
             }
           }
         }
@@ -315,8 +280,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       recHit.setTime(_time);
 
 
-      recHit.setToaRise(rawhit.toaRise());
-      recHit.setToaFall(rawhit.toaFall());
+      recHit.setToaRise(toaRise);
+      recHit.setToaFall(toaFall);
 
       rechits->push_back(recHit);
     }
