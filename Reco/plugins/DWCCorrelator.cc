@@ -220,12 +220,14 @@ void DWCCorrelator::analyze(const edm::Event& event, const edm::EventSetup& setu
 		return;
 	}
 
+	/*
 	#ifndef DEBUG
 		if (DWCs_CERNSPS&&(pdgID != 13)) {
 			std::cout<<"Run taken at CERN's SPS but is not a dedicated muon run."<<std::endl;
 			return;
 		}
 	#endif
+	*/
 
 	#ifdef DEBUG
 		int eventCounter = rd->event;
