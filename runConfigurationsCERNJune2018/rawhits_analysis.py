@@ -12,14 +12,8 @@ options.register('dataFile',
                  VarParsing.VarParsing.varType.string,
                  'file containing raw input')
 
-options.register('processedFile',
-                 '/home/tquast/tbJune2018_H2/hgcalReco/rechits_000223.root',
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 'Output file where pedestal histograms are stored')
-
 options.register('outputFile',
-                 '/home/tquast/tbJune2018_H2/hgcalReco/rechitproduction_analysis_000223.root',
+                 '/home/tquast/tbJune2018_H2/hgcalReco/rawhit_analysis_000223.root',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
@@ -45,11 +39,6 @@ options.register('hgcalLayout',
                  VarParsing.VarParsing.varType.string,
                  'Name of the hgcal layout file in HGCal/CondObjects/data/')
 
-options.register('adcCalibrations',
-                 'hgcal_calibration_June2018_v0.txt',
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 'Name of the hgcal ADC to MIP calibration file in HGCal/CondObjects/data/')
 
 options.register('reportEvery',
                 100,
@@ -66,10 +55,9 @@ print options
 
 electronicMap="HGCal/CondObjects/data/%s" % options.electronicMap
 hgcalLayout="HGCal/CondObjects/data/%s" % options.hgcalLayout
-adcCalibrations="HGCal/CondObjects/data/%s" % options.adcCalibrations
 
 ################################
-process = cms.Process("rechits")
+process = cms.Process("rawhitsanalysis")
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)
 )
@@ -89,22 +77,15 @@ process.source = cms.Source("PoolSource",
 )
 
 
-process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
-                                        OutputCollectionName = cms.string('HGCALTBRECHITS'),
-                                        InputCollection = cms.InputTag("rawhitproducer", "HGCALTBRAWHITS"),
-                                        RUNDATA = cms.InputTag("source", "RunData" ), 
-                                        GlobalTimestampCollectionName=cms.InputTag("HGCALGLOBALTIMESTAMPS"),
-                                        ElectronicsMap = cms.untracked.string(electronicMap),
-                                        DetectorLayout = cms.untracked.string(hgcalLayout),
-                                        ADCCalibrations = cms.untracked.string(adcCalibrations),                                       
-                                        MaskNoisyChannels=cms.untracked.bool(bool(0)),
-                                        ChannelsToMaskFileName=cms.untracked.string(""),
-                                        NHexaBoards=cms.untracked.int32(options.NHexaBoards),
-                                        TimeSample3ADCCut = cms.untracked.double(15.),
-                                        investigatePulseShape = cms.untracked.bool(True),
-                                        timingNetworks = cms.untracked.string("")
+process.rawhitplotter = cms.EDAnalyzer("RawHitPlotter",
+                                       InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
+                                       ElectronicMap=cms.untracked.string(electronicMap),
+                                       NHexaBoards=cms.untracked.int32(options.NHexaBoards),
+                                       DetectorLayout=cms.untracked.string(hgcalLayout),
+                                       SensorSize=cms.untracked.int32(128),
+                                       EventPlotter=cms.untracked.bool(False),
+                                       SubtractCommonMode=cms.untracked.bool(True)
 )
-
 
 
 ####################################
@@ -114,14 +95,6 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 ####################################
 
 
-process.output = cms.OutputModule("PoolOutputModule",
-                                  fileName = cms.untracked.string(options.processedFile),
-                                  outputCommands = cms.untracked.vstring('drop *',
-                                                                         'keep *_*_HGCALTBRECHITS_*',
-                                                                         'keep *_*_HGCALGLOBALTIMESTAMPS_*',
-                                                                         'keep *_*_RunData_*')
-)
+process.p = cms.Path(process.rawhitplotter)
 
-process.p = cms.Path(process.rechitproducer)
 
-process.end = cms.EndPath(process.output)

@@ -5,6 +5,9 @@ import os,sys
 
 options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, files, secondaryFiles, output, secondaryOutput because they are already defined in 'standard'
 
+#VariablesToPlot = ["xmean", "ymean", "NRechits", "E7_tot", "E19_tot", "EAll_tot", "EAllHG_tot", "EAllLG_tot", "EAllTOT_tot"]
+#for layer in range(1, 29):
+#    VariablesToPlot+=["EAll_layer%s"%layer, "EAll_layer%s"%layer, "EAll_layer%s"%layer]
 
 options.register('dataFile',
                  '/home/tquast/tbJune2018_H2/reco/merged_000223.root',
@@ -17,6 +20,13 @@ options.register('outputFile',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
+
+options.register('VariablesToPlot',
+                 '',
+                 VarParsing.VarParsing.multiplicity.list,
+                 VarParsing.VarParsing.varType.string,
+                 'Indicate which variables are to be added to the tree. The keys here must match the ones as defined in the VariableComputation'
+                )
 
 options.register('electronicMap',
                  "map_CERN_Hexaboard_June_28Sensors_28EELayers_V0.txt",
@@ -70,7 +80,7 @@ layerPositionFile=options.layerPositionFile
 
 
 ################################
-process = cms.Process("ntuples")
+process = cms.Process("analysis")
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)
 )
@@ -103,35 +113,41 @@ else:
 
 
 
-process.eventdisplay = cms.EDAnalyzer("EventDisplay",
+process.correlationanalysis = cms.EDAnalyzer("DWCCorrelator",
                                 RUNDATA = rundata_tag, 
+                                MWCHAMBERS = dwc_tag, 
+                                DWCTRACKS = dwc_track_tag, 
                                 HGCALTBRECHITS = rechit_tag,
-                                electronicsMap = cms.untracked.string(electronicMap),
+                                HGCALTBCOMMONMODENOISE = commonModeNoise_tag,
+                                ElectronicMap = cms.untracked.string(electronicMap),
+                                DetectorLayout=cms.untracked.string(hgcalLayout),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
-                                eventsToPlot=cms.vint32(range(1, 11))
+                                n_bins_DWCE = cms.int32(50),
+                                max_dim_x_DUT = cms.double(50),
+                                max_dim_y_DUT = cms.double(50),
+                                pathsToMIPWindowFiles = cms.vstring([""]),
+                                commonModeNoiseRejectionType = cms.int32(0)       #0: none, else 1-..., default: 0 
                               )
 
-
-process.rechitntupler = cms.EDAnalyzer("RecHitNtupler",
-                                       InputCollection=rechit_tag,
-                                       RUNDATA = rundata_tag,
-                                       ElectronicMap=cms.untracked.string(electronicMap),
-                                       layerPositionFile = cms.untracked.string(layerPositionFile),
-                                       DetectorLayout=cms.untracked.string(hgcalLayout),
-                                       SensorSize=cms.untracked.int32(128),
-                                       EventPlotter=cms.untracked.bool(True),
-                                       MipThreshold=cms.untracked.double(5.0),
-                                       NoiseThreshold=cms.untracked.double(0.5)
+process.variablecomputation = cms.EDProducer("VariableComputation",
+                                RUNDATA = rundata_tag,  
+                                MWCHAMBERS = dwc_tag, 
+                                DWCTRACKS = dwc_track_tag,                                 
+                                HGCALTBRECHITS = rechit_tag,
+                                UserRecordCollectionName=cms.untracked.string("VariableUserRecords"),
+                                ElectronicMap = cms.untracked.string(electronicMap),
+                                DetectorLayout=cms.untracked.string(hgcalLayout),
+                                layerPositionFile=cms.string(layerPositionFile),
+                                NHexaBoards=cms.untracked.int32(options.NHexaBoards),
+                                NLayers=cms.untracked.int32(options.NHexaBoards),
+                                NColorsInputImage = cms.untracked.int32(-1),
+                                CellEnergyCut = cms.untracked.double(0.5)
 )
 
-process.trackimpactntupler = cms.EDAnalyzer("ImpactPointNtupler",
-                                       extrapolationDevice=cms.untracked.string("DWC"),
-                                       DWCTrackToken = dwc_track_tag,
-                                       DATURATelescopeData = cms.InputTag("","" ),
-                                       RUNDATA = rundata_tag,
-                                       nLayers=cms.untracked.int32(options.NHexaBoards),
+process.observablentupler = cms.EDAnalyzer("NTupelizer",
+                                USERRECORDS = cms.InputTag("variablecomputation","VariableUserRecords" ),
+                                UserRecordKeys = cms.vstring(options.VariablesToPlot)
 )
-
 
 ####################################
 # Load the standard sequences
@@ -140,5 +156,5 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 ####################################
 
 
-process.p = cms.Path(process.eventdisplay*process.rechitntupler*process.trackimpactntupler)
+process.p = cms.Path(process.correlationanalysis*process.variablecomputation*process.observablentupler)
 
