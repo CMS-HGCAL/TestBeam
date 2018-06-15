@@ -1,6 +1,6 @@
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
-#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
+#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include "math.h"
 #include <stdlib.h>
 #include <iostream>
@@ -81,4 +81,3 @@ std::set<HGCalTBDetId> HGCalTBTopology::getNeighboringCellsDetID(HGCalTBDetId de
 	}
 	return detids;
 }
-

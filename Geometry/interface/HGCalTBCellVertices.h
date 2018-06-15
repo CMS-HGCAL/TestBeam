@@ -68,4 +68,3 @@ private:
 //std::ostream& operator<<(std::ostream&,const HGCalTBCellVertices& Cell_U_V);
 
 #endif
-
