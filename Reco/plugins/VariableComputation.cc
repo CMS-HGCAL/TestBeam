@@ -155,7 +155,7 @@ class VariableComputation : public edm::EDProducer {
 		std::vector<std::string> pathsToMIPWindowFiles;
 	  	std::map<std::pair<int, int> ,WindowMap  >loadedDWCWindows;
 		WindowMap currentDWCWindows;
-		std::map<int, std::pair<double, double> > simPositions;
+		
 
 
   		//coordinate system transformation
@@ -282,35 +282,50 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	//selecting rechits certain layers
 	switch(rd->configuration) {
 		case 1:
-			N_layers_EE = 2;		//must shift remove layer 0 artificially
+			N_layers_EE = 2;		//June 2017, H2
 			N_layers_FH = 4;
 			N_layers_BH = 12;
 			break;
-  	case 2:
+  	case 2:							//September 2017, H2
 			N_layers_EE = 7;
 			N_layers_FH = 10;
 			N_layers_BH = 12;
 			break;
   	case 3:
+  	case 4:							//October 2017, H6
 			N_layers_EE = 4;		
 			N_layers_FH = 6;		
 			N_layers_BH = 12;		
 			break;
-		default:
-  	case 4:
-			N_layers_EE = 4;		
-			N_layers_FH = 6;		
-			N_layers_BH = 12;
-			break;
-  	case 5:
+  	case 6:							//March 2018, DESY 
+  	case 7:
+  	case 8:
+  	case 9:
+  	case 10:
+  	case 13:
+  	case 14:
+  	case 15:
+  	case 16:
 			N_layers_EE = 3;		
 			N_layers_FH = 0;		
 			N_layers_BH = 0;
 			break;
+  	case 11:
+  	case 12:					//March 2018, DESY 
+			N_layers_EE = 2;		
+			N_layers_FH = 0;		
+			N_layers_BH = 0;
+			break;	
+  	case 17:
+  	case 18:					//June 2018, H2
+			N_layers_EE = 28;		
+			N_layers_FH = 0;		
+			N_layers_BH = 0;
+			break;			
 	}
 	std::vector<HGCalTBRecHit> rechits_selected;
 	for(auto Rechit : *Rechits) {
-		if ((abs(rd->pdgID)==11) && (Rechit.id()).layer()>=N_layers_EE) continue;
+		if ((abs(rd->pdgID)==11) && (Rechit.id()).layer()>N_layers_EE) continue;
 		rechits_selected.push_back(Rechit);
 	}
 		
@@ -643,10 +658,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		 		if (currentDWCWindows.find(key) == currentDWCWindows.end())	continue;	
 				if (-dwc_x_layer < currentDWCWindows[key][0] || -dwc_x_layer > currentDWCWindows[key][1]) continue;
 				if (dwc_y_layer < currentDWCWindows[key][2] || dwc_y_layer > currentDWCWindows[key][3]) continue;
-			} else {
-				//if (Rechit.energy()<300.) continue;
-				if (!((dwc_x_layer>simPositions[key].first-4.)&&(dwc_x_layer<simPositions[key].first+4.))) continue;
-				if (!((dwc_y_layer>simPositions[key].second-4.)&&(dwc_y_layer<simPositions[key].second+4.))) continue;
 			}
 			
 			cell_chip1_ch36_energySpectra[layer-1] = Rechit.energy();
@@ -730,69 +741,6 @@ void VariableComputation::ReadDWCWindows() {
 	#endif
 
 	loadedDWCWindows[std::make_pair(minRun, maxRun)] = _parameters;
-	//only valid for the September setup
-	simPositions[136] = std::make_pair(0,  -11.2455);
-	simPositions[1136] = std::make_pair(0,  -11.2455);
-	simPositions[2136] = std::make_pair(0,  -11.2455);
-	simPositions[3136] = std::make_pair(0,  -11.2455);
-	simPositions[4136] = std::make_pair(0,  -11.2455);
-	simPositions[5136] = std::make_pair(0,  -11.2455);
-	simPositions[6136] = std::make_pair(0,  -11.2455);
-
-
-	simPositions[138] = std::make_pair(0, -22.4909);
-	simPositions[1138] = std::make_pair(0, -22.4909);
-	simPositions[2138] = std::make_pair(0, -22.4909);
-	simPositions[3138] = std::make_pair(0, -22.4909);
-	simPositions[4138] = std::make_pair(0, -22.4909);
-	simPositions[5138] = std::make_pair(0, -22.4909);
-	simPositions[6138] = std::make_pair(0, -22.4909);
-
-
-	simPositions[144] = std::make_pair(-9.73885, -5.62273);
-	simPositions[1144] = std::make_pair(-9.73885, -5.62273);
-	simPositions[2144] = std::make_pair(-9.73885, -5.62273);
-	simPositions[3144] = std::make_pair(-9.73885, -5.62273);
-	simPositions[4144] = std::make_pair(-9.73885, -5.62273);
-	simPositions[5144] = std::make_pair( 9.73885, -5.62273);
-	simPositions[6144] = std::make_pair(-9.73885, -5.62273);
-
-
-	simPositions[146] = std::make_pair(-29.2165, -28.1136);
-	simPositions[1146] = std::make_pair(-29.2165, -28.1136);
-	simPositions[2146] = std::make_pair(-29.2165, -28.1136);
-	simPositions[3146] = std::make_pair(-29.2165, -28.1136);
-	simPositions[4146] = std::make_pair(-29.2165, -28.1136);
-	simPositions[5146] = std::make_pair( 29.2165, -28.1136);
-	simPositions[6146] = std::make_pair(-29.2165, -28.1136);
-
-
-	simPositions[152] = std::make_pair(-19.4777, -22.4909);
-	simPositions[1152] = std::make_pair(-19.4777, -22.4909);
-	simPositions[2152] = std::make_pair(-19.4777, -22.4909);
-	simPositions[3152] = std::make_pair(-19.4777, -22.4909);
-	simPositions[4152] = std::make_pair(-19.4777, -22.4909);
-	simPositions[5152] = std::make_pair( 19.4777, -22.4909);
-	simPositions[6152] = std::make_pair(-19.4777, -22.4909);
-
-
-	simPositions[154] = std::make_pair(-9.73885, -16.8682);
-	simPositions[1154] = std::make_pair(-9.73885, -16.8682);
-	simPositions[2154] = std::make_pair(-9.73885, -16.8682);
-	simPositions[3154] = std::make_pair(-9.73885, -16.8682);
-	simPositions[4154] = std::make_pair(-9.73885, -16.8682);
-	simPositions[5154] = std::make_pair( 9.73885, -16.8682);
-	simPositions[6154] = std::make_pair(-9.73885, -16.8682);
-
-
-	simPositions[156] = std::make_pair(-9.73885, -28.1136);
-	simPositions[1156] = std::make_pair(-9.73885, -28.1136);
-	simPositions[2156] = std::make_pair(-9.73885, -28.1136);
-	simPositions[3156] = std::make_pair(-9.73885, -28.1136);
-	simPositions[4156] = std::make_pair(-9.73885, -28.1136);
-	simPositions[5156] = std::make_pair( 9.73885, -28.1136);
-	simPositions[6156] = std::make_pair(-9.73885, -28.1136);
-
 }
 
 
