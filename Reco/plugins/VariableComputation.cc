@@ -67,9 +67,17 @@ double MIP2GeVSeptember2017 = 84.9e-6;
 
 //to be configured
 double X0PosMarch2018[3] = {0.08, 4.7+0.28, 4.7+0.28+0.01};
-double Lambda0PosMarch2018[3] = {1., 1., 1.};
+double Lambda0PosMarch2018[3] = {1., 2., 3.};
 double weightsMarch2018[3] = {1., 1., 1.};
 double MIP2GeVMarch2018 = 84.9e-6;
+
+
+//to be configured
+double X0PosJune2018[28] = {1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11, 12., 13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28.};
+double Lambda0PosJune2018[28] = {1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11, 12., 13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28.};
+double weightsJune2018[28] = {1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
+double MIP2GeVJune2018 = 84.9e-6;
+
 
 std::vector<double> getEigenValuesOfSymmetrix3x3(double A11, double A22, double A33, double A12, double A13, double A23) {
 	//eigenvalue computation: https://arxiv.org/pdf/1306.6291.pdf
@@ -534,13 +542,18 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 			X0 = X0PosSeptember2017[it->first-1];
 			lambda0 = Lambda0PosSeptember2017[it->first-1];
 		}
-		else if (rd->configuration==5) {
+		else if (rd->configuration>=5 && rd->configuration<=17) {
 			weight = weightsMarch2018[it->first-1]*1e-3;
 			MIP2GeV = MIP2GeVMarch2018;
 			X0 = X0PosMarch2018[it->first-1];
 			lambda0 = Lambda0PosMarch2018[it->first-1];
 		}
-
+		else if ((rd->configuration==17) || (rd->configuration==18)) {
+			weight = weightsJune2018[it->first-1]*1e-3;
+			MIP2GeV = MIP2GeVJune2018;
+			X0 = X0PosJune2018[it->first-1];
+			lambda0 = Lambda0PosJune2018[it->first-1];
+		}
 		depthX0 += X0*energyAll_layer[it->first-1];
 		depthLambda0 += lambda0*energyAll_layer[it->first-1];
 
