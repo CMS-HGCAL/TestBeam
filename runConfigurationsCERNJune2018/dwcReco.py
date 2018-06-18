@@ -218,7 +218,7 @@ process.millepede_binarywriter.fittingMethod = cms.string("lineAnalytical")
 '''
 process.dwc_ntupelizer.MWCHAMBERS = cms.InputTag("source","WireChambers","dwcReco" )
 process.dwc_ntupelizer.RUNDATA = cms.InputTag("source","RunData","dwcReco" )
-process.dwc_ntupelizer.writeMinimal = cms.bool(True)
+process.dwc_ntupelizer.writeMinimal = cms.bool(False)
 
 
 #Wire chamber producer
