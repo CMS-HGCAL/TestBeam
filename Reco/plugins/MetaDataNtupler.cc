@@ -165,15 +165,19 @@ void MetaDataNtupler::analyze(const edm::Event& event, const edm::EventSetup& se
     beamEnergy = rd->energy;
     configuration = rd->configuration;
 
-    biasCurrentCh0 = metaData[ev_run_][0];
-    biasCurrentCh1 = metaData[ev_run_][1];
-    biasCurrentCh2 = metaData[ev_run_][2];
-    biasCurrentCh3 = metaData[ev_run_][3];
-    humidity_RHDP4 = metaData[ev_run_][4];
-    TCassette07 = metaData[ev_run_][5];
-    tablePositionY = metaData[ev_run_][6];
-    humidity_air = metaData[ev_run_][7];
-    temperature_air = metaData[ev_run_][8];
+    if (metaData.find(ev_run_)!=metaData.end()) {
+        biasCurrentCh0 = metaData[ev_run_][0];
+        biasCurrentCh1 = metaData[ev_run_][1];
+        biasCurrentCh2 = metaData[ev_run_][2];
+        biasCurrentCh3 = metaData[ev_run_][3];
+        humidity_RHDP4 = metaData[ev_run_][4];
+        TCassette07 = metaData[ev_run_][5];
+        tablePositionY = metaData[ev_run_][6];
+        humidity_air = metaData[ev_run_][7];
+        temperature_air = metaData[ev_run_][8];
+    } else {
+        biasCurrentCh0 = biasCurrentCh1 = biasCurrentCh2 = biasCurrentCh3 = humidity_RHDP4 = TCassette07 = tablePositionY = humidity_air = temperature_air = -999.;
+    }
 
     tree_->Fill();
 }
