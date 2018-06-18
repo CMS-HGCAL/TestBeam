@@ -151,6 +151,7 @@ class VariableComputation : public edm::EDProducer {
 		std::vector<double> energyAll_layer, energyE1_layer, energyE7_layer, energyE19_layer, energyE37_layer, energyE61_layer;
 		std::vector<int> NAll_layer, NE1_layer, NE7_layer, NE19_layer, NE37_layer, NE61_layer;
 
+		double layer_10Percent, layer_90Percent;
 		double depthX0, depthLambda0, showerStartDepth;
 
 		//distance information
@@ -451,23 +452,27 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	/**********                                 ****************/
 	
 	//Energy information
-	energyAllHG_tot = energyAllLG_tot = energyAllTOT_tot = 0;
+	energyAllHG_tot = energyAllLG_tot = energyAllTOT_tot = energyAll_tot = 0;
 	for(auto Rechit : rechits_selected) {
 		energyAllHG_tot+=Rechit.energyHigh();
 		energyAllLG_tot+=Rechit.energyLow();
 		energyAllTOT_tot+=Rechit.energyTot();
+		energyAll_tot+=Rechit.energy();
 	}
 	UR->add("EAllHG_tot", energyAllHG_tot);
 	UR->add("EAllLG_tot", energyAllLG_tot);
 	UR->add("EAllTOT_tot", energyAllTOT_tot);
+	UR->add("EAll_tot", energyAll_tot);
 
 
-	energyE1_tot = energyE7_tot = energyE19_tot = energyE37_tot = energyE61_tot = energyAll_tot = 0.;	
+	energyE1_tot = energyE7_tot = energyE19_tot = energyE37_tot = energyE61_tot = 0.;	
 	energyE1_weight = energyE7_weight = energyE19_weight = energyE37_weight = energyE61_weight = energyAll_weight = 0.;
 	
 	depthX0 = 0, depthLambda0 = 0;
 	showerStartDepth = -1.;
+	layer_10Percent = layer_90Percent = -1;
 
+	double energySum_layers = 0;
 	std::vector<std::pair<double, double> > relevantHitPositions;
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		//most intensive cell
@@ -515,8 +520,11 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 
 		//sum of all
 		it->second->calculateCenterPosition(CONSIDERALL, LINEARWEIGHTING);
-		energyAll_tot += it->second->getTotalWeight();
+		energySum_layers += it->second->getTotalWeight();
 		energyAll_layer[it->first-1] = it->second->getTotalWeight();
+		if (energySum_layers>0.1 * energyAll_tot) layer_10Percent = ((it->first) * energyAll_layer[it->first-1] + (it->first-1) * energyAll_layer[it->first-2]) / (energyAll_layer[it->first-1] + energyAll_layer[it->first-2]);
+		if (energySum_layers>0.9 * energyAll_tot) layer_90Percent = ((it->first) * energyAll_layer[it->first-1] + (it->first-1) * energyAll_layer[it->first-2]) / (energyAll_layer[it->first-1] + energyAll_layer[it->first-2]);
+
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
 		NAll_layer[it->first-1] = (int)relevantHitPositions.size();
 		UR->add("NAll_layer"+std::to_string(it->first), NAll_layer[it->first-1]);
@@ -578,6 +586,9 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		}
 	}
 
+	UR->add("layer_10Percent", layer_10Percent);
+	UR->add("layer_90Percent", layer_90Percent);
+
 	if (rd->booleanUserRecords.get("hasValidDWCMeasurement")) {	
 		UR->add("dwc1_multiplicity", dwcs->at(0).averageHitMultiplicty);
 		UR->add("dwc2_multiplicity", dwcs->at(1).averageHitMultiplicty);
@@ -596,7 +607,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	UR->add("E19_tot", energyE19_tot);
 	UR->add("E37_tot", energyE37_tot);
 	UR->add("E61_tot", energyE61_tot);
-	UR->add("EAll_tot", energyAll_tot);
 	
 	UR->add("E1_weight", energyE1_weight);
 	UR->add("E7_weight", energyE7_weight);
