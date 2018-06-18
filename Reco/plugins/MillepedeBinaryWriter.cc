@@ -46,7 +46,8 @@
 double DWC_x0s[4] = {0.004, 0.25, 0.008, 0.0};
 enum COORDINATE {
 	X = 1,
-	Y
+	Y,
+	BOTH		//DEFAULT!, T.Q. 18 June 2018
 };
 
 
@@ -169,17 +170,6 @@ void MillepedeBinaryWriter::analyze(const edm::Event& event, const edm::EventSet
 		Track->addFitPoint(Sensors[n_layer]);
 		N_points++;
 	}
-	
-	//quality cut to remove unphysical events:
-	for (size_t i=0; i<=1; i++) for (size_t j=2; j<=3; j++) {
-		if (fabs(Sensors[i]->getHitPosition().first - Sensors[j]->getHitPosition().first) > 50.) return;
-		if (fabs(Sensors[i]->getHitPosition().second - Sensors[j]->getHitPosition().second) > 50.) return;
-	}
-	for (size_t i=0; i<=2; i+=2) {
-		if (fabs(Sensors[i]->getHitPosition().first - Sensors[i+1]->getHitPosition().first) > 10.) return;
-		if (fabs(Sensors[i]->getHitPosition().second - Sensors[i+1]->getHitPosition().second) > 10.) return;
-	}
-
 
 	if (N_points == (int)Layers.size()) {
 		Track->fitTrack(fittingMethod);

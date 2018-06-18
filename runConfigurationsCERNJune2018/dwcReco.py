@@ -23,7 +23,7 @@ options.register('reportEvery',
                 )
 
 options.register('outputFile',
-                '/home/tquast/tbJune2018_H2/dwcReco/dwcReco_223.root',
+                '~/tmp/test.root',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Path to the output file.'
@@ -201,32 +201,27 @@ process.source = cms.Source("HGCalTBWireChamberSource",
     performAlignment = cms.untracked.bool(bool(options.performAlignment)),
     alignmentParamaterFiles = cms.vstring(options.alignmentFiles) 
 )
-'''
+
+#DWC NTupelizer
+if (options.chainSequence == 1):
+    process.dwc_ntupelizer.MWCHAMBERS = cms.InputTag("source","WireChambers","dwcReco" )
+    process.dwc_ntupelizer.RUNDATA = cms.InputTag("source","RunData","dwcReco" )
+    process.dwc_ntupelizer.writeMinimal = cms.bool(False)
+
+
 ####################################
 #Millepede binary writer 
-process.millepede_binarywriter.binaryFile = cms.string(options.outputMillepedeFile)
-process.millepede_binarywriter.Layers = cms.vint32(options.Layers[0])
-process.millepede_binarywriter.Coordinate = cms.string(options.coordinateString)
-process.millepede_binarywriter.MWCQualityCut = cms.bool(False)
-process.millepede_binarywriter.makeTree = cms.untracked.bool(True)
-process.millepede_binarywriter.MWCHAMBERS = cms.InputTag("source","WireChambers","unpack")
-process.millepede_binarywriter.RUNDATA = cms.InputTag("source","RunData","unpack")
-process.millepede_binarywriter.fittingMethod = cms.string("lineAnalytical")
+if (options.chainSequence == 2):
+    process.millepede_binarywriter.binaryFile = cms.string(options.outputMillepedeFile)
+    process.millepede_binarywriter.Layers = cms.vint32(options.Layers)
+    process.millepede_binarywriter.Coordinate = cms.string(options.coordinateString)
+    process.millepede_binarywriter.MWCQualityCut = cms.bool(False)
+    process.millepede_binarywriter.makeTree = cms.untracked.bool(True)
+    process.millepede_binarywriter.MWCHAMBERS = cms.InputTag("source","WireChambers","dwcReco")
+    process.millepede_binarywriter.RUNDATA = cms.InputTag("source","RunData","dwcReco")
+    process.millepede_binarywriter.fittingMethod = cms.string("lineAnalytical")
 
-             
-#DWC NTupelizer
-'''
-process.dwc_ntupelizer.MWCHAMBERS = cms.InputTag("source","WireChambers","dwcReco" )
-process.dwc_ntupelizer.RUNDATA = cms.InputTag("source","RunData","dwcReco" )
-process.dwc_ntupelizer.writeMinimal = cms.bool(False)
-
-
-#Wire chamber producer
-process.wirechamberproducer.OutputCollectionName = cms.string("DelayWireChambers") 
-process.wirechamberproducer.RUNDATA = cms.InputTag("source","RunData","dwcReco")
-process.wirechamberproducer.inputFile = cms.string("")
-
-
+            
 ####################################
 #add skip event exception which might occur for simulated samples because the last event is not properly passed forward
 process.options = cms.untracked.PSet(
