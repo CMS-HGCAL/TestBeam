@@ -522,8 +522,8 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		it->second->calculateCenterPosition(CONSIDERALL, LINEARWEIGHTING);
 		energySum_layers += it->second->getTotalWeight();
 		energyAll_layer[it->first-1] = it->second->getTotalWeight();
-		if (energySum_layers>0.1 * energyAll_tot) layer_10Percent = ((it->first) * energyAll_layer[it->first-1] + (it->first-1) * energyAll_layer[it->first-2]) / (energyAll_layer[it->first-1] + energyAll_layer[it->first-2]);
-		if (energySum_layers>0.9 * energyAll_tot) layer_90Percent = ((it->first) * energyAll_layer[it->first-1] + (it->first-1) * energyAll_layer[it->first-2]) / (energyAll_layer[it->first-1] + energyAll_layer[it->first-2]);
+		if ((layer_10Percent==-1) && (energySum_layers>0.1 * energyAll_tot)) layer_10Percent = ((it->first) * energyAll_layer[it->first-1] + (it->first-1) * energyAll_layer[it->first-2]) / (energyAll_layer[it->first-1] + energyAll_layer[it->first-2]);
+		if ((layer_90Percent)&&(energySum_layers>0.9 * energyAll_tot)) layer_90Percent = ((it->first) * energyAll_layer[it->first-1] + (it->first-1) * energyAll_layer[it->first-2]) / (energyAll_layer[it->first-1] + energyAll_layer[it->first-2]);
 
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
 		NAll_layer[it->first-1] = (int)relevantHitPositions.size();
