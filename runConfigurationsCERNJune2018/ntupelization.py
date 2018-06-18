@@ -44,6 +44,12 @@ options.register('layerPositionFile',
                  VarParsing.VarParsing.varType.string,
                  'File indicating the layer positions in mm.')
 
+options.register('metaDataFile',
+                 '/afs/cern.ch/user/t/tquast/CMSSW_9_3_0/src/HGCal/CondObjects/data/metaData_CERNH2_June2018.csv',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'File indicating the PI stage positions in mm.')
+
 options.register('isSimulation',
                 0,
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -132,6 +138,10 @@ process.trackimpactntupler = cms.EDAnalyzer("ImpactPointNtupler",
                                        nLayers=cms.untracked.int32(options.NHexaBoards),
 )
 
+process.metadatantupler = cms.EDAnalyzer("MetaDataNtupler",
+                                       RUNDATA = rundata_tag,
+                                       metaDataFile=cms.untracked.string(options.metaDataFile),
+)
 
 ####################################
 # Load the standard sequences
@@ -140,5 +150,5 @@ process.load('HGCal.StandardSequences.RawToDigi_cff')
 ####################################
 
 
-process.p = cms.Path(process.eventdisplay*process.rechitntupler*process.trackimpactntupler)
+process.p = cms.Path(process.eventdisplay*process.rechitntupler*process.trackimpactntupler*process.metadatantupler)
 
