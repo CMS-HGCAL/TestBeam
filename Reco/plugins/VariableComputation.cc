@@ -577,13 +577,13 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		energyAll_weight += energyAll_layer[it->first-1]*(MIP2GeV+weight); 
 
 		//position resolution
-		if (rd->booleanUserRecords.get("hasValidDWCMeasurement")&&dwctrack->valid&&(dwctrack->referenceType>10)) { 
-			it->second->calculateCenterPosition(CONSIDERNINETEEN, LOGWEIGHTING_35_10);
-			//investigate here
-			//x = -x in DWC coordinate system
-			UR->add("PosResX_layer"+std::to_string(it->first),(it->second->getLabHitPosition().first-dwctrack->DWCExtrapolation_XY(it->first).first));
-			UR->add("PosResY_layer"+std::to_string(it->first),(it->second->getLabHitPosition().second-dwctrack->DWCExtrapolation_XY(it->first).second));
-		}
+		
+		it->second->calculateCenterPosition(CONSIDERNINETEEN, LOGWEIGHTING_35_10);
+		//investigate here
+		//x = -x in DWC coordinate system
+		UR->add("RecoPosX_layer"+std::to_string(it->first),(it->second->getLabHitPosition().first));
+		UR->add("RecoPosY_layer"+std::to_string(it->first),(it->second->getLabHitPosition().second));
+	
 	}
 
 	UR->add("layer_10Percent", layer_10Percent);
