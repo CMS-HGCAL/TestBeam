@@ -62,10 +62,14 @@ private:
   HGCalTBCellVertices TheCell;
   std::vector<std::pair<double, double>> CellXY;
   std::pair<double, double> CellCentreXY;
+
+  std::map<int,TH1F*> h_energyMap;
+  std::map<int,TH1F*> h_energyLowMap;
+  std::map<int,TH1F*> h_energyHighMap;
 };
 
 RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig) :
-  m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers_AllFlipped.txt")),
+  m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_June_28Sensors_28EELayers_V0.txt")),
   m_detectorLayoutFile(iConfig.getUntrackedParameter<std::string>("DetectorLayout","HGCal/CondObjects/data/layerGeom_oct2017_h2_17layers.txt")),
   m_sensorsize(iConfig.getUntrackedParameter<int>("SensorSize",128)),
   m_eventPlotter(iConfig.getUntrackedParameter<bool>("EventPlotter",false)),
@@ -103,6 +107,35 @@ void RecHitPlotter::beginJob()
   m_h_lgSum=fs->make<TH1F>("LowGainSum","LowGainSum",5000,0,10000);
   m_h_enSum=fs->make<TH1F>("EnergySum","EnergySum",5000,0,10000);
 
+  TH1F* hist;
+  std::ostringstream os(std::ostringstream::ate);
+  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+    for( size_t iski=0; iski<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; iski++ ){ 
+      os.str("");os<<"HexaBoard"<<ib<<"_Skiroc"<<iski;
+      TFileDirectory dir = fs->mkdir( os.str().c_str() );
+      int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*ib+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iski)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+      for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
+	HGCalTBElectronicsId eid(skiId,ichan);      
+	if( !essource_.emap_.existsEId(eid) ) continue;
+	int key=ib*1000+iski*100+ichan;
+
+	os.str("");
+	os << "Energy_Channel" << ichan ;
+	hist=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
+	h_energyMap.insert( std::pair<int,TH1F*>(key,hist) );
+
+	os.str("");
+	os << "LowGain_Channel" << ichan ;
+	hist=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
+	h_energyLowMap.insert( std::pair<int,TH1F*>(key,hist) );
+	
+	os.str("");
+	os << "HighGain_Channel" << ichan ;
+	hist=dir.make<TH1F>(os.str().c_str(),os.str().c_str(),4000,-500,3500);
+	h_energyHighMap.insert( std::pair<int,TH1F*>(key,hist) );
+      }
+    }
+  }
 }
 
 void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
@@ -148,6 +181,10 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   float energyHighSum(0),energyLowSum(0),energySum(0);
   for( auto hit : *hits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid( hit.id().rawId() ) );
+    int key=(hit.id().layer()-1)*1000+eid.iskiroc_rawhit()*100+eid.ichan();
+    h_energyMap[key]->Fill(hit.energy());
+    h_energyLowMap[key]->Fill(hit.energyLow());
+    h_energyHighMap[key]->Fill(hit.energyHigh());
     if( hit.energy()>m_noiseThreshold && !hit.isUnderSaturationForLowGain() && !hit.isUnderSaturationForHighGain() && hit.id().cellType()!=5 ){
       energyHighSum+=hit.energyHigh();
       energyLowSum+=hit.energyLow();

@@ -32,10 +32,13 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   std::string m_electronicMap;
   std::string m_detectorLayoutFile;
   std::string m_adcCalibrationsFile;
-  double m_timeSample3ADCCut;
+  int m_expectedMaxTimeSample;
+  double m_maxADCCut;
+  bool m_useCalibration;
   
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
 
+  float m_fittingTime;
 
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;
