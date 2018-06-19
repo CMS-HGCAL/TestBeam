@@ -27,7 +27,7 @@ options.register('edmOutputFolder',
                  './',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'Output folder where analysis output are stored')
+                 'Output folder where edm output are stored')
 
 options.register('rawhitOutputFolder',
                  './',
@@ -114,6 +114,6 @@ process.pulseshapeplotter = cms.EDAnalyzer("PulseShapePlotter",
 )
 
 
-process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
+process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.pulseshapeplotter )
 
 process.end = cms.EndPath(process.output)

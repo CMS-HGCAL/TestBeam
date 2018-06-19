@@ -43,7 +43,8 @@ private:
     HGCalElectronicsMap emap_;
   } essource_;
   double m_commonModeThreshold; //currently not use (need to implement the "average" option in CommonMode.cc)
-
+  int m_expectedMaxTimeSample;
+  
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
   TTree *m_tree;
   int m_evtID;
@@ -64,12 +65,15 @@ private:
   float m_lgErrorTmax;
   int m_lgStatus;
   int m_lgNCalls;
-
+  int m_totSlow;
+  int m_toaRise;
+  int m_toaFall;
 };
 
 PulseShapePlotter::PulseShapePlotter(const edm::ParameterSet& iConfig) :
   m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
-  m_commonModeThreshold(iConfig.getUntrackedParameter<double>("CommonModeThreshold",100))
+  m_commonModeThreshold(iConfig.getUntrackedParameter<double>("CommonModeThreshold",100)),
+  m_expectedMaxTimeSample(iConfig.getUntrackedParameter<int>("ExpectedMaxTimeSample",3))
 {
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
   m_evtID=0;
@@ -95,6 +99,9 @@ PulseShapePlotter::PulseShapePlotter(const edm::ParameterSet& iConfig) :
   m_tree->Branch("LowGainErrorTmax",&m_lgErrorTmax);
   m_tree->Branch("LowGainStatus",&m_lgStatus);
   m_tree->Branch("LowGainNCalls",&m_lgNCalls);
+  m_tree->Branch("TotSlow",&m_totSlow);
+  m_tree->Branch("ToaRise",&m_toaRise);
+  m_tree->Branch("ToaFall",&m_toaFall);
   std::cout << iConfig.dump() << std::endl;
 }
 
@@ -149,7 +156,7 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
   CommonMode cm(essource_.emap_); //default is common mode per chip using the median
   cm.Evaluate( hits );
   std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
-  PulseFitter fitter(0,150);
+  PulseFitter fitter(0);
   for( auto hit : *hits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
     if( essource_.emap_.existsEId(eid) ){
@@ -202,16 +209,19 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
 	hMapHG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->Fill(25*it,highGain);
 	hMapLG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->Fill(25*it,lowGain);
       }
-      float en2=hit.highGainADC(2)-subHG[2];
-      float en3=hit.highGainADC(3)-subHG[3];
-      float en4=hit.highGainADC(4)-subHG[4];
-      float en6=hit.highGainADC(6)-subHG[6];
-      if( en2<en3 && en3>en6 && en4>en6 && en3>20 ){
-	//std::cout << iboard << " " << iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA << " " << ichan << "\t" << en2 << " " << en3 << " " << en4 << " " << en6 << std::endl;
+      float max_minus=hit.highGainADC(m_expectedMaxTimeSample-1)-subHG[m_expectedMaxTimeSample-1];
+      float themax=hit.highGainADC(m_expectedMaxTimeSample)-subHG[m_expectedMaxTimeSample];
+      float max_plus=hit.highGainADC(m_expectedMaxTimeSample+1)-subHG[m_expectedMaxTimeSample+1];
+      float undershoot=hit.highGainADC(m_expectedMaxTimeSample+3)-subHG[m_expectedMaxTimeSample+3];
+      if( themax>500||(max_minus<themax && themax>undershoot && max_plus>undershoot && themax>20) ){
+	// std::cout << iboard << " " << iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA << " " << ichan << "\t" << max_minus << " " << themax << " " << max_plus << " " << undershoot << std::endl;
 	PulseFitterResult fithg;
 	fitter.run( time,hg,fithg,8. );
 	PulseFitterResult fitlg;
 	fitter.run( time,lg,fitlg,2. );
+	// std::cout << "\t" << fithg.amplitude << " " << fithg.tmax << " " << fithg.chi2 << std::endl;
+	// std::cout << "\t" << fitlg.amplitude << " " << fitlg.tmax << " " << fitlg.chi2 << std::endl;
+	// getchar();
 	m_channelID=ichan;
 	m_skirocID=iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
 	m_layerID=iboard;
@@ -229,6 +239,9 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
 	m_lgErrorTmax=fitlg.errortmax;
 	m_lgStatus=fitlg.status;
 	m_lgNCalls=fitlg.ncalls;
+	m_totSlow=hit.totSlow();
+	m_toaRise=hit.toaRise();
+	m_toaFall=hit.toaFall();
 	m_tree->Fill();
       }
     }

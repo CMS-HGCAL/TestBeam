@@ -128,8 +128,8 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   
   for( size_t iski=0; iski<skirocs->size(); iski++ ){
     HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
-    if( !skiroc.check() )
-      continue;
+    //if( !skiroc.check() )
+    //  continue;
     std::vector<int> rollpositions=skiroc.rollPositions();
     for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
       int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
