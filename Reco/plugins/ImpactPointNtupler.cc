@@ -126,8 +126,10 @@ ImpactPointNtupler::ImpactPointNtupler(const edm::ParameterSet& iConfig)
     for (int layer=1; layer<=m_nLayers; layer++) {
         tree_->Branch(("impactX_HGCal_layer_"+std::to_string(layer)).c_str(), &impactX[layer]);
         tree_->Branch(("impactY_HGCal_layer_"+std::to_string(layer)).c_str(), &impactY[layer]);
-        tree_->Branch(("impactX_associatedChi2_HGCal_layer_"+std::to_string(layer)).c_str(), &impactX_associatedChi2[layer]);
-        tree_->Branch(("impactY_associatedChi2_HGCal_layer_"+std::to_string(layer)).c_str(), &impactY_associatedChi2[layer]);
+        if (_extrapolationType == DATURA) {
+            tree_->Branch(("impactX_associatedChi2_HGCal_layer_"+std::to_string(layer)).c_str(), &impactX_associatedChi2[layer]);
+            tree_->Branch(("impactY_associatedChi2_HGCal_layer_"+std::to_string(layer)).c_str(), &impactY_associatedChi2[layer]);
+        }
     }  
 
 
@@ -135,6 +137,8 @@ ImpactPointNtupler::ImpactPointNtupler(const edm::ParameterSet& iConfig)
         tree_->Branch("kinkAngleX_DUT1", &kinkAngleX_DUT1);  
         tree_->Branch("kinkAngleY_DUT1", &kinkAngleY_DUT1);  
     } else if (_extrapolationType == DWC) {
+        tree_->Branch("trackChi2_X", &impactX_associatedChi2[0]);  
+        tree_->Branch("trackChi2_Y", &impactY_associatedChi2[0]);  
         tree_->Branch("dwcReferenceType", &dwcReferenceType);  
         tree_->Branch("m_x", &m_x);  
         tree_->Branch("m_y", &m_y);  
@@ -185,6 +189,10 @@ void ImpactPointNtupler::analyze(const edm::Event& event, const edm::EventSetup&
         if (! dwctrack->valid) {
             nTrackCounter=0;
             dwcReferenceType=0;
+            m_x = m_y = -999;
+            b_x = b_y = -999;
+            impactX_associatedChi2[0].push_back(-999);
+            impactY_associatedChi2[0].push_back(-999);            
         }
         else {
             nTrackCounter=1;
@@ -193,11 +201,11 @@ void ImpactPointNtupler::analyze(const edm::Event& event, const edm::EventSetup&
             m_y = dwctrack->m_y;
             b_x = dwctrack->b_x;
             b_y = dwctrack->b_y;
+            impactX_associatedChi2[0].push_back(dwctrack->chi2_x);
+            impactY_associatedChi2[0].push_back(dwctrack->chi2_y);
             for(int layer=1; layer<=m_nLayers; layer++) {        
                 impactX[layer].push_back(dwctrack->DWCExtrapolation_XY(layer).first);
                 impactY[layer].push_back(dwctrack->DWCExtrapolation_XY(layer).second);
-                impactX_associatedChi2[layer].push_back(dwctrack->chi2_x);
-                impactY_associatedChi2[layer].push_back(dwctrack->chi2_y);
             }   
 
         } 
