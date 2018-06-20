@@ -54,8 +54,8 @@ private:
     int m_sensorsize;
     bool m_eventPlotter;
     int m_evtID;
-    double m_mipThreshold;
-    double m_noiseThreshold;
+    double m_mipThreshold;  //ineffective, 20 June 2018
+    double m_noiseThreshold;    
 
     // ---------- member data ---------------------------
     edm::EDGetTokenT<RunData> RunDataToken; 
@@ -89,7 +89,7 @@ private:
     // rechits
     std::vector<unsigned int> rechit_detid_;
     std::vector<unsigned int> rechit_module_;
-    std::vector<unsigned int> rechit_skiroc_;
+    std::vector<unsigned int> rechit_chip_;
     std::vector<unsigned int> rechit_channel_;
     std::vector<unsigned int> rechit_layer_;
     std::vector<float> rechit_x_;
@@ -98,10 +98,12 @@ private:
     std::vector<int> rechit_iu_;
     std::vector<int> rechit_iv_;
     std::vector<float> rechit_energy_;
-    std::vector<float> rechit_energyHigh_;
-    std::vector<float> rechit_energyLow_;
-    std::vector<float> rechit_energyTot_;
+    std::vector<float> rechit_amplitudeHigh_;
+    std::vector<float> rechit_amplitudeLow_;
+    std::vector<float> rechit_Tot_;
     std::vector<float> rechit_time_;
+    std::vector<float> rechit_timeMaxHG_;
+    std::vector<float> rechit_timeMaxLG_;
     std::vector<float> rechit_toaRise_;
     std::vector<float> rechit_toaFall_;
 
@@ -116,7 +118,7 @@ void RecHitNtupler::clearVariables(){
     // rechits
     rechit_detid_.clear();
     rechit_module_.clear();
-    rechit_skiroc_.clear();
+    rechit_chip_.clear();
     rechit_channel_.clear();    
     rechit_layer_.clear();
     rechit_x_.clear();
@@ -125,10 +127,12 @@ void RecHitNtupler::clearVariables(){
     rechit_iu_.clear();
     rechit_iv_.clear();
     rechit_energy_.clear();
-    rechit_energyHigh_.clear();
-    rechit_energyLow_.clear();
-    rechit_energyTot_.clear();
+    rechit_amplitudeHigh_.clear();
+    rechit_amplitudeLow_.clear();
+    rechit_Tot_.clear();
     rechit_time_.clear();
+    rechit_timeMaxHG_.clear();
+    rechit_timeMaxLG_.clear();
     rechit_toaRise_.clear();
     rechit_toaFall_.clear();
 
@@ -200,7 +204,7 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
     tree_->Branch("rechit_detid",&rechit_detid_);
     tree_->Branch("rechit_module",&rechit_module_);
     tree_->Branch("rechit_layer",&rechit_layer_);
-    tree_->Branch("rechit_skiroc",&rechit_skiroc_);
+    tree_->Branch("rechit_chip",&rechit_chip_);
     tree_->Branch("rechit_channel",&rechit_channel_);
     tree_->Branch("rechit_x",&rechit_x_);
     tree_->Branch("rechit_y",&rechit_y_);
@@ -208,10 +212,12 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
     tree_->Branch("rechit_iu",&rechit_iu_);
     tree_->Branch("rechit_iv",&rechit_iv_);
     tree_->Branch("rechit_energy",&rechit_energy_);
-    tree_->Branch("rechit_energyHigh",&rechit_energyHigh_);
-    tree_->Branch("rechit_energyLow",&rechit_energyLow_);
-    tree_->Branch("rechit_energyTot",&rechit_energyTot_);
+    tree_->Branch("rechit_amplitudeHigh",&rechit_amplitudeHigh_);
+    tree_->Branch("rechit_amplitudeLow",&rechit_amplitudeLow_);
+    tree_->Branch("rechit_Tot",&rechit_Tot_);
     tree_->Branch("rechit_time",&rechit_time_);
+    tree_->Branch("rechit_timeMaxHG",&rechit_timeMaxHG_);
+    tree_->Branch("rechit_timeMaxLG",&rechit_timeMaxLG_);
     tree_->Branch("rechit_toaRise",&rechit_toaRise_);
     tree_->Branch("rechit_toaFall",&rechit_toaFall_);
 
@@ -247,67 +253,72 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
     PI_positionY = rd->doubleUserRecords.has("PIStagePosition_Y") ? rd->doubleUserRecords.get("PIStagePosition_Y") : -999;
 
 
-    NRechits_ = (*rhits).size();
+    NRechits_ = 0;
     for( auto hit : *rhits ){
+        if (hit.energy()<m_noiseThreshold) continue;
+        NRechits_++;
 
-	// get electronics channel
-	HGCalTBElectronicsId eid( essource_.emap_.detId2eid( hit.id().rawId() ) );
-    rechit_skiroc_.push_back(eid.iskiroc_rawhit());
-    rechit_channel_.push_back(eid.ichan());
+    	// get electronics channel
+    	HGCalTBElectronicsId eid( essource_.emap_.detId2eid( hit.id().rawId() ) );
+        rechit_chip_.push_back(eid.iskiroc_rawhit() % 4);
+        rechit_channel_.push_back(eid.ichan());
 
 
-	// get geometric channel
-	if ( !IsCellValid.iu_iv_valid(
-		 hit.id().layer(),
-		 hit.id().sensorIU(),
-		 hit.id().sensorIV(),
-		 hit.id().iu(),hit.id().iv(),m_sensorsize)
-	    ) continue;
+    	// get geometric channel
+    	if ( !IsCellValid.iu_iv_valid(
+    		 hit.id().layer(),
+    		 hit.id().sensorIU(),
+    		 hit.id().sensorIV(),
+    		 hit.id().iu(),hit.id().iv(),m_sensorsize)
+    	    ) continue;
 
-	CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(
-	    hit.id().layer(),
-	    hit.id().sensorIU(),
-	    hit.id().sensorIV(),
-	    hit.id().iu(),hit.id().iv(),m_sensorsize
-	    );
+    	CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(
+    	    hit.id().layer(),
+    	    hit.id().sensorIU(),
+    	    hit.id().sensorIV(),
+    	    hit.id().iu(),hit.id().iv(),m_sensorsize
+    	    );
 
-	// get layer and module ID
-	HGCalTBLayer layer = essource_.layout_.at(hit.id().layer()-1);
-	int moduleId = layer.at( hit.id().sensorIU(),hit.id().sensorIV() ).moduleID();
+    	// get layer and module ID
+    	HGCalTBLayer layer = essource_.layout_.at(hit.id().layer()-1);
+    	int moduleId = layer.at( hit.id().sensorIU(),hit.id().sensorIV() ).moduleID();
 
-	// Fill hit info and position
-	rechit_detid_.push_back(hit.id());
-	// rechit_chip_ = eid.iskiroc();
-	// rechit_channel_ = eid.ichannel();
-	rechit_module_.push_back(moduleId);
-	rechit_layer_.push_back(hit.id().layer());
+    	// Fill hit info and position
+    	rechit_detid_.push_back(hit.id());
+    	// rechit_chip_ = eid.iskiroc();
+    	// rechit_channel_ = eid.ichannel();
+    	rechit_module_.push_back(moduleId);
+    	rechit_layer_.push_back(hit.id().layer());
 
-	rechit_x_.push_back( CellCentreXY.first );        //conversion to mm
-    rechit_y_.push_back( CellCentreXY.second );        //conversion to mm
-	rechit_z_.push_back( layerPositions[hit.id().layer()] );
+    	rechit_x_.push_back( CellCentreXY.first );        //conversion to mm
+        rechit_y_.push_back( CellCentreXY.second );        //conversion to mm
+    	rechit_z_.push_back( layerPositions[hit.id().layer()] );
 
-	/*
-	// or instead?
-	rechit_x_.push_back( hit.cellCenter_x );
-	rechit_y_.push_back( hit.cellCenter_y );
-	*/
+    	/*
+    	// or instead?
+    	rechit_x_.push_back( hit.cellCenter_x );
+    	rechit_y_.push_back( hit.cellCenter_y );
+    	*/
 
-	// not available for now
-	//rechit_z_.push_back();
+    	// not available for now
+    	//rechit_z_.push_back();
 
-	rechit_iu_.push_back( hit.id().iu() );
-	rechit_iv_.push_back( hit.id().iv() );
+    	rechit_iu_.push_back( hit.id().iu() );
+    	rechit_iv_.push_back( hit.id().iv() );
 
-	// Hit energy and time
-	rechit_energy_.push_back( hit.energy() );
+    	// Hit energy and time
+    	rechit_energy_.push_back( hit.energy() );
 
-	rechit_energyHigh_.push_back( hit.energyHigh() );
-	rechit_energyLow_.push_back( hit.energyLow() );
-	rechit_energyTot_.push_back( hit.energyTot() );
+    	rechit_amplitudeHigh_.push_back( hit.energyHigh() );
+    	rechit_amplitudeLow_.push_back( hit.energyLow() );
+    	rechit_Tot_.push_back( hit.energyTot() );
 
-	rechit_time_.push_back( hit.time() );
-    rechit_toaRise_.push_back( hit.toaRise() );
-    rechit_toaFall_.push_back( hit.toaFall() );
+        rechit_time_.push_back( hit.time() );
+        rechit_timeMaxHG_.push_back( hit.timeMaxHG() );
+    	rechit_timeMaxLG_.push_back( hit.timeMaxLG() );
+        
+        rechit_toaRise_.push_back( hit.toaRise() );
+        rechit_toaFall_.push_back( hit.toaFall() );
 
     } // end rechit loop
 
