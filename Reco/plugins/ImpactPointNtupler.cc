@@ -71,6 +71,8 @@ private:
 
     //specific to DWC in H2
     int dwcReferenceType;
+    double m_x, m_y; //slopes of straight line tracks in x/y
+    double b_x, b_y; //offsets of straight line tracks in x/y
 
     int m_nLayers;
 };
@@ -134,6 +136,10 @@ ImpactPointNtupler::ImpactPointNtupler(const edm::ParameterSet& iConfig)
         tree_->Branch("kinkAngleY_DUT1", &kinkAngleY_DUT1);  
     } else if (_extrapolationType == DWC) {
         tree_->Branch("dwcReferenceType", &dwcReferenceType);  
+        tree_->Branch("m_x", &m_x);  
+        tree_->Branch("m_y", &m_y);  
+        tree_->Branch("b_x", &b_x);  
+        tree_->Branch("b_y", &b_y);  
     }
 }
 
@@ -183,6 +189,10 @@ void ImpactPointNtupler::analyze(const edm::Event& event, const edm::EventSetup&
         else {
             nTrackCounter=1;
             dwcReferenceType = dwctrack->referenceType;
+            m_x = dwctrack->m_x;
+            m_y = dwctrack->m_y;
+            b_x = dwctrack->b_x;
+            b_y = dwctrack->b_y;
             for(int layer=1; layer<=m_nLayers; layer++) {        
                 impactX[layer].push_back(dwctrack->DWCExtrapolation_XY(layer).first);
                 impactY[layer].push_back(dwctrack->DWCExtrapolation_XY(layer).second);
