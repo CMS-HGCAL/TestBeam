@@ -173,7 +173,7 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
         file >> fragment;
         if (readCounter==0) layer=atoi(fragment);
         if (readCounter==1) {
-            layerPositions[layer]=atof(fragment);
+            layerPositions[layer]=atof(fragment)/10;    //conversion to cm
             readCounter=-1;
         }
     }
@@ -282,8 +282,8 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
 	rechit_module_.push_back(moduleId);
 	rechit_layer_.push_back(hit.id().layer());
 
-	rechit_x_.push_back( CellCentreXY.first * 10 );        //conversion to mm
-    rechit_y_.push_back( CellCentreXY.second * 10 );        //conversion to mm
+	rechit_x_.push_back( CellCentreXY.first );        //conversion to mm
+    rechit_y_.push_back( CellCentreXY.second );        //conversion to mm
 	rechit_z_.push_back( layerPositions[hit.id().layer()] );
 
 	/*

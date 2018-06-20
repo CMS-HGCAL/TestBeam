@@ -108,8 +108,8 @@ void DWCTrackProducer::produce(edm::Event& event, const edm::EventSetup& setup) 
 		
 		Sensors[NgoodDWCs] = new SensorHitMap(NgoodDWCs);				//attention: This is specifically tailored for the 8-layer setup
 		Sensors[NgoodDWCs]->setLabZ(dwcs->at(i).z, 0.001);
-		Sensors[NgoodDWCs]->setCenterHitPosition(dwcs->at(i).x, dwcs->at(i).y, dwcs->at(i).res_x , dwcs->at(i).res_y);
-		Sensors[NgoodDWCs]->setResidualResolution(dwcs->at(i).res_x);	
+		Sensors[NgoodDWCs]->setCenterHitPosition(dwcs->at(i).x/10, dwcs->at(i).y/10, dwcs->at(i).res_x/10 , dwcs->at(i).res_y/10);		//conversion to cm
+		Sensors[NgoodDWCs]->setResidualResolution(dwcs->at(i).res_x/10);	
 	
 		DWCParticleTrack->addFitPoint(Sensors[NgoodDWCs]);
 

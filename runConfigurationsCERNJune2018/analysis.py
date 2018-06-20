@@ -123,8 +123,8 @@ process.correlationanalysis = cms.EDAnalyzer("DWCCorrelator",
                                 DetectorLayout=cms.untracked.string(hgcalLayout),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                 n_bins_DWCE = cms.int32(50),
-                                max_dim_x_DUT = cms.double(50),
-                                max_dim_y_DUT = cms.double(50),
+                                max_dim_x_DUT = cms.double(5),
+                                max_dim_y_DUT = cms.double(5),
                                 pathsToMIPWindowFiles = cms.vstring([""]),
                                 commonModeNoiseRejectionType = cms.int32(0)       #0: none, else 1-..., default: 0 
                               )
