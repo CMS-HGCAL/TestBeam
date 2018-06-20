@@ -73,8 +73,8 @@ double MIP2GeVMarch2018 = 84.9e-6;
 
 
 //to be configured
-double X0PosJune2018[28] = {1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11, 12., 13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28.};
-double Lambda0PosJune2018[28] = {1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11, 12., 13., 14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28.};
+double X0PosJune2018[28] = {0.932753, 1.90872, 2.81787, 3.79384, 4.70298, 5.67895, 6.5881, 7.56407, 8.47322, 8.47322, 9.44918, 10.3583, 11.3343, 12.2434, 13.2194, 14.1286, 15.2717, 16.1808, 17.1568, 18.0659, 19.209, 20.1182, 21.0941, 22.0033, 23.0628, 23.972, 24.9479, 25.8571};
+double Lambda0PosJune2018[28] = {0.0367242 ,0.0979071 ,0.129342 ,0.190524 ,0.221959 ,0.283142 ,0.314576 ,0.375759 ,0.407194 ,0.407194 ,0.468377 ,0.499811 ,0.560994 ,0.592429 ,0.653611 ,0.685046 ,0.761895 ,0.793329 ,0.854512 ,0.885947 ,0.962795 ,0.99423 ,1.05541 ,1.08685 ,1.15586 ,1.1873 ,1.24848 ,1.27991};
 double weightsJune2018[28] = {1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
 double MIP2GeVJune2018 = 84.9e-6;
 
@@ -266,7 +266,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		}
 	}
 
-
 	edm::Handle<HGCalTBRecHitCollection> Rechits;
 	event.getByToken(HGCalTBRecHitCollection_Token, Rechits);
 
@@ -274,6 +273,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	
 	/**********                                 ****************/
 	
+
 
 	//first some basic information
 	UR->add("eventID", rd->event);
@@ -327,6 +327,9 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 			break;	
   	case 17:
   	case 18:					//June 2018, H2
+  	case 19:					//June 2018, H2
+  	case 20:					//June 2018, H2
+  	case 21:					//June 2018, H2
 			N_layers_EE = 28;		
 			N_layers_FH = 0;		
 			N_layers_BH = 0;
@@ -338,7 +341,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		rechits_selected.push_back(Rechit);
 	}
 		
-
 	/**********                                 ****************/
 	//filling and sorting of the rechits:
 
@@ -377,7 +379,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 			if ((Rechit.id()).cellType() == 0) noisehits.push_back(Rechit);
 		}
 	}
-
 
 	/**********                                 ****************/
 	//mean positions
@@ -437,7 +438,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	Ixz /= M;
 	Iyz /= M;
 	std::vector<double> I_EV = getEigenValuesOfSymmetrix3x3(Ixx, Iyy, Izz, Ixy, Ixz, Iyz);
-
 	UR->add("Ixx", Ixx);
 	UR->add("Iyy", Iyy);
 	UR->add("Izz", Izz);
@@ -463,7 +463,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	UR->add("EAllLG_tot", energyAllLG_tot);
 	UR->add("EAllTOT_tot", energyAllTOT_tot);
 	UR->add("EAll_tot", energyAll_tot);
-
 
 	energyE1_tot = energyE7_tot = energyE19_tot = energyE37_tot = energyE61_tot = 0.;	
 	energyE1_weight = energyE7_weight = energyE19_weight = energyE37_weight = energyE61_weight = energyAll_weight = 0.;
@@ -556,7 +555,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 			X0 = X0PosMarch2018[it->first-1];
 			lambda0 = Lambda0PosMarch2018[it->first-1];
 		}
-		else if ((rd->configuration==17) || (rd->configuration==18)) {
+		else if ((rd->configuration>=17) && (rd->configuration<=21)) {
 			weight = weightsJune2018[it->first-1]*1e-3;
 			MIP2GeV = MIP2GeVJune2018;
 			X0 = X0PosJune2018[it->first-1];
@@ -585,7 +584,6 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		UR->add("RecoPosY_layer"+std::to_string(it->first),(it->second->getLabHitPosition().second));
 	
 	}
-
 	UR->add("layer_10Percent", layer_10Percent);
 	UR->add("layer_90Percent", layer_90Percent);
 
