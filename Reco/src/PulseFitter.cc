@@ -7,10 +7,14 @@
 #include <Math/Functor.h>
 
 const int numTS = 8;
-double _time[numTS],_energy[numTS];double _maxTime=225.; //seems to be mandatory since we need static function
-double _alpha=10.;
-double _trise=50.;    //mattermost discussion on 13 April 2018: trise=39 is favored
+double _time[numTS],_energy[numTS];
+double _maxTime=200.; //seems to be mandatory since we need static function
+double _trise=39.;    //mattermost discussion on 13 April 2018: trise=39 is favored
 double _noise=8.;
+
+double _ampl_norm = 1.88; // amplitude normalization factor for tau = 18, n = 3
+double _tau = 18.;
+int _n_ord = 3;
 
 //new shape motivated here: H. Spieler - Semiconductor Detector Systems, pg. 179 for a CR2-RC
 //implemented by A. Lobanov, suggested by F. Pitters, 06 April 2018
@@ -37,31 +41,14 @@ double pulseShape_chi2(const double *x)
   return sum;
 }
 
-/*
-/// Old pulse shape before 06 April 2018
-double pulseShape_fcn(double t, double tmax, double amp)
-{
-  if( t>tmax-_trise ) return amp*std::pow( (t-(tmax-_trise))/_trise,_alpha )*std::exp(-_alpha*(t-tmax)/_trise);
-  else return 0;
-}
-double pulseShape_chi2(const double *x)
-{
-  double sum = 0.0;
-  for(size_t i=0; i<numTS; i++){
-    if( _energy[i]<0 || _time[i]>_maxTime ) continue;
-    double zero = _energy[i]-pulseShape_fcn( _time[i],
-	       x[0],x[1] );
-    sum += zero * zero / _noise / _noise;
-  }
-  return sum;
-}
-*/
 
-PulseFitter::PulseFitter( int printLevel, double maxTime , double alpha , double trise ) : m_printLevel(printLevel)
+PulseFitter::PulseFitter( int printLevel, double maxTime , double trise , double ampl_norm , double tau , int n_ord ) : m_printLevel(printLevel)
 {
   _maxTime=maxTime;
-  _alpha=alpha;
   _trise=trise;
+  _ampl_norm = ampl_norm;
+  _tau = tau;
+  _n_ord = n_ord;  
 }
 
 void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, PulseFitterResult &fit, double noise)
@@ -74,9 +61,12 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
     std::cout << "ERROR : we should have less than 13 time sample in PulseFitter::run(std::vector<double> time, std::vector<double> energy, PulseFitterResult fit) -> return without fitting" << std::endl;
     return;
   }
-  for( uint16_t i=0; i<numTS; i++ ){
-    _time[i] = time[i];
-    _energy[i] = energy[i];
+
+  float emax0(0),tmax0(0);
+  for( uint16_t i=0; i<11; i++ ){
+      _time[i] = time[i];
+      _energy[i] = energy[i];
+      if(_energy[i]>emax0) {emax0=energy[i];tmax0=time[i];}
   }
 
   if( noise>0 )
@@ -85,7 +75,7 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   ROOT::Math::Minimizer* m = ROOT::Math::Factory::CreateMinimizer("Minuit", "Migrad");
   m->SetMaxFunctionCalls(m_fitterParameter.nMaxIterations);
   m->SetMaxIterations(m_fitterParameter.nMaxIterations);
-  m->SetTolerance(0.001);
+  m->SetTolerance(0.01);
   m->SetPrintLevel(m_printLevel);
 
   ROOT::Math::Functor f(&pulseShape_chi2, 2);
@@ -94,11 +84,11 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
 
   m->Clear(); // just a precaution
 
-  m->SetVariable(0, "tmax", m_fitterParameter.tmax0, 0.001);
+  m->SetVariable(0, "tmax", tmax0, 0.001);
   m->SetVariableLimits(0,
 	   m_fitterParameter.tmaxRangeDown,
 	   m_fitterParameter.tmaxRangeUp);
-  m->SetVariable(1, "amp", _energy[3], 0.001);
+  m->SetVariable(1, "amp", emax0, 0.001);
   m->SetVariableLimits(1,0,10000);
 
   m->Minimize();
@@ -118,19 +108,5 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
 
   delete m;
 
-}
+};
 
-
-double parabolicFit(std::vector<double> x, std::vector<double> y) {
-      if (x.size()!=3) return -1;
-
-      //energy reconstruction from parabolic function a*x^2 + b*x + c
-      double _a = ( (y[2]-y[1])/(x[2]-x[1]) - (y[1]-y[0])/(x[1]-x[0]) )/( (pow(x[2],2)-pow(x[1],2))/(x[2]-x[1]) - (pow(x[1],2)-pow(x[0],2))/(x[1]-x[0]) );
-      double _b = (y[2]-y[1]+_a*(pow(x[1],2)-pow(x[2],2)))/(x[2]-x[1]);
-      //double _c = y[0]-_a*pow(x[0],2)-_b*x[0];
-
-      double max_x = (_a < 0) ? -_b/(2*_a) : 0;   //require maximum <--> a<0, unit is ns
-      double f_x = (max_x<=150. && max_x>=25.) ? _a*pow(max_x,2)+_b*max_x : -1000.;
-
-      return f_x;
-}

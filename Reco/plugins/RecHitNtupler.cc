@@ -266,7 +266,7 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
 
     	// get electronics channel
     	HGCalTBElectronicsId eid( essource_.emap_.detId2eid( hit.id().rawId() ) );
-        rechit_chip_.push_back(eid.iskiroc_rawhit() % 4);
+        rechit_chip_.push_back(eid.iskiroc_rawhit() % HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA);
         rechit_channel_.push_back(eid.ichan());
 
 

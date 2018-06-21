@@ -9,7 +9,6 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 
 #include "DataFormats/CaloRecHit/interface/CaloRecHit.h"
-#include "HGCal/DataFormats/interface/HGCalTBCommonModeNoise.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHit.h"
 #include "HGCal/DataFormats/interface/HGCalTBRecHitCollections.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
@@ -19,22 +18,11 @@
 #include "HGCal/CondObjects/interface/HGCalTBADCConversionsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
-#include "HGCal/DataFormats/interface/HGCalTBRunData.h" //for the runData type definition
-#include "HGCal/DataFormats/interface/HGCalTBGlobalTimestamps.h" //for the runData type definition
 
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
-
-#include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 #include "TH2F.h"
-#include "TTree.h"
-#include <sstream>
-#include <fstream>
-#include <vector>
-#include <map>
 
-
-//#define DEBUG
 
 class HGCalTBRecHitProducer : public edm::EDProducer
 {
@@ -43,46 +31,29 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   virtual void produce(edm::Event&, const edm::EventSetup&);
  private:
   virtual void beginJob() override;
-  virtual void endJob() override;
-  std::string m_CommonModeNoiseCollectionName;
   std::string m_outputCollectionName;
   std::string m_electronicMap;
   std::string m_detectorLayoutFile;
   std::string m_adcCalibrationsFile;
-  double m_timeSample3ADCCut;
+  int m_expectedMaxTimeSample;
+  double m_maxADCCut;
+  bool m_useCalibration;
 
-  edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
-  edm::EDGetTokenT<RunData> RunDataToken; 
-  edm::EDGetTokenT<HGCalTBGlobalTimestamps> HGCalTBGlobalTimestampsToken; 
-
-  bool m_maskNoisyChannels;
-  std::string m_channelsToMask_filename;
-  int m_NHexaBoards;
-
-  bool investigatePulseShape;
-  
-  
   std::map<int, TH2F*> shapesLG;
   std::map<int, TH2F*> shapesHG;
+  
+  edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
 
-  std::vector<int> m_noisyChannels;
+  float m_fittingTime;
 
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;
-
-  
-  
-  #ifdef DEBUG
-    int eventCounter;
-  #endif
 
   struct {
     HGCalElectronicsMap emap_;
     HGCalTBDetectorLayout layout_;
     HGCalTBADCConversionsMap adccalibmap_;
   } essource_;
-  
-  void setupTimingNNs(std::string);
   
 };
 

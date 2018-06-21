@@ -12,18 +12,17 @@ options.register('dataFile',
                  VarParsing.VarParsing.varType.string,
                  'file containing raw input')
 
+options.register('outputFile',
+                 '',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Output file where pedestal histograms are stored')
+
 options.register('processedFile',
                  '/home/tquast/tbJune2018_H2/hgcalReco/rechits_000223.root',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
-
-options.register('outputFile',
-                 '/home/tquast/tbJune2018_H2/hgcalReco/rechitproduction_analysis_000223.root',
-                 VarParsing.VarParsing.multiplicity.singleton,
-                 VarParsing.VarParsing.varType.string,
-                 'Output file where pedestal histograms are stored')
-
 
 options.register('NHexaBoards',
                 28,
@@ -80,9 +79,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
 ####################################
 
 
-
 process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
-
 
 process.source = cms.Source("PoolSource",
                             fileNames=cms.untracked.vstring("file:%s"%options.dataFile)
@@ -92,19 +89,12 @@ process.source = cms.Source("PoolSource",
 process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         OutputCollectionName = cms.string('HGCALTBRECHITS'),
                                         InputCollection = cms.InputTag("rawhitproducer", "HGCALTBRAWHITS"),
-                                        RUNDATA = cms.InputTag("source", "RunData" ), 
-                                        GlobalTimestampCollectionName=cms.InputTag("HGCALGLOBALTIMESTAMPS"),
                                         ElectronicsMap = cms.untracked.string(electronicMap),
                                         DetectorLayout = cms.untracked.string(hgcalLayout),
                                         ADCCalibrations = cms.untracked.string(adcCalibrations),                                       
-                                        MaskNoisyChannels=cms.untracked.bool(bool(0)),
-                                        ChannelsToMaskFileName=cms.untracked.string(""),
-                                        NHexaBoards=cms.untracked.int32(options.NHexaBoards),
-                                        TimeSample3ADCCut = cms.untracked.double(15.),
-                                        investigatePulseShape = cms.untracked.bool(True),
-                                        timingNetworks = cms.untracked.string("")
+                                        ExpectedMaxTimeSample=cms.untracked.int32(3),
+                                        MaxADCCut=cms.untracked.double(20)
 )
-
 
 
 ####################################

@@ -24,9 +24,9 @@ PulseFitterResult() : tmax(0.), amplitude(0.),
 };
 
 struct fitterParameter{
-fitterParameter():tmax0(90),
-    tmaxRangeUp(120),
-    tmaxRangeDown(50),
+fitterParameter():tmax0(140),
+    tmaxRangeUp(200),
+    tmaxRangeDown(65),
     nMaxIterations(100)
   {;}
   double tmax0;
@@ -37,7 +37,7 @@ fitterParameter():tmax0(90),
 
 class PulseFitter{
  public:
-  PulseFitter(  int printLevel=1 , double maxTime=225. , double alpha=10 , double trise=50 );
+  PulseFitter( int printLevel, double maxTime=225 , double trise=39 , double ampl_norm=1.88 , double tau=18 , int n_ord=3 );
   ~PulseFitter(){;}
   void run(std::vector<double> &time, std::vector<double> &energy, PulseFitterResult &fit, double noise=-1);
   void setFitterParameter( fitterParameter params ){ m_fitterParameter=params; }
@@ -46,8 +46,5 @@ class PulseFitter{
   fitterParameter m_fitterParameter;
 
 };
-
-double parabolicFit(std::vector<double>, std::vector<double>);
-
 
 #endif
