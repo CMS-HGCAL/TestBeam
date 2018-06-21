@@ -280,6 +280,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       recHit.setTime(_time);
 
 
+      recHit.setEnergyTSLow(sampleLG[2]>sampleLG[3] ? sampleLG[2] : sampleLG[3]);
+      recHit.setEnergyTSHigh(sampleHG[2]>sampleHG[3] ? sampleHG[2] : sampleHG[3]);
       recHit.setToaRise(toaRise);
       recHit.setToaFall(toaFall);
 

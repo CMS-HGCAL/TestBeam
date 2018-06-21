@@ -40,6 +40,7 @@ public:
 	};
 	/////  bool isRecovered() const;
 	float _energyLow, _energyHigh, _energyTot;
+	float _energyTSLow, _energyTSHigh;
 	float cellCenter_x;
 	float cellCenter_y;
 	float _time;
@@ -58,6 +59,16 @@ public:
 		return _energyHigh;
 	};
 
+	float energyTSLow() const
+	{
+		return _energyTSLow;
+	};
+
+	float energyTSHigh() const
+	{
+		return _energyTSHigh;
+	};
+
 	float energyTot() const
 	{
 		return _energyTot;
@@ -72,6 +83,8 @@ public:
 	void setEnergyTOT(float _energy) {_energyTot=_energy;};
 	void setEnergyLow(float _energy) {_energyLow=_energy;};
 	void setEnergyHigh(float _energy) {_energyHigh=_energy;};
+	void setEnergyTSLow(float _energy) {_energyTSLow=_energy;};
+	void setEnergyTSHigh(float _energy) {_energyTSHigh=_energy;};
 
 	float time(){ 
 	  return _time; 

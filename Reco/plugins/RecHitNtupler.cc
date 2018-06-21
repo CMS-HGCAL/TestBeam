@@ -100,6 +100,8 @@ private:
     std::vector<float> rechit_energy_;
     std::vector<float> rechit_amplitudeHigh_;
     std::vector<float> rechit_amplitudeLow_;
+    std::vector<float> rechit_maxTS2TS3High_;
+    std::vector<float> rechit_maxTS2TS3Low_;    
     std::vector<float> rechit_Tot_;
     std::vector<float> rechit_time_;
     std::vector<float> rechit_timeMaxHG_;
@@ -129,6 +131,8 @@ void RecHitNtupler::clearVariables(){
     rechit_energy_.clear();
     rechit_amplitudeHigh_.clear();
     rechit_amplitudeLow_.clear();
+    rechit_maxTS2TS3High_.clear();
+    rechit_maxTS2TS3Low_.clear();     
     rechit_Tot_.clear();
     rechit_time_.clear();
     rechit_timeMaxHG_.clear();
@@ -212,6 +216,8 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
     tree_->Branch("rechit_iu",&rechit_iu_);
     tree_->Branch("rechit_iv",&rechit_iv_);
     tree_->Branch("rechit_energy",&rechit_energy_);
+    tree_->Branch("rechit_maxTS2TS3High",&rechit_maxTS2TS3High_);
+    tree_->Branch("rechit_maxTS2TS3Low",&rechit_maxTS2TS3Low_);
     tree_->Branch("rechit_amplitudeHigh",&rechit_amplitudeHigh_);
     tree_->Branch("rechit_amplitudeLow",&rechit_amplitudeLow_);
     tree_->Branch("rechit_Tot",&rechit_Tot_);
@@ -312,6 +318,9 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
     	rechit_amplitudeHigh_.push_back( hit.energyHigh() );
     	rechit_amplitudeLow_.push_back( hit.energyLow() );
     	rechit_Tot_.push_back( hit.energyTot() );
+
+        rechit_maxTS2TS3Low_.push_back(hit.energyTSLow());
+        rechit_maxTS2TS3High_.push_back(hit.energyTSHigh());
 
         rechit_time_.push_back( hit.time() );
         rechit_timeMaxHG_.push_back( hit.timeMaxHG() );
