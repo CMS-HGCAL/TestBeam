@@ -195,9 +195,9 @@ void EventDisplay::analyze(const edm::Event& event, const edm::EventSetup& setup
 
       if (!rechit.checkFlag(HGCalTBRecHit::kHighGainSaturated))
         h_ADCHG_board[ board ]->Fill(iux, iuy, rechit.energyHigh());
-      else if (!rechit.checkFlag(HGCalTBRecHit::kLowGainSaturated))
+      if (!rechit.checkFlag(HGCalTBRecHit::kLowGainSaturated))
         h_ADCLG_board[ board ]->Fill(iux, iuy, rechit.energyLow());
-      else if (!rechit.checkFlag(HGCalTBRecHit::kTotGainSaturated))
+      if (!rechit.checkFlag(HGCalTBRecHit::kTotGainSaturated))
         h_ADCTOT_board[ board ]->Fill(iux, iuy, rechit.energyTot());
     }
   }
