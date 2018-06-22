@@ -81,6 +81,7 @@ private:
 
     int pdgID;
     double beamEnergy;
+    double trueBeamEnergy;
 
     float PI_positionX;
     float PI_positionY;
@@ -198,6 +199,7 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
 
     tree_->Branch("pdgID", &pdgID);
     tree_->Branch("beamEnergy", &beamEnergy);
+    tree_->Branch("trueBeamEnergy", &trueBeamEnergy);
 
     tree_->Branch("PI_positionX", &PI_positionX);
     tree_->Branch("PI_positionY", &PI_positionY);
@@ -254,6 +256,9 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
 
     pdgID = rd->pdgID;
     beamEnergy = rd->energy;
+
+    if(rd->doubleUserRecords.has("trueEnergy")) trueBeamEnergy=rd->doubleUserRecords.get("trueEnergy");
+    else trueBeamEnergy=-1;
 
     PI_positionX = rd->doubleUserRecords.has("PIStagePosition_X") ? rd->doubleUserRecords.get("PIStagePosition_X") : -999;
     PI_positionY = rd->doubleUserRecords.has("PIStagePosition_Y") ? rd->doubleUserRecords.get("PIStagePosition_Y") : -999;
