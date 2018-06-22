@@ -1,10 +1,8 @@
 # CMS HGCal Testbeam Analysis Framework
 
 =============================================
-* This new branch is to be used for analysing data from 2017 test beam. 
-* The code runs with the one layer data, and will need (major) updates when we will have more layers. 
-* This readme assumes one layer data.
-* The README.md in other branches contain useful information about 2016 test beam analysis which might be still useful.
+* This new branch is to be used for analysing data from 2018 test beam. 
+
 
 ### Content
 
@@ -20,7 +18,7 @@
 
 
 ## Download the code
-* CMSSW Version 8.0.1
+* CMSSW Version (!) 9.3.0
 
 ```bash
 scram project ${RELEASE}
@@ -28,10 +26,13 @@ cd ${RELEASE}/src/
 cmsenv
 git cms-init
 git clone git@github.com:CMS-HGCAL/TestBeam.git HGCal/
-git checkout CERN_TestBeam_2017
+git checkout CERN_TestBeam_2018_Ipbus_ntuples
 git pull
 scram b -j16
 ```
+
+OUTDATED below here!!!
+
 
 ## Location of data files
 
