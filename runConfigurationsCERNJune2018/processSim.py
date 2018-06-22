@@ -20,21 +20,20 @@ options.register('processedFile',
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
 
-options.register('outputFile',
+options.register('ntupleFile',
                  '',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output file where ntuples are stored')
 
-options.register('physicsListUsed',
-                "",
+options.register('electronicMap',
+                 'map_CERN_Hexaboard_June_28Sensors_28EELayers_V0.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
-                 'Specify the used physics list to be passed forward to the run data object.'
-                )
+                 'path to the electronic map')
 
 options.register('beamEnergy',
-                250,
+                50,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.float,
                  'Beam energy.'
@@ -47,46 +46,99 @@ options.register('beamParticlePDGID',
                  'Beam particles PDG ID.'
                 )
 
+options.register('setupConfiguration',
+                1,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'setupConfiguration.'
+                )
+
+options.register('layerPositionFile',
+                 '/afs/cern.ch/user/t/tquast/CMSSW_9_3_0/src/HGCal/CondObjects/data/layer_distances_CERN_Hexaboard_June2018_28Layers.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'File indicating the layer positions in mm.')
+
+options.register('hgcalLayout',
+                 'layerGeom_june2018_h2_28layers.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Name of the hgcal layout file in HGCal/CondObjects/data/')
+
+
+
+options.register('physicsListUsed',
+                "FTFP_BERT_EMM",
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Specify the used physics list to be passed forward to the run data object.'
+                )
+
+options.register('areaSpecification',
+                "H2",
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Area which was used (for DWC simulation).'
+                )
+
+options.register('NHexaBoards',
+                28,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Number of hexaboards for analysis.'
+                )
+
+options.register('noisyChannelsFile',
+                 '/home/tquast/tb2017/pedestals/noisyChannels_1190.txt',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Channels which are noisy and excluded from the reconstruction')
+
+options.register('MaskNoisyChannels',
+                0,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Ignore noisy channels in the reconstruction.'
+                )
+
 options.register('reportEvery',
-                1000,
+                10000,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Path to the file from which the DWCs are read.'
                 )
 
-#hard coded configuration:
-VariablesToPlot = ["eventID","run","pdgID","beamEnergy","configuration","runType","xmean","ymean","zmean","NRechits","NMIPHits","NNoisehits","25PercentQuantileRechitSpectrum","50PercentQuantileRechitSpectrum","75PercentQuantileRechitSpectrum","E1_tot","E7_tot","E19_tot","E37_tot","E61_tot","EAll_tot","EAllHG_tot","EAllLG_tot","EAllTOT_tot","depthX0"]
+options.register('stopAtEvent',
+                10000,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Stop processing after this event.'
+                )
 
-variables = []
-for layer in range(1, 29):
-    variables.append("NAll_layer%s"%layer)
-    variables.append("EAll_layer%s"%layer)
-    variables.append("E1PerE7_layer%s"%layer)
-    variables.append("E7PerE19_layer%s"%layer)
-    variables.append("E19PerE37_layer%s"%layer)
-    variables.append("E37PerE61_layer%s"%layer)
+#options.register('outputFile',
+#                 '/home/tquast/tb2017/analysis/energyReco_simTest.root',
+#                 VarParsing.VarParsing.multiplicity.singleton,
+#                 VarParsing.VarParsing.varType.string,
+#                 'Output folder where analysis output are stored')
 
 
-electronicMap = "HGCal/CondObjects/data/map_CERN_Hexaboard_June2018_28Layers_dummy.txt"
-setupConfiguration = 13
-layerPositionFile = "/afs/cern.ch/user/t/tquast/CMSSW_9_3_0/src/HGCal/CondObjects/data/layer_distances_CERN_Hexaboard_June2018_28Layers_dummy.txt"  #attention: this path is hard coded and must be absolute
-hgcalLayout = "HGCal/CondObjects/data/layerGeom_june2018_h2_28layers_dummy.txt"
-areaSpecification = "H2"
-NHexaBoards = 28
-MaskNoisyChannels = False
 
 options.parseArguments()
 print options
 
 
+
+electronicMap="HGCal/CondObjects/data/%s" % options.electronicMap
+hgcalLayout="HGCal/CondObjects/data/%s" % options.hgcalLayout
+
 ################################
 process = cms.Process("gensim")
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(-1)
+    input = cms.untracked.int32(options.stopAtEvent)
 )
 
 ################################
-process.TFileService = cms.Service("TFileService", fileName = cms.string(options.outputFile))
+process.TFileService = cms.Service("TFileService", fileName = cms.string(options.ntupleFile))
 ####################################
 # Reduces the frequency of event count couts
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
@@ -102,37 +154,46 @@ process.output = cms.OutputModule("PoolOutputModule",
                                                                          'keep *_*_FullRunData_*')
 )
 
+
 process.source = cms.Source("HGCalTBGenSimSource",
                         fileNames=cms.untracked.vstring(["file:%s" % file for file in options.inputFiles]),
                         RechitOutputCollectionName = cms.string('HGCALTBRECHITS'), 
-                        produceDATURATracksInsteadOfDWCs = cms.untracked.bool(True),
-                        DWCOutputCollectionName = cms.string(''), 
-                        DATURAOutputCollectionName = cms.string('HGCalTBDATURATracks'), 
+                        produceDATURATracksInsteadOfDWCs = cms.untracked.bool(False),
+                        DWCOutputCollectionName = cms.string('DelayWireChambers'), 
+                        DATURAOutputCollectionName = cms.string(''), 
                         RunDataOutputCollectionName = cms.string('FullRunData'), 
                         e_mapFile_CERN = cms.untracked.string(electronicMap),
-                        layerPositionFile=cms.string(layerPositionFile),
-                        MaskNoisyChannels=cms.untracked.bool(MaskNoisyChannels),
-                        ChannelsToMaskFileName=cms.untracked.string(""),
+                        layerPositionFile=cms.string(options.layerPositionFile),
+                        MaskNoisyChannels=cms.untracked.bool(bool(options.MaskNoisyChannels)),
+                        ChannelsToMaskFileName=cms.untracked.string(options.noisyChannelsFile),
                         beamEnergy=cms.untracked.double(options.beamEnergy),
                         beamParticlePDGID=cms.untracked.int32(options.beamParticlePDGID),                        
                         energyNoise=cms.untracked.double(0.0),  #indicated in MIPs
-                        setupConfiguration=cms.untracked.uint32(setupConfiguration),
+                        setupConfiguration=cms.untracked.uint32(options.setupConfiguration),
                         energyNoiseResolution=cms.untracked.double(1./6.), #indicated in MIPs
-                        GeVToMip=cms.untracked.double(1./(84.9*pow(10.,-6))),       #assume one MIP = 84.9keV
-                        areaSpecification = cms.untracked.string(areaSpecification),
+                        GeVToMip=cms.untracked.double(1./(84.9*pow(10.,-6))),   #apply an overall scaling of the recorded intensities in the cells
+                        areaSpecification = cms.untracked.string(options.areaSpecification),
                         physicsListUsed = cms.untracked.string(options.physicsListUsed),
-                        wc_resolutions = cms.untracked.vdouble(4*[0.2])        #set to the expected resolutions according to the manual
+                        datura_resolutions = cms.untracked.vdouble(6*[0.0184])        #set to the expected resolutions according to the manual
                         )
 
 
+process.dwctrackproducer = cms.EDProducer("DWCTrackProducer",
+                                        MWCHAMBERS = cms.InputTag("source","DelayWireChambers" ), 
+                                        OutputCollectionName=cms.string("HGCalTBDWCTracks"),
+                                        layerPositionFile=cms.string(options.layerPositionFile)
+)
+
 rundata_tag = cms.InputTag("source", "FullRunData" )
 rechit_tag = cms.InputTag("source","HGCALTBRECHITS" )
+dwc_tag = cms.InputTag("source","DelayWireChambers" )
+dwc_track_tag = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks")
 
 process.rechitntupler = cms.EDAnalyzer("RecHitNtupler",
                                        InputCollection=rechit_tag,
                                        RUNDATA = rundata_tag,
                                        ElectronicMap=cms.untracked.string(electronicMap),
-                                       layerPositionFile = cms.untracked.string(layerPositionFile),
+                                       layerPositionFile = cms.untracked.string(options.layerPositionFile),
                                        DetectorLayout=cms.untracked.string(hgcalLayout),
                                        SensorSize=cms.untracked.int32(128),
                                        EventPlotter=cms.untracked.bool(True),
@@ -140,30 +201,18 @@ process.rechitntupler = cms.EDAnalyzer("RecHitNtupler",
                                        NoiseThreshold=cms.untracked.double(0.5)
 )
 
-process.variablecomputation = cms.EDProducer("VariableComputation",
-                                RUNDATA = rundata_tag,  
-                                MWCHAMBERS = cms.InputTag("","" ), 
-                                DWCTRACKS = cms.InputTag("","" ),                                 
-                                HGCALTBRECHITS = rechit_tag,
-                                UserRecordCollectionName=cms.untracked.string("VariableUserRecords"),
-                                ElectronicMap = cms.untracked.string(electronicMap),
-                                DetectorLayout=cms.untracked.string(hgcalLayout),
-                                layerPositionFile=cms.string(layerPositionFile),
-                                NHexaBoards=cms.untracked.int32(NHexaBoards),
-                                NLayers=cms.untracked.int32(NHexaBoards),
-                                NColorsInputImage = cms.untracked.int32(-1),
-                                CellEnergyCut = cms.untracked.double(0.5)
-)
-
-process.ntupelizer = cms.EDAnalyzer("NTupelizer",
-                                USERRECORDS = cms.InputTag("variablecomputation","VariableUserRecords" ),
-                                UserRecordKeys = cms.vstring(VariablesToPlot)
+process.trackimpactntupler = cms.EDAnalyzer("ImpactPointNtupler",
+                                       extrapolationDevice=cms.untracked.string("DWC"),
+                                       DWCTrackToken = dwc_track_tag,
+                                       DATURATelescopeData = cms.InputTag("","" ),
+                                       RUNDATA = rundata_tag,
+                                       nLayers=cms.untracked.int32(options.NHexaBoards),
 )
 
 
 ####################################
 
-process.p = cms.Path( process.rechitntupler * process.variablecomputation * process.ntupelizer)
+process.p = cms.Path( process.dwctrackproducer * process.rechitntupler * process.trackimpactntupler )
 
 
 process.end = cms.EndPath(process.output)
