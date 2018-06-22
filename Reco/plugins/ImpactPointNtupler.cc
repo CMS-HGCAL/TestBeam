@@ -83,7 +83,7 @@ void ImpactPointNtupler::clearVariables(){
     ev_event_ = 0;
 
 
-    for (int layer=1; layer<=m_nLayers; layer++) {
+    for (int layer=0; layer<=m_nLayers; layer++) {
         impactX[layer].clear();
         impactY[layer].clear();
         impactX_associatedChi2[layer].clear();
@@ -192,7 +192,11 @@ void ImpactPointNtupler::analyze(const edm::Event& event, const edm::EventSetup&
             m_x = m_y = -999;
             b_x = b_y = -999;
             impactX_associatedChi2[0].push_back(-999);
-            impactY_associatedChi2[0].push_back(-999);            
+            impactY_associatedChi2[0].push_back(-999);
+            for(int layer=1; layer<=m_nLayers; layer++) {        
+                impactX[layer].push_back(-999);
+                impactY[layer].push_back(-999);
+            }               
         }
         else {
             nTrackCounter=1;
