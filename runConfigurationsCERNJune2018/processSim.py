@@ -147,11 +147,7 @@ process.MessageLogger.cerr.FwkReport.reportEvery = options.reportEvery
 
 
 process.output = cms.OutputModule("PoolOutputModule",
-                                  fileName = cms.untracked.string(options.processedFile),                                  
-                                  outputCommands = cms.untracked.vstring('drop *',
-                                                                         'keep *_*_HGCALTBRECHITS_*',
-                                                                         'keep *_*_HGCalTBDATURATracks_*',
-                                                                         'keep *_*_FullRunData_*')
+                                  fileName = cms.untracked.string(options.processedFile)
 )
 
 
@@ -177,17 +173,17 @@ process.source = cms.Source("HGCalTBGenSimSource",
                         datura_resolutions = cms.untracked.vdouble(6*[0.0184])        #set to the expected resolutions according to the manual
                         )
 
-
-process.dwctrackproducer = cms.EDProducer("DWCTrackProducer",
-                                        MWCHAMBERS = cms.InputTag("source","DelayWireChambers" ), 
-                                        OutputCollectionName=cms.string("HGCalTBDWCTracks"),
-                                        layerPositionFile=cms.string(options.layerPositionFile)
-)
-
 rundata_tag = cms.InputTag("source", "FullRunData" )
 rechit_tag = cms.InputTag("source","HGCALTBRECHITS" )
 dwc_tag = cms.InputTag("source","DelayWireChambers" )
 dwc_track_tag = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks")
+
+
+process.dwctrackproducer = cms.EDProducer("DWCTrackProducer",
+                                        MWCHAMBERS = dwc_tag, 
+                                        OutputCollectionName=cms.string("HGCalTBDWCTracks"),
+                                        layerPositionFile=cms.string(options.layerPositionFile)
+)
 
 process.rechitntupler = cms.EDAnalyzer("RecHitNtupler",
                                        InputCollection=rechit_tag,
