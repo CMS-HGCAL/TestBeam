@@ -472,8 +472,14 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 	showerStartDepth = -1.;
 	layer_10Percent = layer_90Percent = -1;
 
-	double energySum_layers = 0;
+	double energySum_layers = 0, energySumAll_layers = 0;
 	std::vector<std::pair<double, double> > relevantHitPositions;
+	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
+		it->second->calculateCenterPosition(CONSIDERALL, LINEARWEIGHTING);
+		energySumAll_layers+= it->second->getTotalWeight();
+	}
+
+	
 	for (std::map<int, SensorHitMap*>::iterator it=Sensors.begin(); it!=Sensors.end(); it++) {
 		//most intensive cell
 		it->second->calculateCenterPosition(CONSIDERALL, MOSTINTENSIVE);
@@ -520,10 +526,10 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 
 		//sum of all
 		it->second->calculateCenterPosition(CONSIDERALL, LINEARWEIGHTING);
-		energySum_layers += it->second->getTotalWeight();
 		energyAll_layer[it->first-1] = it->second->getTotalWeight();
-		if ((layer_10Percent==-1) && (energySum_layers>0.1 * energyAll_tot)) layer_10Percent = ((it->first) * energyAll_layer[it->first-1] + (it->first-1) * energyAll_layer[it->first-2]) / (energyAll_layer[it->first-1] + energyAll_layer[it->first-2]);
-		if ((layer_90Percent)&&(energySum_layers>0.9 * energyAll_tot)) layer_90Percent = ((it->first) * energyAll_layer[it->first-1] + (it->first-1) * energyAll_layer[it->first-2]) / (energyAll_layer[it->first-1] + energyAll_layer[it->first-2]);
+		energySum_layers += it->second->getTotalWeight();
+		if ((layer_10Percent==-1) && (energySum_layers>0.1 * energySumAll_layers)) layer_10Percent = ((it->first) * energyAll_layer[it->first-1] + (it->first-1) * energyAll_layer[it->first-2]) / (energyAll_layer[it->first-1] + energyAll_layer[it->first-2]);
+		if ((layer_90Percent==-1) && (energySum_layers>0.9 * energySumAll_layers)) layer_90Percent = ((it->first) * energyAll_layer[it->first-1] + (it->first-1) * energyAll_layer[it->first-2]) / (energyAll_layer[it->first-1] + energyAll_layer[it->first-2]);
 
 		relevantHitPositions = it->second->getHitPositionsForPositioning();
 		NAll_layer[it->first-1] = (int)relevantHitPositions.size();
@@ -565,7 +571,7 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		depthX0 += X0*energyAll_layer[it->first-1];
 		depthLambda0 += lambda0*energyAll_layer[it->first-1];
 
-		if ((showerStartDepth==-1.)&&(energyE19_layer[it->first-1] > 10.)&&(NE19_layer[it->first-1]>1)) {
+		if ((showerStartDepth==-1.)&&(energyE19_layer[it->first-1] > 20.)&&(NE19_layer[it->first-1]>1)) {
 			showerStartDepth = lambda0;
 		}
 
