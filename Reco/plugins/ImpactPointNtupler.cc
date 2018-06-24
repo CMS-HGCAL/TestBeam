@@ -60,10 +60,15 @@ private:
 
     int nTrackCounter;
     // impact points
-    std::map<int, std::vector<float> >impactX;
-    std::map<int, std::vector<float> >impactY;
-    std::map<int, std::vector<float> >impactX_associatedChi2;
-    std::map<int, std::vector<float> >impactY_associatedChi2;
+    std::map<int, std::vector<float> >impactsX;
+    std::map<int, std::vector<float> >impactsY;
+    std::map<int, std::vector<float> >impactsX_associatedChi2;
+    std::map<int, std::vector<float> >impactsY_associatedChi2;
+
+    std::map<int, float>impactX;
+    std::map<int, float>impactY;
+    std::map<int, float>impactX_associatedChi2;
+    std::map<int, float>impactY_associatedChi2;
     
     //specific to 6 plane DATURA
     std::vector<float> kinkAngleX_DUT1;
@@ -84,10 +89,10 @@ void ImpactPointNtupler::clearVariables(){
 
 
     for (int layer=0; layer<=m_nLayers; layer++) {
-        impactX[layer].clear();
-        impactY[layer].clear();
-        impactX_associatedChi2[layer].clear();
-        impactY_associatedChi2[layer].clear();        
+        impactsX[layer].clear();
+        impactsY[layer].clear();
+        impactsX_associatedChi2[layer].clear();
+        impactsY_associatedChi2[layer].clear();                
     }
     kinkAngleX_DUT1.clear();
     kinkAngleY_DUT1.clear();    
@@ -107,10 +112,15 @@ ImpactPointNtupler::ImpactPointNtupler(const edm::ParameterSet& iConfig)
 
 
     for (int layer=1; layer<=m_nLayers; layer++) {
-        impactX[layer] = std::vector<float>(0);
-        impactY[layer] = std::vector<float>(0);
-        impactX_associatedChi2[layer] = std::vector<float>(0);
-        impactY_associatedChi2[layer] = std::vector<float>(0);
+        impactsX[layer] = std::vector<float>(0);
+        impactsY[layer] = std::vector<float>(0);
+        impactsX_associatedChi2[layer] = std::vector<float>(0);
+        impactsY_associatedChi2[layer] = std::vector<float>(0);
+        
+        impactX[layer] = -999;
+        impactY[layer] = -999;
+        impactX_associatedChi2[layer] = -999;
+        impactY_associatedChi2[layer] = -999;
     }
 
     usesResource("TFileService");
@@ -124,11 +134,14 @@ ImpactPointNtupler::ImpactPointNtupler(const edm::ParameterSet& iConfig)
     tree_->Branch("run", &ev_run_);
     tree_->Branch("ntracks", &nTrackCounter);
     for (int layer=1; layer<=m_nLayers; layer++) {
-        tree_->Branch(("impactX_HGCal_layer_"+std::to_string(layer)).c_str(), &impactX[layer]);
-        tree_->Branch(("impactY_HGCal_layer_"+std::to_string(layer)).c_str(), &impactY[layer]);
         if (_extrapolationType == DATURA) {
-            tree_->Branch(("impactX_associatedChi2_HGCal_layer_"+std::to_string(layer)).c_str(), &impactX_associatedChi2[layer]);
-            tree_->Branch(("impactY_associatedChi2_HGCal_layer_"+std::to_string(layer)).c_str(), &impactY_associatedChi2[layer]);
+            tree_->Branch(("impactX_HGCal_layer_"+std::to_string(layer)).c_str(), &impactsX[layer]);
+            tree_->Branch(("impactY_HGCal_layer_"+std::to_string(layer)).c_str(), &impactsY[layer]);
+            tree_->Branch(("impactX_associatedChi2_HGCal_layer_"+std::to_string(layer)).c_str(), &impactsX_associatedChi2[layer]);
+            tree_->Branch(("impactY_associatedChi2_HGCal_layer_"+std::to_string(layer)).c_str(), &impactsY_associatedChi2[layer]);
+        } else if (_extrapolationType == DWC) {
+            tree_->Branch(("impactX_HGCal_layer_"+std::to_string(layer)).c_str(), &impactX[layer]);
+            tree_->Branch(("impactY_HGCal_layer_"+std::to_string(layer)).c_str(), &impactY[layer]);
         }
     }  
 
@@ -174,10 +187,10 @@ void ImpactPointNtupler::analyze(const edm::Event& event, const edm::EventSetup&
         for(auto daturatrack : *daturatracks) {
             nTrackCounter++;
             for(int layer=1; layer<=m_nLayers; layer++) {        
-                impactX[layer].push_back(daturatrack.Extrapolation_XY(layer).first);
-                impactY[layer].push_back(daturatrack.Extrapolation_XY(layer).second);
-                impactX_associatedChi2[layer].push_back(daturatrack.Extrapolation_XY_Chi2(layer).first);
-                impactY_associatedChi2[layer].push_back(daturatrack.Extrapolation_XY_Chi2(layer).second);
+                impactsX[layer].push_back(daturatrack.Extrapolation_XY(layer).first);
+                impactsY[layer].push_back(daturatrack.Extrapolation_XY(layer).second);
+                impactsX_associatedChi2[layer].push_back(daturatrack.Extrapolation_XY_Chi2(layer).first);
+                impactsY_associatedChi2[layer].push_back(daturatrack.Extrapolation_XY_Chi2(layer).second);
             } 
             if(daturatrack.floatUserRecords.has("kinkAngleX_DUT1")) kinkAngleX_DUT1.push_back(daturatrack.floatUserRecords.get("kinkAngleX_DUT1"));
             if(daturatrack.floatUserRecords.has("kinkAngleY_DUT1")) kinkAngleY_DUT1.push_back(daturatrack.floatUserRecords.get("kinkAngleY_DUT1"));
@@ -191,11 +204,11 @@ void ImpactPointNtupler::analyze(const edm::Event& event, const edm::EventSetup&
             dwcReferenceType=0;
             m_x = m_y = -999;
             b_x = b_y = -999;
-            impactX_associatedChi2[0].push_back(-999);
-            impactY_associatedChi2[0].push_back(-999);
+            impactX_associatedChi2[0] = -999;
+            impactY_associatedChi2[0] = -999;
             for(int layer=1; layer<=m_nLayers; layer++) {        
-                impactX[layer].push_back(-999);
-                impactY[layer].push_back(-999);
+                impactX[layer] = -999;
+                impactY[layer] = -999;
             }               
         }
         else {
@@ -205,11 +218,11 @@ void ImpactPointNtupler::analyze(const edm::Event& event, const edm::EventSetup&
             m_y = dwctrack->m_y;
             b_x = dwctrack->b_x;
             b_y = dwctrack->b_y;
-            impactX_associatedChi2[0].push_back(dwctrack->chi2_x);
-            impactY_associatedChi2[0].push_back(dwctrack->chi2_y);
+            impactX_associatedChi2[0] = dwctrack->chi2_x;
+            impactY_associatedChi2[0] = dwctrack->chi2_y;
             for(int layer=1; layer<=m_nLayers; layer++) {        
-                impactX[layer].push_back(dwctrack->DWCExtrapolation_XY(layer).first);
-                impactY[layer].push_back(dwctrack->DWCExtrapolation_XY(layer).second);
+                impactX[layer] = (dwctrack->DWCExtrapolation_XY(layer).first);
+                impactY[layer] = (dwctrack->DWCExtrapolation_XY(layer).second);
             }   
 
         } 
