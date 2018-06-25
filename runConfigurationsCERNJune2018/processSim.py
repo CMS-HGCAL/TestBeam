@@ -170,7 +170,7 @@ process.source = cms.Source("HGCalTBGenSimSource",
                         GeVToMip=cms.untracked.double(1./(84.9*pow(10.,-6))),   #apply an overall scaling of the recorded intensities in the cells
                         areaSpecification = cms.untracked.string(options.areaSpecification),
                         physicsListUsed = cms.untracked.string(options.physicsListUsed),
-                        datura_resolutions = cms.untracked.vdouble(6*[0.0184])        #set to the expected resolutions according to the manual
+                        wc_resolutions = cms.untracked.vdouble(4*[0.2])        #set to the expected resolutions according to the manual, 200 microns = 0.2mm
                         )
 
 rundata_tag = cms.InputTag("source", "FullRunData" )
