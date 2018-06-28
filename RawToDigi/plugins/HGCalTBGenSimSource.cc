@@ -451,13 +451,13 @@ void HGCalTBGenSimSource::makeRecHit(int layer, int cellno, double energy, std::
 		//additional noise to the energy in MIPs
 		energy += randgen->Gaus(energyNoise, energyNoiseResolution);
 
-		//arbitrary gain assumptions, 29th May 2018
-		//1 MIP - 50 HG ADC
-		//1 LG ADC - 10 HG ADC
-		//1 TOT ADC - 3 LG ADC
-	 	recHit._energyHigh = energy * 50;
-	 	recHit._energyLow = recHit._energyHigh/10.;
-	 	recHit._energyTot = recHit._energyLow/3.;
+		//gain assumptions from average estimates, 28th June 2018
+		//1 MIP - 40 HG ADC
+		//1 LG ADC - 9 HG ADC
+		//1 TOT ADC - 1./0.194 LG ADC + 192 offset
+	 	recHit._energyHigh = energy * 40;
+	 	recHit._energyLow = recHit._energyHigh/9.;
+	 	recHit._energyTot = recHit._energyLow*0.194+192;
 	 	
 	 	recHit.setEnergy(energy);
 	    recHit.setFlag(HGCalTBRecHit::kGood);

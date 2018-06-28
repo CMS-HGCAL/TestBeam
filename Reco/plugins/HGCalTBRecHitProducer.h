@@ -16,6 +16,7 @@
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/CondObjects/interface/HGCalTBDetectorLayout.h"
 #include "HGCal/CondObjects/interface/HGCalTBADCConversionsMap.h"
+#include "HGCal/CondObjects/interface/HGCalTBADCConversionsMap_perChannel.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 
@@ -35,6 +36,7 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   std::string m_electronicMap;
   std::string m_detectorLayoutFile;
   std::string m_adcCalibrationsFile;
+  bool m_calibrationPerChannel;
   int m_expectedMaxTimeSample;
   double m_maxADCCut;
   bool m_useCalibration;
@@ -53,6 +55,7 @@ class HGCalTBRecHitProducer : public edm::EDProducer
     HGCalElectronicsMap emap_;
     HGCalTBDetectorLayout layout_;
     HGCalTBADCConversionsMap adccalibmap_;
+    HGCalTBADCConversionsMap_perChannel adccalibmap_perchannel_;
   } essource_;
   
 };

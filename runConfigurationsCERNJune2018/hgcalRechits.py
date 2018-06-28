@@ -31,7 +31,6 @@ options.register('NHexaBoards',
                  'Number of hexaboards for analysis.'
                 )
 
-
 options.register('electronicMap',
                  "map_CERN_Hexaboard_June_28Sensors_28EELayers_V0.txt",
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -92,6 +91,7 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         ElectronicsMap = cms.untracked.string(electronicMap),
                                         DetectorLayout = cms.untracked.string(hgcalLayout),
                                         ADCCalibrations = cms.untracked.string(adcCalibrations),                                       
+                                        calibrationPerChannel=cms.untracked.bool(True),
                                         ExpectedMaxTimeSample=cms.untracked.int32(3),
                                         MaxADCCut=cms.untracked.double(20)
 )
