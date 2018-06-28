@@ -24,7 +24,8 @@ public:
 		kHighGainSaturated,
 		kLowGainSaturated,
 		kTotGainSaturated,
-		kThirdSample
+		kThirdSample,
+		kFullyCalibrated
 	};
 
 
