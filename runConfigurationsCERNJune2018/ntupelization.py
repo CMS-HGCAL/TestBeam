@@ -114,7 +114,7 @@ process.eventdisplay = cms.EDAnalyzer("EventDisplay",
                                 HGCALTBRECHITS = rechit_tag,
                                 electronicsMap = cms.untracked.string(electronicMap),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
-                                eventsToPlot=cms.vint32(range(1, 11))
+                                eventsToPlot=cms.vint32(range(1, 4))
                               )
 
 
