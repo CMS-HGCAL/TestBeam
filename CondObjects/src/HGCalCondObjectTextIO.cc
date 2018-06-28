@@ -204,3 +204,34 @@ bool HGCalCondObjectTextIO::load(const std::string& filename, HGCalTBADCConversi
   fclose(f);
   return true;
 }
+
+
+bool HGCalCondObjectTextIO::load(const std::string& filename, HGCalTBADCConversionsMap_perChannel& adcConvMap)
+{
+  FILE* f = fopen(filename.c_str(),"r");
+  if (f == 0) {
+    fprintf(stderr, "Unable to open '%s'\n", filename.c_str());
+    return false;
+  }
+  int moduleId,asicId,channelId,fully_calibrated;
+  float lg_hg_tr,lg_hg_cv,tot_lg_tr,tot_lg_cv,adc_to_mip,tot_offset;
+  char buffer[100];
+  while(!feof(f)){
+    buffer[0]=0;
+    fgets(buffer,100,f);
+    char* p_comment = index(buffer, '#');
+    if (p_comment != 0) continue;
+    int ptr=0;
+    const char* process = buffer;
+    int found = sscanf(process, "%d %d %d %f %f %f %f %f %f %d %n", &moduleId, &asicId, &channelId, &adc_to_mip,&lg_hg_tr, &lg_hg_cv,&tot_lg_tr, &tot_lg_cv,&tot_offset, &fully_calibrated, &ptr);
+    if (found == 10) {    	
+      process += ptr;
+      ASIC_ADC_Conversions_perChannel adcConv(moduleId,asicId,channelId,adc_to_mip,
+				   lg_hg_tr,lg_hg_cv,
+				   tot_lg_tr, tot_lg_cv, tot_offset, fully_calibrated);
+      adcConvMap.addEntry( adcConv);
+    } else continue;
+  }
+  fclose(f);
+  return true;
+}

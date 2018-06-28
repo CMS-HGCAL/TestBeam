@@ -6,6 +6,7 @@
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
 #include "HGCal/CondObjects/interface/HGCalTBDetectorLayout.h"
 #include "HGCal/CondObjects/interface/HGCalTBADCConversionsMap.h"
+#include "HGCal/CondObjects/interface/HGCalTBADCConversionsMap_perChannel.h"
 
 /** \class HGCalCondObjectTextIO
   *
@@ -27,6 +28,7 @@ public:
 
 	bool load(const std::string& filename, HGCalTBDetectorLayout& hgcalGeom);
 	bool load(const std::string& filename, HGCalTBADCConversionsMap& adcConvMap);
+	bool load(const std::string& filename, HGCalTBADCConversionsMap_perChannel& adcConvMap);
 private:
 	const HGCalCondObjectNumberingScheme* p_scheme;
 };
