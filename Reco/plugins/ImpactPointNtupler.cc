@@ -74,6 +74,10 @@ private:
     std::vector<float> kinkAngleX_DUT1;
     std::vector<float> kinkAngleY_DUT1;
 
+    //working assumption: DATURA available <--> PI positions available
+    float PI_positionX;
+    float PI_positionY;
+
     //specific to DWC in H2
     int dwcReferenceType;
     double m_x, m_y; //slopes of straight line tracks in x/y
@@ -149,6 +153,9 @@ ImpactPointNtupler::ImpactPointNtupler(const edm::ParameterSet& iConfig)
     if (_extrapolationType == DATURA) {
         tree_->Branch("kinkAngleX_DUT1", &kinkAngleX_DUT1);  
         tree_->Branch("kinkAngleY_DUT1", &kinkAngleY_DUT1);  
+
+        tree_->Branch("PI_positionX", &PI_positionX);
+        tree_->Branch("PI_positionY", &PI_positionY);        
     } else if (_extrapolationType == DWC) {
         tree_->Branch("trackChi2_X", &impactX_associatedChi2[0]);  
         tree_->Branch("trackChi2_Y", &impactY_associatedChi2[0]);  
@@ -194,6 +201,9 @@ void ImpactPointNtupler::analyze(const edm::Event& event, const edm::EventSetup&
             } 
             if(daturatrack.floatUserRecords.has("kinkAngleX_DUT1")) kinkAngleX_DUT1.push_back(daturatrack.floatUserRecords.get("kinkAngleX_DUT1"));
             if(daturatrack.floatUserRecords.has("kinkAngleY_DUT1")) kinkAngleY_DUT1.push_back(daturatrack.floatUserRecords.get("kinkAngleY_DUT1"));
+
+            PI_positionX = rd->doubleUserRecords.has("PIStagePosition_X") ? rd->doubleUserRecords.get("PIStagePosition_X") : -999;
+            PI_positionY = rd->doubleUserRecords.has("PIStagePosition_Y") ? rd->doubleUserRecords.get("PIStagePosition_Y") : -999;            
 
         }
     } else if (_extrapolationType == DWC) {
