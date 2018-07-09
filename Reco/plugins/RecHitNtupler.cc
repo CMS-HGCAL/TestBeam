@@ -96,11 +96,16 @@ private:
     std::vector<int> rechit_iu_;
     std::vector<int> rechit_iv_;
     std::vector<float> rechit_energy_;
+    std::vector<float> rechit_energy_noHG;
     std::vector<float> rechit_amplitudeHigh_;
     std::vector<float> rechit_amplitudeLow_;
+    std::vector<int> rechit_hg_goodFit;
+    std::vector<int> rechit_lg_goodFit;
     std::vector<int> rechit_hg_saturated;
     std::vector<int> rechit_lg_saturated;
     std::vector<int> rechit_fully_calibrated;
+    std::vector<float> rechit_TS2High_;
+    std::vector<float> rechit_TS2Low_;   
     std::vector<float> rechit_TS3High_;
     std::vector<float> rechit_TS3Low_;    
     std::vector<float> rechit_Tot_;
@@ -130,11 +135,16 @@ void RecHitNtupler::clearVariables(){
     rechit_iu_.clear();
     rechit_iv_.clear();
     rechit_energy_.clear();
+    rechit_energy_noHG.clear();
     rechit_amplitudeHigh_.clear();
     rechit_amplitudeLow_.clear();
+    rechit_hg_goodFit.clear();
+    rechit_lg_goodFit.clear();
     rechit_hg_saturated.clear();
     rechit_lg_saturated.clear();
     rechit_fully_calibrated.clear();    
+    rechit_TS2High_.clear();
+    rechit_TS2Low_.clear(); 
     rechit_TS3High_.clear();
     rechit_TS3Low_.clear();     
     rechit_Tot_.clear();
@@ -218,11 +228,16 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
     tree_->Branch("rechit_iu",&rechit_iu_);
     tree_->Branch("rechit_iv",&rechit_iv_);
     tree_->Branch("rechit_energy",&rechit_energy_);
+    tree_->Branch("rechit_energy_noHG",&rechit_energy_noHG);
     tree_->Branch("rechit_amplitudeHigh",&rechit_amplitudeHigh_);
     tree_->Branch("rechit_amplitudeLow",&rechit_amplitudeLow_);
+    tree_->Branch("rechit_hg_goodFit", &rechit_hg_goodFit);
+    tree_->Branch("rechit_lg_goodFit", &rechit_lg_goodFit);
     tree_->Branch("rechit_hg_saturated", &rechit_hg_saturated);
     tree_->Branch("rechit_lg_saturated", &rechit_lg_saturated);
     tree_->Branch("rechit_fully_calibrated", &rechit_fully_calibrated);    
+    tree_->Branch("rechit_TS2High",&rechit_TS2High_);
+    tree_->Branch("rechit_TS2Low",&rechit_TS2Low_);
     tree_->Branch("rechit_TS3High",&rechit_TS3High_);
     tree_->Branch("rechit_TS3Low",&rechit_TS3Low_);
     tree_->Branch("rechit_Tot",&rechit_Tot_);
@@ -318,18 +333,26 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
     	rechit_iv_.push_back( hit.id().iv() );
 
     	// Hit energy and time
-    	rechit_energy_.push_back( hit.energy() );
+        rechit_energy_.push_back( hit.energy() );
+    	
+        rechit_energy_noHG.push_back( hit.energy_HGExcl() );
+    
 
     	rechit_amplitudeHigh_.push_back( hit.energyHigh() );
     	rechit_amplitudeLow_.push_back( hit.energyLow() );
     	rechit_Tot_.push_back( hit.energyTot() );
 
+        rechit_hg_goodFit.push_back(hit.checkFlag(HGCalTBRecHit::kHGFitFailed) ? 0 : 1);
+        rechit_lg_goodFit.push_back(hit.checkFlag(HGCalTBRecHit::kLGFitFailed) ? 0 : 1);
+        
         rechit_hg_saturated.push_back(hit.checkFlag(HGCalTBRecHit::kHighGainSaturated) ? 1 : 0);
         rechit_lg_saturated.push_back(hit.checkFlag(HGCalTBRecHit::kLowGainSaturated) ? 1 : 0);
         rechit_fully_calibrated.push_back(hit.checkFlag(HGCalTBRecHit::kFullyCalibrated) ? 1 : 0);
 
-        rechit_TS3Low_.push_back(hit.energyTSLow());
-        rechit_TS3High_.push_back(hit.energyTSHigh());
+        rechit_TS2Low_.push_back(hit.energyTSLow().first);
+        rechit_TS2High_.push_back(hit.energyTSHigh().first);
+        rechit_TS3Low_.push_back(hit.energyTSLow().second);
+        rechit_TS3High_.push_back(hit.energyTSHigh().second);
 
         rechit_time_.push_back( hit.time() );
         rechit_timeMaxHG_.push_back( hit.timeMaxHG() );

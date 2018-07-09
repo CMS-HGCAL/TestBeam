@@ -178,12 +178,13 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 
       recHit.setTimeMaxLG(fitresultLG.tmax - fitresultLG.trise);
       recHit.setTimeMaxHG(fitresultHG.tmax - fitresultHG.trise);
-      recHit.setEnergyTSLow(sampleLG[m_expectedMaxTimeSample]);
-      recHit.setEnergyTSHigh(sampleHG[m_expectedMaxTimeSample]);
+      recHit.setEnergyTSLow(sampleLG[m_expectedMaxTimeSample-1], sampleLG[m_expectedMaxTimeSample]);
+      recHit.setEnergyTSHigh(sampleHG[m_expectedMaxTimeSample-1], sampleHG[m_expectedMaxTimeSample]);
       recHit.setToaRise(toaRise);
       recHit.setToaFall(toaFall);
 
 
+      //Energy_HGExcl
 
       //energy conversion default
       if (!m_calibrationPerChannel) {
@@ -207,27 +208,39 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
          }
         }
         energy*=adcConv.adc_to_MIP();       
+      
       } else {      
+      
         ASIC_ADC_Conversions_perChannel adcConv=essource_.adccalibmap_perchannel_.getASICConversions(moduleId, iski, ichannel);
-        if( lowgain > adcConv.TOT_lowGain_transition() ){
-         energy = (totgain-adcConv.TOT_offset()) * adcConv.TOT_to_lowGain() * adcConv.lowGain_to_highGain();
-         recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
-         recHit.setFlag(HGCalTBRecHit::kGood);
-        }
-        else if( highgain > adcConv.lowGain_highGain_transition() ){
-         recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
-         if( fitresultLG.status==0 ){
-           energy = lowgain * adcConv.lowGain_to_highGain();
-           recHit.setFlag(HGCalTBRecHit::kGood);
-         }
-        }
-        else{
-         if( fitresultHG.status==0 ){
-           energy = highgain;
-           recHit.setFlag(HGCalTBRecHit::kGood);
-         }
-        }
-        energy*=adcConv.adc_to_MIP();  
+        
+        if (fitresultLG.status!=0) recHit.setFlag(HGCalTBRecHit::kLGFitFailed);
+        if (fitresultHG.status!=0) recHit.setFlag(HGCalTBRecHit::kHGFitFailed);
+
+        float energy_TOT_contrib = (totgain-adcConv.TOT_offset()) * adcConv.TOT_to_lowGain() * adcConv.lowGain_to_highGain() * adcConv.adc_to_MIP();
+
+        float energy_LG_contrib = 0;
+        if (((fitresultLG.status==0)&&(lowgain < adcConv.TOT_lowGain_transition())) || ((fitresultLG.status!=0)&&(rawhit.lowGainADC(m_expectedMaxTimeSample) < adcConv.TOT_lowGain_transition()))) {
+         energy_LG_contrib = lowgain * adcConv.lowGain_to_highGain() *  adcConv.adc_to_MIP();
+        } else recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
+        
+        float energy_HG_contrib = 0;
+        if (((fitresultHG.status==0)&&(highgain < adcConv.lowGain_highGain_transition())) || ((fitresultHG.status!=0)&&(rawhit.highGainADC(m_expectedMaxTimeSample) < adcConv.lowGain_highGain_transition()))) {
+          energy_HG_contrib = highgain *  adcConv.adc_to_MIP();
+        } else recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);
+
+        //gain switching
+        if (energy_HG_contrib>0) {
+          energy = energy_HG_contrib;
+          recHit.setEnergy_HGExcl(energy_LG_contrib);
+        } else if (energy_LG_contrib>0) {
+          energy = energy_LG_contrib;
+          recHit.setEnergy_HGExcl(energy_LG_contrib);          
+        } else if (energy_TOT_contrib>0) {
+          energy = energy_TOT_contrib;
+          recHit.setEnergy_HGExcl(energy_TOT_contrib);          
+        } 
+        
+
       
         if (adcConv.fully_calibrated()==1) recHit.setFlag(HGCalTBRecHit::kFullyCalibrated);
       }

@@ -25,9 +25,10 @@ HGCalTBRecHit::HGCalTBRecHit(const DetId& id, float energy, float energyLow, flo
   _timeMaxHG = -1;
   _timeMaxLG = -1;
   
-  _energyTSLow = -1;
-  _energyTSHigh = -1;
+  _energyTSLow = std::make_pair(-1, -1);
+  _energyTSHigh = std::make_pair(-1, -1);
     
+  _energy_HGExcl = -1;    //
 }
 
 

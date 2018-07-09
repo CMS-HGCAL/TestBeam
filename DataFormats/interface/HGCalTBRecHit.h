@@ -3,6 +3,7 @@
 
 #include "DataFormats/CaloRecHit/interface/CaloRecHit.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
+#include <cstdlib>
 #include <vector>
 
 /** \class HGCalTBRecHit
@@ -21,10 +22,11 @@ public:
 
 	enum Flags {
 		kGood = 0,
+		kHGFitFailed,
+		kLGFitFailed,
 		kHighGainSaturated,
 		kLowGainSaturated,
 		kTotGainSaturated,
-		kThirdSample,
 		kFullyCalibrated
 	};
 
@@ -41,7 +43,8 @@ public:
 	};
 	/////  bool isRecovered() const;
 	float _energyLow, _energyHigh, _energyTot;
-	float _energyTSLow, _energyTSHigh;
+	std::pair<float, float> _energyTSLow, _energyTSHigh;
+	float _energy_HGExcl;
 	float cellCenter_x;
 	float cellCenter_y;
 	float _time;
@@ -60,12 +63,12 @@ public:
 		return _energyHigh;
 	};
 
-	float energyTSLow() const
+	std::pair<float, float> energyTSLow() const
 	{
 		return _energyTSLow;
 	};
 
-	float energyTSHigh() const
+	std::pair<float, float> energyTSHigh() const
 	{
 		return _energyTSHigh;
 	};
@@ -75,17 +78,24 @@ public:
 		return _energyTot;
 	};
 
+	float energy_HGExcl() const
+	{
+		return _energy_HGExcl;
+	};
+
 	void setTime(float time){_time = time;return;}
 	void setTimeMaxHG(float time){_timeMaxHG = time;return;}
 	void setTimeMaxLG(float time){_timeMaxLG = time;return;}
 	void setToaRise(float toaRise) { _toaRise = toaRise; } ;
 	void setToaFall(float toaFall) { _toaFall = toaFall; } ;
 
+	//all ADC
 	void setEnergyTOT(float _energy) {_energyTot=_energy;};
 	void setEnergyLow(float _energy) {_energyLow=_energy;};
 	void setEnergyHigh(float _energy) {_energyHigh=_energy;};
-	void setEnergyTSLow(float _energy) {_energyTSLow=_energy;};
-	void setEnergyTSHigh(float _energy) {_energyTSHigh=_energy;};
+	void setEnergyTSLow(float _energy1, float _energy2) {_energyTSLow=std::make_pair(_energy1, _energy2);};
+	void setEnergyTSHigh(float _energy1, float _energy2) {_energyTSHigh=std::make_pair(_energy1, _energy2);};
+	void setEnergy_HGExcl(float _energy) {_energy_HGExcl=_energy;};
 
 	float time(){ 
 	  return _time; 
