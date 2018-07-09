@@ -127,7 +127,7 @@ process.rechitntupler = cms.EDAnalyzer("RecHitNtupler",
                                        SensorSize=cms.untracked.int32(128),
                                        EventPlotter=cms.untracked.bool(True),
                                        MipThreshold=cms.untracked.double(5.0),
-                                       NoiseThreshold=cms.untracked.double(0.5)
+                                       NoiseThreshold=cms.untracked.double(0.0)
 )
 
 process.trackimpactntupler = cms.EDAnalyzer("ImpactPointNtupler",
