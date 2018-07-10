@@ -348,8 +348,8 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 		std::unique_ptr<std::map<int, WireChamberData> > dwcs(new std::map<int, WireChamberData>);	
 		rd->booleanUserRecords.add("hasValidDWCMeasurement", true);
 		for (size_t d=0; d<referenceTracking_zPositions.size(); d++) {
-			double dwc_x = beamX * 10. + randgen->Gaus(0, wc_resolutions[d]);
-			double dwc_y = beamY * 10. + randgen->Gaus(0, wc_resolutions[d]);
+			double dwc_x = beamX + randgen->Gaus(0, wc_resolutions[d]/10);		//value in cm
+			double dwc_y = beamY + randgen->Gaus(0, wc_resolutions[d]/10);		//value in cm
 
 			WireChamberData* dwc = new WireChamberData(d+1, dwc_x , dwc_y, referenceTracking_zPositions[d]);
 			dwc->goodMeasurement_X = dwc->goodMeasurement_Y = dwc->goodMeasurement = true;
@@ -369,8 +369,8 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 		LineFitter TripletTrack2X;
 		LineFitter TripletTrack2Y;           
 		for (int MIMOSA_index=1; MIMOSA_index<=6; MIMOSA_index++) {
-			double x_measured = beamX * 10. + randgen->Gaus(0, datura_resolutions[MIMOSA_index-1]);
-			double y_measured = beamY * 10. + randgen->Gaus(0, datura_resolutions[MIMOSA_index-1]);
+			double x_measured = beamX + randgen->Gaus(0, datura_resolutions[MIMOSA_index-1]/10);		//value in cm
+			double y_measured = beamY + randgen->Gaus(0, datura_resolutions[MIMOSA_index-1]/10);		//value in cm
 			double z_measured = referenceTracking_zPositions[MIMOSA_index-1];
 
 			DATURATelescopeTrack.addPointForTracking(x_measured, y_measured, z_measured, datura_resolutions[MIMOSA_index-1], datura_resolutions[MIMOSA_index-1]);

@@ -137,14 +137,15 @@ void HGCalTBDATURATelescopeProducer::produce(edm::Event& event, const edm::Event
            LineFitter TripletTrack2X;
            LineFitter TripletTrack2Y;           
             for (int MIMOSA_index=1; MIMOSA_index<=3; MIMOSA_index++) {
-                DATURATelescopeTrack.addPointForTracking(tree_clusterX[MIMOSA_index]->at(ntrack-1), tree_clusterY[MIMOSA_index]->at(ntrack-1), tree_clusterZ[MIMOSA_index]->at(ntrack-1), 0.0184, 0.0184);
-                TripletTrack1X.addPoint(tree_clusterZ[MIMOSA_index]->at(ntrack-1), tree_clusterX[MIMOSA_index]->at(ntrack-1), 0.0184);
-                TripletTrack1Y.addPoint(tree_clusterZ[MIMOSA_index]->at(ntrack-1), tree_clusterY[MIMOSA_index]->at(ntrack-1), 0.0184);
+                //division by ten to convert into mm
+                DATURATelescopeTrack.addPointForTracking(tree_clusterX[MIMOSA_index]->at(ntrack-1)/10, tree_clusterY[MIMOSA_index]->at(ntrack-1)/10, tree_clusterZ[MIMOSA_index]->at(ntrack-1)/10, 0.0184, 0.0184);
+                TripletTrack1X.addPoint(tree_clusterZ[MIMOSA_index]->at(ntrack-1)/10, tree_clusterX[MIMOSA_index]->at(ntrack-1)/10, 0.0184/10);
+                TripletTrack1Y.addPoint(tree_clusterZ[MIMOSA_index]->at(ntrack-1)/10, tree_clusterY[MIMOSA_index]->at(ntrack-1)/10, 0.0184/10);
             }   
             for (int MIMOSA_index=4; MIMOSA_index<=6; MIMOSA_index++) {
-                DATURATelescopeTrack.addPointForTracking(tree_clusterX[MIMOSA_index]->at(ntrack-1), tree_clusterY[MIMOSA_index]->at(ntrack-1), tree_clusterZ[MIMOSA_index]->at(ntrack-1), 0.0184, 0.0184);
-                TripletTrack2X.addPoint(tree_clusterZ[MIMOSA_index]->at(ntrack-1), tree_clusterX[MIMOSA_index]->at(ntrack-1), 0.0184);
-                TripletTrack2Y.addPoint(tree_clusterZ[MIMOSA_index]->at(ntrack-1), tree_clusterY[MIMOSA_index]->at(ntrack-1), 0.0184);
+                DATURATelescopeTrack.addPointForTracking(tree_clusterX[MIMOSA_index]->at(ntrack-1)/10, tree_clusterY[MIMOSA_index]->at(ntrack-1)/10, tree_clusterZ[MIMOSA_index]->at(ntrack-1)/10, 0.0184, 0.0184);
+                TripletTrack2X.addPoint(tree_clusterZ[MIMOSA_index]->at(ntrack-1)/10, tree_clusterX[MIMOSA_index]->at(ntrack-1)/10, 0.0184/10);
+                TripletTrack2Y.addPoint(tree_clusterZ[MIMOSA_index]->at(ntrack-1)/10, tree_clusterY[MIMOSA_index]->at(ntrack-1)/10, 0.0184/10);
             }   
 
             TripletTrack1X.fit();       TripletTrack1Y.fit();

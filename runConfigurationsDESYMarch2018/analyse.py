@@ -125,8 +125,8 @@ process.correlationanalysis = cms.EDAnalyzer("DATURATelescopeCorrelator",
                                 DetectorLayout=cms.untracked.string(hgcalLayout),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
                                 n_bins = cms.int32(50),
-                                max_dim_x_DUT = cms.double(10),
-                                max_dim_y_DUT = cms.double(10.)
+                                max_dim_x_DUT = cms.double(1.),
+                                max_dim_y_DUT = cms.double(1.)
                               )
 
 process.variablecomputation = cms.EDProducer("VariableComputation",
