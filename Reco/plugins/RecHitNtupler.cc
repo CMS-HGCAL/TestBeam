@@ -87,9 +87,10 @@ private:
     // rechits
     std::vector<unsigned int> rechit_detid_;
     std::vector<unsigned int> rechit_module_;
+    std::vector<unsigned int> rechit_layer_;
     std::vector<unsigned int> rechit_chip_;
     std::vector<unsigned int> rechit_channel_;
-    std::vector<unsigned int> rechit_layer_;
+    std::vector<unsigned int> rechit_type_;
     std::vector<float> rechit_x_;
     std::vector<float> rechit_y_;
     std::vector<float> rechit_z_;
@@ -126,9 +127,10 @@ void RecHitNtupler::clearVariables(){
     // rechits
     rechit_detid_.clear();
     rechit_module_.clear();
+    rechit_layer_.clear();
     rechit_chip_.clear();
     rechit_channel_.clear();    
-    rechit_layer_.clear();
+    rechit_type_.clear();    
     rechit_x_.clear();
     rechit_y_.clear();
     rechit_z_.clear();
@@ -222,6 +224,7 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
     tree_->Branch("rechit_layer",&rechit_layer_);
     tree_->Branch("rechit_chip",&rechit_chip_);
     tree_->Branch("rechit_channel",&rechit_channel_);
+    tree_->Branch("rechit_type",&rechit_type_);
     tree_->Branch("rechit_x",&rechit_x_);
     tree_->Branch("rechit_y",&rechit_y_);
     tree_->Branch("rechit_z",&rechit_z_);
@@ -288,7 +291,7 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
     	HGCalTBElectronicsId eid( essource_.emap_.detId2eid( hit.id().rawId() ) );
         rechit_chip_.push_back(eid.iskiroc_rawhit() % HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA);
         rechit_channel_.push_back(eid.ichan());
-
+        rechit_type_.push_back((hit.id()).cellType());
 
     	// get geometric channel
     	if ( !IsCellValid.iu_iv_valid(
