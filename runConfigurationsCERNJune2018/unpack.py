@@ -147,7 +147,7 @@ process.pedestalplotter = cms.EDAnalyzer("PedestalPlotter",
                                          LowGainPedestalFileName=cms.untracked.string(options.pedestalLowGainFile),
                                          WriteNoisyChannelsFile=cms.untracked.bool(True),
                                          NoisyChannelsFileName=cms.untracked.string(options.noisyChannelsFile),
-                                         NTSForPedestalComputation=ms.untracked.int32(0)
+                                         NTSForPedestalComputation=cms.untracked.int32(0)
 )
 
 process.p = cms.Path( process.timingfilewriter * process.pedestalplotter)
