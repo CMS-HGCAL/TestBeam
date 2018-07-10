@@ -131,8 +131,8 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   
   for( size_t iski=0; iski<skirocs->size(); iski++ ){
     HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
-    if( !skiroc.check() )
-      continue;
+    //if( !skiroc.check() )   //June 2018 TB: headers are corrupt for ROC 2, layer 14 but data looks ok
+    //  continue;
     std::vector<int> rollpositions=skiroc.rollPositions();
     globalTimestamps->skiroc_to_timestamps[iski] = skiroc.globalTS();
     for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
@@ -160,7 +160,7 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       }
       for( int it=0; it<NUMBER_OF_SCA-NUMBER_OF_TIME_SAMPLES; it++ ){
       	adchigh.pop_back();
-	adclow.pop_back();
+	 adclow.pop_back();
       }
       HGCalTBRawHit hit(rawid, iski, ichan, adchigh, adclow,
 			skiroc.TOARise(ichan), skiroc.TOAFall(ichan),
