@@ -92,7 +92,8 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         InputCollection = cms.InputTag("rawhitproducer", "HGCALTBRAWHITS"),
                                         ElectronicsMap = cms.untracked.string(electronicMap),
                                         DetectorLayout = cms.untracked.string(hgcalLayout),
-                                        ADCCalibrations = cms.untracked.string(adcCalibrations),                                       
+                                        ADCCalibrations = cms.untracked.string(adcCalibrations),    
+                                        calibrationPerChannel=cms.untracked.bool(True),                                   
                                         ExpectedMaxTimeSample=cms.untracked.int32(3),
                                         MaxADCCut=cms.untracked.double(20)
 )
