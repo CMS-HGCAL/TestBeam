@@ -62,7 +62,7 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   }
 
   float emax0(0),tmax0(0);
-  for( uint16_t i=0; i<11; i++ ){
+  for( uint16_t i=0; i<9; i++ ){
       _time[i] = time[i];
       _energy[i] = energy[i];
       if(_energy[i]>emax0) {emax0=energy[i];tmax0=time[i];}
