@@ -100,14 +100,15 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     int ichannel=eid.ichan();
     int key = iboard * 10000 + (iski % 4) * 100 + ichannel;
 
-    std::vector<double> sampleHG, sampleLG, sampleT;
+    std::vector<Float16_t> sampleHG, sampleLG, sampleT;
 
-    float highgain(0), lowgain(0), totgain(0), energy(-1), time(-1);
-    float subHG[NUMBER_OF_TIME_SAMPLES],subLG[NUMBER_OF_TIME_SAMPLES];
+    Float16_t highgain(0), lowgain(0),  energy(-1), time(-1);
+    unsigned int short totgain(0);
+    Float16_t subHG[NUMBER_OF_TIME_SAMPLES],subLG[NUMBER_OF_TIME_SAMPLES];
 
     totgain = rawhit.totSlow();
-    float toaRise = rawhit.toaRise();
-    float toaFall = rawhit.toaFall();
+    unsigned int short toaRise = rawhit.toaRise();
+    unsigned int short toaFall = rawhit.toaFall();
 
     switch ( rawhit.detid().cellType() ){
     default :
@@ -154,10 +155,10 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     HGCalTBDetId detid = rawhit.detid();
     HGCalTBLayer layer= essource_.layout_.at(detid.layer()-1);
 
-    float max_minus=rawhit.highGainADC(m_expectedMaxTimeSample-2)-subHG[m_expectedMaxTimeSample-2];
-    float themax=rawhit.highGainADC(m_expectedMaxTimeSample)-subHG[m_expectedMaxTimeSample];
-    float max_plus=rawhit.highGainADC(m_expectedMaxTimeSample+1)-subHG[m_expectedMaxTimeSample+1];
-    float undershoot=rawhit.highGainADC(m_expectedMaxTimeSample+3)-subHG[m_expectedMaxTimeSample+3];
+    Float16_t max_minus=rawhit.highGainADC(m_expectedMaxTimeSample-2)-subHG[m_expectedMaxTimeSample-2];
+    Float16_t themax=rawhit.highGainADC(m_expectedMaxTimeSample)-subHG[m_expectedMaxTimeSample];
+    Float16_t max_plus=rawhit.highGainADC(m_expectedMaxTimeSample+1)-subHG[m_expectedMaxTimeSample+1];
+    Float16_t undershoot=rawhit.highGainADC(m_expectedMaxTimeSample+3)-subHG[m_expectedMaxTimeSample+3];
     if( themax>500||(max_minus<themax && themax>undershoot && max_plus>undershoot && themax>m_maxADCCut) ){
       int moduleId= layer.at( detid.sensorIU(),detid.sensorIV() ).moduleID();
       iski = rawhit.skiroc()%4;
@@ -172,8 +173,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       
       HGCalTBRecHit recHit(rawhit.detid(), energy, lowgain, highgain, totgain, time);
       CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(detid.layer(), detid.sensorIU(), detid.sensorIV(), detid.iu(), detid.iv(), SENSORSIZE );
-      double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA);
-      double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
+      Float16_t iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.first - HGCAL_TB_GEOMETRY::DELTA);
+      Float16_t iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
       recHit.setCellCenterCoordinate(iux, iuy);
 
       recHit.setTimeMaxLG(fitresultLG.tmax - fitresultLG.trise);
@@ -217,14 +218,14 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
         if (fitresultHG.status!=0) recHit.setFlag(HGCalTBRecHit::kHGFitFailed);
 
         //totgain = 1/provided constant from the calibration
-        float energy_TOT_contrib = adcConv.TOT_to_lowGain() * (totgain -adcConv.TOT_offset()) * adcConv.lowGain_to_highGain() * adcConv.adc_to_MIP();
+        Float16_t energy_TOT_contrib = adcConv.TOT_to_lowGain() * (totgain -adcConv.TOT_offset()) * adcConv.lowGain_to_highGain() * adcConv.adc_to_MIP();
 
-        float energy_LG_contrib = 0;
+        Float16_t energy_LG_contrib = 0;
         if (((fitresultLG.status==0)&&(lowgain < adcConv.TOT_lowGain_transition())) || ((fitresultLG.status!=0)&&(rawhit.lowGainADC(m_expectedMaxTimeSample) < adcConv.TOT_lowGain_transition()))) {
          energy_LG_contrib = lowgain * adcConv.lowGain_to_highGain() *  adcConv.adc_to_MIP();
         } else recHit.setFlag(HGCalTBRecHit::kLowGainSaturated);
         
-        float energy_HG_contrib = 0;
+        Float16_t energy_HG_contrib = 0;
         if (((fitresultHG.status==0)&&(highgain < adcConv.lowGain_highGain_transition())) || ((fitresultHG.status!=0)&&(rawhit.highGainADC(m_expectedMaxTimeSample) < adcConv.lowGain_highGain_transition()))) {
           energy_HG_contrib = highgain *  adcConv.adc_to_MIP();
         } else recHit.setFlag(HGCalTBRecHit::kHighGainSaturated);

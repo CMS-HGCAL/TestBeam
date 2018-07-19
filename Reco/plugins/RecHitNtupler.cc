@@ -63,8 +63,8 @@ private:
 
     HGCalTBTopology IsCellValid;
     HGCalTBCellVertices TheCell;
-    std::vector<std::pair<double, double>> CellXY;
-    std::pair<double, double> CellCentreXY;
+    std::vector<std::pair<Float16_t, Float16_t>> CellXY;
+    std::pair<Float16_t, Float16_t> CellCentreXY;
 
     // Output tree
     TTree* tree_;
@@ -80,8 +80,8 @@ private:
     unsigned int ev_event_;
 
     int pdgID;
-    double beamEnergy;
-    double trueBeamEnergy;
+    float beamEnergy;
+    float trueBeamEnergy;
 
     int NRechits_;
     // rechits
@@ -91,30 +91,30 @@ private:
     std::vector<unsigned int> rechit_chip_;
     std::vector<unsigned int> rechit_channel_;
     std::vector<unsigned int> rechit_type_;
-    std::vector<float> rechit_x_;
-    std::vector<float> rechit_y_;
-    std::vector<float> rechit_z_;
+    std::vector<Float16_t> rechit_x_;
+    std::vector<Float16_t> rechit_y_;
+    std::vector<Float16_t> rechit_z_;
     std::vector<int> rechit_iu_;
     std::vector<int> rechit_iv_;
-    std::vector<float> rechit_energy_;
-    std::vector<float> rechit_energy_noHG;
-    std::vector<float> rechit_amplitudeHigh_;
-    std::vector<float> rechit_amplitudeLow_;
-    std::vector<int> rechit_hg_goodFit;
-    std::vector<int> rechit_lg_goodFit;
-    std::vector<int> rechit_hg_saturated;
-    std::vector<int> rechit_lg_saturated;
-    std::vector<int> rechit_fully_calibrated;
-    std::vector<float> rechit_TS2High_;
-    std::vector<float> rechit_TS2Low_;   
-    std::vector<float> rechit_TS3High_;
-    std::vector<float> rechit_TS3Low_;    
-    std::vector<float> rechit_Tot_;
-    std::vector<float> rechit_time_;
-    std::vector<float> rechit_timeMaxHG_;
-    std::vector<float> rechit_timeMaxLG_;
-    std::vector<float> rechit_toaRise_;
-    std::vector<float> rechit_toaFall_;
+    std::vector<Float16_t> rechit_energy_;
+    std::vector<Float16_t> rechit_energy_noHG;
+    std::vector<Float16_t> rechit_amplitudeHigh_;
+    std::vector<Float16_t> rechit_amplitudeLow_;
+    std::vector<bool> rechit_hg_goodFit;
+    std::vector<bool> rechit_lg_goodFit;
+    std::vector<bool> rechit_hg_saturated;
+    std::vector<bool> rechit_lg_saturated;
+    std::vector<bool> rechit_fully_calibrated;
+    std::vector<Float16_t> rechit_TS2High_;
+    std::vector<Float16_t> rechit_TS2Low_;   
+    std::vector<Float16_t> rechit_TS3High_;
+    std::vector<Float16_t> rechit_TS3Low_;    
+    std::vector<unsigned int short> rechit_Tot_;
+    std::vector<Float16_t> rechit_time_;
+    std::vector<Float16_t> rechit_timeMaxHG_;
+    std::vector<Float16_t> rechit_timeMaxLG_;
+    std::vector<unsigned int short> rechit_toaRise_;
+    std::vector<unsigned int short> rechit_toaFall_;
 
 };
 
@@ -345,12 +345,12 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
     	rechit_amplitudeLow_.push_back( hit.energyLow() );
     	rechit_Tot_.push_back( hit.energyTot() );
 
-        rechit_hg_goodFit.push_back(hit.checkFlag(HGCalTBRecHit::kHGFitFailed) ? 0 : 1);
-        rechit_lg_goodFit.push_back(hit.checkFlag(HGCalTBRecHit::kLGFitFailed) ? 0 : 1);
+        rechit_hg_goodFit.push_back(!(hit.checkFlag(HGCalTBRecHit::kHGFitFailed)));
+        rechit_lg_goodFit.push_back(!(hit.checkFlag(HGCalTBRecHit::kLGFitFailed)));
         
-        rechit_hg_saturated.push_back(hit.checkFlag(HGCalTBRecHit::kHighGainSaturated) ? 1 : 0);
-        rechit_lg_saturated.push_back(hit.checkFlag(HGCalTBRecHit::kLowGainSaturated) ? 1 : 0);
-        rechit_fully_calibrated.push_back(hit.checkFlag(HGCalTBRecHit::kFullyCalibrated) ? 1 : 0);
+        rechit_hg_saturated.push_back(hit.checkFlag(HGCalTBRecHit::kHighGainSaturated));
+        rechit_lg_saturated.push_back(hit.checkFlag(HGCalTBRecHit::kLowGainSaturated));
+        rechit_fully_calibrated.push_back(hit.checkFlag(HGCalTBRecHit::kFullyCalibrated));
 
         rechit_TS2Low_.push_back(hit.energyTSLow().first);
         rechit_TS2High_.push_back(hit.energyTSHigh().first);

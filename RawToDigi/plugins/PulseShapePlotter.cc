@@ -25,6 +25,8 @@
 #include "HGCal/Reco/interface/CommonMode.h"
 #include "HGCal/Reco/interface/PulseFitter.h"
 
+#include "FWCore/Utilities/interface/TypeWithDict.h"
+
 #include <iomanip>
 #include <set>
 #include <boost/thread/thread.hpp>
@@ -209,9 +211,9 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
     if( essource_.emap_.existsEId(eid) ){
       int iski=hit.skiroc();
-      float highGain,lowGain;
-      float subHG[NUMBER_OF_TIME_SAMPLES];
-      float subLG[NUMBER_OF_TIME_SAMPLES];
+      Float16_t highGain,lowGain;
+      Float16_t subHG[NUMBER_OF_TIME_SAMPLES];
+      Float16_t subLG[NUMBER_OF_TIME_SAMPLES];
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
         subHG[it]=0;
         subLG[it]=0;
@@ -251,7 +253,7 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
       // double *hg[NUMBER_OF_TIME_SAMPLES];
       // double *lg[NUMBER_OF_TIME_SAMPLES];
       // double *time[NUMBER_OF_TIME_SAMPLES];
-      std::vector<double> hg(NUMBER_OF_TIME_SAMPLES),lg(NUMBER_OF_TIME_SAMPLES),time(NUMBER_OF_TIME_SAMPLES);
+      std::vector<Float16_t> hg(NUMBER_OF_TIME_SAMPLES),lg(NUMBER_OF_TIME_SAMPLES),time(NUMBER_OF_TIME_SAMPLES);
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
   highGain=hit.highGainADC(it)-subHG[it];
   lowGain=hit.lowGainADC(it)-subLG[it];

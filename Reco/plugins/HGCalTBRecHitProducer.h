@@ -48,7 +48,7 @@ class HGCalTBRecHitProducer : public edm::EDProducer
 
   float m_fittingTime;
 
-  std::pair<double, double> CellCentreXY;
+  std::pair<Float16_t, Float16_t> CellCentreXY;
   HGCalTBCellVertices TheCell;
 
   struct {

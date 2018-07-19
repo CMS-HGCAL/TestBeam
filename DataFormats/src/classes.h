@@ -20,6 +20,7 @@
 #include "DataFormats/Common/interface/Wrapper.h"
 #include "DataFormats/Common/interface/RefToBase.h"
 #include "DataFormats/Common/interface/Holder.h"
+#include "FWCore/Utilities/interface/TypeWithDict.h"
 #include <vector>
 
 namespace DataFormats_HGCTB
@@ -27,6 +28,7 @@ namespace DataFormats_HGCTB
 struct dictionary {
 	HGCalTBRecHit _aRecHit;
 	std::vector<HGCalTBRecHit> _HGCTBRHitVect;
+	std::pair<Float16_t, Float16_t> _aFloat16_tPair;
 //	edm::SortedCollection<HGCalTBRecHit> _theHGCTBRsc;
 //	edm::Wrapper< HGCalTBRecHitCollection > _HGCTBeeRHitProd;
 	

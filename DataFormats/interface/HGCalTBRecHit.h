@@ -5,6 +5,7 @@
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include <cstdlib>
 #include <vector>
+#include "FWCore/Utilities/interface/TypeWithDict.h"
 
 /** \class HGCalTBRecHit
  *
@@ -12,7 +13,6 @@
  *
  * \todo fix the energy threshold for low gain saturation in a different way: now it's hardcoded
  */
-#define _lowGainSaturationThreshold 2000
 
 class HGCalTBRecHit : public CaloRecHit
 {
@@ -33,8 +33,7 @@ public:
 
 	HGCalTBRecHit();
 	// by default a recHit is greated with no flag
-	//	HGCalTBRecHit(const DetId& id, float energyLow, float energyHigh, float time, uint32_t flags = 0); // when constructing from digis using 2 gains for the ADC
-	HGCalTBRecHit(const DetId& id, float energy, float energyLow, float energyHigh, float energyToT, float time, uint32_t flags = 0); // when constructing from digis using 2 gains for the ADC
+	HGCalTBRecHit(const DetId& id, Float16_t energy, Float16_t energyLow, Float16_t energyHigh, unsigned int short energyToT, Float16_t time, uint32_t flags = 0); // when constructing from digis using 2 gains for the ADC
 	
 	/// get the id
 	HGCalTBDetId id() const
@@ -42,72 +41,73 @@ public:
 		return HGCalTBDetId(detid());
 	};
 	/////  bool isRecovered() const;
-	float _energyLow, _energyHigh, _energyTot;
-	std::pair<float, float> _energyTSLow, _energyTSHigh;
-	float _energy_HGExcl;
-	float cellCenter_x;
-	float cellCenter_y;
-	float _time;
-  	float _timeMaxHG;
-  	float _timeMaxLG;
+	Float16_t _energyLow, _energyHigh;
+	unsigned int short _energyTot;
+	std::pair<Float16_t, Float16_t> _energyTSLow, _energyTSHigh;
+	Float16_t _energy_HGExcl;
+	Float16_t cellCenter_x;
+	Float16_t cellCenter_y;
+	Float16_t _time;
+  	Float16_t _timeMaxHG;
+  	Float16_t _timeMaxLG;
 
-	int _toaRise, _toaFall;
+	unsigned int short _toaRise, _toaFall;
 
-	float energyLow() const
+	Float16_t energyLow() const
 	{
 		return _energyLow;
 	};
 
-	float energyHigh() const
+	Float16_t energyHigh() const
 	{
 		return _energyHigh;
 	};
 
-	std::pair<float, float> energyTSLow() const
+	std::pair<Float16_t, Float16_t> energyTSLow() const
 	{
 		return _energyTSLow;
 	};
 
-	std::pair<float, float> energyTSHigh() const
+	std::pair<Float16_t, Float16_t> energyTSHigh() const
 	{
 		return _energyTSHigh;
 	};
 
-	float energyTot() const
+	unsigned int short energyTot() const
 	{
 		return _energyTot;
 	};
 
-	float energy_HGExcl() const
+	Float16_t energy_HGExcl() const
 	{
 		return _energy_HGExcl;
 	};
 
-	void setTime(float time){_time = time;return;}
-	void setTimeMaxHG(float time){_timeMaxHG = time;return;}
-	void setTimeMaxLG(float time){_timeMaxLG = time;return;}
-	void setToaRise(float toaRise) { _toaRise = toaRise; } ;
-	void setToaFall(float toaFall) { _toaFall = toaFall; } ;
+	void setTime(Float16_t time){_time = time;return;}
+	void setTimeMaxHG(Float16_t time){_timeMaxHG = time;return;}
+	void setTimeMaxLG(Float16_t time){_timeMaxLG = time;return;}
+	void setToaRise(unsigned int short toaRise) { _toaRise = toaRise; } ;
+	void setToaFall(unsigned int short toaFall) { _toaFall = toaFall; } ;
 
 	//all ADC
-	void setEnergyTOT(float _energy) {_energyTot=_energy;};
-	void setEnergyLow(float _energy) {_energyLow=_energy;};
-	void setEnergyHigh(float _energy) {_energyHigh=_energy;};
-	void setEnergyTSLow(float _energy1, float _energy2) {_energyTSLow=std::make_pair(_energy1, _energy2);};
-	void setEnergyTSHigh(float _energy1, float _energy2) {_energyTSHigh=std::make_pair(_energy1, _energy2);};
-	void setEnergy_HGExcl(float _energy) {_energy_HGExcl=_energy;};
+	void setEnergyTOT(unsigned int short _energy) {_energyTot=_energy;};
+	void setEnergyLow(Float16_t _energy) {_energyLow=_energy;};
+	void setEnergyHigh(Float16_t _energy) {_energyHigh=_energy;};
+	void setEnergyTSLow(Float16_t _energy1, Float16_t _energy2) {_energyTSLow=std::make_pair(_energy1, _energy2);};
+	void setEnergyTSHigh(Float16_t _energy1, Float16_t _energy2) {_energyTSHigh=std::make_pair(_energy1, _energy2);};
+	void setEnergy_HGExcl(Float16_t _energy) {_energy_HGExcl=_energy;};
 
-	float time(){ 
+	Float16_t time(){ 
 	  return _time; 
 	} 
-	float timeMaxHG(){ 
+	Float16_t timeMaxHG(){ 
 	  return _timeMaxHG; 
 	} 	
-	float timeMaxLG(){ 
+	Float16_t timeMaxLG(){ 
 	  return _timeMaxLG; 
 	} 	
-	float toaRise() const { return _toaRise; };
-	float toaFall() const { return _toaFall; };
+	unsigned int short toaRise() const { return _toaRise; };
+	unsigned int short toaFall() const { return _toaFall; };
 
 	// set the flags
 	void setFlag(int flag)
@@ -125,9 +125,9 @@ public:
 		return flagField(flag, 1);
 	}; //flagBits_ & ( 0x1<<flag);}
 
-	void setCellCenterCoordinate(float x, float y);
+	void setCellCenterCoordinate(Float16_t x, Float16_t y);
 
-	float getCellCenterCartesianCoordinate(int index);	//index of the access
+	Float16_t getCellCenterCartesianCoordinate(int index);	//index of the access
 
 	void setUnderSaturationForHighGain(){ m_underSaturationHG=true; }
 	void setUnderSaturationForLowGain(){ m_underSaturationLG=true; }

@@ -8,6 +8,7 @@
 #include <Math/Minimizer.h>
 #include <Math/Factory.h>
 #include <Math/Functor.h>
+#include "FWCore/Utilities/interface/TypeWithDict.h"
 
 struct PulseFitterResult{
 PulseFitterResult() : tmax(0.), amplitude(0.), chi2(1e6), 
@@ -39,7 +40,7 @@ class PulseFitter{
  public:
   PulseFitter( int printLevel, double maxTime=225 , double trise=35 , double ampl_norm=1.85 , double tau=20 , int n_ord=3 );
   ~PulseFitter(){;}
-  void run(std::vector<double> &time, std::vector<double> &energy, PulseFitterResult &fit, double noise=-1);
+  void run(std::vector<Float16_t> &time, std::vector<Float16_t> &energy, PulseFitterResult &fit, Float16_t noise=-1);
   void setFitterParameter( fitterParameter params ){ m_fitterParameter=params; }
  private:
   int m_printLevel;

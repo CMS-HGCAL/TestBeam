@@ -10,7 +10,7 @@ HGCalTBRecHit::HGCalTBRecHit() : CaloRecHit()
 }
 
 
-HGCalTBRecHit::HGCalTBRecHit(const DetId& id, float energy, float energyLow, float energyHigh, float energyTot, float time, uint32_t flags) :
+HGCalTBRecHit::HGCalTBRecHit(const DetId& id, Float16_t energy, Float16_t energyLow, Float16_t energyHigh, unsigned int short energyTot, Float16_t time, uint32_t flags) :
   CaloRecHit(id, energy, time, flags),
   _energyLow(energyLow),
   _energyHigh(energyHigh),
@@ -33,12 +33,12 @@ HGCalTBRecHit::HGCalTBRecHit(const DetId& id, float energy, float energyLow, flo
 
 
 
-void HGCalTBRecHit::setCellCenterCoordinate(float x, float y) {
+void HGCalTBRecHit::setCellCenterCoordinate(Float16_t x, Float16_t y) {
   cellCenter_x = x;
   cellCenter_y = y;
 }
 
-float HGCalTBRecHit::getCellCenterCartesianCoordinate(int index) {
+Float16_t HGCalTBRecHit::getCellCenterCartesianCoordinate(int index) {
   switch(index) {
     case 0:
       return cellCenter_x;

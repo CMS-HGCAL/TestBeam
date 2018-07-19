@@ -1,5 +1,6 @@
 #include <HGCal/Reco/interface/PulseFitter.h>
 
+
 #include <limits>
 
 #include <Math/Minimizer.h>
@@ -50,7 +51,7 @@ PulseFitter::PulseFitter( int printLevel, double maxTime , double trise , double
   _n_ord = n_ord;  
 }
 
-void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, PulseFitterResult &fit, double noise)
+void PulseFitter::run(std::vector<Float16_t> &time, std::vector<Float16_t> &energy, PulseFitterResult &fit, Float16_t noise)
 {
   if( time.size()!=energy.size() ){
     std::cout << "ERROR : we should have the same vector size in PulseFitter::run(std::vector<double> time, std::vector<double> energy, PulseFitterResult fit) -> return without fitting" << std::endl;
