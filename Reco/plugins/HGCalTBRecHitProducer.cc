@@ -216,7 +216,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
         if (fitresultLG.status!=0) recHit.setFlag(HGCalTBRecHit::kLGFitFailed);
         if (fitresultHG.status!=0) recHit.setFlag(HGCalTBRecHit::kHGFitFailed);
 
-        float energy_TOT_contrib = (totgain-adcConv.TOT_offset()) * adcConv.TOT_to_lowGain() * adcConv.lowGain_to_highGain() * adcConv.adc_to_MIP();
+        //totgain = 1/provided constant from the calibration
+        float energy_TOT_contrib = totgain * (adcConv.TOT_to_lowGain() -adcConv.TOT_offset()) * adcConv.lowGain_to_highGain() * adcConv.adc_to_MIP();
 
         float energy_LG_contrib = 0;
         if (((fitresultLG.status==0)&&(lowgain < adcConv.TOT_lowGain_transition())) || ((fitresultLG.status!=0)&&(rawhit.lowGainADC(m_expectedMaxTimeSample) < adcConv.TOT_lowGain_transition()))) {
