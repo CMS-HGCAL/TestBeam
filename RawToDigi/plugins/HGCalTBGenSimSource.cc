@@ -348,8 +348,8 @@ void HGCalTBGenSimSource::produce(edm::Event & event)
 		std::unique_ptr<std::map<int, WireChamberData> > dwcs(new std::map<int, WireChamberData>);	
 		rd->booleanUserRecords.add("hasValidDWCMeasurement", true);
 		for (size_t d=0; d<referenceTracking_zPositions.size(); d++) {
-			double dwc_x = beamX + randgen->Gaus(0, wc_resolutions[d]/10);		//value in cm
-			double dwc_y = beamY + randgen->Gaus(0, wc_resolutions[d]/10);		//value in cm
+			double dwc_x = 10*beamX + randgen->Gaus(0, wc_resolutions[d]);		//conversion to cm performed at a different the track computation stage
+			double dwc_y = 10*beamY + randgen->Gaus(0, wc_resolutions[d]);		//conversion to cm performed at a different the track computation stage
 
 			WireChamberData* dwc = new WireChamberData(d+1, dwc_x , dwc_y, referenceTracking_zPositions[d]);
 			dwc->goodMeasurement_X = dwc->goodMeasurement_Y = dwc->goodMeasurement = true;
