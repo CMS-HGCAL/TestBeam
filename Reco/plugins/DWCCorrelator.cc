@@ -423,7 +423,7 @@ void DWCCorrelator::ReadDWCWindows(int fileIndex) {
 	}
 
 	int iboard = -1, iskiroc = -1, ichannel = -1;
-	double DWC_x_min, DWC_x_max, DWC_y_min, DWC_y_max;
+	double DWC_x_min=-1, DWC_x_max=-1, DWC_y_min=-1, DWC_y_max=-1;
 
 	while (file.is_open() && !file.eof()) {		
 		if (readCounter!=-2) readCounter++;
@@ -439,10 +439,10 @@ void DWCCorrelator::ReadDWCWindows(int fileIndex) {
 		if (readCounter==5) DWC_y_min = atof(fragment);
 		if (readCounter==6) { DWC_y_max = atof(fragment);
 			int key = iboard*1000+iskiroc*100+ichannel;
-			_parameters[key].push_back(DWC_x_min);
-			_parameters[key].push_back(DWC_x_max);
-			_parameters[key].push_back(DWC_y_min);
-			_parameters[key].push_back(DWC_y_max);
+			_parameters[key].push_back(DWC_x_min/10);	//conversion to cm, 25 July 2018
+			_parameters[key].push_back(DWC_x_max/10);	//conversion to cm, 25 July 2018
+			_parameters[key].push_back(DWC_y_min/10);	//conversion to cm, 25 July 2018
+			_parameters[key].push_back(DWC_y_max/10);	//conversion to cm, 25 July 2018
 			readCounter=-1;
 		}
 	}

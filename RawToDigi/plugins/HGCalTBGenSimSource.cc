@@ -81,13 +81,18 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 
 	areaSpecification = pset.getUntrackedParameter<std::string>("areaSpecification", "H2");
 	//given in cm
-	if (areaSpecification=="H6A") {
+	if (areaSpecification=="H6A_October2017") {
 		referenceTracking_zPositions.push_back(-500.);
-	} else if (areaSpecification=="H2"){
+	} else if (areaSpecification=="H2_Summer2017"){
 		referenceTracking_zPositions.push_back(-109.);
 		referenceTracking_zPositions.push_back(-235.);
 		referenceTracking_zPositions.push_back(-1509.);
 		referenceTracking_zPositions.push_back(-1769.);
+	} else if (areaSpecification=="H2"){
+		referenceTracking_zPositions.push_back(-120.);
+		referenceTracking_zPositions.push_back(-246.);
+		referenceTracking_zPositions.push_back(-1520.);
+		referenceTracking_zPositions.push_back(-1780.);
 	} else if (areaSpecification=="DESY_T21_March2018"){
 		referenceTracking_zPositions.push_back(0.);
 		referenceTracking_zPositions.push_back(15.3);

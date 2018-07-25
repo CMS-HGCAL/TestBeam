@@ -39,14 +39,21 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 
 	areaSpecification = pset.getUntrackedParameter<std::string>("areaSpecification", "H2");
 
-	if (areaSpecification=="H6A") {
-		dwc_z1 = dwc_z1_H6A;
+
+
+	if (areaSpecification=="H2_Summer2017") {
+		dwc_z1 = dwc_z1_H2_Summer2017;
+		dwc_z2 = dwc_z2_H2_Summer2017;
+		dwc_z3 = dwc_z3_H2_Summer2017;
+		dwc_z4 = dwc_z4_H2_Summer2017;
+	} else if (areaSpecification=="H6A_October2017") {
+		dwc_z1 = dwc_z1_H6A_Ocotber2017;
 		dwc_z2 = dwc_z3 = dwc_z4 = -1.;
 	} else {
-		dwc_z1 = dwc_z1_H2;
-		dwc_z2 = dwc_z2_H2;
-		dwc_z3 = dwc_z3_H2;
-		dwc_z4 = dwc_z4_H2;
+		dwc_z1 = dwc_z1_H2_June2018;
+		dwc_z2 = dwc_z2_H2_June2018;
+		dwc_z3 = dwc_z3_H2_June2018;
+		dwc_z4 = dwc_z4_H2_June2018;
 	}
 
 	produces<std::map<int, WireChamberData> >(outputCollectionName);

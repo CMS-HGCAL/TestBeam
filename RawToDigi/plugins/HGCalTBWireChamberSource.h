@@ -41,12 +41,18 @@ enum DWC_to_TDC_MAP {
 };
 
 //indication in cm
-double dwc_z1_H2 = -120.;	//z=0 is the HGCal table, unit is cm
-double dwc_z2_H2 = -246.;
-double dwc_z3_H2 = -1520.;
-double dwc_z4_H2 = -1780.;
+double dwc_z1_H2_Summer2017 = -109.;	//z=0 is the HGCal table, unit is cm
+double dwc_z2_H2_Summer2017 = -235.;
+double dwc_z3_H2_Summer2017 = -1509.;
+double dwc_z4_H2_Summer2017 = -1769.;
 
-double dwc_z1_H6A = -500.;	//z=0 is the HGCal table, unit is cm
+double dwc_z1_H6A_Ocotber2017 = -500.;	//z=0 is the HGCal table, unit is cm
+
+double dwc_z1_H2_June2018 = -120.;	//z=0 is the HGCal table, unit is cm
+double dwc_z2_H2_June2018 = -246.;
+double dwc_z3_H2_June2018 = -1520.;
+double dwc_z4_H2_June2018 = -1780.;
+
 
 //to the EDM::Event via auxiliary information
 class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {

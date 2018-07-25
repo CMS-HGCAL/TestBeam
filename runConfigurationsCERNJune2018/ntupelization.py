@@ -97,13 +97,11 @@ process.TFileService = cms.Service("TFileService", fileName = cms.string(options
 if options.isSimulation==0:
     rundata_tag = cms.InputTag("wirechamberproducer", "FullRunData" )
     rechit_tag = cms.InputTag("rechitproducer","HGCALTBRECHITS" )
-    commonModeNoise_tag = cms.InputTag("rechitproducer","HGCALTBCOMMONMODENOISEMAP" )
     dwc_tag = cms.InputTag("wirechamberproducer","DelayWireChambers" )
     dwc_track_tag = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" )
 else:
     rundata_tag = cms.InputTag("source", "FullRunData" )
     rechit_tag = cms.InputTag("source","HGCALTBRECHITS" )
-    commonModeNoise_tag = cms.InputTag("","" )
     dwc_tag = cms.InputTag("source","DelayWireChambers" )
     dwc_track_tag = cms.InputTag("dwctrackproducer","HGCalTBDWCTracks" )
 
