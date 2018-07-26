@@ -106,7 +106,8 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         ADCCalibrations = cms.untracked.string(adcCalibrations),                                       
                                         calibrationPerChannel=cms.untracked.bool(False),                                   
                                         ExpectedMaxTimeSample=cms.untracked.int32(3),
-                                        MaxADCCut=cms.untracked.double(20)
+                                        MaxADCCut=cms.untracked.double(20),
+                                        preselectionMethod=cms.untracked.string("TB2017")
 )
 
 

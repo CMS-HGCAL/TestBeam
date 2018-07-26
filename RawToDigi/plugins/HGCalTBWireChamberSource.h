@@ -21,24 +21,24 @@
 #include "TTree.h"
 
 
-enum DWC_to_TDC_MAP {
-	DWC1_LEFT = 0,
-	DWC1_RIGHT = 1,
-	DWC1_DOWN = 2,
-	DWC1_UP = 3,
-	DWC2_LEFT = 4,
-	DWC2_RIGHT = 5,
-	DWC2_DOWN = 6,
-	DWC2_UP = 7,
-	DWC3_LEFT = 9,		//default: 15 --> but mind the flip for these chambers
-	DWC3_RIGHT = 8,	//default: 14 --> but mind the flip for these chambers
-	DWC3_DOWN = 10,
-	DWC3_UP = 11,
-	DWC4_LEFT = 13,		//defalt: 10 --> but mind the flip for these chambers
-	DWC4_RIGHT = 12,	//default: 11 --> but mind the flip for these chambers
-	DWC4_DOWN = 14,
-	DWC4_UP = 15
-};
+//DWC_to_TDC_MAP
+int DWC1_LEFT;
+int DWC1_RIGHT;
+int DWC1_DOWN;
+int DWC1_UP;
+int DWC2_LEFT;
+int DWC2_RIGHT;
+int DWC2_DOWN;
+int DWC2_UP;
+int DWC3_LEFT;
+int DWC3_RIGHT;
+int DWC3_DOWN;
+int DWC3_UP;
+int DWC4_LEFT;
+int DWC4_RIGHT;
+int DWC4_DOWN;
+int DWC4_UP;
+
 
 //indication in cm
 double dwc_z1_H2_Summer2017 = -109.;	//z=0 is the HGCal table, unit is cm

@@ -39,21 +39,67 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 
 	areaSpecification = pset.getUntrackedParameter<std::string>("areaSpecification", "H2");
 
-
-
 	if (areaSpecification=="H2_Summer2017") {
 		dwc_z1 = dwc_z1_H2_Summer2017;
 		dwc_z2 = dwc_z2_H2_Summer2017;
 		dwc_z3 = dwc_z3_H2_Summer2017;
 		dwc_z4 = dwc_z4_H2_Summer2017;
+		DWC1_LEFT = 0;
+		DWC1_RIGHT = 1;
+		DWC1_DOWN = 2;
+		DWC1_UP = 3;
+		DWC2_LEFT = 4;
+		DWC2_RIGHT = 5;
+		DWC2_DOWN = 6;
+		DWC2_UP = 7;
+		DWC3_LEFT = 14;
+		DWC3_RIGHT = 15;
+		DWC3_DOWN = 13;
+		DWC3_UP = 12;
+		DWC4_LEFT = 10;
+		DWC4_RIGHT = 11;
+		DWC4_DOWN = 9;
+		DWC4_UP = 8;
 	} else if (areaSpecification=="H6A_October2017") {
 		dwc_z1 = dwc_z1_H6A_Ocotber2017;
 		dwc_z2 = dwc_z3 = dwc_z4 = -1.;
+		DWC1_LEFT = 0;
+		DWC1_RIGHT = 1;
+		DWC1_DOWN = 2;
+		DWC1_UP = 3;
+		DWC2_LEFT = 4;
+		DWC2_RIGHT = 5;
+		DWC2_DOWN = 6;
+		DWC2_UP = 7;
+		DWC3_LEFT = 14;
+		DWC3_RIGHT = 15;
+		DWC3_DOWN = 13;
+		DWC3_UP = 12;
+		DWC4_LEFT = 10;
+		DWC4_RIGHT = 11;
+		DWC4_DOWN = 9;
+		DWC4_UP = 8;		
 	} else {
 		dwc_z1 = dwc_z1_H2_June2018;
 		dwc_z2 = dwc_z2_H2_June2018;
 		dwc_z3 = dwc_z3_H2_June2018;
 		dwc_z4 = dwc_z4_H2_June2018;
+		DWC1_LEFT = 0;
+		DWC1_RIGHT = 1;
+		DWC1_DOWN = 2;
+		DWC1_UP = 3;
+		DWC2_LEFT = 4;
+		DWC2_RIGHT = 5;
+		DWC2_DOWN = 6;
+		DWC2_UP = 7;
+		DWC3_LEFT = 9;	
+		DWC3_RIGHT = 8;	
+		DWC3_DOWN = 10;
+		DWC3_UP = 11;
+		DWC4_LEFT = 13;	
+		DWC4_RIGHT = 12;
+		DWC4_DOWN = 14;
+		DWC4_UP = 15;
 	}
 
 	produces<std::map<int, WireChamberData> >(outputCollectionName);

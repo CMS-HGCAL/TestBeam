@@ -25,6 +25,11 @@
 #include "TH2F.h"
 
 
+enum PreselectionMethod {
+  TB2017 = 0,
+  TB2018
+};
+
 class HGCalTBRecHitProducer : public edm::EDProducer
 {
  public:
@@ -50,6 +55,9 @@ class HGCalTBRecHitProducer : public edm::EDProducer
 
   std::pair<Float16_t, Float16_t> CellCentreXY;
   HGCalTBCellVertices TheCell;
+
+  std::string m_preselectionMethod;
+  PreselectionMethod _preselectionMethod;
 
   struct {
     HGCalElectronicsMap emap_;

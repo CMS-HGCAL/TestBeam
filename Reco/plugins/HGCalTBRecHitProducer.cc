@@ -15,7 +15,8 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) :
   m_adcCalibrationsFile(cfg.getUntrackedParameter<std::string>("ADCCalibrations","HGCal/CondObjects/data/hgcal_calibration.txt")),
   m_calibrationPerChannel(cfg.getUntrackedParameter<bool>("calibrationPerChannel",false)),
   m_expectedMaxTimeSample(cfg.getUntrackedParameter<int>("ExpectedMaxTimeSample",3)),
-  m_maxADCCut(cfg.getUntrackedParameter<double>("MaxADCCut",15))
+  m_maxADCCut(cfg.getUntrackedParameter<double>("MaxADCCut",15)),
+  m_preselectionMethod(cfg.getUntrackedParameter<std::string>("preselectionMethod","TB2018"))
 {
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
   produces <HGCalTBRecHitCollection>(m_outputCollectionName);
@@ -51,6 +52,8 @@ void HGCalTBRecHitProducer::beginJob()
     };
   }
 
+  if (m_preselectionMethod=="TB2017") _preselectionMethod = TB2017;
+  else _preselectionMethod = TB2018;
   //  std::cout << essource_.adccalibmap_ << std::endl;
 
   edm::Service<TFileService> fs;
@@ -155,11 +158,27 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     HGCalTBDetId detid = rawhit.detid();
     HGCalTBLayer layer= essource_.layout_.at(detid.layer()-1);
 
-    Float16_t max_minus=rawhit.highGainADC(m_expectedMaxTimeSample-2)-subHG[m_expectedMaxTimeSample-2];
-    Float16_t themax=rawhit.highGainADC(m_expectedMaxTimeSample)-subHG[m_expectedMaxTimeSample];
-    Float16_t max_plus=rawhit.highGainADC(m_expectedMaxTimeSample+1)-subHG[m_expectedMaxTimeSample+1];
-    Float16_t undershoot=rawhit.highGainADC(m_expectedMaxTimeSample+3)-subHG[m_expectedMaxTimeSample+3];
-    if( themax>500||(max_minus<themax && themax>undershoot && max_plus>undershoot && themax>m_maxADCCut) ){
+    bool passPreselection = false;
+
+    if (_preselectionMethod==TB2018) {
+      Float16_t max_minus=rawhit.highGainADC(m_expectedMaxTimeSample-2)-subHG[m_expectedMaxTimeSample-2];
+      Float16_t themax=rawhit.highGainADC(m_expectedMaxTimeSample)-subHG[m_expectedMaxTimeSample];
+      Float16_t max_plus=rawhit.highGainADC(m_expectedMaxTimeSample+1)-subHG[m_expectedMaxTimeSample+1];
+      Float16_t undershoot=rawhit.highGainADC(m_expectedMaxTimeSample+3)-subHG[m_expectedMaxTimeSample+3];
+      passPreselection = ( themax>500||(max_minus<themax && themax>undershoot && max_plus>undershoot && themax>m_maxADCCut) );      
+    } else if (_preselectionMethod==TB2017) {
+      float en1=sampleHG[1];
+      float en2=sampleHG[2];
+      float en3=sampleHG[3];
+      float en4=sampleHG[4];
+      float en6=sampleHG[6];
+      passPreselection = ( en1<en3 && en3>en6 && (en4>en6||en2>en6) && en3>m_maxADCCut);      
+    } else {
+      passPreselection=true;
+    }
+
+      
+    if (passPreselection) {
       int moduleId= layer.at( detid.sensorIU(),detid.sensorIV() ).moduleID();
       iski = rawhit.skiroc()%4;
       
