@@ -13,7 +13,8 @@ HGCalTBRawHitProducer::HGCalTBRawHitProducer(const edm::ParameterSet& cfg) :
   m_channelsToMask_filename(cfg.getUntrackedParameter<std::string>("ChannelsToMaskFileName","HGCal/CondObjects/data/noisyChannels.txt")),
   m_underSaturationADC(cfg.getUntrackedParameter<int>("UnderSaturationADC",4)),
   m_minTimeSampleForSaturation(cfg.getUntrackedParameter<int>("MinTimeSampleForSaturation",2)),
-  m_maxTimeSampleForSaturation(cfg.getUntrackedParameter<int>("MaxTimeSampleForSaturation",4))
+  m_maxTimeSampleForSaturation(cfg.getUntrackedParameter<int>("MaxTimeSampleForSaturation",4)),
+  m_performROCHeaderCheck(cfg.getUntrackedParameter<bool>("performROCHeaderCheck",false))
 {
   m_HGCalTBSkiroc2CMSCollection = consumes<HGCalTBSkiroc2CMSCollection>(cfg.getParameter<edm::InputTag>("InputCollection"));
   produces <HGCalTBRawHitCollection>(m_outputCollectionName);
@@ -131,9 +132,11 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   
   for( size_t iski=0; iski<skirocs->size(); iski++ ){
     HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
-    //if( !skiroc.check() )   //June 2018 TB: headers are corrupt for ROC 2, layer 14 but data looks ok
-    //  continue;
+    if(m_performROCHeaderCheck && !skiroc.check() )   //June 2018 TB: headers are corrupt for ROC 2, layer 14 but data looks ok
+      continue;
+    
     std::vector<int> rollpositions=skiroc.rollPositions();
+    
     globalTimestamps->skiroc_to_timestamps[iski] = skiroc.globalTS();
     for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
       int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;

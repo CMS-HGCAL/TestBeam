@@ -35,7 +35,9 @@ class HGCalTBRawHitProducer : public edm::EDProducer
   int m_underSaturationADC;
   int m_minTimeSampleForSaturation;
   int m_maxTimeSampleForSaturation;
-  
+  bool m_performROCHeaderCheck;
+
+
   edm::EDGetTokenT<HGCalTBSkiroc2CMSCollection> m_HGCalTBSkiroc2CMSCollection;
 
   struct {

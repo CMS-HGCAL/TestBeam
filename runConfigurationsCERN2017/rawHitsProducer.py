@@ -122,7 +122,8 @@ process.rawhitproducer = cms.EDProducer("HGCalTBRawHitProducer",
                                         MaskNoisyChannels=cms.untracked.bool(bool(options.MaskNoisyChannels)),
                                         HighGainPedestalFileName=cms.untracked.string(options.pedestalHighGainFile),
                                         LowGainPedestalFileName=cms.untracked.string(options.pedestalLowGainFile),
-                                        ChannelsToMaskFileName=cms.untracked.string(options.noisyChannelsFile)
+                                        ChannelsToMaskFileName=cms.untracked.string(options.noisyChannelsFile),
+                                        performROCHeaderCheck=cms.untracked.bool(True)
 )
 
 
