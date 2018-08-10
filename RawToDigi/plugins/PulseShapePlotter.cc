@@ -1,6 +1,5 @@
 #include <iostream>
 #include "TH1F.h"
-#include "TH2F.h"
 #include "TH2Poly.h"
 #include "TTree.h"
 #include <fstream>
@@ -16,6 +15,7 @@
 #include "CommonTools/UtilAlgos/interface/TFileService.h"
 
 #include "HGCal/DataFormats/interface/HGCalTBRawHitCollection.h"
+#include "HGCal/DataFormats/interface/HGCalTBRawHit.h"
 #include "HGCal/DataFormats/interface/HGCalTBDetId.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 #include "HGCal/CondObjects/interface/HGCalElectronicsMap.h"
@@ -37,6 +37,7 @@ private:
   virtual void beginJob() override;
   void analyze(const edm::Event& , const edm::EventSetup&) override;
   virtual void endJob() override;
+  static void fittingPulseShapes(HGCalTBRawHit* hit,float *subLG, float* subHG);
 
   std::string m_electronicMap;
   struct {
@@ -44,36 +45,44 @@ private:
   } essource_;
   double m_commonModeThreshold; //currently not use (need to implement the "average" option in CommonMode.cc)
   int m_expectedMaxTimeSample;
+  int m_maxADCCut;
+  bool m_savePulseShapes;
   
   edm::EDGetTokenT<HGCalTBRawHitCollection> m_HGCalTBRawHitCollection;
   TTree *m_tree;
   int m_evtID;
-  int m_channelID;
-  int m_skirocID;
-  int m_layerID;
-  float m_hgADC;
-  float m_hgTmax;
-  float m_hgChi2;
-  float m_hgErrorADC;
-  float m_hgErrorTmax;
-  int m_hgStatus;
-  int m_hgNCalls;
-  float m_lgADC;
-  float m_lgTmax;
-  float m_lgChi2;
-  float m_lgErrorADC;
-  float m_lgErrorTmax;
-  int m_lgStatus;
-  int m_lgNCalls;
-  int m_totSlow;
-  int m_toaRise;
-  int m_toaFall;
+  std::vector<int> m_channelID;
+  std::vector<int> m_skirocID;
+  std::vector<int> m_layerID;
+  std::vector<float> m_hgTS3_CM0;
+  std::vector<float> m_hgTS3_CM3;
+  std::vector<float> m_hgADC;
+  std::vector<float> m_hgTmax;
+  std::vector<float> m_hgChi2;
+  std::vector<float> m_hgErrorADC;
+  std::vector<float> m_hgErrorTmax;
+  std::vector<int> m_hgStatus;
+  std::vector<int> m_hgNCalls;
+  std::vector<float> m_lgTS3_CM0;
+  std::vector<float> m_lgTS3_CM3;
+  std::vector<float> m_lgADC;
+  std::vector<float> m_lgTmax;
+  std::vector<float> m_lgChi2;
+  std::vector<float> m_lgErrorADC;
+  std::vector<float> m_lgErrorTmax;
+  std::vector<int> m_lgStatus;
+  std::vector<int> m_lgNCalls;
+  std::vector<int> m_totSlow;
+  std::vector<int> m_toaRise;
+  std::vector<int> m_toaFall;
 };
 
 PulseShapePlotter::PulseShapePlotter(const edm::ParameterSet& iConfig) :
-  m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_OneLayers_May2017.txt")),
+  m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","elecmap.txt")),
   m_commonModeThreshold(iConfig.getUntrackedParameter<double>("CommonModeThreshold",100)),
-  m_expectedMaxTimeSample(iConfig.getUntrackedParameter<int>("ExpectedMaxTimeSample",3))
+  m_expectedMaxTimeSample(iConfig.getUntrackedParameter<int>("ExpectedMaxTimeSample",3)),
+  m_maxADCCut(iConfig.getUntrackedParameter<double>("MaxADCCut",15)),
+  m_savePulseShapes(iConfig.getUntrackedParameter<bool>("SavePulseShapes",false))
 {
   m_HGCalTBRawHitCollection = consumes<HGCalTBRawHitCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
   m_evtID=0;
@@ -84,6 +93,8 @@ PulseShapePlotter::PulseShapePlotter(const edm::ParameterSet& iConfig) :
   m_tree->Branch("skirocID",&m_skirocID);
   m_tree->Branch("boardID",&m_layerID);
   m_tree->Branch("channelID",&m_channelID);
+  m_tree->Branch("HighGainTS3_CM0",&m_hgTS3_CM0);
+  m_tree->Branch("HighGainTS3_CM3",&m_hgTS3_CM3);
   m_tree->Branch("HighGainADC",&m_hgADC);
   m_tree->Branch("HighGainTmax",&m_hgTmax);
   m_tree->Branch("HighGainChi2",&m_hgChi2);
@@ -92,6 +103,8 @@ PulseShapePlotter::PulseShapePlotter(const edm::ParameterSet& iConfig) :
   m_tree->Branch("HighGainStatus",&m_hgStatus);
   m_tree->Branch("HighGainNCalls",&m_hgNCalls);
 
+  m_tree->Branch("LowGainTS3_CM0",&m_lgTS3_CM0);
+  m_tree->Branch("LowGainTS3_CM3",&m_lgTS3_CM3);
   m_tree->Branch("LowGainADC",&m_lgADC);
   m_tree->Branch("LowGainTmax",&m_lgTmax);
   m_tree->Branch("LowGainChi2",&m_lgChi2);
@@ -120,32 +133,63 @@ void PulseShapePlotter::beginJob()
   };
 }
 
+void PulseShapePlotter::fittingPulseShapes(HGCalTBRawHit* hit,float *subLG, float* subHG)
+{
+}
+
 void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
 {
-  usesResource("TFileService");
-  edm::Service<TFileService> fs;
+  m_channelID.clear();
+  m_skirocID.clear();
+  m_layerID.clear();
+  m_hgTS3_CM0.clear();
+  m_hgTS3_CM3.clear();
+  m_hgADC.clear();
+  m_hgTmax.clear();
+  m_hgChi2.clear();
+  m_hgErrorADC.clear();
+  m_hgErrorTmax.clear();
+  m_hgStatus.clear();
+  m_hgNCalls.clear();
+  m_lgTS3_CM0.clear();
+  m_lgTS3_CM3.clear();
+  m_lgADC.clear();
+  m_lgTmax.clear();
+  m_lgChi2.clear();
+  m_lgErrorADC.clear();
+  m_lgErrorTmax.clear();
+  m_lgStatus.clear();
+  m_lgNCalls.clear();
+  m_totSlow.clear();
+  m_toaRise.clear();
+  m_toaFall.clear();
+  
   std::map<int,TH1F*>  hMapHG,hMapLG;
-  std::ostringstream os( std::ostringstream::ate );
-  os.str("");
-  os << "Event" << event.id().event();
-  TFileDirectory dir = fs->mkdir( os.str().c_str() );
-  for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
-    for(size_t is = 0; is<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; is++) {
-      os.str("");
-      os << "Hexaboard" << ib << "_Skiroc" << is ;
-      TFileDirectory subdir = dir.mkdir( os.str().c_str() );
-      for( size_t ic=0; ic<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ic++ ){
-	int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*ib+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-is)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
-	HGCalTBElectronicsId eid(skiId,ic);      
-	if (!essource_.emap_.existsEId(eid.rawId())) continue;
+  if( m_savePulseShapes ){
+    usesResource("TFileService");
+    edm::Service<TFileService> fs;
+    std::ostringstream os( std::ostringstream::ate );
+    os.str("");
+    os << "Event" << event.id().event();
+    TFileDirectory dir = fs->mkdir( os.str().c_str() );
+    for(size_t ib = 0; ib<HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
+      for(size_t is = 0; is<HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; is++) {
 	os.str("");
-	os<<"HighGain_Channel"<<ic;
-	TH1F *hHG=subdir.make<TH1F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES,0,NUMBER_OF_TIME_SAMPLES*25);
-	hMapHG.insert( std::pair<int,TH1F*>(1000*ib+100*is+ic,hHG) );
-	os.str("");
-	os<<"LowGain_Channel"<<ic;
-	TH1F* hLG=subdir.make<TH1F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES,0,NUMBER_OF_TIME_SAMPLES*25);
-	hMapLG.insert( std::pair<int,TH1F*>(1000*ib+100*is+ic,hLG) );
+	os << "Hexaboard" << ib << "_Skiroc" << is ;
+	TFileDirectory subdir = dir.mkdir( os.str().c_str() );
+	for( size_t ic=0; ic<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ic++ ){
+	  int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*ib+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-is)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+	  HGCalTBElectronicsId eid(skiId,ic);      
+	  if (!essource_.emap_.existsEId(eid.rawId())) continue;
+	  os.str("");
+	  os<<"HighGain_Channel"<<ic;
+	  TH1F *hHG=subdir.make<TH1F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES+2,-25,(1+NUMBER_OF_TIME_SAMPLES)*25);
+	  hMapHG.insert( std::pair<int,TH1F*>(1000*ib+100*is+ic,hHG) );
+	  os.str("");
+	  os<<"LowGain_Channel"<<ic;
+	  TH1F* hLG=subdir.make<TH1F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES+2,-25,(1+NUMBER_OF_TIME_SAMPLES)*25);
+	  hMapLG.insert( std::pair<int,TH1F*>(1000*ib+100*is+ic,hLG) );
+	}
       }
     }
   }
@@ -156,13 +200,14 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
   CommonMode cm(essource_.emap_); //default is common mode per chip using the median
   cm.Evaluate( hits );
   std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
-  PulseFitter fitter(0,200);
+  PulseFitter fitter(0);
   for( auto hit : *hits ){
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
     if( essource_.emap_.existsEId(eid) ){
       int iski=hit.skiroc();
       float highGain,lowGain;
-      float subHG[NUMBER_OF_TIME_SAMPLES],subLG[NUMBER_OF_TIME_SAMPLES];
+      float subHG[NUMBER_OF_TIME_SAMPLES];
+      float subLG[NUMBER_OF_TIME_SAMPLES];
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
       	subHG[it]=0;
       	subLG[it]=0;
@@ -199,53 +244,62 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
       }
       int iboard=hit.skiroc()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
       int ichan=hit.channel();
-      std::vector<double> hg,lg,time;
+      // double *hg[NUMBER_OF_TIME_SAMPLES];
+      // double *lg[NUMBER_OF_TIME_SAMPLES];
+      // double *time[NUMBER_OF_TIME_SAMPLES];
+      std::vector<double> hg(NUMBER_OF_TIME_SAMPLES),lg(NUMBER_OF_TIME_SAMPLES),time(NUMBER_OF_TIME_SAMPLES);
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-	highGain=hit.highGainADC(it)-subHG[it];
-	lowGain=hit.lowGainADC(it)-subLG[it];
-	hg.push_back(highGain);
-	lg.push_back(lowGain);
-	time.push_back(25*it+12.5);
-	hMapHG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->Fill(25*it,highGain);
-	hMapLG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->Fill(25*it,lowGain);
+	highGain=hit.highGainADC(it)-subHG[0];
+	lowGain=hit.lowGainADC(it)-subLG[0];
+	hg[it]=highGain;
+	lg[it]=lowGain;
+	time[it]=25*it+12.5;
+	if( m_savePulseShapes ){
+	  hMapHG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->Fill(time[it],highGain);
+	  hMapLG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->Fill(time[it],lowGain);
+	}
       }
-      float max_minus=hit.highGainADC(m_expectedMaxTimeSample-1)-subHG[m_expectedMaxTimeSample-1];
-      float themax=hit.highGainADC(m_expectedMaxTimeSample)-subHG[m_expectedMaxTimeSample];
-      float max_plus=hit.highGainADC(m_expectedMaxTimeSample+1)-subHG[m_expectedMaxTimeSample+1];
-      float undershoot=hit.highGainADC(m_expectedMaxTimeSample+3)-subHG[m_expectedMaxTimeSample+3];
+      float max_minus=hg[m_expectedMaxTimeSample-3];
+      float themax=hg[m_expectedMaxTimeSample];
+      float max_plus=hg[m_expectedMaxTimeSample+1];
+      float undershoot=hg[m_expectedMaxTimeSample+3];
       if( themax>500||(max_minus<themax && themax>undershoot && max_plus>undershoot && themax>20) ){
-	// std::cout << iboard << " " << iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA << " " << ichan << "\t" << max_minus << " " << themax << " " << max_plus << " " << undershoot << std::endl;
+	//std::cout << iboard << " " << iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA << " " << ichan << "\t" << max_minus << " " << themax << " " << max_plus << " " << undershoot << std::endl;
 	PulseFitterResult fithg;
-	fitter.run( time,hg,fithg,8. );
+	fitter.run( time,hg,fithg,5. );
 	PulseFitterResult fitlg;
 	fitter.run( time,lg,fitlg,2. );
 	// std::cout << "\t" << fithg.amplitude << " " << fithg.tmax << " " << fithg.chi2 << std::endl;
 	// std::cout << "\t" << fitlg.amplitude << " " << fitlg.tmax << " " << fitlg.chi2 << std::endl;
 	// getchar();
-	m_channelID=ichan;
-	m_skirocID=iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-	m_layerID=iboard;
-	m_hgADC=fithg.amplitude;
-	m_hgTmax=fithg.tmax;
-	m_hgChi2=fithg.chi2;
-	m_hgErrorADC=fithg.erroramplitude;
-	m_hgErrorTmax=fithg.errortmax;
-	m_hgStatus=fithg.status;
-	m_hgNCalls=fithg.ncalls;
-	m_lgADC=fitlg.amplitude;
-	m_lgTmax=fitlg.tmax;
-	m_lgChi2=fitlg.chi2;
-	m_lgErrorADC=fitlg.erroramplitude;
-	m_lgErrorTmax=fitlg.errortmax;
-	m_lgStatus=fitlg.status;
-	m_lgNCalls=fitlg.ncalls;
-	m_totSlow=hit.totSlow();
-	m_toaRise=hit.toaRise();
-	m_toaFall=hit.toaFall();
-	m_tree->Fill();
+	m_channelID.push_back(ichan);
+	m_skirocID.push_back(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA);
+	m_layerID.push_back(iboard);
+	m_hgTS3_CM0.push_back(hit.highGainADC(3)-subHG[0]);
+	m_hgTS3_CM3.push_back(hit.highGainADC(3)-subHG[3]);
+	m_hgADC.push_back(fithg.amplitude);
+	m_hgTmax.push_back(fithg.tmax);
+	m_hgChi2.push_back(fithg.chi2);
+	m_hgErrorADC.push_back(fithg.erroramplitude);
+	m_hgErrorTmax.push_back(fithg.errortmax);
+	m_hgStatus.push_back(fithg.status);
+	m_hgNCalls.push_back(fithg.ncalls);
+	m_lgTS3_CM0.push_back(hit.lowGainADC(3)-subLG[0]);
+	m_lgTS3_CM3.push_back(hit.lowGainADC(3)-subLG[3]);
+	m_lgADC.push_back(fitlg.amplitude);
+	m_lgTmax.push_back(fitlg.tmax);
+	m_lgChi2.push_back(fitlg.chi2);
+	m_lgErrorADC.push_back(fitlg.erroramplitude);
+	m_lgErrorTmax.push_back(fitlg.errortmax);
+	m_lgStatus.push_back(fitlg.status);
+	m_lgNCalls.push_back(fitlg.ncalls);
+	m_totSlow.push_back(hit.totSlow());
+	m_toaRise.push_back(hit.toaRise());
+	m_toaFall.push_back(hit.toaFall());
       }
     }
   }
+  m_tree->Fill();
   m_evtID++;
 }
 

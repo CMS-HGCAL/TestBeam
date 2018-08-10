@@ -25,7 +25,7 @@ options.register('compressedData',
                  'Option to set if the data have beem compressed')
 
 options.register('electronicMap',
-                 "HGCal/CondObjects/data/map_CERN_Hexaboard_OneModule.txt",
+                 "HGCal/CondObjects/data/map_CERN_Hexaboard_OneModule_V2.txt",
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'path to the electronic map')

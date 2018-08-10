@@ -9,10 +9,10 @@
 //seems to be mandatory since we need static function
 double _time[11],_energy[11];
 double _maxTime=200.; 
-double _trise=39.;
-double _noise=8.;
-double _ampl_norm = 1.88; // amplitude normalization factor for tau = 18, n = 3
-double _tau = 18.;
+double _trise=45.;
+double _noise=5.;
+double _ampl_norm = 1.85; // amplitude normalization factor for tau = 18, n = 3
+double _tau = 25.;
 int _n_ord = 3;
    
 // double pulseShape_fcn(double t, double tmax, double amp)
@@ -30,8 +30,8 @@ double pulseShape_fcn(double t, double tmax, double amp)
 double pulseShape_chi2(const double *x)
 {
   double sum = 0.0;
-  for(size_t i=0; i<9; i++){
-    if( _energy[i]<-150 || _time[i]>_maxTime ) continue;
+  for(size_t i=0; i<6; i++){
+    if( _energy[i]<-170 || _time[i]>_maxTime ) continue;
     double zero = _energy[i]-pulseShape_fcn( _time[i],
 					     x[0],x[1] );
     sum += zero * zero / _noise / _noise;
@@ -63,7 +63,7 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   for( uint16_t i=0; i<11; i++ ){
     _time[i] = time[i];
     _energy[i] = energy[i];
-    if(_energy[i]>emax0) {emax0=energy[i];tmax0=time[i];}
+    if(_energy[i]>emax0&&_time[i]<_maxTime) {emax0=energy[i];tmax0=time[i];}
   }
 
   if( noise>0 )
@@ -72,7 +72,7 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   ROOT::Math::Minimizer* m = ROOT::Math::Factory::CreateMinimizer("Minuit2", "MIGRAD");
   m->SetMaxFunctionCalls(m_fitterParameter.nMaxIterations);
   m->SetMaxIterations(m_fitterParameter.nMaxIterations);
-  m->SetTolerance(0.001);
+  m->SetTolerance(0.1);
   m->SetPrintLevel(m_printLevel);
   ROOT::Math::Functor f(&pulseShape_chi2, 2);
 
@@ -80,11 +80,11 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
 
   m->Clear(); // just a precaution
 
-  m->SetVariable(0, "tmax", tmax0, 0.001);
+  m->SetVariable(0, "tmax", tmax0, 0.5);
   m->SetVariableLimits(0,
 		       m_fitterParameter.tmaxRangeDown,
 		       m_fitterParameter.tmaxRangeUp);
-  m->SetVariable(1, "amp", emax0, 0.01);
+  m->SetVariable(1, "amp", emax0, 1);
   m->SetVariableLimits(1,0,10000);
 
   m->Minimize();
@@ -100,4 +100,5 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
   fit.status=(fabs(xm[0]-m_fitterParameter.tmaxRangeDown)>std::numeric_limits<double>::epsilon()&&
 	      fabs(xm[0]-m_fitterParameter.tmaxRangeUp)>std::numeric_limits<double>::epsilon()) ? m->Status() : 6;
   fit.ncalls=m->NCalls();
+  delete m;
 }

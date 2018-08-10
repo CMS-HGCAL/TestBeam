@@ -136,7 +136,7 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
       }
       else continue;
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-	if( rollpositions[it]<=m_NTSForPedestalComputation ){ //consider only a certain number of time samples for pedestal subtraction
+	if( rollpositions[it]<m_NTSForPedestalComputation ){ //consider only a certain number of time samples for pedestal subtraction
 	  uint32_t key=iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it;
 	  std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
 	  if( iter==m_channelMap.end() ){
