@@ -1,6 +1,5 @@
 #include <iostream>
 #include "TH1F.h"
-#include "TH2F.h"
 #include "TH2Poly.h"
 #include "TTree.h"
 #include <fstream>
@@ -27,8 +26,6 @@
 
 #include <iomanip>
 #include <set>
-#include <boost/thread/thread.hpp>
-//#include <boost/mutex.hpp>
 
 class PulseShapePlotter : public edm::one::EDAnalyzer<edm::one::SharedResources>
 {
@@ -43,11 +40,8 @@ private:
   static void fittingPulseShapes(HGCalTBRawHit* hit,float *subLG, float* subHG);
 
   std::string m_electronicMap;
-  std::string m_detectorLayoutFile;
-  boost::mutex m_mutex;
   struct {
     HGCalElectronicsMap emap_;
-    HGCalTBDetectorLayout layout_;
   } essource_;
   double m_commonModeThreshold; //currently not use (need to implement the "average" option in CommonMode.cc)
   int m_expectedMaxTimeSample;
@@ -60,7 +54,8 @@ private:
   std::vector<int> m_channelID;
   std::vector<int> m_skirocID;
   std::vector<int> m_layerID;
-  std::vector<int> m_moduleID;
+  std::vector<float> m_hgTS3_CM0;
+  std::vector<float> m_hgTS3_CM3;
   std::vector<float> m_hgADC;
   std::vector<float> m_hgTmax;
   std::vector<float> m_hgChi2;
@@ -68,6 +63,8 @@ private:
   std::vector<float> m_hgErrorTmax;
   std::vector<int> m_hgStatus;
   std::vector<int> m_hgNCalls;
+  std::vector<float> m_lgTS3_CM0;
+  std::vector<float> m_lgTS3_CM3;
   std::vector<float> m_lgADC;
   std::vector<float> m_lgTmax;
   std::vector<float> m_lgChi2;
@@ -82,7 +79,6 @@ private:
 
 PulseShapePlotter::PulseShapePlotter(const edm::ParameterSet& iConfig) :
   m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","elecmap.txt")),
-  m_detectorLayoutFile(iConfig.getUntrackedParameter<std::string>("DetectorLayout","geom.txt")),
   m_commonModeThreshold(iConfig.getUntrackedParameter<double>("CommonModeThreshold",100)),
   m_expectedMaxTimeSample(iConfig.getUntrackedParameter<int>("ExpectedMaxTimeSample",3)),
   m_maxADCCut(iConfig.getUntrackedParameter<double>("MaxADCCut",15)),
@@ -96,8 +92,9 @@ PulseShapePlotter::PulseShapePlotter(const edm::ParameterSet& iConfig) :
   m_tree->Branch("eventID",&m_evtID);
   m_tree->Branch("skirocID",&m_skirocID);
   m_tree->Branch("boardID",&m_layerID);
-  m_tree->Branch("moduleID",&m_moduleID);
   m_tree->Branch("channelID",&m_channelID);
+  m_tree->Branch("HighGainTS3_CM0",&m_hgTS3_CM0);
+  m_tree->Branch("HighGainTS3_CM3",&m_hgTS3_CM3);
   m_tree->Branch("HighGainADC",&m_hgADC);
   m_tree->Branch("HighGainTmax",&m_hgTmax);
   m_tree->Branch("HighGainChi2",&m_hgChi2);
@@ -106,6 +103,8 @@ PulseShapePlotter::PulseShapePlotter(const edm::ParameterSet& iConfig) :
   m_tree->Branch("HighGainStatus",&m_hgStatus);
   m_tree->Branch("HighGainNCalls",&m_hgNCalls);
 
+  m_tree->Branch("LowGainTS3_CM0",&m_lgTS3_CM0);
+  m_tree->Branch("LowGainTS3_CM3",&m_lgTS3_CM3);
   m_tree->Branch("LowGainADC",&m_lgADC);
   m_tree->Branch("LowGainTmax",&m_lgTmax);
   m_tree->Branch("LowGainChi2",&m_lgChi2);
@@ -132,12 +131,6 @@ void PulseShapePlotter::beginJob()
   if (!io.load(fip.fullPath(), essource_.emap_)) {
     throw cms::Exception("Unable to load electronics map");
   };
-  fip=edm::FileInPath(m_detectorLayoutFile);
-  if (!io.load(fip.fullPath(), essource_.layout_)) {
-    throw cms::Exception("Unable to load detector layout file");
-  };
-  for( auto layer : essource_.layout_.layers() )
-    layer.print();
 }
 
 void PulseShapePlotter::fittingPulseShapes(HGCalTBRawHit* hit,float *subLG, float* subHG)
@@ -149,7 +142,8 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
   m_channelID.clear();
   m_skirocID.clear();
   m_layerID.clear();
-  m_moduleID.clear();
+  m_hgTS3_CM0.clear();
+  m_hgTS3_CM3.clear();
   m_hgADC.clear();
   m_hgTmax.clear();
   m_hgChi2.clear();
@@ -157,6 +151,8 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
   m_hgErrorTmax.clear();
   m_hgStatus.clear();
   m_hgNCalls.clear();
+  m_lgTS3_CM0.clear();
+  m_lgTS3_CM3.clear();
   m_lgADC.clear();
   m_lgTmax.clear();
   m_lgChi2.clear();
@@ -253,8 +249,8 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
       // double *time[NUMBER_OF_TIME_SAMPLES];
       std::vector<double> hg(NUMBER_OF_TIME_SAMPLES),lg(NUMBER_OF_TIME_SAMPLES),time(NUMBER_OF_TIME_SAMPLES);
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-	highGain=hit.highGainADC(it)-subHG[it];
-	lowGain=hit.lowGainADC(it)-subLG[it];
+	highGain=hit.highGainADC(it)-subHG[0];
+	lowGain=hit.lowGainADC(it)-subLG[0];
 	hg[it]=highGain;
 	lg[it]=lowGain;
 	time[it]=25*it+12.5;
@@ -263,12 +259,12 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
 	  hMapLG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->Fill(time[it],lowGain);
 	}
       }
-      float max_minus=hg[m_expectedMaxTimeSample-2];
+      float max_minus=hg[m_expectedMaxTimeSample-3];
       float themax=hg[m_expectedMaxTimeSample];
       float max_plus=hg[m_expectedMaxTimeSample+1];
       float undershoot=hg[m_expectedMaxTimeSample+3];
       if( themax>500||(max_minus<themax && themax>undershoot && max_plus>undershoot && themax>20) ){
-	// std::cout << iboard << " " << iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA << " " << ichan << "\t" << max_minus << " " << themax << " " << max_plus << " " << undershoot << std::endl;
+	//std::cout << iboard << " " << iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA << " " << ichan << "\t" << max_minus << " " << themax << " " << max_plus << " " << undershoot << std::endl;
 	PulseFitterResult fithg;
 	fitter.run( time,hg,fithg,5. );
 	PulseFitterResult fitlg;
@@ -279,7 +275,8 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
 	m_channelID.push_back(ichan);
 	m_skirocID.push_back(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA);
 	m_layerID.push_back(iboard);
-	m_moduleID.push_back(essource_.layout_.at(iboard).at(0).moduleID());
+	m_hgTS3_CM0.push_back(hit.highGainADC(3)-subHG[0]);
+	m_hgTS3_CM3.push_back(hit.highGainADC(3)-subHG[3]);
 	m_hgADC.push_back(fithg.amplitude);
 	m_hgTmax.push_back(fithg.tmax);
 	m_hgChi2.push_back(fithg.chi2);
@@ -287,6 +284,8 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
 	m_hgErrorTmax.push_back(fithg.errortmax);
 	m_hgStatus.push_back(fithg.status);
 	m_hgNCalls.push_back(fithg.ncalls);
+	m_lgTS3_CM0.push_back(hit.lowGainADC(3)-subLG[0]);
+	m_lgTS3_CM3.push_back(hit.lowGainADC(3)-subLG[3]);
 	m_lgADC.push_back(fitlg.amplitude);
 	m_lgTmax.push_back(fitlg.tmax);
 	m_lgChi2.push_back(fitlg.chi2);
