@@ -33,7 +33,7 @@ fitterParameter():tmax0(140),
 
 class PulseFitter{
  public:
-  PulseFitter( int printLevel, double maxTime=225 , double trise=35 , double ampl_norm=1.85 , double tau=20 , int n_ord=3 );
+  PulseFitter( int printLevel, double maxTime=225 , double trise=45 , double ampl_norm=1.85 , double tau=25 , int n_ord=3 );
   ~PulseFitter(){;}
   void run(std::vector<double> &time, std::vector<double> &energy, PulseFitterResult &fit, double noise=-1);
   void setFitterParameter( fitterParameter params ){ m_fitterParameter=params; }

@@ -30,11 +30,12 @@ double pulseShape_fcn(double t, double tmax, double amp)
 double pulseShape_chi2(const double *x)
 {
   double sum = 0.0;
-  for(size_t i=0; i<6; i++){
-    if( _energy[i]<-170 || _time[i]>_maxTime ) continue;
+  for(size_t i=0; i<9; i++){
+    if( _energy[i]<-1000||_time[i]>_maxTime ) continue;
     double zero = _energy[i]-pulseShape_fcn( _time[i],
 					     x[0],x[1] );
     sum += zero * zero / _noise / _noise;
+
   }
   return sum;
 }
@@ -80,12 +81,12 @@ void PulseFitter::run(std::vector<double> &time, std::vector<double> &energy, Pu
 
   m->Clear(); // just a precaution
 
-  m->SetVariable(0, "tmax", tmax0, 0.5);
+  m->SetVariable(0, "tmax", tmax0, 0.1);
   m->SetVariableLimits(0,
 		       m_fitterParameter.tmaxRangeDown,
 		       m_fitterParameter.tmaxRangeUp);
-  m->SetVariable(1, "amp", emax0, 1);
-  m->SetVariableLimits(1,0,10000);
+  m->SetVariable(1, "amp", emax0, 0.1);
+  m->SetVariableLimits(1,emax0,10000);
 
   m->Minimize();
 

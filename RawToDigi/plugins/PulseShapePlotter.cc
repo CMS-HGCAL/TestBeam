@@ -1,5 +1,6 @@
 #include <iostream>
-#include "TH1F.h"
+#include "TGraphErrors.h"
+#include "TF1.h"
 #include "TH2Poly.h"
 #include "TTree.h"
 #include <fstream>
@@ -164,7 +165,7 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
   m_toaRise.clear();
   m_toaFall.clear();
   
-  std::map<int,TH1F*>  hMapHG,hMapLG;
+  std::map<int,TGraphErrors*>  hMapHG,hMapLG;
   if( m_savePulseShapes ){
     usesResource("TFileService");
     edm::Service<TFileService> fs;
@@ -183,12 +184,14 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
 	  if (!essource_.emap_.existsEId(eid.rawId())) continue;
 	  os.str("");
 	  os<<"HighGain_Channel"<<ic;
-	  TH1F *hHG=subdir.make<TH1F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES+2,-25,(1+NUMBER_OF_TIME_SAMPLES)*25);
-	  hMapHG.insert( std::pair<int,TH1F*>(1000*ib+100*is+ic,hHG) );
+	  TGraphErrors *hHG=subdir.make<TGraphErrors>();
+	  hHG->SetName(os.str().c_str());
+	  hMapHG.insert( std::pair<int,TGraphErrors*>(1000*ib+100*is+ic,hHG) );
 	  os.str("");
 	  os<<"LowGain_Channel"<<ic;
-	  TH1F* hLG=subdir.make<TH1F>(os.str().c_str(),os.str().c_str(),NUMBER_OF_TIME_SAMPLES+2,-25,(1+NUMBER_OF_TIME_SAMPLES)*25);
-	  hMapLG.insert( std::pair<int,TH1F*>(1000*ib+100*is+ic,hLG) );
+	  TGraphErrors* hLG=subdir.make<TGraphErrors>();
+	  hLG->SetName(os.str().c_str());
+	  hMapLG.insert( std::pair<int,TGraphErrors*>(1000*ib+100*is+ic,hLG) );
 	}
       }
     }
@@ -249,14 +252,16 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
       // double *time[NUMBER_OF_TIME_SAMPLES];
       std::vector<double> hg(NUMBER_OF_TIME_SAMPLES),lg(NUMBER_OF_TIME_SAMPLES),time(NUMBER_OF_TIME_SAMPLES);
       for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
-	highGain=hit.highGainADC(it)-subHG[0];
-	lowGain=hit.lowGainADC(it)-subLG[0];
+	highGain = hit.highGainADC(it)>-10000 ? hit.highGainADC(it)-subHG[0] : -10000;
+	lowGain = hit.lowGainADC(it)>-10000  ? hit.lowGainADC(it)-subLG[0] : -10000;
 	hg[it]=highGain;
 	lg[it]=lowGain;
 	time[it]=25*it+12.5;
 	if( m_savePulseShapes ){
-	  hMapHG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->Fill(time[it],highGain);
-	  hMapLG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->Fill(time[it],lowGain);
+	  hMapHG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->SetPoint(it,time[it],highGain);
+	  hMapLG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->SetPoint(it,time[it],lowGain);
+	  hMapHG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->SetPointError(it,0,5);
+	  hMapLG[1000*iboard+100*(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)+ichan]->SetPointError(it,0,2);
 	}
       }
       float max_minus=hg[m_expectedMaxTimeSample-3];
@@ -264,6 +269,17 @@ void PulseShapePlotter::analyze(const edm::Event& event, const edm::EventSetup& 
       float max_plus=hg[m_expectedMaxTimeSample+1];
       float undershoot=hg[m_expectedMaxTimeSample+3];
       if( themax>500||(max_minus<themax && themax>undershoot && max_plus>undershoot && themax>20) ){
+	// std::cout << std::dec << iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA << " " << ichan << "\t HG:";
+	// for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+	//   std::cout << " " << time[it] << ":" << hg[it];
+	// }
+	// std::cout << std::endl;
+	// std::cout << std::dec << iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA << " " << ichan << "\t LG:";
+	// for( int it=0; it<NUMBER_OF_TIME_SAMPLES; it++ ){
+	//   std::cout << " " << time[it] << ":" << lg[it]; 
+	// }
+	// std::cout << std::endl;
+	
 	//std::cout << iboard << " " << iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA << " " << ichan << "\t" << max_minus << " " << themax << " " << max_plus << " " << undershoot << std::endl;
 	PulseFitterResult fithg;
 	fitter.run( time,hg,fithg,5. );

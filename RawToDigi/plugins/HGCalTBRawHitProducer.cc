@@ -130,7 +130,7 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     HGCalTBSkiroc2CMS skiroc=skirocs->at(iski);
     if( !skiroc.check(1) ){
       std::cout << "!!! No hit will be created for this chip !!!" << std::endl;
-      continue;
+      //continue;
     }
     std::vector<int> rollpositions=skiroc.rollPositions();
     for( size_t ichan=0; ichan<HGCAL_TB_GEOMETRY::N_CHANNELS_PER_SKIROC; ichan++ ){
@@ -148,8 +148,8 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 	if( it>=m_minTimeSampleForSaturation && it<=m_maxTimeSampleForSaturation && skiroc.ADCHigh(ichan,it)==m_underSaturationADC ) hgSat=true;
 	if( it>=m_minTimeSampleForSaturation && it<=m_maxTimeSampleForSaturation && skiroc.ADCLow(ichan,it)==m_underSaturationADC ) lgSat=true;
 	if( m_subtractPedestal ){
-	  adchigh.at( rollpositions[it] ) = skiroc.ADCHigh(ichan,it)-m_pedMap[10000*iboard+100*iskiroc+ichan].pedHGMean[it] ;
-	  adclow.at( rollpositions[it] ) = skiroc.ADCLow(ichan,it)-m_pedMap[10000*iboard+100*iskiroc+ichan].pedLGMean[it] ;
+	  adchigh.at( rollpositions[it] ) = skiroc.ADCHigh(ichan,it)>4 ? skiroc.ADCHigh(ichan,it)-m_pedMap[10000*iboard+100*iskiroc+ichan].pedHGMean[it] : -10000;
+	  adclow.at( rollpositions[it] ) = skiroc.ADCLow(ichan,it)>4 ? skiroc.ADCLow(ichan,it)-m_pedMap[10000*iboard+100*iskiroc+ichan].pedLGMean[it] : -10000;
 	}
 	else{
 	  adchigh.at( rollpositions[it] ) = skiroc.ADCHigh(ichan,it) ;
