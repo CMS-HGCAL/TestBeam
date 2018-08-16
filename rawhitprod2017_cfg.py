@@ -36,7 +36,7 @@ options.register('rawhitOutputFolder',
                  'Output folder where analysis output are stored')
 
 options.register('electronicMap',
-                 "HGCal/CondObjects/data/map_CERN_Hexaboard_June_28Sensors_28EELayers_V0.txt",
+                 "HGCal/CondObjects/data/map_CERN_Hexaboard_June_28Sensors_28EELayers_V1.txt",
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'path to the electronic map')
@@ -114,6 +114,6 @@ process.pulseshapeplotter = cms.EDAnalyzer("PulseShapePlotter",
 )
 
 
-process.p = cms.Path( process.rawhitproducer*process.rawhitplotter*process.pulseshapeplotter )
+process.p = cms.Path( process.rawhitproducer*process.rawhitplotter )
 
 process.end = cms.EndPath(process.output)

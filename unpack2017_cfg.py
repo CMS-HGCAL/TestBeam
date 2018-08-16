@@ -31,7 +31,7 @@ options.register('pedestalOutputFolder',
 
 
 options.register('electronicMap',
-                 "HGCal/CondObjects/data/map_CERN_Hexaboard_June_28Sensors_28EELayers_V0.txt",
+                 "HGCal/CondObjects/data/map_CERN_Hexaboard_June_28Sensors_28EELayers_V1.txt",
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'path to the electronic map')
@@ -126,7 +126,8 @@ process.rawdataplotter = cms.EDAnalyzer("RawDataPlotter",
                                         InputCollection=cms.InputTag("source","skiroc2cmsdata")
 )
 
-process.p = cms.Path( process.pedestalplotter )
+process.p = cms.Path( process.pedestalplotter*process.rawdataplotter )
+#process.p = cms.Path( process.pedestalplotter )
 
 process.end = cms.EndPath(process.output)
 
