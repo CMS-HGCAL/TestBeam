@@ -65,6 +65,15 @@ private:
   std::string emapfile_;
   std::vector<int> eventsToPlot;
 
+///////////////Hard-coded requirements valid only for CERN July 28 layer beam test ////////////////////////////
+int iu_calib_odd = 4;
+int iu_calib_even = 2;
+int iv_calib_odd = -2;
+int iv_calib_even = 2;
+double Offset = 0.0001;
+double outerCalibFillOffset = (2./3)*0.654; // Two-Third the side of a full hexagon.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   HGCalTBTopology IsCellValid;
   HGCalTBCellVertices TheCell;
   std::vector<std::pair<double, double>> CellXY;
@@ -90,28 +99,89 @@ EventDisplay::~EventDisplay()
 {
 }
 
-void EventDisplay::InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV)
-{
+
+void EventDisplay::InitTH2Poly(TH2Poly& poly, int layerID, int sensorIU, int sensorIV){
+
   double HexX[MAXVERTICES] = {0.};
   double HexY[MAXVERTICES] = {0.};
+  double HexOuterCalibX[2*(MAXVERTICES+1)] = {0.};
+  double HexOuterCalibY[2*(MAXVERTICES+1)] = {0.};
+  double HexCalibX[MAXVERTICES] = {0.};
+  double HexCalibY[MAXVERTICES] = {0.};
+  double HexOuterCalibTmpX[MAXVERTICES] = {0.};
+  double HexOuterCalibTmpY[MAXVERTICES] = {0.};
+
+  bool isCalibPad = 0;
 
   for(int iv = -7; iv < 8; iv++) {
     for(int iu = -7; iu < 8; iu++) {
       if(!IsCellValid.iu_iv_valid(layerID, sensorIU, sensorIV, iu, iv, sensorsize)) continue;
       CellXY = TheCell.GetCellCoordinatesForPlots(layerID, sensorIU, sensorIV, iu, iv, sensorsize);
+      CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(layerID, sensorIU, sensorIV, iu, iv, sensorsize);
       assert(CellXY.size() == 4 || CellXY.size() == 6);
+      isCalibPad = 0;
+      if(layerID <= 23){//Hard-coded requirements valid only for CERN July 28 layer beam test
+      	if( (layerID % 2) == 0 ){//is an even layer
+        	if( (iu == iu_calib_even) && (iv == iv_calib_even) )
+                	isCalibPad = 1;	
+	}
+	else{//is an odd layer
+        	if( (iu == iu_calib_odd) && (iv == iv_calib_odd) )
+        		isCalibPad = 1;
+	}
+
+      }
       unsigned int iVertex = 0;
       for(std::vector<std::pair<double, double>>::const_iterator it = CellXY.begin(); it != CellXY.end(); it++) {
-      	HexX[iVertex] =  it->first;
-      	HexY[iVertex] =  it->second;
-	    ++iVertex;
+        HexX[iVertex] =  it->first;
+        HexY[iVertex] =  it->second;
+	if(isCalibPad){
+        	HexCalibX[iVertex] = CellCentreXY.first + (1./3)*(HexX[iVertex] - CellCentreXY.first);
+        	HexCalibY[iVertex] = CellCentreXY.second + (1./3)*(HexY[iVertex] - CellCentreXY.second);
+		HexOuterCalibTmpX[iVertex] = CellCentreXY.first + (1./2.96)*(HexX[iVertex] - CellCentreXY.first);
+                HexOuterCalibTmpY[iVertex] = CellCentreXY.second + (1./2.96)*(HexY[iVertex] - CellCentreXY.second);
+        }
+        ++iVertex;
       }
-      //Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
-      poly.AddBin(CellXY.size(), HexX, HexY);
+    
+      if(isCalibPad){
+
+///////////////////evaluate the vertices of the outer calib pad/////////////////////
+      		for(int iii = 0; iii < MAXVERTICES; iii++){
+        		if(iii < (MAXVERTICES-1)){
+                		HexOuterCalibX[iii] = HexX[iii];
+                		HexOuterCalibY[iii] = HexY[iii];
+        		}
+        		else{
+                		HexOuterCalibX[iii] = HexX[iii] + Offset;
+				HexOuterCalibY[iii] = HexY[iii];
+               		}
+		}
+		
+		HexOuterCalibX[MAXVERTICES] = HexOuterCalibTmpX[MAXVERTICES-1] + Offset;
+		HexOuterCalibY[MAXVERTICES] = HexOuterCalibTmpY[MAXVERTICES-1];
+
+		int jjj = MAXVERTICES+1;
+		for(int iii = 0; iii <= MAXVERTICES-2; iii++){
+        		HexOuterCalibX[jjj] = HexOuterCalibTmpX[iii];
+        		HexOuterCalibY[jjj++] = HexOuterCalibTmpY[iii];
+		}
+
+		HexOuterCalibX[2*MAXVERTICES] = HexOuterCalibTmpX[MAXVERTICES-1] - Offset;
+        	HexOuterCalibY[2*MAXVERTICES] = HexOuterCalibTmpY[MAXVERTICES-1] + Offset;
+
+        	HexOuterCalibX[2*MAXVERTICES + 1] = HexX[MAXVERTICES-1] + Offset;
+	        HexOuterCalibY[2*MAXVERTICES + 1] = HexY[MAXVERTICES-1] + Offset;
+///////////////////////////////////////////////////////////////////////////////////////
+
+		poly.AddBin(MAXVERTICES, HexCalibX, HexCalibY);
+		poly.AddBin(2*(MAXVERTICES+1), HexOuterCalibX, HexOuterCalibY);
+      }
+      else poly.AddBin(CellXY.size(), HexX, HexY);
     }//loop over iu
   }//loop over iv
 }
-//
+
 
 // ------------ method called for each event  ------------
 void EventDisplay::analyze(const edm::Event& event, const edm::EventSetup& setup){
@@ -187,9 +257,13 @@ void EventDisplay::analyze(const edm::Event& event, const edm::EventSetup& setup
     CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots( detID.layer(), detID.sensorIU(), detID.sensorIV(), detID.iu(), detID.iv(), sensorsize );
     double iux = (CellCentreXY.first < 0 ) ? (CellCentreXY.first + delta) : (CellCentreXY.first - delta) ;
     double iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + delta) : (CellCentreXY.second - delta);
+
+    if(detID.cellType() == 4)
+	iux += outerCalibFillOffset;
+
     HGCalTBElectronicsId eid( essource_.emap_.detId2eid( rechit.id().rawId() ) );
     int board = eid.iskiroc_rawhit() / 4;
-    if( detID.cellType()!=1 ) {
+//    if( detID.cellType()!=1 ) {//Why was this ever there??
       h_Energy_board[ board ]->Fill(iux , iuy, rechit.energy());
       h_ADCTOA_board[ board ]->Fill(iux, iuy, rechit.time());   //this is not TOA yet but the Tmax
 
@@ -199,7 +273,7 @@ void EventDisplay::analyze(const edm::Event& event, const edm::EventSetup& setup
         h_ADCLG_board[ board ]->Fill(iux, iuy, rechit.energyLow());
       if (!rechit.checkFlag(HGCalTBRecHit::kTotGainSaturated))
         h_ADCTOT_board[ board ]->Fill(iux, iuy, rechit.energyTot());
-    }
+//    }
   }
 
 }
