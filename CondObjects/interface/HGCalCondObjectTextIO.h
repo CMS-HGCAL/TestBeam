@@ -26,7 +26,6 @@ public:
 	bool store(const std::string& filename, const HGCalElectronicsMap&);
 
 	bool load(const std::string& filename, HGCalTBDetectorLayout& hgcalGeom);
-	bool load(const std::string& filename, HGCalTBADCConversionsMap& adcConvMap);
 private:
 	const HGCalCondObjectNumberingScheme* p_scheme;
 };
