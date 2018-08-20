@@ -27,6 +27,12 @@
 #include <iomanip>
 #include <set>
 
+struct HexaBin{
+  int nVertices;
+  double x[HGCAL_TB_GEOMETRY::MAXVERTICES];
+  double y[HGCAL_TB_GEOMETRY::MAXVERTICES];
+};
+
 class RecHitPlotter : public edm::one::EDAnalyzer<edm::one::SharedResources>
 {
 public:
@@ -37,7 +43,8 @@ private:
   virtual void beginJob() override;
   virtual void endJob() override;
   void analyze(const edm::Event& , const edm::EventSetup&) override;
-  void InitTH2Poly(TH2Poly& poly, int det, int layerID);
+  void InitTH2Poly(TH2Poly* poly, int layerID);
+  std::vector<HexaBin> InitHexaBins(int det, int layerID);
 
   std::string m_electronicMap;
   std::string m_detectorLayoutFile;
@@ -66,6 +73,8 @@ private:
   std::map<int,TH1F*> h_energyMap;
   std::map<int,TH1F*> h_energyLowMap;
   std::map<int,TH1F*> h_energyHighMap;
+
+  std::map< int, std::vector<HexaBin> > m_hexaBinMap;
 };
 
 RecHitPlotter::RecHitPlotter(const edm::ParameterSet& iConfig) :
@@ -103,8 +112,8 @@ void RecHitPlotter::beginJob()
   usesResource("TFileService");
   edm::Service<TFileService> fs;
   
-  m_h_hgSum=fs->make<TH1F>("HighGainSum","HighGainSum",5000,0,10000);
-  m_h_lgSum=fs->make<TH1F>("LowGainSum","LowGainSum",5000,0,10000);
+  m_h_hgSum=fs->make<TH1F>("HighGainSum","HighGainSum",5000,0,1000000);
+  m_h_lgSum=fs->make<TH1F>("LowGainSum","LowGainSum",5000,0,1000000);
   m_h_enSum=fs->make<TH1F>("EnergySum","EnergySum",5000,0,10000);
 
   TH1F* hist;
@@ -136,6 +145,13 @@ void RecHitPlotter::beginJob()
       }
     }
   }
+  if( m_eventPlotter ){
+    for(int il = 0; il<essource_.layout_.nlayers(); il++) {
+      int subdetId = essource_.layout_.at(il).subdet();
+      std::vector<HexaBin> hexaBins=InitHexaBins(subdetId,il);
+      m_hexaBinMap.insert( std::pair< int,std::vector<HexaBin> >(il,hexaBins) );
+    }
+  }
 }
 
 void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setup)
@@ -147,35 +163,18 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   event.getByToken(m_HGCalTBRecHitCollection, hits);
 
   std::map<int,TH2Poly*>  polyMap;
-  std::map<int,TH2Poly*>  polyMapHG;
-  std::map<int,TH2Poly*>  polyMapLG;
   if( m_eventPlotter ){
     std::ostringstream os( std::ostringstream::ate );
     os << "Event" << event.id().event();
     TFileDirectory dir = fs->mkdir( os.str().c_str() );
     for(int il = 0; il<essource_.layout_.nlayers(); il++) {
-      int subdetId = essource_.layout_.at(il).subdet();
-      TH2Poly *h=dir.make<TH2Poly>();
       os.str("");
       os<<"Energy_Layer"<<il;
+      TH2Poly *h=dir.make<TH2Poly>();
+      InitTH2Poly(h, il);
       h->SetName(os.str().c_str());
       h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, subdetId, il);
       polyMap.insert( std::pair<int,TH2Poly*>(il,h) );
-      h=dir.make<TH2Poly>();
-      os.str("");
-      os<<"HighGain_Layer"<<il;
-      h->SetName(os.str().c_str());
-      h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, subdetId, il);
-      polyMapHG.insert( std::pair<int,TH2Poly*>(il,h) );
-      h=dir.make<TH2Poly>();
-      os.str("");
-      os<<"LowGain_Layer"<<il;
-      h->SetName(os.str().c_str());
-      h->SetTitle(os.str().c_str());
-      InitTH2Poly(*h, subdetId, il);
-      polyMapLG.insert( std::pair<int,TH2Poly*>(il,h) );
     }
   }
   float energyHighSum(0),energyLowSum(0),energySum(0);
@@ -194,8 +193,6 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
       if(!IsCellValid.iu_iv_valid(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize))  continue;
       CellCentreXY=TheCell.GetCellCentreCoordinatesForPlots(hit.id().layer(),hit.id().sensorIU(),hit.id().sensorIV(),hit.id().iu(),hit.id().iv(),m_sensorsize);
       polyMap[ hit.id().layer()-1 ]->Fill(CellCentreXY.first , CellCentreXY.second, hit.energy());
-      polyMapHG[ hit.id().layer()-1 ]->Fill(CellCentreXY.first , CellCentreXY.second, hit.energyHigh());
-      polyMapLG[ hit.id().layer()-1 ]->Fill(CellCentreXY.first , CellCentreXY.second, hit.energyLow());
     }
   }
   m_h_hgSum->Fill( energyHighSum );
@@ -203,10 +200,15 @@ void RecHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   m_h_enSum->Fill( energySum );
 }
 
-void RecHitPlotter::InitTH2Poly(TH2Poly& poly, int det, int layerID)
+void RecHitPlotter::InitTH2Poly(TH2Poly* poly, int layerID)
 {
-  double HexX[HGCAL_TB_GEOMETRY::MAXVERTICES] = {0.};
-  double HexY[HGCAL_TB_GEOMETRY::MAXVERTICES] = {0.};
+  std::vector<HexaBin> hexaBins=m_hexaBinMap[layerID];
+  for( std::vector<HexaBin>::iterator it=hexaBins.begin(); it!=hexaBins.end(); ++it )
+    poly->AddBin( (*it).nVertices, (*it).x, (*it).y );
+}
+std::vector<HexaBin> RecHitPlotter::InitHexaBins(int det, int layerID)
+{
+  std::vector<HexaBin> hexaBins;
   if( det==0 ){
     for(int iv = -7; iv < 8; iv++) {
       for(int iu = -7; iu < 8; iu++) {
@@ -215,13 +217,15 @@ void RecHitPlotter::InitTH2Poly(TH2Poly& poly, int det, int layerID)
 	CellXY = TheCell.GetCellCoordinatesForPlots(layerID, 0, 0, iu, iv, m_sensorsize);
 	assert(CellXY.size() == 4 || CellXY.size() == 6);
 	unsigned int iVertex = 0;
+	HexaBin bin;
+	bin.nVertices=CellXY.size();	
 	for(std::vector<std::pair<double, double>>::const_iterator it = CellXY.begin(); it != CellXY.end(); it++) {
-	  HexX[iVertex] =  it->first;
-	  HexY[iVertex] =  it->second;
+	  bin.x[iVertex]=it->first;
+	  bin.y[iVertex]=it->second;
 	  ++iVertex;
 	}
 	//Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
-	poly.AddBin(CellXY.size(), HexX, HexY);
+	hexaBins.push_back(bin);
       }//loop over iu
     }//loop over iv
   }
@@ -235,18 +239,21 @@ void RecHitPlotter::InitTH2Poly(TH2Poly& poly, int det, int layerID)
 	    CellXY = TheCell.GetCellCoordinatesForPlots(layerID, sensorIU, sensorIV, iu, iv, m_sensorsize);
 	    assert(CellXY.size() == 4 || CellXY.size() == 6);
 	    unsigned int iVertex = 0;
+	    HexaBin bin;
+	    bin.nVertices=CellXY.size();
 	    for(std::vector<std::pair<double, double>>::const_iterator it = CellXY.begin(); it != CellXY.end(); it++) {
-	      HexX[iVertex] =  it->first;
-	      HexY[iVertex] =  it->second;
+	      bin.x[iVertex] =  it->first;
+	      bin.y[iVertex] =  it->second;
 	      ++iVertex;
 	    }
 	    //Somehow cloning of the TH2Poly was not working. Need to look at it. Currently physically booked another one.
-	    poly.AddBin(CellXY.size(), HexX, HexY);
+	    hexaBins.push_back(bin);
 	  }//loop over iu
 	}//loop over iv
       }
     }// loop over Sensor_Iu ends here
   }// loop over Sensor_Iv ends here
+  return hexaBins;
 }
 
 void RecHitPlotter::endJob()
