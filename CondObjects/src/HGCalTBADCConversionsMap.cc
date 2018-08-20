@@ -2,69 +2,82 @@
 #include <HGCal/CondObjects/interface/HGCalTBADCConversionsMap.h>
 #include <algorithm>
 
-ASIC_ADC_Conversions HGCalTBADCConversionsMap::getASICConversions(uint32_t moduleId, uint32_t asicId)
+
+float ADCConversions::totShape(float nmip)
 {
-  ASIC_ADC_Conversions adcConv(moduleId,asicId);
-  return (*std::find(_vec.begin(),_vec.end(),adcConv));
+  return nmip<m_params.totthr ? 0 : m_params.totcoeff*nmip+m_params.totped-m_params.totnorm/(std::pow(nmip,m_params.totpower)-m_params.totthr);
 }
 
-float HGCalTBADCConversionsMap::adc_to_MIP(uint32_t moduleId, uint32_t asicId)
+bool ADCConversions::getCalibEnergy(float hg, float lg, int tot, float &energy)
 {
-  ASIC_ADC_Conversions adcConv(moduleId,asicId);
-  std::vector<ASIC_ADC_Conversions>::iterator it=std::find(_vec.begin(),_vec.end(),adcConv);
-  return it!=_vec.end() ? (*it).adc_to_MIP() : 0;
+  bool correctCalib=false;
+  energy=0; //MIP unit
+  if( lg>m_params.lgsat && tot>10){ //LG saturated -> use ToT
+    float nmin(0),nmax(2000);
+    int index=0;
+    float diff(2000);
+    float centralValue(0);
+    while(fabs(diff)>1e-2&&index<100){
+      centralValue=nmin+fabs(nmax-nmin)/2;
+      float totApprox=totShape(centralValue);
+      diff=tot-totApprox;
+      if( diff>0 )
+	nmin=centralValue;
+      else
+	nmax=centralValue;
+      index++;
+    }
+    if(centralValue>0&&index<1000){
+      energy=centralValue;
+      correctCalib=true;
+    }
+  }
+  else if( hg>m_params.hgsat ){
+    correctCalib=true;
+    energy=lg*m_params.lgtomip;
+  }
+  else{
+    correctCalib=true;
+    energy=hg*m_params.hgtomip;
+  }
+  if(!correctCalib)
+    energy=lg*m_params.lgtomip;
+  return correctCalib;
 }
 
-float HGCalTBADCConversionsMap::lowGain_highGain_transition(uint32_t moduleId, uint32_t asicId)
-{
-  ASIC_ADC_Conversions adcConv(moduleId,asicId);
-  std::vector<ASIC_ADC_Conversions>::iterator it=std::find(_vec.begin(),_vec.end(),adcConv);
-  return it!=_vec.end() ? (*it).lowGain_highGain_transition() : 0;
-}
 
-float HGCalTBADCConversionsMap::lowGain_to_highGain(uint32_t moduleId, uint32_t asicId)
-{
-  ASIC_ADC_Conversions adcConv(moduleId,asicId);
-  std::vector<ASIC_ADC_Conversions>::iterator it=std::find(_vec.begin(),_vec.end(),adcConv);
-  return it!=_vec.end() ? (*it).lowGain_to_highGain() : 0;
-}
-
-float HGCalTBADCConversionsMap::TOT_lowGain_transition(uint32_t moduleId, uint32_t asicId)
-{
-  ASIC_ADC_Conversions adcConv(moduleId,asicId);
-  std::vector<ASIC_ADC_Conversions>::iterator it=std::find(_vec.begin(),_vec.end(),adcConv);
-  return it!=_vec.end() ? (*it).TOT_lowGain_transition() : 0;
-}
-
-float HGCalTBADCConversionsMap::TOT_to_lowGain(uint32_t moduleId, uint32_t asicId)
-{
-  ASIC_ADC_Conversions adcConv(moduleId,asicId);
-  std::vector<ASIC_ADC_Conversions>::iterator it=std::find(_vec.begin(),_vec.end(),adcConv);
-  return it!=_vec.end() ? (*it).TOT_to_lowGain() : 0;
-}
-
-std::ostream& operator<<(std::ostream& s, ASIC_ADC_Conversions& adc){
-  s << adc.moduleId() << " "
-    << adc.asicId() << " "
-    << adc.adc_to_MIP() << " "
-    << adc.lowGain_highGain_transition() << " "
-    << adc.lowGain_to_highGain() << " "
-    << adc.TOT_lowGain_transition() << " "
-    << adc.TOT_to_lowGain() << "\n";
+std::ostream&operator<<(std::ostream& s, const ADCConversions& adc){
+  ADCConversionParameters params=adc.getParameters();
+  s << adc.getDetId()
+    << params.hgtomip << " " << params.hgsat << " "
+    << params.lgtomip << " " << params.lgsat << " "
+    << params.totcoeff << " " << params.totthr << " "
+    << params.totped << " " << params.totnorm << " " << params.totpower;
   return s;
 }
 
-
-std::ostream& operator<<(std::ostream& s, HGCalTBADCConversionsMap& a_map)
+void HGCalTBADCConversionsMap::addEntry(ADCConversions adcConv)
 {
-  s << "moduleId "
-    << "asicId "
-    << "adc_to_MIP "
-    << "lowGain_highGain_transition "
-    << "lowGain_to_highGain "
-    << "TOT_lowGain_transition "
-    << "TOT_to_lowGain \n";
-  for( std::vector<ASIC_ADC_Conversions>::iterator it=a_map.getEntries().begin(); it!=a_map.getEntries().end(); ++it )
-    s << (*it) ;
-  return s;
+  if( std::find(m_vec.begin(),m_vec.end(),adcConv)==m_vec.end() )
+    m_vec.push_back(adcConv);
+  else{
+    std::cout << "Error when loading ADC conversion parameters: same detid was found more than one time -> exit(1)" << std::endl;
+    exit(1);
+  }
+}
+
+ADCConversions HGCalTBADCConversionsMap::getADCConversions(HGCalTBDetId detid)
+{
+  ADCConversions tmp(detid);
+  std::vector<ADCConversions>::iterator it=std::find(m_vec.begin(),m_vec.end(),tmp);
+  if( it==m_vec.end() ){
+    std::cout << "Error the detid : " << detid << " could not be found in the HGCalTBADCCalibrationMap -> exit(1)" << std::endl;
+    exit(1);
+  }
+  else return (*it);
+}
+
+bool HGCalTBADCConversionsMap::getCalibratedEnergy(HGCalTBDetId detid, float hg, float lg, int tot, float &energy)
+{
+  return getADCConversions(detid).getCalibEnergy(hg,lg,tot,energy);
 }
