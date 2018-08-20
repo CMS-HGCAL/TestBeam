@@ -18,11 +18,10 @@ class HGCalTBDetectorLayout{
   // -1 needed if elec map starts from 1
   HGCalTBLayer getLayerWithModuleIndex( int index )
   {
-    int n_modules=0;
     for( auto layer : _layers ){
-      n_modules += layer.modules().size();
-      if( index<n_modules )
-	return layer;
+      for( auto module: layer.modules() )
+	if( module.moduleID()==index )
+	  return layer;
     }
     std::cout << "Major problems in HGCalTBLayer getLayerWithModuleIndex( int index ) -> should have already returned a HGCalTBLayer" << std::endl;
     return HGCalTBLayer(0,0,0);

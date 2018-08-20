@@ -17,6 +17,7 @@
 #include "HGCal/CondObjects/interface/HGCalTBDetectorLayout.h"
 #include "HGCal/CondObjects/interface/HGCalTBADCConversionsMap.h"
 #include "HGCal/CondObjects/interface/HGCalCondObjectTextIO.h"
+#include "HGCal/CondObjects/interface/HGCalCondObjectROOTIO.h"
 #include "HGCal/DataFormats/interface/HGCalTBElectronicsId.h"
 
 #include "HGCal/Geometry/interface/HGCalTBCellVertices.h"
@@ -43,12 +44,10 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   std::pair<double, double> CellCentreXY;
   HGCalTBCellVertices TheCell;
 
-  struct {
-    HGCalElectronicsMap emap_;
-    HGCalTBDetectorLayout layout_;
-    HGCalTBADCConversionsMap adccalibmap_;
-  } essource_;
-  
+  HGCalElectronicsMap m_emap;
+  HGCalTBDetectorLayout m_layout;
+  HGCalTBADCConversionsMap m_adccalibmap;
+
 };
 
 #endif

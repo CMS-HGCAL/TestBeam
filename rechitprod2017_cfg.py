@@ -30,7 +30,7 @@ options.register('rechitOutputFolder',
                  'Output folder where analysis output are stored')
 
 options.register('electronicMap',
-                 'HGCal/CondObjects/data/map_CERN_Hexaboard_June_28Sensors_28EELayers_V0.txt',
+                 'HGCal/CondObjects/data/map_CERN_Hexaboard_June_28Sensors_28EELayers_V1.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'path to the electronic map')
@@ -40,6 +40,12 @@ options.register('hgcalLayout',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'path to hgcal layout file')
+
+options.register('adcCalibrationsFile',
+                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/calibration/ADCCalibration_28modules_20-09-2018.root',
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.string,
+                 'Root file containing ADC calibration parmaters')
 
 options.maxEvents = -1
 options.output = "cmsswEvents_RecHit.root"
@@ -62,7 +68,8 @@ process.maxEvents = cms.untracked.PSet(
 ####################################
 
 process.source = cms.Source("PoolSource",
-                            fileNames=cms.untracked.vstring("file:%s/run%06d.root"%(options.dataFolder,options.runNumber))
+                            fileNames=cms.untracked.vstring("file:%s/run%06d.root"%(options.dataFolder,options.runNumber)),
+                            skipEvents=cms.untracked.uint32(0)
 )
 
 filename = options.rechitOutputFolder+"/HexaOutput_"+str(options.runNumber)+".root"
@@ -80,6 +87,7 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         InputCollection = cms.InputTag('rawhitproducer','HGCALTBRAWHITS'),
                                         ElectronicsMap = cms.untracked.string(options.electronicMap),
                                         DetectorLayout=cms.untracked.string(options.hgcalLayout),
+                                        ADCCalibrationsFile=cms.untracked.string("file:%s"%(options.adcCalibrationsFile)),
                                         ExpectedMaxTimeSample=cms.untracked.int32(3),
                                         MaxADCCut=cms.untracked.double(20),
 )
@@ -92,10 +100,6 @@ process.rechitplotter = cms.EDAnalyzer("RecHitPlotter",
                                        EventPlotter=cms.untracked.bool(False),
                                        MipThreshold=cms.untracked.double(5.0),
                                        NoiseThreshold=cms.untracked.double(0.5)
-)
-process.pulseshapeplotter = cms.EDAnalyzer("PulseShapePlotter",
-                                           InputCollection=cms.InputTag("rawhitproducer","HGCALTBRAWHITS"),
-                                           ElectronicMap=cms.untracked.string(options.electronicMap)
 )
 
 process.showeranalyzer = cms.EDAnalyzer("ShowerAnalyzer",
