@@ -290,12 +290,12 @@ void DWCCorrelator::analyze(const edm::Event& event, const edm::EventSetup& setu
 		  			layer_ref_y[layer] = dwctrack->DWCExtrapolation_XY(layer).second;
 		  		} 
 	  		} else if (dwcs->at(0).goodMeasurement) {
-				layer_ref_x[layer] = dwcs->at(0).x;
-				layer_ref_y[layer] = dwcs->at(0).y;
+				layer_ref_x[layer] = dwcs->at(0).x/10;
+				layer_ref_y[layer] = dwcs->at(0).y/10;		//02 August 2018: dwcs are still in mm, must be converted into mm
 			}
 			else if (dwcs->at(1).goodMeasurement) {
-				layer_ref_x[layer] = dwcs->at(1).x;
-				layer_ref_y[layer] = dwcs->at(1).y;
+				layer_ref_x[layer] = dwcs->at(1).x/10;
+				layer_ref_y[layer] = dwcs->at(1).y/10;
 			}
 			layer_ref_x[layer] = - layer_ref_x[layer];		//necessary due to rotation of coordinate system for September TB data
 		} else {
@@ -439,10 +439,10 @@ void DWCCorrelator::ReadDWCWindows(int fileIndex) {
 		if (readCounter==5) DWC_y_min = atof(fragment);
 		if (readCounter==6) { DWC_y_max = atof(fragment);
 			int key = iboard*1000+iskiroc*100+ichannel;
-			_parameters[key].push_back(DWC_x_min/10);	//conversion to cm, 25 July 2018
-			_parameters[key].push_back(DWC_x_max/10);	//conversion to cm, 25 July 2018
-			_parameters[key].push_back(DWC_y_min/10);	//conversion to cm, 25 July 2018
-			_parameters[key].push_back(DWC_y_max/10);	//conversion to cm, 25 July 2018
+			_parameters[key].push_back(DWC_x_min);
+			_parameters[key].push_back(DWC_x_max);
+			_parameters[key].push_back(DWC_y_min);
+			_parameters[key].push_back(DWC_y_max);
 			readCounter=-1;
 		}
 	}
