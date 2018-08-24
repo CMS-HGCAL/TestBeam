@@ -27,7 +27,8 @@
 
 enum PreselectionMethod {
   TB2017 = 0,
-  TB2018
+  TB2018, 
+  NONE
 };
 
 class HGCalTBRecHitProducer : public edm::EDProducer

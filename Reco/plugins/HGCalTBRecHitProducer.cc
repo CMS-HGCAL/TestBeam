@@ -53,7 +53,8 @@ void HGCalTBRecHitProducer::beginJob()
   }
 
   if (m_preselectionMethod=="TB2017") _preselectionMethod = TB2017;
-  else _preselectionMethod = TB2018;
+  else if (m_preselectionMethod=="TB2018") _preselectionMethod = TB2018;
+  else _preselectionMethod = NONE;
   //  std::cout << essource_.adccalibmap_ << std::endl;
 
   edm::Service<TFileService> fs;
