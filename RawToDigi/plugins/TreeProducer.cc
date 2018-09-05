@@ -127,10 +127,12 @@ void TreeProducer::analyze(const edm::Event& event, const edm::EventSetup& setup
     }
     m_tree->Fill();
   }
+  m_event++;
 }
 
 void TreeProducer::beginJob()
 {
+  m_event=0;
 }
 
 void TreeProducer::endJob()
