@@ -25,7 +25,7 @@ options.register('compressedData',
                  'Option to set if the data have beem compressed')
 
 options.register('electronicMap',
-                 "HGCal/CondObjects/data/map_CERN_Hexaboard_OneModule_V2.txt",
+                 "HGCal/CondObjects/data/map_CERN_Hexaboard_OneModule_V3.txt",
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'path to the electronic map')
@@ -106,6 +106,7 @@ process.pedestalplotter = cms.EDAnalyzer("PedestalPlotter",
 
 process.treeproducer = cms.EDAnalyzer("TreeProducer",
                                       InputCollection=cms.InputTag("source","skiroc2cmsdata"),
+                                      ElectronicMap=cms.untracked.string(options.electronicMap),
                                       SubtractPedestal=cms.untracked.bool(False),
                                       HighGainPedestalFileName=cms.untracked.string(pedestalHighGain),
                                       LowGainPedestalFileName=cms.untracked.string(pedestalLowGain),
