@@ -78,6 +78,11 @@ double weightsJune2018[28] = {7.84088,12.27451,6.92551,12.27451,6.92551,12.27451
 double MIP2GeVJune2018 = 84.9e-6;
 
 
+double X0PosOctober2018[40] = {0.932753,1.90872,2.81787,3.79384,4.70298,5.67895,6.5881,7.56407,8.47322,9.44918,10.3583,11.3343,12.2434,13.2194,14.1286,15.2717,16.1808,17.1568,18.0659,19.209,20.1182,21.0941,22.0033,23.0628,23.972,24.9479,25.8571,26.8331, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39};
+double Lambda0PosOctober2018[40] = {0.0367242,0.0979071,0.129342,0.190524,0.221959,0.283142,0.314576,0.375759,0.407194,0.468377,0.499811,0.560994,0.592429,0.653611,0.685046,0.761895,0.793329,0.854512,0.885947,0.962795,0.99423,1.05541,1.08685,1.15586,1.1873,1.24848,1.27991,1.3411, 1.7, 2.0, 2.3, 2.6, 2.9, 3.2, 3.5, 3.8, 4.1, 4.4, 4.7, 5.0};
+double weightsOctober2018[40] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+double MIP2GeVOctober2018 = 84.9e-6;
+
 std::vector<double> getEigenValuesOfSymmetrix3x3(double A11, double A22, double A33, double A12, double A13, double A23) {
 	//eigenvalue computation: https://arxiv.org/pdf/1306.6291.pdf
 	double b = A11 + A22 + A33;
@@ -338,6 +343,11 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 			N_layers_FH = 0;		
 			N_layers_BH = 0;
 			break;			
+  	case 22:					//October 2018, H2
+			N_layers_EE = 28;		
+			N_layers_FH = 12;		
+			N_layers_BH = 12;
+			break;				
 	}
 	std::vector<HGCalTBRecHit> rechits_selected;
 	for(auto Rechit : *Rechits) {
@@ -571,6 +581,12 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 			X0 = X0PosJune2018[it->first-1];
 			lambda0 = Lambda0PosJune2018[it->first-1];
 		}
+		else if ((rd->configuration>=22)) {
+			weight = weightsOctober2018[it->first-1]*1e-3;
+			MIP2GeV = MIP2GeVOctober2018;
+			X0 = X0PosOctober2018[it->first-1];
+			lambda0 = Lambda0PosOctober2018[it->first-1];
+		}		
 		depthX0 += X0*energyAll_layer[it->first-1];
 		depthLambda0 += lambda0*energyAll_layer[it->first-1];
 

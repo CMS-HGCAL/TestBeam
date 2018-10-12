@@ -79,8 +79,10 @@ std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int laye
 			return point;
 		}
 		else{
+			/*		Adjustments for the DESY 2018 TB ?, TQ 12 October 2018
 			sensor_iu = 0;
 			sensor_iv = 0;
+			*/
 			centre_x_tmp = ( (iu * x0 + iv * vx0) < 0) ? ((iu * x0 + iv * vx0) + delta) : ((iu * x0 + iv * vx0) - delta)  ;
                         centre_y_tmp = ( (iv * vy0) < 0) ? ((iv * vy0) + delta) : ((iv * vy0) - delta);
                         centre_x_tmp += sensor_iu*X0 + sensor_iv*VX0;
