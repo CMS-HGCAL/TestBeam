@@ -272,4 +272,4 @@ process.observablentupler = cms.EDAnalyzer("NTupelizer",
 )
 
 
-process.p = cms.Path( process.timingfilewriter * process.pedestalplotter *process.rawhitproducer * process.rechitproducer * process.eventdisplay * process.rechitntupler * process.variablecomputation * process.observablentupler)
+process.p = cms.Path( process.timingfilewriter * process.rawhitproducer * process.rechitproducer * process.rechitntupler * process.variablecomputation * process.observablentupler)
