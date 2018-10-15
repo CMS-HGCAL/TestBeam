@@ -45,7 +45,7 @@ options.register('timingFile',
                  'Output file where pedestal histograms are stored')
 
 options.register('outputFile',
-                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/2018/cern_h2_october/prompt_reco/v2/prompt_reco_%s.root',
+                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/2018/cern_h2_october/prompt_reco/v5/prompt_reco_%s.root',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
@@ -84,7 +84,7 @@ options.register('noisyChannelsFile',
                  'Output file where pedestal histograms are stored')
 
 options.register('electronicMap',
-                 "emap_full_October2018_v3_promptReco.txt",
+                 "emap_full_October2018_v5_promptReco.txt",
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'path to the electronic map')
@@ -104,7 +104,7 @@ options.register('NLayers',
                 )
 
 options.register('hgcalLayout',
-                 'layer_geom_full_October2018_v3_promptReco.txt',
+                 'layer_geom_full_October2018_v5_promptReco.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Name of the hgcal layout file in HGCal/CondObjects/data/')
