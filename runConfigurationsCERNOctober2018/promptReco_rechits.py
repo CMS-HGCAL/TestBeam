@@ -264,6 +264,7 @@ process.variablecomputation = cms.EDProducer("VariableComputation",
 
 VariablesToPlot = ["xmean", "ymean", "NRechits", "E7_tot", "E19_tot", "EAll_tot", "EAllHG_tot", "EAllLG_tot", "EAllTOT_tot"]
 VariablesToPlot += ["Ixx","Iyy","Izz","Ixy","Ixz","Iyz","depthX0","depthLambda0","showerStartDepth"]
+VariablesToPlot += ["E_EE", "E_FH"]
 for layer in range(1, 41):
     VariablesToPlot+=["EAll_layer%s"%layer, "EAll_layer%s"%layer, "EAll_layer%s"%layer]
 process.observablentupler = cms.EDAnalyzer("NTupelizer",
