@@ -69,6 +69,11 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
   			N_layers_FH = 0;		
   			N_layers_BH = 0;		
   			break;	
+  		case 22:
+  			N_layers_EE = 28;		
+  			N_layers_FH = 12;		
+  			N_layers_BH = 12;		
+  			break;	  
   		case 13:
   		default:
   			N_layers_EE = 28;		
@@ -448,9 +453,6 @@ void HGCalTBGenSimSource::makeRecHit(int layer, int cellno, double energy, std::
 	    recHit.setTime(-1);
 		recHit.setCellCenterCoordinate(x, y);
 	 	
-	 	#ifdef DEBUG
-	 		std::cout<<"skiRocIndex: "<<skiRocIndex<<"   channelIndex: "<<channelIndex<<std::endl;
-	 	#endif
 
 		energy *= GeVToMip;
 		//additional noise to the energy in MIPs
