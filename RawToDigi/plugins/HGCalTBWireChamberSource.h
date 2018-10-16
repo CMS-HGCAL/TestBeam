@@ -46,12 +46,18 @@ double dwc_z2_H2_Summer2017 = -235.;
 double dwc_z3_H2_Summer2017 = -1509.;
 double dwc_z4_H2_Summer2017 = -1769.;
 
-double dwc_z1_H6A_Ocotber2017 = -500.;	//z=0 is the HGCal table, unit is cm
+double dwc_z1_H6A_October2017 = -500.;	//z=0 is the HGCal table, unit is cm
 
 double dwc_z1_H2_June2018 = -120.;	//z=0 is the HGCal table, unit is cm
 double dwc_z2_H2_June2018 = -246.;
 double dwc_z3_H2_June2018 = -1520.;
 double dwc_z4_H2_June2018 = -1780.;
+
+
+double dwc_z1_H2_October2018 = -3300.;	//z=0 is the HGCal table, unit is cm
+double dwc_z2_H2_October2018 = -2900.;
+double dwc_z3_H2_October2018 = -900.;
+double dwc_z4_H2_October2018 = -200.;
 
 
 //to the EDM::Event via auxiliary information
@@ -121,6 +127,9 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 	  	TBranch                   *b_timeSinceStart;   
 	  	std::map<int, TBranch*>	  b_hits;
 
+
+	  	int N_TDC_channels;
+	  	int fileFormat;
 
 	public:
 		explicit HGCalTBWireChamberSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc);

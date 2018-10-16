@@ -60,8 +60,10 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 		DWC4_RIGHT = 11;
 		DWC4_DOWN = 9;
 		DWC4_UP = 8;
+		N_TDC_channels = 16;
+		fileFormat=1;
 	} else if (areaSpecification=="H6A_October2017") {
-		dwc_z1 = dwc_z1_H6A_Ocotber2017;
+		dwc_z1 = dwc_z1_H6A_October2017;
 		dwc_z2 = dwc_z3 = dwc_z4 = -1.;
 		DWC1_LEFT = 0;
 		DWC1_RIGHT = 1;
@@ -78,8 +80,10 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 		DWC4_LEFT = 10;
 		DWC4_RIGHT = 11;
 		DWC4_DOWN = 9;
-		DWC4_UP = 8;		
-	} else {
+		DWC4_UP = 8;	
+		N_TDC_channels = 16;
+		fileFormat=1;	
+	} else if (areaSpecification=="H2_June2018") {
 		dwc_z1 = dwc_z1_H2_June2018;
 		dwc_z2 = dwc_z2_H2_June2018;
 		dwc_z3 = dwc_z3_H2_June2018;
@@ -100,6 +104,31 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 		DWC4_RIGHT = 12;
 		DWC4_DOWN = 14;
 		DWC4_UP = 15;
+		N_TDC_channels = 16;
+		fileFormat=1;
+	} else if (areaSpecification=="H2_October2018") {
+		dwc_z1 = dwc_z1_H2_October2018;
+		dwc_z2 = dwc_z2_H2_October2018;
+		dwc_z3 = dwc_z3_H2_October2018;
+		dwc_z4 = dwc_z4_H2_October2018;
+		DWC1_LEFT = 4;
+		DWC1_RIGHT = 5;
+		DWC1_DOWN = 6;
+		DWC1_UP = 7;
+		DWC2_LEFT = 9;
+		DWC2_RIGHT = 8;
+		DWC2_DOWN = 10;
+		DWC2_UP = 11;
+		DWC3_LEFT = 13;	
+		DWC3_RIGHT = 12;	
+		DWC3_DOWN = 14;
+		DWC3_UP = 15;
+		DWC4_LEFT = 1;	
+		DWC4_RIGHT = 0;
+		DWC4_DOWN = 2;
+		DWC4_UP = 3;
+		N_TDC_channels=32;
+		fileFormat=2;
 	}
 
 	produces<std::map<int, WireChamberData> >(outputCollectionName);
@@ -113,7 +142,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	channels=0;
 	dwc_timestamps=0;
 
-	for (int ch=0; ch<16; ch++) {
+	for (int ch=0; ch<N_TDC_channels; ch++) {
 		if (hitsPerChannelStored[ch]==1) {
 			hits[ch] = 0;
 		}
@@ -154,25 +183,40 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 
 		std::cout<<"Opening "<<fileNames()[fileCounter].c_str()<<std::endl;
 		rootFile = new TFile(fileNames()[fileCounter].c_str());	
-		tree = (TTree*)rootFile->Get("DelayWireChambers");
-
-		tree->SetBranchAddress("run", &n_run, &b_run);
-		tree->SetBranchAddress("event", &n_trigger_tdc, &b_trigger);
-		tree->SetBranchAddress("channels", &channels, &b_channels);
-		tree->SetBranchAddress("dwc_timestamps", &dwc_timestamps, &b_dwc_timestamps);
 		
-		if (triggerTimingFormat[fileCounter]==0) {
-			tree->SetBranchAddress("timeSinceStart", &timeSinceStart, &b_timeSinceStart);
-		} else {
-			tree->SetBranchAddress("timeSinceStart", &timeSinceStart_long, &b_timeSinceStart);
-		}
-
-
-		for (int ch=0; ch<16; ch++) {
-			if (hitsPerChannelStored[ch]==1) {
-				b_hits[ch] = 0;
-				tree->SetBranchAddress(("dwc_hits_ch"+std::to_string(ch)).c_str(), &(hits.at(ch)), &(b_hits.at(ch)));
+		if (fileFormat==1) {
+			tree = (TTree*)rootFile->Get("DelayWireChambers");
+			tree->SetBranchAddress("run", &n_run, &b_run);
+			tree->SetBranchAddress("event", &n_trigger_tdc, &b_trigger);
+			tree->SetBranchAddress("channels", &channels, &b_channels);
+			tree->SetBranchAddress("dwc_timestamps", &dwc_timestamps, &b_dwc_timestamps);
+			
+			if (triggerTimingFormat[fileCounter]==0) {
+				tree->SetBranchAddress("timeSinceStart", &timeSinceStart, &b_timeSinceStart);
+			} else {
+				tree->SetBranchAddress("timeSinceStart", &timeSinceStart_long, &b_timeSinceStart);
 			}
+
+
+			for (int ch=0; ch<N_TDC_channels; ch++) {
+				if (hitsPerChannelStored[ch]==1) {
+					b_hits[ch] = 0;
+					tree->SetBranchAddress(("dwc_hits_ch"+std::to_string(ch)).c_str(), &(hits.at(ch)), &(b_hits.at(ch)));
+				}
+			}
+		} else if (fileFormat==2) {
+			tree = (TTree*)rootFile->Get("CAENData");
+			tree->SetBranchAddress("run", &n_run, &b_run);
+			tree->SetBranchAddress("event", &n_trigger_tdc, &b_trigger);
+			tree->SetBranchAddress("tdc_first_hits", &dwc_timestamps, &b_dwc_timestamps);
+			tree->SetBranchAddress("trigger_timestamp_cpu_TDC", &timeSinceStart_long, &b_timeSinceStart);
+		
+			for (int ch=0; ch<N_TDC_channels; ch++) {
+				if (hitsPerChannelStored[ch]==1) {
+					b_hits[ch] = 0;
+					tree->SetBranchAddress(("tdc_hits_ch"+std::to_string(ch)).c_str(), &(hits.at(ch)), &(b_hits.at(ch)));
+				}
+			}			
 		}
 
 		skippedTDCTriggers = 0;
@@ -370,7 +414,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	event.put(std::move(dwcs), outputCollectionName);		
 
 	bool oneHit = false;
-	for (size_t index=0; index<16; index++)
+	for (int index=0; index<N_TDC_channels; index++)
 		oneHit = oneHit || validTimestamp(dwc_timestamps->at(index));
 
 	#ifdef DEBUG
@@ -408,6 +452,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 		if (allowForTDCEventSkipping[fileCounter]&&(deltaTs>-100.)&&(deltaTs<-15.)) {		
 		//average time in between two events is around 20ms given by the sync board. So cutting on -15. is reasonable for this configuration (20 Oct 2017 in H6A)
+			std::cout<<"Skipping one TDC trigger"<<std::endl;
 			skippedTDCTriggers+=1;
 		}
 
