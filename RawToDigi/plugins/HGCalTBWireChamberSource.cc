@@ -141,6 +141,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 	n_trigger_tdc=n_trigger_orm=0;
 	channels=0;
 	dwc_timestamps=0;
+	timeSinceStart_TDC=0;
 
 	for (int ch=0; ch<N_TDC_channels; ch++) {
 		if (hitsPerChannelStored[ch]==1) {
@@ -209,7 +210,7 @@ bool HGCalTBWireChamberSource::setRunAndEventInfo(edm::EventID& id, edm::TimeVal
 			tree->SetBranchAddress("run", &n_run, &b_run);
 			tree->SetBranchAddress("event", &n_trigger_tdc, &b_trigger);
 			tree->SetBranchAddress("tdc_first_hits", &dwc_timestamps, &b_dwc_timestamps);
-			tree->SetBranchAddress("trigger_timestamp_cpu_TDC", &timeSinceStart_long, &b_timeSinceStart);
+			tree->SetBranchAddress("trigger_timestamps_TDC", &timeSinceStart_TDC, &b_timeSinceStart);
 		
 			for (int ch=0; ch<N_TDC_channels; ch++) {
 				if (hitsPerChannelStored[ch]==1) {
@@ -445,7 +446,8 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 		int event_candidate_index = trigger_to_event_table[n_trigger_orm];
 
 		double timeSinceStart_ms = timeSinceStart;
-		if (triggerTimingFormat[fileCounter]==1) timeSinceStart_ms = timeSinceStart_long * TDCTriggerTimeStampConversionToMs;
+		if ((fileFormat==1)&&(triggerTimingFormat[fileCounter]==1)) timeSinceStart_ms = timeSinceStart_long * TDCTriggerTimeStampConversionToMs;
+		else if (fileFormat==2) timeSinceStart_ms = timeSinceStart_TDC->at(0) * TDCTriggerTimeStampConversionToMs;
 
 		double deltaTs = (event_trigger_time[event_candidate_index]-ref_time_sync) - (timeSinceStart_ms - ref_time_dwc);
 		rd->doubleUserRecords.add("triggerDeltaT_to_TDC", deltaTs);
@@ -473,7 +475,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 			syncCounter[1]++;
 		}
 
-		if (deltaTs > 200. && deltaTs<100000 && eventCounter > 3 && sumTriggerTimes[fileCounter]!=-1) {			//the first line is not used to test synchronisation since a time offset is present for the two streams.
+		if (deltaTs > 200. && deltaTs<100000 && eventCounter > 3 && sumTriggerTimes[fileCounter]!=-1 && (timeSinceStart_ms - ref_time_dwc > 0)) {			//the first line is not used to test synchronisation since a time offset is present for the two streams.
 			//throw cms::Exception("EventAsynch") << "Trigger time interval differs by more than 200ms. The files are likely not synchronised. ";
 			#ifdef DEBUG
 				std::cout<<std::endl<<std::endl << "Trigger time interval differs by more than 200ms. The files are likely not synchronised. "<<std::endl<<std::endl<<std::endl;

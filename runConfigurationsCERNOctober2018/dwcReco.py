@@ -58,14 +58,14 @@ options.register('timingFiles',
                 )
 
 options.register('triggerTimeDifferenceTolerance',
-                2,
+                0.5,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.float,
                  'Accepted tolerance in trigger time stamp difference for the synchronisation.'
                 )
 
 options.register('TDCTriggerTimeStampConversionToMs',
-                1./1000.,
+                8./10000,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.float,
                  'Conversion from TDC trigger time stamp to ms'
@@ -147,7 +147,7 @@ options.parseArguments()
 
 ################################
 # Setting an upper limit for the events to be processed, e.g. for debugging
-options.maxEvents = 100
+options.maxEvents = -1
 process = cms.Process("dwcReco")
 process.maxEvents = cms.untracked.PSet(
     input = cms.untracked.int32(options.maxEvents)

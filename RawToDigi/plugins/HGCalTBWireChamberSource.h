@@ -116,6 +116,7 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 	  	std::map<int, std::vector<int>* > hits;
 	  	int timeSinceStart;
 	  	Long64_t timeSinceStart_long;
+	  	std::vector<Long64_t> *timeSinceStart_TDC;
 	 
 	  	double ref_time_sync, ref_time_dwc, delta_T_priorDWCTrigger;
 
