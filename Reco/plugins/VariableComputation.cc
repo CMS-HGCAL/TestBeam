@@ -80,7 +80,7 @@ double MIP2GeVJune2018 = 84.9e-6;
 
 double X0PosOctober2018[40] = {0.932753,1.90872,2.81787,3.79384,4.70298,5.67895,6.5881 ,7.56407,8.47322,9.44918,10.3583,11.3343,12.2434,13.2194,14.1286,15.1045,16.0137,16.9896,17.8988,18.8748,19.7839,20.927,21.8362,22.9793,23.8884,25.1341,26.0433,27.3262,27.862,30.7805,33.699,36.6175,39.536,42.3709,43.4681,46.3866,49.305,52.419,55.4494,58.2844};
 double Lambda0PosOctober2018[40] = {0.0367242,0.0979071,0.129342,0.190524,0.221959,0.283142,0.314576,0.375759,0.407194,0.468377,0.499811,0.560994,0.592429,0.653611,0.685046,0.746229,0.777663,0.838846,0.870281,0.931464,0.962898,1.03975,1.07118,1.14803,1.17946,1.25129,1.28272,1.35602,1.41498,1.71429,2.01361,2.31292,2.61224,2.90372,3.01221,3.31153,3.61084,3.91333,4.20799,4.49947};
-double weightsOctober2018[40] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
+double weightsOctober2018[40] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5};
 double MIP2GeVOctober2018 = 84.9e-6;
 
 std::vector<double> getEigenValuesOfSymmetrix3x3(double A11, double A22, double A33, double A12, double A13, double A23) {
@@ -587,8 +587,8 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 			X0 = X0PosOctober2018[it->first-1];
 			lambda0 = Lambda0PosOctober2018[it->first-1];
 		}		
-		depthX0 += X0*energyAll_layer[it->first-1];
-		depthLambda0 += lambda0*energyAll_layer[it->first-1];
+		depthX0 += X0*energyAll_layer[it->first-1]*(MIP2GeV+weight);
+		depthLambda0 += lambda0*energyAll_layer[it->first-1]*(MIP2GeV+weight);
 
 		if ((showerStartDepth==-1.)&&(energyE19_layer[it->first-1] > 20.)&&(NE19_layer[it->first-1]>1)) {
 			showerStartDepth = lambda0;
@@ -623,8 +623,8 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 		UR->add("dwctrack_chi2y", dwctrack->chi2_y);
 	}
 
-	depthX0 /= energyAll_tot;
-	depthLambda0 /= energyAll_tot;
+	depthX0 /= energyAll_weight;
+	depthLambda0 /= energyAll_weight;
 
 	UR->add("E1_tot", energyE1_tot);
 	UR->add("E7_tot", energyE7_tot);
