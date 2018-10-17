@@ -26,6 +26,7 @@ cd ${RELEASE}/src/
 cmsenv
 git cms-init
 git clone git@github.com:CMS-HGCAL/TestBeam.git HGCal/
+cd HGCal
 git checkout CERN_TestBeam_2018_Ipbus_ntuples
 git pull
 scram b -j16
