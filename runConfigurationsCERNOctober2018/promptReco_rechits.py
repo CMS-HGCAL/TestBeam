@@ -116,7 +116,7 @@ options.register('adcCalibrations',
                  'Name of the hgcal ADC to MIP calibration file in HGCal/CondObjects/data/')
 
 options.register('layerPositionFile',
-                 '/afs/cern.ch/user/d/daq/CMSSW_9_3_0/src/HGCal/CondObjects/data/layer_distances_CERN_Hexaboard_October2018_promptReco_v1.txt',
+                 '/afs/cern.ch/user/d/daq/CMSSW_9_3_0/src/HGCal/CondObjects/data/layer_distances_CERN_Hexaboard_October2018_promptReco_v2.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'File indicating the layer positions in mm.')
