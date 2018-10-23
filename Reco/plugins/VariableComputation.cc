@@ -83,11 +83,16 @@ double Lambda0PosOctober2018_setup1[40] = {0.0367242, 0.0979071, 0.129342, 0.190
 double weightsOctober2018_setup1[40] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5};
 double MIP2GeVOctober2018_setup1 = 84.9e-6;
 
-//todo (20 October 2018): update values
 double X0PosOctober2018_setup2[39] = {0.932753, 1.90872, 2.81787, 3.79384, 4.70298, 5.67895, 6.5881, 7.56407, 8.47322, 9.44918, 10.3583, 11.3343, 12.2434, 13.2194, 14.1286, 15.1045, 16.0137, 16.9896, 17.8988, 18.8748, 19.7839, 20.927, 21.8362, 22.9793, 23.8884, 25.1341, 26.0433, 27.3262, 27.862, 28.5589, 31.3938, 34.3123, 37.1472, 42.9115, 45.83, 48.7485, 51.8624, 54.7809, 57.6994 };
 double Lambda0PosOctober2018_setup2[39] = {0.0367242, 0.0979071, 0.129342, 0.190524, 0.221959, 0.283142, 0.314576, 0.375759, 0.407194, 0.468377, 0.499811, 0.560994, 0.592429, 0.653611, 0.685046, 0.746229, 0.777663, 0.838846, 0.870281, 0.931464, 0.962898, 1.03975, 1.07118, 1.14803, 1.17946, 1.25129, 1.28272, 1.35602, 1.41498, 1.46515, 1.75663, 2.05595, 2.34743, 2.94489, 3.24421, 3.54352, 3.84601, 4.14533, 4.44464};
 double weightsOctober2018_setup2[39] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5};
 double MIP2GeVOctober2018_setup2 = 84.9e-6;
+
+//todo (23 October 2018): update values
+double X0PosOctober2018_setup3[20] = {1.90872, 3.79384, 5.67895, 13.2194, 15.1045, 18.8748, 20.927, 22.9793, 27.862, 28.5589, 31.3938, 34.3123, 37.1472, 42.9115, 45.83, 48.7485, 51.8624, 54.7809, 57.6994 , 60.561};
+double Lambda0PosOctober2018_setup3[20] = {0.129342, 0.221959, 0.314576, 0.407194, 0.499811, 0.685046, 0.838846, 1.17946, 1.41498, 1.46515, 1.75663, 2.05595, 2.34743, 2.94489, 3.24421, 3.54352, 3.84601, 4.14533, 4.44464, 4.73799};
+double weightsOctober2018_setup3[20] = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5, 2.5};
+double MIP2GeVOctober2018_setup3 = 84.9e-6;
 
 
 
@@ -594,18 +599,24 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 			X0 = X0PosJune2018[it->first-1];
 			lambda0 = Lambda0PosJune2018[it->first-1];
 		}
-		else if ((rd->configuration>=22)) {
+		else if ((rd->configuration==22)) {
 			weight = weightsOctober2018_setup1[it->first-1]*1e-3;
 			MIP2GeV = MIP2GeVOctober2018_setup1;
 			X0 = X0PosOctober2018_setup1[it->first-1];
 			lambda0 = Lambda0PosOctober2018_setup1[it->first-1];
 		}	
-		else if ((rd->configuration>=23)) {
+		else if ((rd->configuration==23)) {
 			weight = weightsOctober2018_setup2[it->first-1]*1e-3;
 			MIP2GeV = MIP2GeVOctober2018_setup2;
 			X0 = X0PosOctober2018_setup2[it->first-1];
 			lambda0 = Lambda0PosOctober2018_setup2[it->first-1];
 		}		
+		else if ((rd->configuration>=24)) {
+			weight = weightsOctober2018_setup3[it->first-1]*1e-3;
+			MIP2GeV = MIP2GeVOctober2018_setup3;
+			X0 = X0PosOctober2018_setup3[it->first-1];
+			lambda0 = Lambda0PosOctober2018_setup3[it->first-1];
+		}				
 		depthX0 += X0*energyAll_layer[it->first-1]*(MIP2GeV+weight);
 		depthLambda0 += lambda0*energyAll_layer[it->first-1]*(MIP2GeV+weight);
 

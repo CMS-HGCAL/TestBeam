@@ -59,32 +59,32 @@ options.register('runType',
                 )
 
 options.register('setupConfiguration',
-                22,     #22: October 2018
+                24,     #22: October 2018
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'setupConfiguration (1: July - 4: 20 Layers in October in H6A".'
                 )
 
 options.register('pedestalHighGainFile',
-                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/2018/cern_h2_october/pedestalFiles/pedestalHG_259.txt',
+                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/2018/cern_h2_october/pedestalFiles/pedestalHG_1122.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
 
 options.register('pedestalLowGainFile',
-                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/2018/cern_h2_october/pedestalFiles/pedestalLG_259.txt',
+                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/2018/cern_h2_october/pedestalFiles/pedestalLG_1122.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
 
 options.register('noisyChannelsFile',
-                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/2018/cern_h2_october/pedestalFiles/noisyChannels_259.txt',
+                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/2018/cern_h2_october/pedestalFiles/noisyChannels_1122.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
 
 options.register('electronicMap',
-                 "emap_full_October2018_v5_promptReco.txt",
+                 "emap_full_October2018_setup3_v0_promptReco.txt",
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'path to the electronic map')
@@ -97,14 +97,14 @@ options.register('NHexaBoards',
                 )
 
 options.register('NLayers',
-                40,
+                20,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Number of layers for analysis.'
                 )
 
 options.register('hgcalLayout',
-                 'layer_geom_full_October2018_v5_promptReco.txt',
+                 'layer_geom_full_October2018_setup3_v0_promptReco.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Name of the hgcal layout file in HGCal/CondObjects/data/')
@@ -116,7 +116,7 @@ options.register('adcCalibrations',
                  'Name of the hgcal ADC to MIP calibration file in HGCal/CondObjects/data/')
 
 options.register('layerPositionFile',
-                 '/afs/cern.ch/user/d/daq/CMSSW_9_3_0/src/HGCal/CondObjects/data/layer_distances_CERN_Hexaboard_October2018_promptReco_v2.txt',
+                 '/afs/cern.ch/user/d/daq/CMSSW_9_3_0/src/HGCal/CondObjects/data/layer_distances_CERN_Hexaboard_October2018_setup3_promptReco_v0.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'File indicating the layer positions in mm.')
