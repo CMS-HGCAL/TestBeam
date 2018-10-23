@@ -84,7 +84,7 @@ options.register('noisyChannelsFile',
                  'Output file where pedestal histograms are stored')
 
 options.register('electronicMap',
-                 "emap_full_October2018_setup3_v0_promptReco.txt",
+                 "emap_full_October2018_setup3_v1_promptReco.txt",
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'path to the electronic map')
@@ -97,14 +97,14 @@ options.register('NHexaBoards',
                 )
 
 options.register('NLayers',
-                20,
+                19,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Number of layers for analysis.'
                 )
 
 options.register('hgcalLayout',
-                 'layer_geom_full_October2018_setup3_v0_promptReco.txt',
+                 'layer_geom_full_October2018_setup3_v1_promptReco.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Name of the hgcal layout file in HGCal/CondObjects/data/')
