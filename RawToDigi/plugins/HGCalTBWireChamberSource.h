@@ -54,10 +54,10 @@ double dwc_z3_H2_June2018 = -1520.;
 double dwc_z4_H2_June2018 = -1780.;
 
 
-double dwc_z1_H2_October2018 = -3300.;	//z=0 is the HGCal table, unit is cm
-double dwc_z2_H2_October2018 = -2900.;
-double dwc_z3_H2_October2018 = -900.;
-double dwc_z4_H2_October2018 = -200.;
+double dwc_z1_H2_October2018 = -3200.;	//z=0 is the HGCal table, unit is cm
+double dwc_z2_H2_October2018 = -2700.;
+double dwc_z3_H2_October2018 = -880.;
+double dwc_z4_H2_October2018 = -160.;
 
 
 //to the EDM::Event via auxiliary information

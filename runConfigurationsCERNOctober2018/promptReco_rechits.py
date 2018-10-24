@@ -45,7 +45,7 @@ options.register('timingFile',
                  'Output file where pedestal histograms are stored')
 
 options.register('outputFile',
-                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/2018/cern_h2_october/prompt_reco/v5/prompt_reco_%s.root',
+                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/2018/cern_h2_october/prompt_reco/v6/prompt_reco_%s.root',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
@@ -101,6 +101,13 @@ options.register('NLayers',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Number of layers for analysis.'
+                )
+
+options.register('ExpectedMaxTimesample',
+                3,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Number of the timesample where the maximum of the pulse is expected.'
                 )
 
 options.register('hgcalLayout',
@@ -219,7 +226,7 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         DetectorLayout = cms.untracked.string(hgcalLayout),
                                         ADCCalibrations = cms.untracked.string(adcCalibrations),                                       
                                         calibrationPerChannel=cms.untracked.bool(True),
-                                        ExpectedMaxTimeSample=cms.untracked.int32(3),
+                                        ExpectedMaxTimeSample=cms.untracked.int32(options.ExpectedMaxTimesample),
                                         MaxADCCut=cms.untracked.double(15)
 )
 
