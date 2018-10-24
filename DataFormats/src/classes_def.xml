@@ -22,8 +22,12 @@
   <class name="UserRecords<bool>"/>
   <class name="UserRecords<float>"/>
   <class name="UserRecords<double>"/>
+  <class name="UserRecords<std::vector<short> >"/>
+  <class name="UserRecords<std::vector<float> >"/>
   <class name="edm::Wrapper<UserRecords<double> >"/>
-  
+  <class name="std::map<std::string, std::vector<short> >"/>
+  <class name="std::map<std::string, std::vector<float> >"/>
+
   <class name="RunData"/>
   <class name="edm::Wrapper<RunData>"/>
 

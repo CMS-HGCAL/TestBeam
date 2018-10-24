@@ -117,6 +117,9 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 	  	int timeSinceStart;
 	  	Long64_t timeSinceStart_long;
 	  	std::vector<Long64_t> *timeSinceStart_TDC;
+	  	
+	  	std::map<int, std::vector<int>* > digi_samples;		//samples from some digitizer
+	  	Long64_t timeSinceStart_Digitizer;
 	 
 	  	double ref_time_sync, ref_time_dwc, delta_T_priorDWCTrigger;
 
@@ -125,11 +128,14 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 	  	TBranch                   *b_trigger;   
 	  	TBranch                   *b_channels;   
 	  	TBranch                   *b_dwc_timestamps;   
-	  	TBranch                   *b_timeSinceStart;   
+	  	TBranch                   *b_timeSinceStart_TDC;   
+	  	TBranch                   *b_timeSinceStart_Digitizer;   
 	  	std::map<int, TBranch*>	  b_hits;
+	  	std::map<int, TBranch*>	  b_digi_samples;
 
 
 	  	int N_TDC_channels;
+	  	int N_Digitizer_channels;
 	  	int fileFormat;
 
 	public:

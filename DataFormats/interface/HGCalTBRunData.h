@@ -44,7 +44,7 @@ class UserRecords {
         return (it!=elements.end());
       };                
       T get(const std::string key) const{
-        if (!has(key)) return 0;
+        if (!has(key)) return (T)0;
         return this->elements.at(key);  //"[]" operator is a non-const labelled operator
       };              
 }; 
@@ -64,6 +64,8 @@ class RunData {
     
     UserRecords<bool> booleanUserRecords;
     UserRecords<double> doubleUserRecords;
+    UserRecords<std::vector<short> > shortVectorUserRecords;
+    UserRecords<std::vector<float> > floatVectorUserRecords;
 
 };
 

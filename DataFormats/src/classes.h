@@ -52,6 +52,8 @@ struct dictionary {
 	UserRecords<float> _aFloatUserRecord;
 	UserRecords<double> _aDoubleUserRecord;
   	edm::Wrapper<UserRecords<double> > _aDoubleUserRecordWrapper;
+	UserRecords<std::vector<short> > _aShortVectorUserRecord;
+	UserRecords<std::vector<float> > _aFloatVectorUserRecord;
 
 	RunData _aRunData;
 	edm::Wrapper<RunData> _aRunDataWrapper;
