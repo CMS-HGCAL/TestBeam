@@ -20,6 +20,7 @@
 #include "TBranch.h"
 #include "TTree.h"
 
+#include "HGCal/Reco/interface/MCP_waveform_reco.h"
 
 //DWC_to_TDC_MAP
 int DWC1_LEFT;

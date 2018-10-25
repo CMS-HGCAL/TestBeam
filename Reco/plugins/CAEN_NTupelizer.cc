@@ -86,6 +86,12 @@ private:
 	std::vector<short> digi_scintillator_big;
 	std::vector<short> digi_synchboard_trigger;
 
+	short valid_TS_MCP1;
+	short valid_TS_MCP2;
+	float TS_MCP1;
+	float TS_MCP2;
+	float TS_MCP1_to_last_falling_Edge;
+	float TS_MCP2_to_last_falling_Edge;
 
 
 	std::map<int, SensorHitMap*> Sensors;
@@ -248,6 +254,14 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 	if (rd->shortVectorUserRecords.has("digi_scintillator_4x4")) digi_scintillator_big =  rd->shortVectorUserRecords.get("digi_scintillator_4x4");
 	if (rd->shortVectorUserRecords.has("digi_synchboard_trigger")) digi_synchboard_trigger =  rd->shortVectorUserRecords.get("digi_synchboard_trigger");
 
+
+	if(rd->booleanUserRecords.has("valid_TS_MCP1")) valid_TS_MCP1 = rd->booleanUserRecords.get("valid_TS_MCP1");
+	if(rd->booleanUserRecords.has("valid_TS_MCP2")) valid_TS_MCP2 = rd->booleanUserRecords.get("valid_TS_MCP2");
+	if(rd->doubleUserRecords.has("TS_MCP1_to_last_falling_Edge")) TS_MCP1_to_last_falling_Edge = rd->doubleUserRecords.get("TS_MCP1_to_last_falling_Edge");
+	if(rd->doubleUserRecords.has("TS_MCP1")) TS_MCP1 = rd->doubleUserRecords.get("TS_MCP1");
+	if(rd->doubleUserRecords.has("TS_MCP2")) TS_MCP2 = rd->doubleUserRecords.get("TS_MCP2");
+	if(rd->doubleUserRecords.has("TS_MCP2_to_last_falling_Edge")) TS_MCP2_to_last_falling_Edge = rd->doubleUserRecords.get("TS_MCP2_to_last_falling_Edge");
+	
 	tree->Fill();
 
 
@@ -361,6 +375,16 @@ void DWC_NTupelizer::beginJob() {
 		tree->Branch("digi_MCP2", &digi_MCP2);
 		tree->Branch("digi_scintillator_4x4", &digi_scintillator_big);
 		tree->Branch("digi_synchboard_trigger", &digi_synchboard_trigger);
+
+
+		tree->Branch("valid_TS_MCP1", &valid_TS_MCP1);
+		tree->Branch("valid_TS_MCP2", &valid_TS_MCP2);
+		tree->Branch("TS_MCP1", &TS_MCP1);
+		tree->Branch("TS_MCP2", &TS_MCP2);
+		tree->Branch("TS_MCP1_to_last_falling_Edge", &TS_MCP1_to_last_falling_Edge);
+		tree->Branch("TS_MCP2_to_last_falling_Edge", &TS_MCP2_to_last_falling_Edge);
+		
+
 	}
 }
 
