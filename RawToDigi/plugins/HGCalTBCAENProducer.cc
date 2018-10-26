@@ -1,4 +1,4 @@
-#include "HGCal/RawToDigi/plugins/HGCalTBBeamWireChamberProducer.h"
+#include "HGCal/RawToDigi/plugins/HGCalTBCAENProducer.h"
 
 //#define DEBUG
 
@@ -43,6 +43,18 @@ void HGCalTBBeamWireChamberProducer::beginJob() {
     tree->SetBranchAddress("res4_y", &res4_y ,&b_res4_y);   
     tree->SetBranchAddress("z4", &z4 ,&b_z4);     
     tree->SetBranchAddress("dwc4_multiplicity", &averageHitMultiplicty4 ,&b_averageHitMultiplicty4);   
+
+
+    tree->SetBranchAddress("XCET_021507_signal", &XCET_021507_signal, &b_XCET_021507_signal);
+    tree->SetBranchAddress("XCET_021523_signal", &XCET_021523_signal, &b_XCET_021523_signal);
+    tree->SetBranchAddress("scintillator_coincidence_timestamps", &scintillator_coincidences, &b_scintillator_coincidences);
+    tree->SetBranchAddress("scintillator_veto_timestamps", &scintillator_vetos, &b_scintillator_vetos);
+    tree->SetBranchAddress("valid_TS_MCP1", &valid_TS_MCP1, &b_valid_TS_MCP1);
+    tree->SetBranchAddress("valid_TS_MCP2", &valid_TS_MCP2, &b_valid_TS_MCP2);
+    tree->SetBranchAddress("TS_MCP1", &TS_MCP1, &b_TS_MCP1);
+    tree->SetBranchAddress("TS_MCP2", &TS_MCP2, &b_TS_MCP2);
+    tree->SetBranchAddress("TS_MCP1_to_last_falling_Edge", &TS_MCP1_to_last_falling_Edge, &b_TS_MCP1_to_last_falling_Edge);
+    tree->SetBranchAddress("TS_MCP2_to_last_falling_Edge", &TS_MCP2_to_last_falling_Edge, &b_TS_MCP2_to_last_falling_Edge);    
 
     loaded_run = -1;
 }
@@ -173,6 +185,21 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
 
         rd_full->booleanUserRecords.add("hasValidDWCMeasurement", (bool)goodDWC_Measurement_loaded[event_nr]);
         rd_full->doubleUserRecords.add("triggerDeltaT_to_TDC", triggerTimeDiff_loaded[event_nr]);
+
+
+        //XCET
+        rd_full->intUserRecords.add("XCET_021507_signal", XCET_021507_signal_loaded[event_nr]);
+        rd_full->intUserRecords.add("XCET_021523_signal", XCET_021523_signal_loaded[event_nr]);
+        //scintillators
+        rd_full->intUserRecords.add("scintillator_coincidences", scintillator_coincidences_loaded[event_nr]);
+        rd_full->intUserRecords.add("scintillator_vetos", scintillator_vetos_loaded[event_nr]);
+        //MCPs
+        rd_full->intUserRecords.add("valid_TS_MCP1", valid_TS_MCP1_loaded[event_nr]);
+        rd_full->intUserRecords.add("valid_TS_MCP2", valid_TS_MCP2_loaded[event_nr]);
+        rd_full->doubleUserRecords.add("TS_MCP1", TS_MCP1_loaded[event_nr]);
+        rd_full->doubleUserRecords.add("TS_MCP2", TS_MCP2_loaded[event_nr]);
+        rd_full->doubleUserRecords.add("TS_MCP1_to_last_falling_Edge", TS_MCP1_to_last_falling_Edge_loaded[event_nr]);
+        rd_full->doubleUserRecords.add("TS_MCP2_to_last_falling_Edge", TS_MCP2_to_last_falling_Edge_loaded[event_nr]);
     }
 
     (*dwcs)[0] = *dwc1;
@@ -192,10 +219,12 @@ void HGCalTBBeamWireChamberProducer::loadRun(int loading_run) {
     	std::cout<<"Clearing run "<<loaded_run<<std::endl;
 	#endif
     reco1_x_loaded.clear(); reco1_y_loaded.clear(); z1_loaded.clear();averageHitMultiplicty1_loaded.clear();
-    reco2_x_loaded.clear(); reco2_y_loaded.clear(); z2_loaded.clear();averageHitMultiplicty1_loaded.clear();
-    reco3_x_loaded.clear(); reco3_y_loaded.clear(); z3_loaded.clear();averageHitMultiplicty1_loaded.clear();
-    reco4_x_loaded.clear(); reco4_y_loaded.clear(); z4_loaded.clear();averageHitMultiplicty1_loaded.clear();
-
+    reco2_x_loaded.clear(); reco2_y_loaded.clear(); z2_loaded.clear();averageHitMultiplicty2_loaded.clear();
+    reco3_x_loaded.clear(); reco3_y_loaded.clear(); z3_loaded.clear();averageHitMultiplicty3_loaded.clear();
+    reco4_x_loaded.clear(); reco4_y_loaded.clear(); z4_loaded.clear();averageHitMultiplicty4_loaded.clear();
+    XCET_021507_signal_loaded.clear();XCET_021523_signal_loaded.clear();scintillator_coincidences_loaded.clear();scintillator_vetos_loaded.clear();
+    valid_TS_MCP1_loaded.clear();valid_TS_MCP2_loaded.clear();
+    TS_MCP1_loaded.clear();TS_MCP2_loaded.clear();TS_MCP1_to_last_falling_Edge_loaded.clear();TS_MCP2_to_last_falling_Edge_loaded.clear();
     #ifdef DEBUG
         std::cout<<"Loading run "<<loading_run<<std::endl;
     #endif
@@ -237,6 +266,18 @@ void HGCalTBBeamWireChamberProducer::loadRun(int loading_run) {
     	res4_y_loaded[eventId] = res4_y;
     	z4_loaded[eventId] = z4;
         averageHitMultiplicty4_loaded[eventId] = averageHitMultiplicty4;
+
+        XCET_021507_signal_loaded[eventId] = XCET_021507_signal;
+        XCET_021523_signal_loaded[eventId] = XCET_021523_signal;
+        scintillator_coincidences_loaded[eventId] = scintillator_coincidences->size();
+        scintillator_vetos_loaded[eventId] = scintillator_vetos->size();
+
+        valid_TS_MCP1_loaded[eventId] = valid_TS_MCP1;
+        valid_TS_MCP2_loaded[eventId] = valid_TS_MCP2;
+        TS_MCP1_loaded[eventId] = TS_MCP1;
+        TS_MCP2_loaded[eventId] = TS_MCP2;
+        TS_MCP1_to_last_falling_Edge_loaded[eventId] = TS_MCP1_to_last_falling_Edge;
+        TS_MCP2_to_last_falling_Edge_loaded[eventId] = TS_MCP2_to_last_falling_Edge;
     }
 	#ifdef DEBUG
     	std::cout<<"Loaded run "<<loading_run<<std::endl;

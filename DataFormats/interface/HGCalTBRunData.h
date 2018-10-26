@@ -64,6 +64,7 @@ class RunData {
     
     UserRecords<bool> booleanUserRecords;
     UserRecords<double> doubleUserRecords;
+    UserRecords<int> intUserRecords;
     UserRecords<std::vector<short> > shortVectorUserRecords;
     UserRecords<std::vector<float> > floatVectorUserRecords;
 
