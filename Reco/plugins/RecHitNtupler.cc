@@ -94,8 +94,10 @@ private:
     std::vector<Float16_t> rechit_x_;
     std::vector<Float16_t> rechit_y_;
     std::vector<Float16_t> rechit_z_;
-    std::vector<int> rechit_iu_;
-    std::vector<int> rechit_iv_;
+    std::vector<short> rechit_iu_;
+    std::vector<short> rechit_iv_;
+    std::vector<short> rechit_iU_;
+    std::vector<short> rechit_iV_;    
     std::vector<Float16_t> rechit_energy_;
     std::vector<Float16_t> rechit_energy_noHG;
     std::vector<Float16_t> rechit_amplitudeHigh_;
@@ -136,6 +138,8 @@ void RecHitNtupler::clearVariables(){
     rechit_z_.clear();
     rechit_iu_.clear();
     rechit_iv_.clear();
+    rechit_iU_.clear();
+    rechit_iV_.clear();    
     rechit_energy_.clear();
     rechit_energy_noHG.clear();
     rechit_amplitudeHigh_.clear();
@@ -230,6 +234,8 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
     tree_->Branch("rechit_z",&rechit_z_);
     tree_->Branch("rechit_iu",&rechit_iu_);
     tree_->Branch("rechit_iv",&rechit_iv_);
+    tree_->Branch("rechit_iU",&rechit_iU_);
+    tree_->Branch("rechit_iV",&rechit_iV_);    
     tree_->Branch("rechit_energy",&rechit_energy_);
     tree_->Branch("rechit_energy_noHG",&rechit_energy_noHG);
     tree_->Branch("rechit_amplitudeHigh",&rechit_amplitudeHigh_);
@@ -329,11 +335,11 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
     	rechit_y_.push_back( hit.cellCenter_y );
     	*/
 
-    	// not available for now
-    	//rechit_z_.push_back();
 
     	rechit_iu_.push_back( hit.id().iu() );
     	rechit_iv_.push_back( hit.id().iv() );
+        rechit_iU_.push_back( hit.id().sensorIU() );
+        rechit_iV_.push_back( hit.id().sensorIV() );
 
     	// Hit energy and time
         rechit_energy_.push_back( hit.energy() );
