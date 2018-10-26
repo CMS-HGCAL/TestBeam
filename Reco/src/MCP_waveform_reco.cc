@@ -251,7 +251,7 @@ int qualityPulse(int nsamples, short* pulse) {
     vpeak = pulse[ipeak];
     noise = getNoise(ipeak, pulse, 30, 70);
 
-    if (vpeak < 1. * noise || vpeak < 50) {
+    if ((vpeak < 3. * noise) || (vpeak < 150)) {
         fQuality = 0;
     }
 
@@ -305,7 +305,7 @@ peakValues* analysePeak(int nsamples, short* pulse) {
         ret->fQuality = 1;
     } else {
         amp_peakfit = -1;
-        mu_peakfit = 0;
+        mu_peakfit = -1;
         tlinear15 = -1;
         tlinear30 = -1;
         tlinear45 = -1;

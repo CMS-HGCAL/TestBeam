@@ -536,79 +536,85 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 		//time reconstruction: goal is to have the time w.r.t. to last falling edge of the signal
 		int N_digi_samples = digi_MCP1.size();
-		short* MCP1_waveform = new short[N_digi_samples];
-		short* MCP2_waveform = new short[N_digi_samples];
-		short* pedestal_ch4 = new short[N_digi_samples];
-		short* pedestal_ch5 = new short[N_digi_samples];
-		short* pedestal_ch6 = new short[N_digi_samples];
-		short* pedestal_ch7 = new short[N_digi_samples];
-		for (int i = 0; i < N_digi_samples; i++) {
-			MCP1_waveform[i] = digi_MCP1[i];
-			MCP2_waveform[i] = digi_MCP2[i];
-			pedestal_ch4[i] = digi_samples.at(4)->at(i);
-			pedestal_ch5[i] = digi_samples.at(5)->at(i);
-			pedestal_ch6[i] = digi_samples.at(6)->at(i);
-			pedestal_ch7[i] = digi_samples.at(7)->at(i);
-		}
-
-
-		//determine and subtract the baseline for all samples
-		substractBaseline(N_digi_samples, MCP1_waveform, getBaseline(findAbsolutePeak(N_digi_samples, MCP1_waveform, "pos"), MCP1_waveform, 90, -1));
-		substractBaseline(N_digi_samples, MCP2_waveform, getBaseline(findAbsolutePeak(N_digi_samples, MCP2_waveform, "pos"), MCP2_waveform, 90, -1));
-		substractBaseline(N_digi_samples, pedestal_ch4, getBaseline(findAbsolutePeak(N_digi_samples, pedestal_ch4, "pos"), pedestal_ch4, 90, -1));
-		substractBaseline(N_digi_samples, pedestal_ch5, getBaseline(findAbsolutePeak(N_digi_samples, pedestal_ch5, "pos"), pedestal_ch5, 90, -1));
-		substractBaseline(N_digi_samples, pedestal_ch6, getBaseline(findAbsolutePeak(N_digi_samples, pedestal_ch6, "pos"), pedestal_ch6, 90, -1));
-		substractBaseline(N_digi_samples, pedestal_ch7, getBaseline(findAbsolutePeak(N_digi_samples, pedestal_ch7, "pos"), pedestal_ch7, 90, -1));
-
-
-		//step1: obtain common mode noise from inactive channels
-		short* commonBaseline = new short[N_digi_samples];
-		for (int i = 0; i < N_digi_samples; i++) {
-			commonBaseline[i] = 0;
-			commonBaseline[i] += pedestal_ch4[i];
-			commonBaseline[i] += pedestal_ch5[i];
-			commonBaseline[i] += pedestal_ch6[i];
-			commonBaseline[i] += pedestal_ch7[i];
-			commonBaseline[i] = commonBaseline[i] / 4.;
-		}
-
-		//step2: subtract the common mode noise estimate and invert the pulse
-		short* MCP1_waveform_cleared = new short[N_digi_samples];
-		short* MCP2_waveform_cleared = new short[N_digi_samples];
-		for (int i = 0; i < N_digi_samples; i++) MCP1_waveform_cleared[i] = +commonBaseline[i] - MCP1_waveform[i];
-		for (int i = 0; i < N_digi_samples; i++) MCP2_waveform_cleared[i] = +commonBaseline[i] - MCP2_waveform[i];
-
-
-		//3. apply gaussian fits around the maximum (+/- 1 sample) and the linear fit to the rising edge
-		peakValues* MCPSignal1 = analysePeak(N_digi_samples, MCP1_waveform_cleared);
-		peakValues* MCPSignal2 = analysePeak(N_digi_samples, MCP2_waveform_cleared);
-#ifdef DEBUG
-		std::cout << "MCP1: " << MCPSignal1->fQuality << "   " << MCPSignal1->peak << "  " << MCPSignal1->amp << "  " << MCPSignal1->amppeak << "  " << MCPSignal1->tpeak << "  " << MCPSignal1->base << "  " << std::endl;
-		std::cout << "MCP2: " << MCPSignal2->fQuality << "   " << MCPSignal2->peak << "  " << MCPSignal2->amp << "  " << MCPSignal2->amppeak << "  " << MCPSignal2->tpeak << "  " << MCPSignal2->base << "  " << std::endl;
-#endif
-
-		//4. determine distance to the prior falling clock edge
-		int priorFallingClockEdge_MCP1=0;
-		int priorFallingClockEdge_MCP2=0;
-		for (int sample = 2; sample < N_digi_samples; sample++) {			
-			if ((sample > MCPSignal1->tpeak) && (sample > MCPSignal2->tpeak)) break;
-			
-			if ((digi_clock[sample-2]==4095)&&(digi_clock[sample-1]==4095)&&(digi_clock[sample]==4095)&&(digi_clock[sample+1]<4095)&&(digi_clock[sample+2]<digi_clock[sample+1])) {
-				if(sample < MCPSignal1->tpeak) priorFallingClockEdge_MCP1 = sample;
-				if(sample < MCPSignal2->tpeak) priorFallingClockEdge_MCP2 = sample;
+		if (N_digi_samples > 1000) {	//only reconstruct if digitised samples are present
+			short* MCP1_waveform = new short[N_digi_samples];
+			short* MCP2_waveform = new short[N_digi_samples];
+			short* pedestal_ch4 = new short[N_digi_samples];
+			short* pedestal_ch5 = new short[N_digi_samples];
+			short* pedestal_ch6 = new short[N_digi_samples];
+			short* pedestal_ch7 = new short[N_digi_samples];
+			for (int i = 0; i < N_digi_samples; i++) {
+				MCP1_waveform[i] = digi_MCP1[i];
+				MCP2_waveform[i] = digi_MCP2[i];
+				pedestal_ch4[i] = digi_samples.at(4)->at(i);
+				pedestal_ch5[i] = digi_samples.at(5)->at(i);
+				pedestal_ch6[i] = digi_samples.at(6)->at(i);
+				pedestal_ch7[i] = digi_samples.at(7)->at(i);
 			}
-		}
+
+
+			//determine and subtract the baseline for all samples
+			substractBaseline(N_digi_samples, MCP1_waveform, getBaseline(findAbsolutePeak(N_digi_samples, MCP1_waveform, "pos"), MCP1_waveform, 90, -1));
+			substractBaseline(N_digi_samples, MCP2_waveform, getBaseline(findAbsolutePeak(N_digi_samples, MCP2_waveform, "pos"), MCP2_waveform, 90, -1));
+			substractBaseline(N_digi_samples, pedestal_ch4, getBaseline(findAbsolutePeak(N_digi_samples, pedestal_ch4, "pos"), pedestal_ch4, 90, -1));
+			substractBaseline(N_digi_samples, pedestal_ch5, getBaseline(findAbsolutePeak(N_digi_samples, pedestal_ch5, "pos"), pedestal_ch5, 90, -1));
+			substractBaseline(N_digi_samples, pedestal_ch6, getBaseline(findAbsolutePeak(N_digi_samples, pedestal_ch6, "pos"), pedestal_ch6, 90, -1));
+			substractBaseline(N_digi_samples, pedestal_ch7, getBaseline(findAbsolutePeak(N_digi_samples, pedestal_ch7, "pos"), pedestal_ch7, 90, -1));
+
+
+			//step1: obtain common mode noise from inactive channels
+			short* commonBaseline = new short[N_digi_samples];
+			for (int i = 0; i < N_digi_samples; i++) {
+				commonBaseline[i] = 0;
+				commonBaseline[i] += pedestal_ch4[i];
+				commonBaseline[i] += pedestal_ch5[i];
+				commonBaseline[i] += pedestal_ch6[i];
+				commonBaseline[i] += pedestal_ch7[i];
+				commonBaseline[i] = commonBaseline[i] / 4.;
+			}
+
+			//step2: subtract the common mode noise estimate and invert the pulse
+			short* MCP1_waveform_cleared = new short[N_digi_samples];
+			short* MCP2_waveform_cleared = new short[N_digi_samples];
+			for (int i = 0; i < N_digi_samples; i++) MCP1_waveform_cleared[i] = +commonBaseline[i] - MCP1_waveform[i];
+			for (int i = 0; i < N_digi_samples; i++) MCP2_waveform_cleared[i] = +commonBaseline[i] - MCP2_waveform[i];
+
+
+			//3. apply gaussian fits around the maximum (+/- 1 sample) and the linear fit to the rising edge
+			peakValues* MCPSignal1 = analysePeak(N_digi_samples, MCP1_waveform_cleared);
+			peakValues* MCPSignal2 = analysePeak(N_digi_samples, MCP2_waveform_cleared);
 #ifdef DEBUG
-		std::cout<<"Falling clock edge: "<<priorFallingClockEdge_MCP1<<"  "<<priorFallingClockEdge_MCP2<<std::endl;
+			std::cout << "MCP1: " << MCPSignal1->fQuality << "   " << MCPSignal1->peak << "  " << MCPSignal1->amp << "  " << MCPSignal1->amppeak << "  " << MCPSignal1->tpeak << "  " << MCPSignal1->base << "  " << std::endl;
+			std::cout << "MCP2: " << MCPSignal2->fQuality << "   " << MCPSignal2->peak << "  " << MCPSignal2->amp << "  " << MCPSignal2->amppeak << "  " << MCPSignal2->tpeak << "  " << MCPSignal2->base << "  " << std::endl;
 #endif
 
-		//5. Write to run data object as URs
-		rd->booleanUserRecords.add("valid_TS_MCP1", MCPSignal1->fQuality);
-		rd->booleanUserRecords.add("valid_TS_MCP2", MCPSignal2->fQuality);
-		rd->doubleUserRecords.add("TS_MCP1", 0.2*MCPSignal1->tpeak);
-		rd->doubleUserRecords.add("TS_MCP2", 0.2*MCPSignal2->tpeak);
-		rd->doubleUserRecords.add("TS_MCP1_to_last_falling_Edge", 0.2*(MCPSignal1->tpeak-priorFallingClockEdge_MCP1));
-		rd->doubleUserRecords.add("TS_MCP2_to_last_falling_Edge", 0.2*(MCPSignal2->tpeak-priorFallingClockEdge_MCP2));
+			//4. determine distance to the prior falling clock edge
+			float priorFallingClockEdge_MCP1 = 0;
+			float priorFallingClockEdge_MCP2 = 0;
+			for (int sample = 2; sample < N_digi_samples - 1; sample++) {
+				if ((sample > MCPSignal1->tpeak) && (sample > MCPSignal2->tpeak)) break;
+
+				if ((digi_clock[sample - 1] > digi_clock[sample]) && (digi_clock[sample] > 2500.) && (digi_clock[sample] > digi_clock[sample + 1]) && (2500. > digi_clock[sample + 1])) {
+					float under2500 = sample + (2500. - digi_clock[sample]) / (digi_clock[sample + 1] - digi_clock[sample]);
+#ifdef DEBUG					
+					std::cout << digi_clock[sample - 1] << "  " << sample << "," << digi_clock[sample] << "  " << sample + 1 << "," << digi_clock[sample + 1] << ": " << under2500 << std::endl;
+#endif					
+					if (sample < MCPSignal1->tpeak) priorFallingClockEdge_MCP1 = under2500;
+					if (sample < MCPSignal2->tpeak) priorFallingClockEdge_MCP2 = under2500;
+				}
+			}
+#ifdef DEBUG
+			std::cout << "Falling clock edge: " << priorFallingClockEdge_MCP1 << "  " << priorFallingClockEdge_MCP2 << std::endl;
+#endif
+
+			//5. Write to run data object as URs
+			rd->booleanUserRecords.add("valid_TS_MCP1", MCPSignal1->fQuality);
+			rd->booleanUserRecords.add("valid_TS_MCP2", MCPSignal2->fQuality);
+			rd->doubleUserRecords.add("TS_MCP1", 0.2 * MCPSignal1->tpeak);
+			rd->doubleUserRecords.add("TS_MCP2", 0.2 * MCPSignal2->tpeak);
+			rd->doubleUserRecords.add("TS_MCP1_to_last_falling_Edge", 0.2 * (MCPSignal1->tpeak - priorFallingClockEdge_MCP1));
+			rd->doubleUserRecords.add("TS_MCP2_to_last_falling_Edge", 0.2 * (MCPSignal2->tpeak - priorFallingClockEdge_MCP2));
+		}
 	}
 
 	event.put(std::move(rd), "RunData");
