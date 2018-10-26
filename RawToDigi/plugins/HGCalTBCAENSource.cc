@@ -594,13 +594,13 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 			for (int sample = 2; sample < N_digi_samples - 1; sample++) {
 				if ((sample > MCPSignal1->tpeak) && (sample > MCPSignal2->tpeak)) break;
 
-				if ((digi_clock[sample - 1] > digi_clock[sample]) && (digi_clock[sample] > 2500.) && (digi_clock[sample] > digi_clock[sample + 1]) && (2500. > digi_clock[sample + 1])) {
-					float under2500 = sample + (2500. - digi_clock[sample]) / (digi_clock[sample + 1] - digi_clock[sample]);
+				if ((digi_clock[sample - 1] > digi_clock[sample]) && (digi_clock[sample] > 2700.) && (digi_clock[sample] > digi_clock[sample + 1])) {
+					float under2700 = sample + (2700. - digi_clock[sample]) / (digi_clock[sample + 1] - digi_clock[sample]);
 #ifdef DEBUG					
-					std::cout << digi_clock[sample - 1] << "  " << sample << "," << digi_clock[sample] << "  " << sample + 1 << "," << digi_clock[sample + 1] << ": " << under2500 << std::endl;
+					std::cout << digi_clock[sample - 1] << "  " << sample << "," << digi_clock[sample] << "  " << sample + 1 << "," << digi_clock[sample + 1] << ": " << under2700 << std::endl;
 #endif					
-					if (sample < MCPSignal1->tpeak) priorFallingClockEdge_MCP1 = under2500;
-					if (sample < MCPSignal2->tpeak) priorFallingClockEdge_MCP2 = under2500;
+					if (sample < MCPSignal1->tpeak) priorFallingClockEdge_MCP1 = under2700;
+					if (sample < MCPSignal2->tpeak) priorFallingClockEdge_MCP2 = under2700;
 				}
 			}
 #ifdef DEBUG
