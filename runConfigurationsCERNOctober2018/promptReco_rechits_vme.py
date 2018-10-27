@@ -309,11 +309,11 @@ else:
     )
     process_chain = process_chain * process.wirechamberproducer
     
-    if args.runNumber>=381:
+    if options.runNumber>=381:
         process_chain = process_chain * process.dwctrackproducer * process.trackimpactntupler
-    if args.runNumber>=432:
+    if options.runNumber>=432:
         process_chain = process_chain * process.XCETntupler
-    if args.runNumber>=912:
+    if options.runNumber>=912:
         process_chain = process_chain * process.MCPntupler
 
 process.p = cms.Path(process_chain * process.variablecomputation * process.observablentupler)
