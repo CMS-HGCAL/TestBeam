@@ -12,7 +12,7 @@ bool HGCalTBTopology::iu_iv_valid(int layer, int sensor_iu, int sensor_iv, int i
 	  Is_Valid_sensor_iu_iv=false; //!!ASSUMES NO MORE THAN 7 SEVEN MODULES PER LAYER!!
         int aiv = abs(iv);
         int iuc = (iv < 0) ? (-iu) : (iu);
-	if(layer <= 40 && Is_Valid_sensor_iu_iv) {
+	if(Is_Valid_sensor_iu_iv) {
 		if(sensorSize == 128) {
 			if (iv == 0) return (iu >= -5 && iu <= 5);
 			else if (aiv == 1) return (iuc >= -6 && iuc <= 5);
