@@ -16,7 +16,7 @@ options.register('chainSequence',
                 )
 
 options.register('reportEvery',
-                50000,
+                1000,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Path to the file from which the DWCs are read.'
@@ -30,7 +30,7 @@ options.register('outputFile',
                 )
 
 options.register('performAlignment',
-                0,
+                1,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Perform alignment (1:yes, 0:no).'
