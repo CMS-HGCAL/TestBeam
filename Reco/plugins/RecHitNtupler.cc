@@ -107,6 +107,7 @@ private:
     std::vector<bool> rechit_hg_saturated;
     std::vector<bool> rechit_lg_saturated;
     std::vector<bool> rechit_fully_calibrated;
+    std::vector<bool> rechit_noise_flag;
     std::vector<Float16_t> rechit_TS2High_;
     std::vector<Float16_t> rechit_TS2Low_;   
     std::vector<Float16_t> rechit_TS3High_;
@@ -149,6 +150,7 @@ void RecHitNtupler::clearVariables(){
     rechit_hg_saturated.clear();
     rechit_lg_saturated.clear();
     rechit_fully_calibrated.clear();    
+    rechit_noise_flag.clear();
     rechit_TS2High_.clear();
     rechit_TS2Low_.clear(); 
     rechit_TS3High_.clear();
@@ -245,6 +247,7 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
     tree_->Branch("rechit_hg_saturated", &rechit_hg_saturated);
     tree_->Branch("rechit_lg_saturated", &rechit_lg_saturated);
     tree_->Branch("rechit_fully_calibrated", &rechit_fully_calibrated);    
+    tree_->Branch("rechit_noise_flag", &rechit_noise_flag);    
     tree_->Branch("rechit_TS2High",&rechit_TS2High_);
     tree_->Branch("rechit_TS2Low",&rechit_TS2Low_);
     tree_->Branch("rechit_TS3High",&rechit_TS3High_);
@@ -357,6 +360,7 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
         rechit_hg_saturated.push_back(hit.checkFlag(HGCalTBRecHit::kHighGainSaturated));
         rechit_lg_saturated.push_back(hit.checkFlag(HGCalTBRecHit::kLowGainSaturated));
         rechit_fully_calibrated.push_back(hit.checkFlag(HGCalTBRecHit::kFullyCalibrated));
+        rechit_noise_flag.push_back(hit.getNoiseFlag());
 
         rechit_TS2Low_.push_back(hit.energyTSLow().first);
         rechit_TS2High_.push_back(hit.energyTSHigh().first);
