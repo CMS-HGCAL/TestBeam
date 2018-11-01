@@ -1,4 +1,5 @@
 #include "HGCal/RawToDigi/plugins/HGCalTBCAENProducer.h"
+#include <fstream>
 
 //#define DEBUG
 
@@ -9,9 +10,14 @@ HGCalTBBeamWireChamberProducer::HGCalTBBeamWireChamberProducer(const edm::Parame
 
     produces<std::map<int, WireChamberData> >(outputCollectionName);
     produces<RunData>("FullRunData");
+
+    tree=NULL;
 }
 
 void HGCalTBBeamWireChamberProducer::beginJob() {
+    std::ifstream infile(inputFile);
+    if (!infile.good()) return;
+
     rootFile = new TFile(inputFile.c_str(), "READ");
     tree = (TTree*)rootFile->Get("dwc_ntupelizer/dwc_reco");
     
@@ -225,9 +231,13 @@ void HGCalTBBeamWireChamberProducer::loadRun(int loading_run) {
     XCET_021507_signal_loaded.clear();XCET_021523_signal_loaded.clear();scintillator_coincidences_loaded.clear();scintillator_vetos_loaded.clear();
     valid_TS_MCP1_loaded.clear();valid_TS_MCP2_loaded.clear();
     TS_MCP1_loaded.clear();TS_MCP2_loaded.clear();TS_MCP1_to_last_falling_Edge_loaded.clear();TS_MCP2_to_last_falling_Edge_loaded.clear();
+    
+    if (tree==NULL) return;
+    
     #ifdef DEBUG
         std::cout<<"Loading run "<<loading_run<<std::endl;
     #endif
+
     for (size_t i=0; i<(size_t) tree->GetEntries(); i++){
         tree->GetEntry(i);
         if (run!=loading_run) continue;
