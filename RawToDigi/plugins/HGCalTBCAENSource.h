@@ -96,6 +96,7 @@ class HGCalTBWireChamberSource : public edm::ProducerSourceFromFiles {
 		std::vector<int> hitsPerChannelStored; 	//default: 0, 1: hits per Channel are Stored and in principle a more sophisticated analysis can be run
 
 		std::string areaSpecification;
+		bool invertForRuns;		//hard coded adjustment for 2017 analyses
 
 		std::map<int, int> trigger_to_event_table;
 		std::map<int, double> event_trigger_time;

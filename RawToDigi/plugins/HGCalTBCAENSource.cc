@@ -4,7 +4,7 @@
 
 
 bool validTimestamp(int ts) {
-	return (ts >= 0);
+	return (ts > 0);
 }
 
 HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pset, edm::InputSourceDescription const& desc) :  edm::ProducerSourceFromFiles(pset, desc, true),
@@ -63,6 +63,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 		N_TDC_channels = 16;
 		N_Digitizer_channels = 0;
 		fileFormat = 1;
+		invertForRuns = true;
 	} else if (areaSpecification == "H6A_October2017") {
 		dwc_z1 = dwc_z1_H6A_October2017;
 		dwc_z2 = dwc_z3 = dwc_z4 = -1.;
@@ -85,6 +86,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 		N_TDC_channels = 16;
 		N_Digitizer_channels = 0;
 		fileFormat = 1;
+		invertForRuns = false;
 	} else if (areaSpecification == "H2_June2018") {
 		dwc_z1 = dwc_z1_H2_June2018;
 		dwc_z2 = dwc_z2_H2_June2018;
@@ -109,6 +111,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 		N_TDC_channels = 16;
 		N_Digitizer_channels = 0;
 		fileFormat = 1;
+		invertForRuns = false;
 	} else if (areaSpecification == "H2_October2018") {
 		dwc_z1 = dwc_z1_H2_October2018;
 		dwc_z2 = dwc_z2_H2_October2018;
@@ -133,6 +136,7 @@ HGCalTBWireChamberSource::HGCalTBWireChamberSource(const edm::ParameterSet & pse
 		N_TDC_channels = 32;
 		N_Digitizer_channels = 9;
 		fileFormat = 2;
+		invertForRuns = false;
 	}
 
 	produces<std::map<int, WireChamberData> >(outputCollectionName);
@@ -310,6 +314,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc2.z = dwc_z2;
 
 
+
 	//DWC 3
 	WireChamberData dwc3;
 	dwc3.ID = 3;
@@ -333,7 +338,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 	dwc3.res_y = wc_resolutions[2];
 	dwc3.z = dwc_z3;
 
-	if ((n_run >= 1195) && (n_run <= 1333)) { //from run 1195, x-coordinate of DWC A was not connected anymore. TDC channels 14 and 15 were input by trigger signals.
+	if (invertForRuns && (n_run >= 1195) && (n_run <= 1333)) { //from run 1195, x-coordinate of DWC A was not connected anymore. TDC channels 14 and 15 were input by trigger signals.
 		//also the channels for the y-coordinate of DWCA must have been flipped
 		dwc3.goodMeasurement_X = dwc3.goodMeasurement = false;
 		dwc3.x = -999;
@@ -467,9 +472,9 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 			skippedTDCTriggers += 1;
 		}
 
-
+#ifdef DEBUG
 		std::cout << "Event: " << event_candidate_index << "  tdc trigger: " << n_trigger_tdc << "  orm trigger: " << n_trigger_orm << ": " << deltaTs << " = " << (event_trigger_time[event_candidate_index] - ref_time_sync) << " - " << (timeSinceStart_ms - ref_time_dwc) << std::endl;
-
+#endif
 		//use absolute value for comparison
 		deltaTs = fabs(deltaTs);
 
@@ -594,13 +599,13 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 			for (int sample = 2; sample < N_digi_samples - 1; sample++) {
 				if ((sample > MCPSignal1->tpeak) && (sample > MCPSignal2->tpeak)) break;
 
-				if ((digi_clock[sample - 1] > digi_clock[sample]) && (digi_clock[sample] > 2700.) && (digi_clock[sample] > digi_clock[sample + 1])) {
-					float under2700 = sample + (2700. - digi_clock[sample]) / (digi_clock[sample + 1] - digi_clock[sample]);
+				if ((digi_clock[sample - 1] > digi_clock[sample]) && (digi_clock[sample] > 3200.) && (digi_clock[sample] > digi_clock[sample + 1])) {
+					float under3200 = sample + (3200. - digi_clock[sample]) / (digi_clock[sample + 1] - digi_clock[sample]);
 #ifdef DEBUG					
-					std::cout << digi_clock[sample - 1] << "  " << sample << "," << digi_clock[sample] << "  " << sample + 1 << "," << digi_clock[sample + 1] << ": " << under2700 << std::endl;
+					std::cout << digi_clock[sample - 1] << "  " << sample << "," << digi_clock[sample] << "  " << sample + 1 << "," << digi_clock[sample + 1] << ": " << under3200 << std::endl;
 #endif					
-					if (sample < MCPSignal1->tpeak) priorFallingClockEdge_MCP1 = under2700;
-					if (sample < MCPSignal2->tpeak) priorFallingClockEdge_MCP2 = under2700;
+					if (sample < MCPSignal1->tpeak) priorFallingClockEdge_MCP1 = under3200;
+					if (sample < MCPSignal2->tpeak) priorFallingClockEdge_MCP2 = under3200;
 				}
 			}
 #ifdef DEBUG
