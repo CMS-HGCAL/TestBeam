@@ -205,7 +205,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       recHit.setToaRise(toaRise);
       recHit.setToaFall(toaFall);
 
-
+      //copy the noise flag
+      recHit.setNoiseFlag(rawhit.getNoiseFlag());
 
       //energy conversion default
       if (!m_calibrationPerChannel) {

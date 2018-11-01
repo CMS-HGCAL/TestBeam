@@ -133,10 +133,14 @@ public:
 	void setUnderSaturationForLowGain(){ m_underSaturationLG=true; }
 	bool isUnderSaturationForHighGain(){ return m_underSaturationHG; }
 	bool isUnderSaturationForLowGain(){ return m_underSaturationLG; }
+ 
+  	void setNoiseFlag(bool value){m_noiseFlag=value;}
+  	bool getNoiseFlag(){return m_noiseFlag;}
  private:
 	bool m_underSaturationHG;
 	bool m_underSaturationLG;
 	
+	bool m_noiseFlag;
 };
 
 std::ostream& operator<<(std::ostream& s, const HGCalTBRecHit& hit);

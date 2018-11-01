@@ -92,7 +92,6 @@ void HGCalTBRawHitProducer::beginJob()
     }
   }
   
-  if( m_maskNoisyChannels ){
     FILE* file;
     char buffer[300];
     //edm::FileInPath fip();
@@ -112,7 +111,7 @@ void HGCalTBRawHitProducer::beginJob()
 	}else continue;
       }
       fclose (file);
-    }
+  
   }
 }
 
@@ -142,9 +141,12 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       int iboard=iski/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
       int iskiroc=iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
       int skiId=HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA*iboard+(HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA-iskiroc)%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA+1;
+      bool isNoisy = false;
       HGCalTBElectronicsId eid(skiId,ichan);
-      if( !essource_.emap_.existsEId(eid.rawId()) || std::find(m_noisyChannels.begin(),m_noisyChannels.end(),eid.rawId())!=m_noisyChannels.end() )
-	continue;
+      if( !essource_.emap_.existsEId(eid.rawId()) || std::find(m_noisyChannels.begin(),m_noisyChannels.end(),eid.rawId())!=m_noisyChannels.end() ) {
+	     isNoisy = true;
+       if (m_maskNoisyChannels) continue;
+      }
       unsigned int rawid=skiroc.detid(ichan).rawId();
       std::vector<float> adchigh(NUMBER_OF_SCA,0);
       std::vector<float> adclow(NUMBER_OF_SCA,0);
@@ -170,6 +172,7 @@ void HGCalTBRawHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
 			skiroc.TOTSlow(ichan), skiroc.TOTFast(ichan));
       if(hgSat) hit.setUnderSaturationForHighGain();
       if(lgSat) hit.setUnderSaturationForLowGain();
+      hit.setNoiseFlag(isNoisy);
       hits->push_back(hit);
     }
   }
