@@ -78,6 +78,7 @@ private:
     // event info
     unsigned int ev_run_;
     unsigned int ev_event_;
+    Long64_t trigger_ts;
 
     int pdgID;
     float beamEnergy;
@@ -216,6 +217,7 @@ RecHitNtupler::RecHitNtupler(const edm::ParameterSet& iConfig) :
 
     // event info
     tree_->Branch("event", &ev_event_);
+    tree_->Branch("trigger_timestamp", &trigger_ts);
     tree_->Branch("run", &ev_run_);
 
     tree_->Branch("pdgID", &pdgID);
@@ -283,6 +285,7 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
 
     ev_run_ = rd->run;
     ev_event_ = rd->event;
+    trigger_ts = rd->trigger_ts;
 
     pdgID = rd->pdgID;
     beamEnergy = rd->energy;

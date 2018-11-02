@@ -87,6 +87,7 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
     rd_full->configuration = rd->configuration;
     rd_full->run = rd->run;
     rd_full->trigger = rd->trigger;
+    rd_full->trigger_ts = rd->trigger_ts;
     rd_full->event = rd->event;
     rd_full->energy = rd->energy;
     rd_full->runType = rd->runType;

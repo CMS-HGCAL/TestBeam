@@ -260,6 +260,7 @@ void HGCalTBRawDataSource::readTimeStampFromRAW()
 void HGCalTBRawDataSource::produce(edm::Event & e)
 {
   std::unique_ptr<HGCalTBSkiroc2CMSCollection> skirocs(new HGCalTBSkiroc2CMSCollection);
+  unsigned long trigger_ts=0;
 
   for( size_t iski=0; iski<m_decodedData.size(); iski++){
     std::vector<HGCalTBDetId> detids;
@@ -277,10 +278,12 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
     }
     std::vector<uint16_t> vdata;vdata.insert(vdata.end(),m_decodedData.at(iski).begin(),m_decodedData.at(iski).end());
     HGCalTBSkiroc2CMS skiroc;
-    if( m_readTimeStamps )
+    if( m_readTimeStamps ) {
       skiroc=HGCalTBSkiroc2CMS( vdata,detids,
 				m_eventTimingInfo.triggerTimeStamp(0),
 				m_eventTimingInfo.triggerCounter());
+      trigger_ts = m_eventTimingInfo.triggerTimeStamp(0);
+    }
     else skiroc=HGCalTBSkiroc2CMS( vdata,detids );
 
     skirocs->push_back(skiroc);
@@ -294,13 +297,13 @@ void HGCalTBRawDataSource::produce(edm::Event & e)
   //set the RunData
   std::unique_ptr<RunData> rd(new RunData);
 
-
   rd->configuration = m_setupConfiguration;
   rd->energy = m_beamEnergy;
   rd->runType = runType;
   rd->pdgID = m_beamParticlePDGID;
   rd->run = m_run;
   rd->event = m_event;
+  rd->trigger_ts = trigger_ts;
   rd->booleanUserRecords.add("hasDanger", problemDuringReadout);
 
   #ifdef DEBUG

@@ -35,6 +35,7 @@ class HGCalTBBeamWireChamberProducer : public edm::EDProducer{
 
 
     int run, eventId, goodDWC_Measurement;
+    int pdgID; double beamEnergy;
     double triggerTimeDiff;
     double reco1_x, reco1_y, res1_x, res1_y, z1, reco2_x, reco2_y, res2_x, res2_y, z2, reco3_x, reco3_y, res3_x, res3_y, z3, reco4_x, reco4_y, res4_x, res4_y, z4;    
     double averageHitMultiplicty1, averageHitMultiplicty2, averageHitMultiplicty3, averageHitMultiplicty4; 

@@ -56,6 +56,7 @@ class RunData {
     RunData(): run(0), configuration(0), energy(0), pdgID(0), runType(HGCAL_TB_BEAM){};
     int run;
     int trigger;
+    unsigned long trigger_ts;
     int event;
     int configuration;
     double energy;
