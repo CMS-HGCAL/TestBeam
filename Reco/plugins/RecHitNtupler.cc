@@ -286,7 +286,6 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
     ev_run_ = rd->run;
     ev_event_ = rd->event;
     trigger_ts = rd->trigger_ts;
-    std::cout<<ev_event_<<"  "<<trigger_ts<<std::endl;
     pdgID = rd->pdgID;
     beamEnergy = rd->energy;
 
