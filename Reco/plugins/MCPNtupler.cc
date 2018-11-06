@@ -52,6 +52,16 @@ private:
     short valid_TS_MCP2;
     float TS_MCP1;
     float TS_MCP2;
+    float TS_15PercentRise_MCP1;
+    float TS_15PercentRise_MCP2;
+    float TS_30PercentRise_MCP2;
+    float TS_30PercentRise_MCP1;
+    float TS_45PercentRise_MCP1;
+    float TS_45PercentRise_MCP2;
+    float TS_60PercentRise_MCP1;
+    float TS_60PercentRise_MCP2;
+    float amp_MCP1;
+    float amp_MCP2;    
     float TS_MCP1_to_last_falling_Edge;
     float TS_MCP2_to_last_falling_Edge;
 
@@ -81,6 +91,17 @@ MCPNtupler::MCPNtupler(const edm::ParameterSet& iConfig)
     tree_->Branch("valid_TS_MCP2", &valid_TS_MCP2);
     tree_->Branch("TS_MCP1", &TS_MCP1);
     tree_->Branch("TS_MCP2", &TS_MCP2);
+    tree_->Branch("TS_15PercentRise_MCP1", TS_15PercentRise_MCP1);
+    tree_->Branch("TS_15PercentRise_MCP2", TS_15PercentRise_MCP2);
+    tree_->Branch("TS_30PercentRise_MCP2", TS_30PercentRise_MCP2);
+    tree_->Branch("TS_30PercentRise_MCP1", TS_30PercentRise_MCP1);
+    tree_->Branch("TS_45PercentRise_MCP1", TS_45PercentRise_MCP1);
+    tree_->Branch("TS_45PercentRise_MCP2", TS_45PercentRise_MCP2);
+    tree_->Branch("TS_60PercentRise_MCP1", TS_60PercentRise_MCP1);
+    tree_->Branch("TS_60PercentRise_MCP2", TS_60PercentRise_MCP2);
+    tree_->Branch("amp_MCP1", amp_MCP1);
+    tree_->Branch("amp_MCP2", amp_MCP2);    
+
     tree_->Branch("TS_MCP1_to_last_falling_Edge", &TS_MCP1_to_last_falling_Edge);
     tree_->Branch("TS_MCP2_to_last_falling_Edge", &TS_MCP2_to_last_falling_Edge);
 
@@ -107,6 +128,16 @@ void MCPNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
 
     if (rd->intUserRecords.has("valid_TS_MCP1")) valid_TS_MCP1 = rd->intUserRecords.get("valid_TS_MCP1"); else valid_TS_MCP1 = -999;
     if (rd->intUserRecords.has("valid_TS_MCP2")) valid_TS_MCP2 = rd->intUserRecords.get("valid_TS_MCP2"); else valid_TS_MCP2 = -999;
+    if (rd->doubleUserRecords.has("TS_15PercentRise_MCP1")) TS_15PercentRise_MCP1 = rd->doubleUserRecords.get("TS_15PercentRise_MCP1"); else TS_15PercentRise_MCP1 = -999;
+    if (rd->doubleUserRecords.has("TS_15PercentRise_MCP2")) TS_15PercentRise_MCP2 = rd->doubleUserRecords.get("TS_15PercentRise_MCP2"); else TS_15PercentRise_MCP2 = -999;
+    if (rd->doubleUserRecords.has("TS_30PercentRise_MCP2")) TS_30PercentRise_MCP2 = rd->doubleUserRecords.get("TS_30PercentRise_MCP2"); else TS_30PercentRise_MCP2 = -999;
+    if (rd->doubleUserRecords.has("TS_30PercentRise_MCP1")) TS_30PercentRise_MCP1 = rd->doubleUserRecords.get("TS_30PercentRise_MCP1"); else TS_30PercentRise_MCP1 = -999;
+    if (rd->doubleUserRecords.has("TS_45PercentRise_MCP1")) TS_45PercentRise_MCP1 = rd->doubleUserRecords.get("TS_45PercentRise_MCP1"); else TS_45PercentRise_MCP1 = -999;
+    if (rd->doubleUserRecords.has("TS_45PercentRise_MCP2")) TS_45PercentRise_MCP2 = rd->doubleUserRecords.get("TS_45PercentRise_MCP2"); else TS_45PercentRise_MCP2 = -999;
+    if (rd->doubleUserRecords.has("TS_60PercentRise_MCP1")) TS_60PercentRise_MCP1 = rd->doubleUserRecords.get("TS_60PercentRise_MCP1"); else TS_60PercentRise_MCP1 = -999;
+    if (rd->doubleUserRecords.has("TS_60PercentRise_MCP2")) TS_60PercentRise_MCP2 = rd->doubleUserRecords.get("TS_60PercentRise_MCP2"); else TS_60PercentRise_MCP2 = -999;
+    if (rd->doubleUserRecords.has("amp_MCP1")) amp_MCP1 = rd->doubleUserRecords.get("amp_MCP1"); else amp_MCP1 = -999;
+    if (rd->doubleUserRecords.has("amp_MCP2")) amp_MCP2 = rd->doubleUserRecords.get("amp_MCP2"); else amp_MCP2 = -999;    
     if (rd->doubleUserRecords.has("TS_MCP1")) TS_MCP1 = rd->doubleUserRecords.get("TS_MCP1"); else TS_MCP1 = -999;
     if (rd->doubleUserRecords.has("TS_MCP2")) TS_MCP2 = rd->doubleUserRecords.get("TS_MCP2"); else TS_MCP2 = -999;
     if (rd->doubleUserRecords.has("TS_MCP1_to_last_falling_Edge")) TS_MCP1_to_last_falling_Edge = rd->doubleUserRecords.get("TS_MCP1_to_last_falling_Edge"); else TS_MCP1_to_last_falling_Edge = -999;

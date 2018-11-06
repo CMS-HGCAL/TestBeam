@@ -251,7 +251,7 @@ int qualityPulse(int nsamples, short* pulse) {
     vpeak = pulse[ipeak];
     noise = getNoise(ipeak, pulse, 30, 70);
 
-    if ((vpeak < 3. * noise) || (vpeak < 150)) {
+    if ((vpeak < 3. * noise) || (vpeak < 100)) {
         fQuality = 0;
     }
 
@@ -266,7 +266,7 @@ peakValues* analysePeak(int nsamples, short* pulse) {
 
     peakValues* ret = new peakValues();
 
-    int roi_left = 1;
+    int roi_left = 2;
     int roi_right = 1;
     float x[roi_left + roi_right + 1], y[roi_left + roi_right + 1], errX[roi_left + roi_right + 1], errY[roi_left + roi_right + 1];
 
@@ -286,15 +286,15 @@ peakValues* analysePeak(int nsamples, short* pulse) {
         }
         TGraphErrors* gr_pulse = new TGraphErrors(roi_left + roi_right + 1, x, y, errX, errY);
 
-        TF1* fpeak = new TF1("fpeak", "gaus", -roi_left, roi_right);
+        TF1* fpeak = new TF1("fpeak", "gaus", -1, 1);
         fpeak->SetParameter(0, amp);
-        gr_pulse->Fit("fpeak", "Q", "", roi_left, roi_right);
+        gr_pulse->Fit("fpeak", "Q", "", -1, 1);
         amp_peakfit = fpeak->GetParameter(0);
         mu_peakfit = fpeak->GetParameter(1);
         delete fpeak;
 
-        TF1* flinear = new TF1("flinear", "[0]*x+[1]", -roi_left, 0);
-        gr_pulse->Fit("flinear", "Q", "", -roi_left, -1);
+        TF1* flinear = new TF1("flinear", "[0]*x+[1]", -2, 0);
+        gr_pulse->Fit("flinear", "Q", "", -2, -1);
         float m_linfit = flinear->GetParameter(0);
         float b_linfit = flinear->GetParameter(1);
 

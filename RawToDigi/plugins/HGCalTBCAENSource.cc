@@ -595,19 +595,29 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 
 			//4. determine distance to the prior falling clock edge
 			float priorFallingClockEdge_MCP1 = 0;
-			float priorFallingClockEdge_MCP2 = 0;
 			for (int sample = 2; sample < N_digi_samples - 1; sample++) {
-				if ((sample > MCPSignal1->tpeak) && (sample > MCPSignal2->tpeak)) break;
-
+				if (sample > MCPSignal1->tpeak) break;
 				if ((digi_clock[sample - 1] > digi_clock[sample]) && (digi_clock[sample] > 3200.) && (digi_clock[sample] > digi_clock[sample + 1])) {
 					float under3200 = sample + (3200. - digi_clock[sample]) / (digi_clock[sample + 1] - digi_clock[sample]);
 #ifdef DEBUG					
 					std::cout << digi_clock[sample - 1] << "  " << sample << "," << digi_clock[sample] << "  " << sample + 1 << "," << digi_clock[sample + 1] << ": " << under3200 << std::endl;
 #endif					
 					if (sample < MCPSignal1->tpeak) priorFallingClockEdge_MCP1 = under3200;
-					if (sample < MCPSignal2->tpeak) priorFallingClockEdge_MCP2 = under3200;
 				}
 			}
+			
+			float priorFallingClockEdge_MCP2 = 0;
+			for (int sample = 2; sample < N_digi_samples - 1; sample++) {
+				if (sample > MCPSignal2->tpeak) break;
+				if ((digi_clock[sample - 1] > digi_clock[sample]) && (digi_clock[sample] > 3200.) && (digi_clock[sample] > digi_clock[sample + 1])) {
+					float under3200 = sample + (3200. - digi_clock[sample]) / (digi_clock[sample + 1] - digi_clock[sample]);
+#ifdef DEBUG					
+					std::cout << digi_clock[sample - 1] << "  " << sample << "," << digi_clock[sample] << "  " << sample + 1 << "," << digi_clock[sample + 1] << ": " << under3200 << std::endl;
+#endif					
+					if (sample < MCPSignal2->tpeak) priorFallingClockEdge_MCP1 = under3200;
+				}
+			}
+
 #ifdef DEBUG
 			std::cout << "Falling clock edge: " << priorFallingClockEdge_MCP1 << "  " << priorFallingClockEdge_MCP2 << std::endl;
 #endif
@@ -617,6 +627,16 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 			rd->booleanUserRecords.add("valid_TS_MCP2", MCPSignal2->fQuality);
 			rd->doubleUserRecords.add("TS_MCP1", 0.2 * MCPSignal1->tpeak);
 			rd->doubleUserRecords.add("TS_MCP2", 0.2 * MCPSignal2->tpeak);
+			rd->doubleUserRecords.add("TS_15PercentRise_MCP1", 0.2 * MCPSignal1->tlinear15);
+			rd->doubleUserRecords.add("TS_15PercentRise_MCP2", 0.2 * MCPSignal2->tlinear15);
+			rd->doubleUserRecords.add("TS_30PercentRise_MCP1", 0.2 * MCPSignal1->tlinear30);
+			rd->doubleUserRecords.add("TS_30PercentRise_MCP2", 0.2 * MCPSignal2->tlinear30);
+			rd->doubleUserRecords.add("TS_45PercentRise_MCP1", 0.2 * MCPSignal1->tlinear45);
+			rd->doubleUserRecords.add("TS_45PercentRise_MCP2", 0.2 * MCPSignal2->tlinear45);
+			rd->doubleUserRecords.add("TS_60PercentRise_MCP1", 0.2 * MCPSignal1->tlinear60);
+			rd->doubleUserRecords.add("TS_60PercentRise_MCP2", 0.2 * MCPSignal2->tlinear60);
+			rd->doubleUserRecords.add("amp_MCP1", MCPSignal1->amppeak);
+			rd->doubleUserRecords.add("amp_MCP2", MCPSignal2->amppeak);			
 			rd->doubleUserRecords.add("TS_MCP1_to_last_falling_Edge", 0.2 * (MCPSignal1->tpeak - priorFallingClockEdge_MCP1));
 			rd->doubleUserRecords.add("TS_MCP2_to_last_falling_Edge", 0.2 * (MCPSignal2->tpeak - priorFallingClockEdge_MCP2));
 		}

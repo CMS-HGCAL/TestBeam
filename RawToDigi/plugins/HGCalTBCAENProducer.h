@@ -43,6 +43,7 @@ class HGCalTBBeamWireChamberProducer : public edm::EDProducer{
     std::vector<float>* scintillator_coincidences;
     std::vector<float>* scintillator_vetos;
     short valid_TS_MCP1, valid_TS_MCP2;
+    float TS_15PercentRise_MCP1; float TS_15PercentRise_MCP2; float TS_30PercentRise_MCP2; float TS_30PercentRise_MCP1; float TS_45PercentRise_MCP1; float TS_45PercentRise_MCP2; float TS_60PercentRise_MCP1; float TS_60PercentRise_MCP2; float amp_MCP1; float amp_MCP2;
     float TS_MCP1, TS_MCP2, TS_MCP1_to_last_falling_Edge, TS_MCP2_to_last_falling_Edge;
     
     TBranch                   *b_run;   
@@ -82,6 +83,16 @@ class HGCalTBBeamWireChamberProducer : public edm::EDProducer{
     TBranch                   *b_valid_TS_MCP2;
     TBranch                   *b_TS_MCP1;
     TBranch                   *b_TS_MCP2;
+    TBranch                   *b_TS_15PercentRise_MCP1;
+    TBranch                   *b_TS_15PercentRise_MCP2;
+    TBranch                   *b_TS_30PercentRise_MCP2;
+    TBranch                   *b_TS_30PercentRise_MCP1;
+    TBranch                   *b_TS_45PercentRise_MCP1;
+    TBranch                   *b_TS_45PercentRise_MCP2;
+    TBranch                   *b_TS_60PercentRise_MCP1;
+    TBranch                   *b_TS_60PercentRise_MCP2;
+    TBranch                   *b_amp_MCP1;
+    TBranch                   *b_amp_MCP2;    
     TBranch                   *b_TS_MCP1_to_last_falling_Edge;
     TBranch                   *b_TS_MCP2_to_last_falling_Edge;
 
@@ -127,6 +138,17 @@ class HGCalTBBeamWireChamberProducer : public edm::EDProducer{
     std::map<int, short> valid_TS_MCP2_loaded;
     std::map<int, float> TS_MCP1_loaded;
     std::map<int, float> TS_MCP2_loaded;
+    std::map<int, float> TS_15PercentRise_MCP1_loaded;
+    std::map<int, float> TS_15PercentRise_MCP2_loaded;
+    std::map<int, float> TS_30PercentRise_MCP2_loaded;
+    std::map<int, float> TS_30PercentRise_MCP1_loaded;
+    std::map<int, float> TS_45PercentRise_MCP1_loaded;
+    std::map<int, float> TS_45PercentRise_MCP2_loaded;
+    std::map<int, float> TS_60PercentRise_MCP1_loaded;
+    std::map<int, float> TS_60PercentRise_MCP2_loaded;
+    std::map<int, float> amp_MCP1_loaded;
+    std::map<int, float> amp_MCP2_loaded;
+
     std::map<int, float> TS_MCP1_to_last_falling_Edge_loaded;
     std::map<int, float> TS_MCP2_to_last_falling_Edge_loaded;
 

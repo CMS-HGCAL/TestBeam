@@ -90,6 +90,16 @@ private:
 	short valid_TS_MCP2;
 	float TS_MCP1;
 	float TS_MCP2;
+	float TS_15PercentRise_MCP1;
+	float TS_15PercentRise_MCP2;
+	float TS_30PercentRise_MCP2;
+	float TS_30PercentRise_MCP1;
+	float TS_45PercentRise_MCP1;
+	float TS_45PercentRise_MCP2;
+	float TS_60PercentRise_MCP1;
+	float TS_60PercentRise_MCP2;		
+	float amp_MCP1;
+	float amp_MCP2;
 	float TS_MCP1_to_last_falling_Edge;
 	float TS_MCP2_to_last_falling_Edge;
 
@@ -257,9 +267,19 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 
 	if(rd->booleanUserRecords.has("valid_TS_MCP1")) valid_TS_MCP1 = rd->booleanUserRecords.get("valid_TS_MCP1");
 	if(rd->booleanUserRecords.has("valid_TS_MCP2")) valid_TS_MCP2 = rd->booleanUserRecords.get("valid_TS_MCP2");
-	if(rd->doubleUserRecords.has("TS_MCP1_to_last_falling_Edge")) TS_MCP1_to_last_falling_Edge = rd->doubleUserRecords.get("TS_MCP1_to_last_falling_Edge");
 	if(rd->doubleUserRecords.has("TS_MCP1")) TS_MCP1 = rd->doubleUserRecords.get("TS_MCP1");
 	if(rd->doubleUserRecords.has("TS_MCP2")) TS_MCP2 = rd->doubleUserRecords.get("TS_MCP2");
+	if(rd->doubleUserRecords.has("TS_15PercentRise_MCP1")) TS_15PercentRise_MCP1 = rd->doubleUserRecords.get("TS_15PercentRise_MCP1");
+	if(rd->doubleUserRecords.has("TS_15PercentRise_MCP2")) TS_15PercentRise_MCP2 = rd->doubleUserRecords.get("TS_15PercentRise_MCP2");
+	if(rd->doubleUserRecords.has("TS_30PercentRise_MCP2")) TS_30PercentRise_MCP2 = rd->doubleUserRecords.get("TS_30PercentRise_MCP2");
+	if(rd->doubleUserRecords.has("TS_30PercentRise_MCP1")) TS_30PercentRise_MCP1 = rd->doubleUserRecords.get("TS_30PercentRise_MCP1");
+	if(rd->doubleUserRecords.has("TS_45PercentRise_MCP1")) TS_45PercentRise_MCP1 = rd->doubleUserRecords.get("TS_45PercentRise_MCP1");
+	if(rd->doubleUserRecords.has("TS_45PercentRise_MCP2")) TS_45PercentRise_MCP2 = rd->doubleUserRecords.get("TS_45PercentRise_MCP2");
+	if(rd->doubleUserRecords.has("TS_60PercentRise_MCP1")) TS_60PercentRise_MCP1 = rd->doubleUserRecords.get("TS_60PercentRise_MCP1");
+	if(rd->doubleUserRecords.has("TS_60PercentRise_MCP2")) TS_60PercentRise_MCP2 = rd->doubleUserRecords.get("TS_60PercentRise_MCP2");
+	if(rd->doubleUserRecords.has("amp_MCP1")) amp_MCP1 = rd->doubleUserRecords.get("amp_MCP1");
+	if(rd->doubleUserRecords.has("amp_MCP2")) amp_MCP2 = rd->doubleUserRecords.get("amp_MCP2");
+	if(rd->doubleUserRecords.has("TS_MCP1_to_last_falling_Edge")) TS_MCP1_to_last_falling_Edge = rd->doubleUserRecords.get("TS_MCP1_to_last_falling_Edge");
 	if(rd->doubleUserRecords.has("TS_MCP2_to_last_falling_Edge")) TS_MCP2_to_last_falling_Edge = rd->doubleUserRecords.get("TS_MCP2_to_last_falling_Edge");
 	
 	tree->Fill();
@@ -381,9 +401,18 @@ void DWC_NTupelizer::beginJob() {
 		tree->Branch("valid_TS_MCP2", &valid_TS_MCP2);
 		tree->Branch("TS_MCP1", &TS_MCP1);
 		tree->Branch("TS_MCP2", &TS_MCP2);
+		tree->Branch("TS_15PercentRise_MCP1", &TS_15PercentRise_MCP1);
+		tree->Branch("TS_15PercentRise_MCP2", &TS_15PercentRise_MCP2);
+		tree->Branch("TS_30PercentRise_MCP2", &TS_30PercentRise_MCP2);
+		tree->Branch("TS_30PercentRise_MCP1", &TS_30PercentRise_MCP1);
+		tree->Branch("TS_45PercentRise_MCP1", &TS_45PercentRise_MCP1);
+		tree->Branch("TS_45PercentRise_MCP2", &TS_45PercentRise_MCP2);
+		tree->Branch("TS_60PercentRise_MCP1", &TS_60PercentRise_MCP1);
+		tree->Branch("TS_60PercentRise_MCP2", &TS_60PercentRise_MCP2);		
+		tree->Branch("amp_MCP1", &amp_MCP1);		
+		tree->Branch("amp_MCP2", &amp_MCP2);		
 		tree->Branch("TS_MCP1_to_last_falling_Edge", &TS_MCP1_to_last_falling_Edge);
 		tree->Branch("TS_MCP2_to_last_falling_Edge", &TS_MCP2_to_last_falling_Edge);
-		
 
 	}
 }

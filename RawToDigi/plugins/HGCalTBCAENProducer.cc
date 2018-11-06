@@ -57,6 +57,17 @@ void HGCalTBBeamWireChamberProducer::beginJob() {
     tree->SetBranchAddress("scintillator_veto_timestamps", &scintillator_vetos, &b_scintillator_vetos);
     tree->SetBranchAddress("valid_TS_MCP1", &valid_TS_MCP1, &b_valid_TS_MCP1);
     tree->SetBranchAddress("valid_TS_MCP2", &valid_TS_MCP2, &b_valid_TS_MCP2);
+    tree->SetBranchAddress("TS_15PercentRise_MCP1", &TS_15PercentRise_MCP1, &b_TS_15PercentRise_MCP1);
+    tree->SetBranchAddress("TS_15PercentRise_MCP2", &TS_15PercentRise_MCP2, &b_TS_15PercentRise_MCP2);
+    tree->SetBranchAddress("TS_30PercentRise_MCP2", &TS_30PercentRise_MCP2, &b_TS_30PercentRise_MCP2);
+    tree->SetBranchAddress("TS_30PercentRise_MCP1", &TS_30PercentRise_MCP1, &b_TS_30PercentRise_MCP1);
+    tree->SetBranchAddress("TS_45PercentRise_MCP1", &TS_45PercentRise_MCP1, &b_TS_45PercentRise_MCP1);
+    tree->SetBranchAddress("TS_45PercentRise_MCP2", &TS_45PercentRise_MCP2, &b_TS_45PercentRise_MCP2);
+    tree->SetBranchAddress("TS_60PercentRise_MCP1", &TS_60PercentRise_MCP1, &b_TS_60PercentRise_MCP1);
+    tree->SetBranchAddress("TS_60PercentRise_MCP2", &TS_60PercentRise_MCP2, &b_TS_60PercentRise_MCP2);
+    tree->SetBranchAddress("amp_MCP1", &amp_MCP1, &b_amp_MCP1);
+    tree->SetBranchAddress("amp_MCP2", &amp_MCP2, &b_amp_MCP2);
+
     tree->SetBranchAddress("TS_MCP1", &TS_MCP1, &b_TS_MCP1);
     tree->SetBranchAddress("TS_MCP2", &TS_MCP2, &b_TS_MCP2);
     tree->SetBranchAddress("TS_MCP1_to_last_falling_Edge", &TS_MCP1_to_last_falling_Edge, &b_TS_MCP1_to_last_falling_Edge);
@@ -205,6 +216,16 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
         rd_full->intUserRecords.add("valid_TS_MCP2", valid_TS_MCP2_loaded[event_nr]);
         rd_full->doubleUserRecords.add("TS_MCP1", TS_MCP1_loaded[event_nr]);
         rd_full->doubleUserRecords.add("TS_MCP2", TS_MCP2_loaded[event_nr]);
+        rd_full->doubleUserRecords.add("TS_15PercentRise_MCP1", TS_15PercentRise_MCP1_loaded[event_nr]);
+        rd_full->doubleUserRecords.add("TS_15PercentRise_MCP2", TS_15PercentRise_MCP2_loaded[event_nr]);
+        rd_full->doubleUserRecords.add("TS_30PercentRise_MCP2", TS_30PercentRise_MCP2_loaded[event_nr]);
+        rd_full->doubleUserRecords.add("TS_30PercentRise_MCP1", TS_30PercentRise_MCP1_loaded[event_nr]);
+        rd_full->doubleUserRecords.add("TS_45PercentRise_MCP1", TS_45PercentRise_MCP1_loaded[event_nr]);
+        rd_full->doubleUserRecords.add("TS_45PercentRise_MCP2", TS_45PercentRise_MCP2_loaded[event_nr]);
+        rd_full->doubleUserRecords.add("TS_60PercentRise_MCP1", TS_60PercentRise_MCP1_loaded[event_nr]);
+        rd_full->doubleUserRecords.add("TS_60PercentRise_MCP2", TS_60PercentRise_MCP2_loaded[event_nr]);
+        rd_full->doubleUserRecords.add("amp_MCP1", amp_MCP1_loaded[event_nr]);
+        rd_full->doubleUserRecords.add("amp_MCP2", amp_MCP2_loaded[event_nr]);
         rd_full->doubleUserRecords.add("TS_MCP1_to_last_falling_Edge", TS_MCP1_to_last_falling_Edge_loaded[event_nr]);
         rd_full->doubleUserRecords.add("TS_MCP2_to_last_falling_Edge", TS_MCP2_to_last_falling_Edge_loaded[event_nr]);
     }
@@ -231,6 +252,7 @@ void HGCalTBBeamWireChamberProducer::loadRun(int loading_run) {
     reco4_x_loaded.clear(); reco4_y_loaded.clear(); z4_loaded.clear();averageHitMultiplicty4_loaded.clear();
     XCET_021507_signal_loaded.clear();XCET_021523_signal_loaded.clear();scintillator_coincidences_loaded.clear();scintillator_vetos_loaded.clear();
     valid_TS_MCP1_loaded.clear();valid_TS_MCP2_loaded.clear();
+    TS_15PercentRise_MCP1_loaded.clear();TS_15PercentRise_MCP2_loaded.clear();TS_30PercentRise_MCP2_loaded.clear();TS_30PercentRise_MCP1_loaded.clear();TS_45PercentRise_MCP1_loaded.clear();TS_45PercentRise_MCP2_loaded.clear();TS_60PercentRise_MCP1_loaded.clear();TS_60PercentRise_MCP2_loaded.clear();amp_MCP1_loaded.clear();amp_MCP2_loaded.clear();    
     TS_MCP1_loaded.clear();TS_MCP2_loaded.clear();TS_MCP1_to_last_falling_Edge_loaded.clear();TS_MCP2_to_last_falling_Edge_loaded.clear();
     
     if (tree==NULL) return;
@@ -287,6 +309,16 @@ void HGCalTBBeamWireChamberProducer::loadRun(int loading_run) {
         valid_TS_MCP2_loaded[eventId] = valid_TS_MCP2;
         TS_MCP1_loaded[eventId] = TS_MCP1;
         TS_MCP2_loaded[eventId] = TS_MCP2;
+        TS_15PercentRise_MCP1_loaded[eventId] = TS_15PercentRise_MCP1;
+        TS_15PercentRise_MCP2_loaded[eventId] = TS_15PercentRise_MCP2;
+        TS_30PercentRise_MCP2_loaded[eventId] = TS_30PercentRise_MCP2;
+        TS_30PercentRise_MCP1_loaded[eventId] = TS_30PercentRise_MCP1;
+        TS_45PercentRise_MCP1_loaded[eventId] = TS_45PercentRise_MCP1;
+        TS_45PercentRise_MCP2_loaded[eventId] = TS_45PercentRise_MCP2;
+        TS_60PercentRise_MCP1_loaded[eventId] = TS_60PercentRise_MCP1;
+        TS_60PercentRise_MCP2_loaded[eventId] = TS_60PercentRise_MCP2;
+        amp_MCP1_loaded[eventId] = amp_MCP1;
+        amp_MCP2_loaded[eventId] = amp_MCP2;        
         TS_MCP1_to_last_falling_Edge_loaded[eventId] = TS_MCP1_to_last_falling_Edge;
         TS_MCP2_to_last_falling_Edge_loaded[eventId] = TS_MCP2_to_last_falling_Edge;
     }
@@ -298,8 +330,8 @@ void HGCalTBBeamWireChamberProducer::loadRun(int loading_run) {
 }
 
 void HGCalTBBeamWireChamberProducer::endJob() {
-    delete tree;
-    delete rootFile;
+    if (tree!=NULL) delete tree;
+    if (rootFile!=NULL) delete rootFile;
 
     reco1_x_loaded.clear(); reco1_y_loaded.clear(); z1_loaded.clear();averageHitMultiplicty1_loaded.clear();
     reco2_x_loaded.clear(); reco2_y_loaded.clear(); z2_loaded.clear();averageHitMultiplicty1_loaded.clear();
