@@ -198,8 +198,8 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       Float16_t iuy = (CellCentreXY.second < 0 ) ? (CellCentreXY.second + HGCAL_TB_GEOMETRY::DELTA) : (CellCentreXY.second - HGCAL_TB_GEOMETRY::DELTA);
       recHit.setCellCenterCoordinate(iux, iuy);
 
-      recHit.setTimeMaxLG(fitresultLG.tmax - fitresultLG.trise);
-      recHit.setTimeMaxHG(fitresultHG.tmax - fitresultHG.trise);
+      recHit.setTimeMaxLG(fitresultLG.tmax);
+      recHit.setTimeMaxHG(fitresultHG.tmax);
       recHit.setEnergyTSLow(sampleLG[m_expectedMaxTimeSample - 1], sampleLG[m_expectedMaxTimeSample]);
       recHit.setEnergyTSHigh(sampleHG[m_expectedMaxTimeSample - 1], sampleHG[m_expectedMaxTimeSample]);
       recHit.setToaRise(toaRise);
