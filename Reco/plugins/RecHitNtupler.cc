@@ -78,13 +78,13 @@ private:
     // event info
     unsigned int ev_run_;
     unsigned int ev_event_;
-    Long64_t trigger_ts;
+    ULong64_t trigger_ts;
 
     int pdgID;
     float beamEnergy;
     float trueBeamEnergy;
 
-    int NRechits_;
+    unsigned int NRechits_;
     // rechits
     std::vector<unsigned int> rechit_detid_;
     std::vector<unsigned int> rechit_module_;
@@ -286,7 +286,7 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
     ev_run_ = rd->run;
     ev_event_ = rd->event;
     trigger_ts = rd->trigger_ts;
-
+    std::cout<<ev_event_<<"  "<<trigger_ts<<std::endl;
     pdgID = rd->pdgID;
     beamEnergy = rd->energy;
 

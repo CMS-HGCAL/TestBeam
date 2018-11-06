@@ -103,6 +103,7 @@ void HGCalTBEUDAQDataSource::produce(edm::Event & e)
   std::unique_ptr<HGCalTBSkiroc2CMSCollection> skirocs(new HGCalTBSkiroc2CMSCollection);
 
   uint32_t vectorIndex=0;
+  uint64_t trigger_ts=0;
   unsigned int skirocId=0;
   while(1){
     if(vectorIndex>=m_rawData.size()) break;
@@ -124,6 +125,7 @@ void HGCalTBEUDAQDataSource::produce(edm::Event & e)
     skiroc=HGCalTBSkiroc2CMS( m_skiroc2CMSData,detids,
 			      m_timeStamp,
 			      m_trigger);
+    trigger_ts = m_timeStamp;
     skirocs->push_back(skiroc);
     vectorIndex+=1924;
     skirocId++;
@@ -141,6 +143,7 @@ void HGCalTBEUDAQDataSource::produce(edm::Event & e)
   rd->pdgID = m_beamParticlePDGID;
   rd->run = m_run;
   rd->event = m_event;
+  rd->trigger_ts = trigger_ts;
   //rd->booleanUserRecords.add("hasDanger", problemDuringReadout);
 
   #ifdef DEBUG
