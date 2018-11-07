@@ -279,7 +279,7 @@ void PedestalPlotter::endJob()
   int iboard, iski, ichan, sca;
   double median_high, RMS_high, median_low, RMS_low;
   if( m_writeTreeOutput ){
-    fs->make<TTree>("pedestalTree", "pedestalTree");
+    pedestalTree=fs->make<TTree>("pedestalTree", "pedestalTree");
     pedestalTree->Branch("board", &iboard);
     pedestalTree->Branch("skiroc", &iski);
     pedestalTree->Branch("channel", &ichan);
