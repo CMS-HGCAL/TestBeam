@@ -69,17 +69,27 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
   			N_layers_FH = 0;		
   			N_layers_BH = 0;		
   			break;	
-  		case 22:
-  			N_layers_EE = 28;		
-  			N_layers_FH = 12;		
-  			N_layers_BH = 12;		
-  			break;	  
   		case 13:
   		default:
   			N_layers_EE = 28;		
   			N_layers_FH = 0;		
   			N_layers_BH = 0;		
   			break;	  		
+	  	case 22:					//October 2018 - setup 1, H2
+				N_layers_EE = 28;		
+				N_layers_FH = 12;		
+				N_layers_BH = 12;
+				break;	
+	  	case 23:					//October 2018 - setup 2, H2
+				N_layers_EE = 28;		
+				N_layers_FH = 11;		
+				N_layers_BH = 12;
+				break;			
+	  	case 24:					//October 2018 - setup 3, H2
+				N_layers_EE = 7;		
+				N_layers_FH = 12;		
+				N_layers_BH = 12;
+				break;	
   	}
 
   	GeVToMip = pset.getUntrackedParameter<double>("GeVToMip", 1./(86.5e-6));			//value from Shilpi
@@ -98,6 +108,11 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 		referenceTracking_zPositions.push_back(-246.);
 		referenceTracking_zPositions.push_back(-1520.);
 		referenceTracking_zPositions.push_back(-1780.);
+	} else if (areaSpecification=="H2_October2018"){
+		referenceTracking_zPositions.push_back(-160.);
+		referenceTracking_zPositions.push_back(-880.);
+		referenceTracking_zPositions.push_back(-2700.);
+		referenceTracking_zPositions.push_back(-3200.);
 	} else if (areaSpecification=="DESY_T21_March2018"){
 		referenceTracking_zPositions.push_back(0.);
 		referenceTracking_zPositions.push_back(15.3);
@@ -106,6 +121,7 @@ HGCalTBGenSimSource::HGCalTBGenSimSource(const edm::ParameterSet & pset, edm::In
 		referenceTracking_zPositions.push_back(80.0);
 		referenceTracking_zPositions.push_back(95.3);
 	}
+
 
     //reads the layer positions
     std::fstream file; 
