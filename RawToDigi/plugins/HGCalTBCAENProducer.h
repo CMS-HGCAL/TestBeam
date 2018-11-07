@@ -40,8 +40,8 @@ class HGCalTBBeamWireChamberProducer : public edm::EDProducer{
     double reco1_x, reco1_y, res1_x, res1_y, z1, reco2_x, reco2_y, res2_x, res2_y, z2, reco3_x, reco3_y, res3_x, res3_y, z3, reco4_x, reco4_y, res4_x, res4_y, z4;    
     double averageHitMultiplicty1, averageHitMultiplicty2, averageHitMultiplicty3, averageHitMultiplicty4; 
     short XCET_021507_signal, XCET_021523_signal;
-    std::vector<float>* scintillator_coincidences;
-    std::vector<float>* scintillator_vetos;
+    short scintillator_coincidences;
+    short scintillator_vetos;
     short valid_TS_MCP1, valid_TS_MCP2;
     float TS_15PercentRise_MCP1; float TS_15PercentRise_MCP2; float TS_30PercentRise_MCP2; float TS_30PercentRise_MCP1; float TS_45PercentRise_MCP1; float TS_45PercentRise_MCP2; float TS_60PercentRise_MCP1; float TS_60PercentRise_MCP2; float amp_MCP1; float amp_MCP2;
     float TS_MCP1, TS_MCP2, TS_MCP1_to_last_falling_Edge, TS_MCP2_to_last_falling_Edge;

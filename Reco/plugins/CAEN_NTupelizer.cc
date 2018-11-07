@@ -78,8 +78,8 @@ private:
 
 	short XCET_021507_signal;
 	short XCET_021523_signal;
-	std::vector<float> scintillator_coincidence_timestamps;
-	std::vector<float> scintillator_veto_timestamps;
+	short N_scintillator_coincidence_timestamps;
+	short N_scintillator_veto_timestamps;
 	std::vector<short> digi_clock;
 	std::vector<short> digi_MCP1;
 	std::vector<short> digi_MCP2;
@@ -256,8 +256,8 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 
 	if (rd->booleanUserRecords.has("XCET_021507_signal")) XCET_021507_signal =  rd->booleanUserRecords.get("XCET_021507_signal");
 	if (rd->booleanUserRecords.has("XCET_021523_signal")) XCET_021523_signal =  rd->booleanUserRecords.get("XCET_021523_signal");
-	if (rd->floatVectorUserRecords.has("scintillator_coincidence_timestamps")) scintillator_coincidence_timestamps =  rd->floatVectorUserRecords.get("scintillator_coincidence_timestamps");
-	if (rd->floatVectorUserRecords.has("scintillator_veto_timestamps")) scintillator_veto_timestamps =  rd->floatVectorUserRecords.get("scintillator_veto_timestamps");
+	if (rd->floatVectorUserRecords.has("N_scintillator_coincidence_timestamps")) N_scintillator_coincidence_timestamps =  rd->floatVectorUserRecords.get("N_scintillator_coincidence_timestamps").size();
+	if (rd->floatVectorUserRecords.has("N_scintillator_veto_timestamps")) N_scintillator_veto_timestamps =  rd->floatVectorUserRecords.get("N_scintillator_veto_timestamps").size();
 	if (rd->shortVectorUserRecords.has("digi_clock")) digi_clock =  rd->shortVectorUserRecords.get("digi_clock");
 	if (rd->shortVectorUserRecords.has("digi_MCP1")) digi_MCP1 =  rd->shortVectorUserRecords.get("digi_MCP1");
 	if (rd->shortVectorUserRecords.has("digi_MCP2")) digi_MCP2 =  rd->shortVectorUserRecords.get("digi_MCP2");
@@ -388,8 +388,8 @@ void DWC_NTupelizer::beginJob() {
 
 		tree->Branch("XCET_021507_signal", &XCET_021507_signal);
 		tree->Branch("XCET_021523_signal", &XCET_021523_signal);
-		tree->Branch("scintillator_coincidence_timestamps", &scintillator_coincidence_timestamps);
-		tree->Branch("scintillator_veto_timestamps", &scintillator_veto_timestamps);
+		tree->Branch("N_scintillator_coincidence_timestamps", &N_scintillator_coincidence_timestamps);
+		tree->Branch("N_scintillator_veto_timestamps", &N_scintillator_veto_timestamps);
 		tree->Branch("digi_clock", &digi_clock);
 		tree->Branch("digi_MCP1", &digi_MCP1);
 		tree->Branch("digi_MCP2", &digi_MCP2);
