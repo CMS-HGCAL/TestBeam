@@ -160,7 +160,7 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 	n_event = rd->event;
 	goodDWC_Measurement = (rd->booleanUserRecords.has("hasValidDWCMeasurement") && rd->booleanUserRecords.get("hasValidDWCMeasurement")) ? 1 : 0;
 
-	triggerTimeDiff = rd->doubleUserRecords.has("triggerDeltaT_to_TDC") ? rd->doubleUserRecords.get("triggerDeltaT_to_TDC") : -1;
+	triggerTimeDiff = rd->doubleUserRecords.has("triggerDeltaT_to_TDC") ? rd->doubleUserRecords.get("triggerDeltaT_to_TDC") : -999;
 
 	for (size_t i = 0; i < 4; i++) {
 		reco_x[i] = dwcs->at(i).x;
@@ -254,34 +254,33 @@ void DWC_NTupelizer::analyze(const edm::Event& event, const edm::EventSetup& set
 	if ((rd->event == -1) && writeMinimal) return;
 
 
-	if (rd->booleanUserRecords.has("XCET_021507_signal")) XCET_021507_signal =  rd->booleanUserRecords.get("XCET_021507_signal");
-	if (rd->booleanUserRecords.has("XCET_021523_signal")) XCET_021523_signal =  rd->booleanUserRecords.get("XCET_021523_signal");
-	if (rd->floatVectorUserRecords.has("N_scintillator_coincidence_timestamps")) N_scintillator_coincidence_timestamps =  rd->floatVectorUserRecords.get("N_scintillator_coincidence_timestamps").size();
-	if (rd->floatVectorUserRecords.has("N_scintillator_veto_timestamps")) N_scintillator_veto_timestamps =  rd->floatVectorUserRecords.get("N_scintillator_veto_timestamps").size();
-	if (rd->shortVectorUserRecords.has("digi_clock")) digi_clock =  rd->shortVectorUserRecords.get("digi_clock");
-	if (rd->shortVectorUserRecords.has("digi_MCP1")) digi_MCP1 =  rd->shortVectorUserRecords.get("digi_MCP1");
-	if (rd->shortVectorUserRecords.has("digi_MCP2")) digi_MCP2 =  rd->shortVectorUserRecords.get("digi_MCP2");
-	if (rd->shortVectorUserRecords.has("digi_scintillator_4x4")) digi_scintillator_big =  rd->shortVectorUserRecords.get("digi_scintillator_4x4");
-	if (rd->shortVectorUserRecords.has("digi_synchboard_trigger")) digi_synchboard_trigger =  rd->shortVectorUserRecords.get("digi_synchboard_trigger");
+	if (rd->booleanUserRecords.has("XCET_021507_signal")) XCET_021507_signal = rd->booleanUserRecords.get("XCET_021507_signal"); else XCET_021507_signal = -999;
+	if (rd->booleanUserRecords.has("XCET_021523_signal")) XCET_021523_signal = rd->booleanUserRecords.get("XCET_021523_signal"); else XCET_021523_signal = -999;
+	if (rd->floatVectorUserRecords.has("scintillator_coincidence_timestamps")) N_scintillator_coincidence_timestamps = rd->floatVectorUserRecords.get("scintillator_coincidence_timestamps").size(); else N_scintillator_coincidence_timestamps = -999;
+	if (rd->floatVectorUserRecords.has("scintillator_veto_timestamps")) N_scintillator_veto_timestamps = rd->floatVectorUserRecords.get("scintillator_veto_timestamps").size(); else N_scintillator_veto_timestamps = -999;
+	if (rd->shortVectorUserRecords.has("digi_clock")) digi_clock = rd->shortVectorUserRecords.get("digi_clock");
+	if (rd->shortVectorUserRecords.has("digi_MCP1")) digi_MCP1 = rd->shortVectorUserRecords.get("digi_MCP1");
+	if (rd->shortVectorUserRecords.has("digi_MCP2")) digi_MCP2 = rd->shortVectorUserRecords.get("digi_MCP2");
+	if (rd->shortVectorUserRecords.has("digi_scintillator_4x4")) digi_scintillator_big = rd->shortVectorUserRecords.get("digi_scintillator_4x4");
+	if (rd->shortVectorUserRecords.has("digi_synchboard_trigger")) digi_synchboard_trigger = rd->shortVectorUserRecords.get("digi_synchboard_trigger");
 
 
-	if(rd->booleanUserRecords.has("valid_TS_MCP1")) valid_TS_MCP1 = rd->booleanUserRecords.get("valid_TS_MCP1");
-	if(rd->booleanUserRecords.has("valid_TS_MCP2")) valid_TS_MCP2 = rd->booleanUserRecords.get("valid_TS_MCP2");
-	if(rd->doubleUserRecords.has("TS_MCP1")) TS_MCP1 = rd->doubleUserRecords.get("TS_MCP1");
-	if(rd->doubleUserRecords.has("TS_MCP2")) TS_MCP2 = rd->doubleUserRecords.get("TS_MCP2");
-	if(rd->doubleUserRecords.has("TS_15PercentRise_MCP1")) TS_15PercentRise_MCP1 = rd->doubleUserRecords.get("TS_15PercentRise_MCP1");
-	if(rd->doubleUserRecords.has("TS_15PercentRise_MCP2")) TS_15PercentRise_MCP2 = rd->doubleUserRecords.get("TS_15PercentRise_MCP2");
-	if(rd->doubleUserRecords.has("TS_30PercentRise_MCP2")) TS_30PercentRise_MCP2 = rd->doubleUserRecords.get("TS_30PercentRise_MCP2");
-	if(rd->doubleUserRecords.has("TS_30PercentRise_MCP1")) TS_30PercentRise_MCP1 = rd->doubleUserRecords.get("TS_30PercentRise_MCP1");
-	if(rd->doubleUserRecords.has("TS_45PercentRise_MCP1")) TS_45PercentRise_MCP1 = rd->doubleUserRecords.get("TS_45PercentRise_MCP1");
-	if(rd->doubleUserRecords.has("TS_45PercentRise_MCP2")) TS_45PercentRise_MCP2 = rd->doubleUserRecords.get("TS_45PercentRise_MCP2");
-	if(rd->doubleUserRecords.has("TS_60PercentRise_MCP1")) TS_60PercentRise_MCP1 = rd->doubleUserRecords.get("TS_60PercentRise_MCP1");
-	if(rd->doubleUserRecords.has("TS_60PercentRise_MCP2")) TS_60PercentRise_MCP2 = rd->doubleUserRecords.get("TS_60PercentRise_MCP2");
-	if(rd->doubleUserRecords.has("amp_MCP1")) amp_MCP1 = rd->doubleUserRecords.get("amp_MCP1");
-	if(rd->doubleUserRecords.has("amp_MCP2")) amp_MCP2 = rd->doubleUserRecords.get("amp_MCP2");
-	if(rd->doubleUserRecords.has("TS_MCP1_to_last_falling_Edge")) TS_MCP1_to_last_falling_Edge = rd->doubleUserRecords.get("TS_MCP1_to_last_falling_Edge");
-	if(rd->doubleUserRecords.has("TS_MCP2_to_last_falling_Edge")) TS_MCP2_to_last_falling_Edge = rd->doubleUserRecords.get("TS_MCP2_to_last_falling_Edge");
-	
+	if(rd->booleanUserRecords.has("valid_TS_MCP1")) valid_TS_MCP1 = rd->booleanUserRecords.get("valid_TS_MCP1"); else valid_TS_MCP1 = -999;
+	if(rd->booleanUserRecords.has("valid_TS_MCP2")) valid_TS_MCP2 = rd->booleanUserRecords.get("valid_TS_MCP2"); else valid_TS_MCP2 = -999;
+	if(rd->doubleUserRecords.has("TS_MCP1")) TS_MCP1 = rd->doubleUserRecords.get("TS_MCP1"); else TS_MCP1 = -999;
+	if(rd->doubleUserRecords.has("TS_MCP2")) TS_MCP2 = rd->doubleUserRecords.get("TS_MCP2"); else TS_MCP2 = -999;
+	if(rd->doubleUserRecords.has("TS_15PercentRise_MCP1")) TS_15PercentRise_MCP1 = rd->doubleUserRecords.get("TS_15PercentRise_MCP1"); else TS_15PercentRise_MCP1 = -999;
+	if(rd->doubleUserRecords.has("TS_15PercentRise_MCP2")) TS_15PercentRise_MCP2 = rd->doubleUserRecords.get("TS_15PercentRise_MCP2"); else TS_15PercentRise_MCP2 = -999;
+	if(rd->doubleUserRecords.has("TS_30PercentRise_MCP2")) TS_30PercentRise_MCP2 = rd->doubleUserRecords.get("TS_30PercentRise_MCP2"); else TS_30PercentRise_MCP2 = -999;
+	if(rd->doubleUserRecords.has("TS_30PercentRise_MCP1")) TS_30PercentRise_MCP1 = rd->doubleUserRecords.get("TS_30PercentRise_MCP1"); else TS_30PercentRise_MCP1 = -999;
+	if(rd->doubleUserRecords.has("TS_45PercentRise_MCP1")) TS_45PercentRise_MCP1 = rd->doubleUserRecords.get("TS_45PercentRise_MCP1"); else TS_45PercentRise_MCP1 = -999;
+	if(rd->doubleUserRecords.has("TS_45PercentRise_MCP2")) TS_45PercentRise_MCP2 = rd->doubleUserRecords.get("TS_45PercentRise_MCP2"); else TS_45PercentRise_MCP2 = -999;
+	if(rd->doubleUserRecords.has("TS_60PercentRise_MCP1")) TS_60PercentRise_MCP1 = rd->doubleUserRecords.get("TS_60PercentRise_MCP1"); else TS_60PercentRise_MCP1 = -999;
+	if(rd->doubleUserRecords.has("TS_60PercentRise_MCP2")) TS_60PercentRise_MCP2 = rd->doubleUserRecords.get("TS_60PercentRise_MCP2"); else TS_60PercentRise_MCP2 = -999;
+	if(rd->doubleUserRecords.has("amp_MCP1")) amp_MCP1 = rd->doubleUserRecords.get("amp_MCP1"); else amp_MCP1 = -999;
+	if(rd->doubleUserRecords.has("amp_MCP2")) amp_MCP2 = rd->doubleUserRecords.get("amp_MCP2"); else amp_MCP2 = -999;
+	if(rd->doubleUserRecords.has("TS_MCP1_to_last_falling_Edge")) TS_MCP1_to_last_falling_Edge = rd->doubleUserRecords.get("TS_MCP1_to_last_falling_Edge"); else TS_MCP1_to_last_falling_Edge = -999;
+	if(rd->doubleUserRecords.has("TS_MCP2_to_last_falling_Edge")) TS_MCP2_to_last_falling_Edge = rd->doubleUserRecords.get("TS_MCP2_to_last_falling_Edge"); else TS_MCP2_to_last_falling_Edge = -999;
 	tree->Fill();
 
 

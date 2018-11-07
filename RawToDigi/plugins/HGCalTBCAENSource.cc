@@ -597,7 +597,7 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 			float priorFallingClockEdge_MCP1 = 0;
 			for (int sample = 2; sample < N_digi_samples - 1; sample++) {
 				if (sample > MCPSignal1->tpeak) break;
-				if ((digi_clock[sample - 1] > digi_clock[sample]) && (digi_clock[sample] > 3200.) && (digi_clock[sample] > digi_clock[sample + 1])) {
+				if ((digi_clock[sample - 2] == 4095) && (digi_clock[sample - 1] > digi_clock[sample]) && (digi_clock[sample] > digi_clock[sample + 1])) {
 					float under3200 = sample + (3200. - digi_clock[sample]) / (digi_clock[sample + 1] - digi_clock[sample]);
 #ifdef DEBUG					
 					std::cout << digi_clock[sample - 1] << "  " << sample << "," << digi_clock[sample] << "  " << sample + 1 << "," << digi_clock[sample + 1] << ": " << under3200 << std::endl;
@@ -609,12 +609,12 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 			float priorFallingClockEdge_MCP2 = 0;
 			for (int sample = 2; sample < N_digi_samples - 1; sample++) {
 				if (sample > MCPSignal2->tpeak) break;
-				if ((digi_clock[sample - 1] > digi_clock[sample]) && (digi_clock[sample] > 3200.) && (digi_clock[sample] > digi_clock[sample + 1])) {
+				if ((digi_clock[sample - 2] == 4095) && (digi_clock[sample - 1] > digi_clock[sample]) && (digi_clock[sample] > digi_clock[sample + 1])) {
 					float under3200 = sample + (3200. - digi_clock[sample]) / (digi_clock[sample + 1] - digi_clock[sample]);
 #ifdef DEBUG					
 					std::cout << digi_clock[sample - 1] << "  " << sample << "," << digi_clock[sample] << "  " << sample + 1 << "," << digi_clock[sample + 1] << ": " << under3200 << std::endl;
 #endif					
-					if (sample < MCPSignal2->tpeak) priorFallingClockEdge_MCP1 = under3200;
+					if (sample < MCPSignal2->tpeak) priorFallingClockEdge_MCP2 = under3200;
 				}
 			}
 
@@ -686,6 +686,9 @@ void HGCalTBWireChamberSource::ReadTimingFile(std::string timingFilePath, bool s
 	#endif
 	*/
 
+
+//TODO, 07 November 2018:
+	//fix clock edge reconstruction!!
 
 }
 

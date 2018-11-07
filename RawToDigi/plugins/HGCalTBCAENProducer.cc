@@ -212,7 +212,6 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
             rd_full->doubleUserRecords.add("triggerDeltaT_to_TDC", triggerTimeDiff_loaded[event_nr]);
 
 
-            std::cout << "Filling" << std::endl;
             //XCET
             rd_full->intUserRecords.add("XCET_021507_signal", XCET_021507_signal_loaded[event_nr]);
             rd_full->intUserRecords.add("XCET_021523_signal", XCET_021523_signal_loaded[event_nr]);
@@ -317,16 +316,16 @@ void HGCalTBBeamWireChamberProducer::loadRun(int loading_run) {
         valid_TS_MCP2_loaded[eventId] = valid_TS_MCP2;
         TS_MCP1_loaded[eventId] = TS_MCP1;
         TS_MCP2_loaded[eventId] = TS_MCP2;
-        TS_15PercentRise_MCP1_loaded[eventId] = -999;//TS_15PercentRise_MCP1;
-        TS_15PercentRise_MCP2_loaded[eventId] = -999;//TS_15PercentRise_MCP2;
-        TS_30PercentRise_MCP2_loaded[eventId] = -999;//TS_30PercentRise_MCP2;
-        TS_30PercentRise_MCP1_loaded[eventId] = -999;//TS_30PercentRise_MCP1;
-        TS_45PercentRise_MCP1_loaded[eventId] = -999;//TS_45PercentRise_MCP1;
-        TS_45PercentRise_MCP2_loaded[eventId] = -999;//TS_45PercentRise_MCP2;
-        TS_60PercentRise_MCP1_loaded[eventId] = -999;//TS_60PercentRise_MCP1;
-        TS_60PercentRise_MCP2_loaded[eventId] = -999;//TS_60PercentRise_MCP2;
-        amp_MCP1_loaded[eventId] = -999;//amp_MCP1;
-        amp_MCP2_loaded[eventId] = -999;//amp_MCP2;
+        TS_15PercentRise_MCP1_loaded[eventId] = TS_15PercentRise_MCP1;
+        TS_15PercentRise_MCP2_loaded[eventId] = TS_15PercentRise_MCP2;
+        TS_30PercentRise_MCP2_loaded[eventId] = TS_30PercentRise_MCP2;
+        TS_30PercentRise_MCP1_loaded[eventId] = TS_30PercentRise_MCP1;
+        TS_45PercentRise_MCP1_loaded[eventId] = TS_45PercentRise_MCP1;
+        TS_45PercentRise_MCP2_loaded[eventId] = TS_45PercentRise_MCP2;
+        TS_60PercentRise_MCP1_loaded[eventId] = TS_60PercentRise_MCP1;
+        TS_60PercentRise_MCP2_loaded[eventId] = TS_60PercentRise_MCP2;
+        amp_MCP1_loaded[eventId] = amp_MCP1;
+        amp_MCP2_loaded[eventId] = amp_MCP2;
         TS_MCP1_to_last_falling_Edge_loaded[eventId] = TS_MCP1_to_last_falling_Edge;
         TS_MCP2_to_last_falling_Edge_loaded[eventId] = TS_MCP2_to_last_falling_Edge;
     }

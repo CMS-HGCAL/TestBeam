@@ -91,16 +91,16 @@ MCPNtupler::MCPNtupler(const edm::ParameterSet& iConfig)
     tree_->Branch("valid_TS_MCP2", &valid_TS_MCP2);
     tree_->Branch("TS_MCP1", &TS_MCP1);
     tree_->Branch("TS_MCP2", &TS_MCP2);
-    tree_->Branch("TS_15PercentRise_MCP1", TS_15PercentRise_MCP1);
-    tree_->Branch("TS_15PercentRise_MCP2", TS_15PercentRise_MCP2);
-    tree_->Branch("TS_30PercentRise_MCP2", TS_30PercentRise_MCP2);
-    tree_->Branch("TS_30PercentRise_MCP1", TS_30PercentRise_MCP1);
-    tree_->Branch("TS_45PercentRise_MCP1", TS_45PercentRise_MCP1);
-    tree_->Branch("TS_45PercentRise_MCP2", TS_45PercentRise_MCP2);
-    tree_->Branch("TS_60PercentRise_MCP1", TS_60PercentRise_MCP1);
-    tree_->Branch("TS_60PercentRise_MCP2", TS_60PercentRise_MCP2);
-    tree_->Branch("amp_MCP1", amp_MCP1);
-    tree_->Branch("amp_MCP2", amp_MCP2);    
+    tree_->Branch("TS_15PercentRise_MCP1", &TS_15PercentRise_MCP1);
+    tree_->Branch("TS_15PercentRise_MCP2", &TS_15PercentRise_MCP2);
+    tree_->Branch("TS_30PercentRise_MCP2", &TS_30PercentRise_MCP2);
+    tree_->Branch("TS_30PercentRise_MCP1", &TS_30PercentRise_MCP1);
+    tree_->Branch("TS_45PercentRise_MCP1", &TS_45PercentRise_MCP1);
+    tree_->Branch("TS_45PercentRise_MCP2", &TS_45PercentRise_MCP2);
+    tree_->Branch("TS_60PercentRise_MCP1", &TS_60PercentRise_MCP1);
+    tree_->Branch("TS_60PercentRise_MCP2", &TS_60PercentRise_MCP2);
+    tree_->Branch("amp_MCP1", &amp_MCP1);
+    tree_->Branch("amp_MCP2", &amp_MCP2);    
 
     tree_->Branch("TS_MCP1_to_last_falling_Edge", &TS_MCP1_to_last_falling_Edge);
     tree_->Branch("TS_MCP2_to_last_falling_Edge", &TS_MCP2_to_last_falling_Edge);
