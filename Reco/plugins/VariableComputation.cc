@@ -388,12 +388,14 @@ void VariableComputation::produce(edm::Event& event, const edm::EventSetup& setu
 
 	double M=0, xmean=0, ymean=0, zmean=0;
 
+	for (int layer=1; layer<=m_NLayers; layer++) {
+		Sensors[layer] = new SensorHitMap(layer);
+		Sensors[layer]->setSensorSize(133);
+		
+	}
+
 	for(auto Rechit : rechits_selected) {	
 		int layer = (Rechit.id()).layer();
-		if ( Sensors.find(layer) == Sensors.end() ) {
-			Sensors[layer] = new SensorHitMap(layer);
-			Sensors[layer]->setSensorSize(133);
-		}
 
 		if (Rechit.energy() > MIP_cut_for_energy) {
 			Sensors[layer]->addHit(Rechit, 1.);

@@ -38,6 +38,13 @@ options.register('NHexaBoards',
                  'Number of hexaboards for analysis.'
                 )
 
+options.register('NLayers',
+                -1,
+                 VarParsing.VarParsing.multiplicity.singleton,
+                 VarParsing.VarParsing.varType.int,
+                 'Number of layers for analysis.'
+                )
+
 options.register('hgcalLayout',
                  '',
                  VarParsing.VarParsing.multiplicity.singleton,
@@ -127,7 +134,7 @@ process.variablecomputation = cms.EDProducer("VariableComputation",
                                 DetectorLayout=cms.untracked.string(hgcalLayout),
                                 layerPositionFile=cms.string(layerPositionFile),
                                 NHexaBoards=cms.untracked.int32(options.NHexaBoards),
-                                NLayers=cms.untracked.int32(options.NHexaBoards),
+                                NLayers=cms.untracked.int32(options.NLayers),
                                 NColorsInputImage = cms.untracked.int32(-1),
                                 CellEnergyCut = cms.untracked.double(0.5)
 )
