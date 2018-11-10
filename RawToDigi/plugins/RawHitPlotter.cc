@@ -260,7 +260,7 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
   std::map<int, commonModeNoise> cmMap = cm.CommonModeNoiseMap();
   for ( std::map<int, commonModeNoise>::iterator it = cmMap.begin(); it != cmMap.end(); ++it ) {
     m_skirocID = it->first % HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-    m_layerID = (it->first - 1) / HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    m_layerID = (it->first ) / HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
     int key = m_layerID * 1000 + m_skirocID * 100;
     for ( uint16_t ts = 0; ts < NUMBER_OF_TIME_SAMPLES; ts++ ) {
       m_cmHigh[ts] = it->second.fullHG[ts] * 1.;
