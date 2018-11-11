@@ -47,6 +47,7 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   double m_maxADCCut;
   bool m_useCalibration;
   bool m_subtractCommonMode;
+  int m_TSForCommonModeNoiseSubtraction;
 
   std::map<int, TH2F*> shapesLG;
   std::map<int, TH2F*> shapesHG;
