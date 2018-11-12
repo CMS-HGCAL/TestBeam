@@ -102,7 +102,7 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         ExpectedMaxTimeSample=cms.untracked.int32(options.ExpectedMaxTimesample),
                                         MaxADCCut=cms.untracked.double(15),
                                         subtractCommonMode=cms.untracked.bool(True),
-                                        TSForCommonModeNoiseSubtraction=cms.untracked.int32(0)
+                                        TSForCommonModeNoiseSubtraction=cms.untracked.int32(-1)
 )
 
 

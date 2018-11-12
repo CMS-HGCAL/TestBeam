@@ -14,7 +14,7 @@
   
 class CommonMode{
  public:
-  CommonMode( HGCalElectronicsMap &map, bool useMedian=true, bool cmPerChip=true, float threshold=100 );
+  CommonMode( HGCalElectronicsMap &map, bool useMedian=true, bool cmPerChip=true );
   ~CommonMode(){}
   void Evaluate( edm::Handle<HGCalTBRawHitCollection> hits );
   std::map<int,commonModeNoise> CommonModeNoiseMap() const {return _cmMap;} 
@@ -26,11 +26,7 @@ class CommonMode{
   HGCalElectronicsMap _emap;
   bool _useMedian;
   bool _cmPerChip;
-  float _threshold;
-
-  double thresholdHG;
-  double thresholdLG;
-
+    
   std::map<int,commonModeNoise> _cmMap;
   
 };

@@ -2,16 +2,10 @@
 #include <HGCal/Geometry/interface/HGCalTBTopology.h>
 #include <HGCal/Geometry/interface/HGCalTBGeometryParameters.h>
 
-CommonMode::CommonMode( HGCalElectronicsMap &emap, bool useMedian, bool cmPerChip, float threshold ) : _useMedian(useMedian),
-  _cmPerChip(cmPerChip),
-  _threshold(threshold)
+CommonMode::CommonMode( HGCalElectronicsMap &emap, bool useMedian, bool cmPerChip ) : _useMedian(useMedian),
+  _cmPerChip(cmPerChip)
 {
   _emap = emap;
-
-  thresholdHG = _threshold;
-  thresholdLG = _threshold / 8.;
-  if (_threshold == -1)
-    thresholdLG = -1;
 }
 
 void CommonMode::Evaluate( edm::Handle<HGCalTBRawHitCollection> hits )
