@@ -2,3 +2,4 @@
    <lib name="1"/>
    <use name="HGCal/Reco" />
 </export>
+<use name="SimDataFormats/CaloTest"/>
