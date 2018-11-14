@@ -33,6 +33,7 @@ public:
 
 	std::pair<double, double> GetCellCentreCoordinates(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize, bool flipX = false); ///< returns the center of the cell in absolute coordinates: \b (x,y)
 	std::pair<int, int> GetCellIUIVCoordinates(double x, double y);
+	std::pair<int, int> GetSensorIUIVCoordinates(double X, double Y);
 
 	inline 	std::pair<double, double> GetCellCentreCoordinatesForPlots(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorsize)
 	{

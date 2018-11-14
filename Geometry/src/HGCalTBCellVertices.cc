@@ -96,17 +96,23 @@ std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int laye
 
 }
 
-std::pair<int, int> HGCalTBCellVertices::GetCellIUIVCoordinates(double x, double y) {
-  double alpha = 30./180. * PI;
-  double dx = HGCAL_TB_CELL::FULL_CELL_SIDE*cos(alpha);
-  double dy = dx*cos(alpha);
-  
-  double iv = -x/(dx*(1+sin(alpha)));
-  double iu = (-y/dy - iv)/2.;
+std::pair<int, int> HGCalTBCellVertices::GetCellIUIVCoordinates(double x, double y) { 
+  double iv = x * 1/vy0;
+  double iu = (y-vx0*iv)/x0;
 
-  return std::make_pair(iu, iv);
+  return std::make_pair(round(iu), round(iv));
   
 }
+
+
+std::pair<int, int> HGCalTBCellVertices::GetSensorIUIVCoordinates(double X, double Y) {  
+  double iV = X * 1/VY0;
+  double iU = (Y-VX0*iV)/X0;
+
+  return std::make_pair(round(iU), round(iV));
+  
+}
+
 
 double HGCalTBCellVertices::Xmax(int iv, double y)
 {
