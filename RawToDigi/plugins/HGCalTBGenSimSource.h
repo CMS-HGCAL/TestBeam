@@ -15,6 +15,7 @@
 #include "HGCal/Geometry/interface/HGCalWaferGeometry.h"
 #include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include "HGCal/Reco/interface/PositionResolutionHelpers.h"
+#include "SimDataFormats/CaloTest/interface/HGCalTestNumbering.h"
 #include <fstream>
 #include <iostream>
 #include <stdio.h>
@@ -60,7 +61,7 @@ private:
 	void fillConfiguredRuns(std::fstream& map_file);
 	bool setRunAndEventInfo(edm::EventID& id, edm::TimeValue_t& time, edm::EventAuxiliary::ExperimentType&);
 	virtual void produce(edm::Event & e);
-	void makeRecHit(int, int, double, std::unique_ptr<HGCalTBRecHitCollection>&);
+	void makeRecHit(int, int, bool, int, double, std::unique_ptr<HGCalTBRecHitCollection>&);
 	
 	std::string RechitOutputCollectionName;
 	std::string RunDataOutputCollectionName;
@@ -95,7 +96,6 @@ private:
 	RUNTYPES _enumPhysicsListUsed;
 
 
-	
 	std::vector<FileInfo> _fileNames;
 	std::vector<FileInfo>::iterator fileIterator;
 
@@ -135,7 +135,8 @@ private:
 
 	TRandom* randgen;
 
-	int N_layers_EE, N_layers_FH, N_layers_BH;
+	unsigned short N_layers_EE, N_layers_FH, N_layers_BH;
+	unsigned short firstNLayersFH_asDaisies;
 
 
 public:

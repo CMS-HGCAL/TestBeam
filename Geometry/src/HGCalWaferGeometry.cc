@@ -16,7 +16,7 @@ void HexGeometry::initCellGeom(bool fine){
   int nCoarse(11), nyCoarse(21), nFine(15), nyFine(28);
   int cellCoarse[nC] = {2,5,8,11,12,11,12,11,12,11,12,11,8,5,2};
   int cellFine[nF] = {3,6,9,12,15,16,15,16,15,16,15,16,15,16,15,14,11,8,5,2};
-  double wafer(123.7);
+  double wafer(19*HGCAL_TB_CELL::FULL_CELL_SIDE);
 
   int    rows = (fine) ? nF : nC;
   double cell = (fine) ? wafer/nFine : wafer/nCoarse;
@@ -65,7 +65,7 @@ void HexGeometry::initWaferGeom(){
   const int nC(3);
   int nCoarse(3), nyCoarse(3);
   int cellCoarse[nC] = {2,3,2};
-  double wafer(123.7*3);
+  double wafer(19*HGCAL_TB_CELL::FULL_CELL_SIDE*3);
 
   int    rows = nC;
   double cell = wafer/nCoarse;

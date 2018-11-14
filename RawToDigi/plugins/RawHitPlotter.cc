@@ -186,21 +186,37 @@ void RawHitPlotter::analyze(const edm::Event& event, const edm::EventSetup& setu
 
   CommonMode cm(m_emap); //default is common mode per chip using the median
   cm.Evaluate( hits );
-  std::map<int,commonModeNoise> cmMap=cm.CommonModeNoiseMap();
+  std::map<int, commonModeNoise> cmMap = cm.CommonModeNoiseMap();
+  for ( std::map<int, commonModeNoise>::iterator it = cmMap.begin(); it != cmMap.end(); ++it ) {
+    m_skirocID = it->first % HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    m_layerID = (it->first ) / HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    int key = m_layerID * 1000 + m_skirocID * 100;
+    for ( uint16_t ts = 0; ts < NUMBER_OF_TIME_SAMPLES; ts++ ) {
+      m_cmHigh[ts] = it->second.fullHG[ts] * 1.;
+      if (m_cmHigh[ts] > 1000) std::cout << "In the rawhit plotter, TS: " << ts << "  --> " << m_cmHigh[ts] << std::endl;
+      m_cmLow[ts] = it->second.fullLG[ts] * 1.;
+      m_time[ts] = ts;
+      m_h_cmHigh[key]->Fill( m_cmHigh[ts] );
+      m_h_cmLow[key]->Fill( m_cmLow[ts] );
+      if ( m_cmHigh[ts] > -160 && m_cmHigh[0] != 0 )
+        m_h_cmHighTime[m_layerID * 10 + m_skirocID]->Fill( ts, (m_cmHigh[ts] - m_cmHigh[0]) / m_cmHigh[0] );
+      if ( m_cmLow[ts] > -160 && m_cmLow[0] != 0 )
+        m_h_cmLowTime[m_layerID * 10 + m_skirocID]->Fill( ts, (m_cmLow[ts] - m_cmLow[0]) / m_cmLow[0] );
+      key += 1;
+    }
+    m_tree->Fill();
+  }
 
-  for( std::map<int,chipInfo>::iterator it=m_chipMap.begin(); it!=m_chipMap.end(); ++it )
-    it->second.reset();
-  
-  for( auto hit : *hits ){
-    HGCalTBElectronicsId eid( m_emap.detId2eid(hit.detid().rawId()) );
-    if( !m_emap.existsEId(eid) ) continue;
-    int board=hit.skiroc()/HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
-    int channel=hit.channel();
-    int chip=hit.skiroc(); //from 0 to NHexaboard*4-1
-    HGCalTBLayer alayer = m_layout.at( hit.detid().layer()-1 );
-    HGCalTBModule amodule = alayer.at( hit.detid().sensorIU(), hit.detid().sensorIV() );
-    int module=amodule.moduleID();
-    std::pair<int,HGCalTBDetId> p( board*1000+(chip%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*100+channel,hit.detid() );
+  int nhitUnderSat[HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD * HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA];
+  for ( int i = 0; i < HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD * HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA; i++ ) nhitUnderSat[i] = 0;
+  for ( auto hit : *hits ) {
+    HGCalTBElectronicsId eid( essource_.emap_.detId2eid(hit.detid().rawId()) );
+    if ( !essource_.emap_.existsEId(eid) ) continue;
+    int iboard = hit.skiroc() / HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
+    int ichan = hit.channel();
+    int iski = hit.skiroc();
+    std::pair<int, HGCalTBDetId> p( iboard * 1000 + (iski % HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA) * 100 + ichan, hit.detid() );
+>>>>>>> 04631e1f4fa0f85f7337eb1a3ff16d6747c143ad
     setOfConnectedDetId.insert(p);
     int chipID=chip%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;//from 0 to 3
     if( m_chipMap.find(module*100+chipID)==m_chipMap.end() ) {

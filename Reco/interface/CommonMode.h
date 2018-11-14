@@ -26,6 +26,7 @@ class CommonMode{
   HGCalElectronicsMap _emap;
   bool _useMedian;
   bool _cmPerChip;
+
   float _threshold;
   int _expectedMaxTS;
 
