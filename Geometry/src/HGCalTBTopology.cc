@@ -1,6 +1,5 @@
 #include "HGCal/Geometry/interface/HGCalTBTopology.h"
 #include "HGCal/Geometry/interface/HGCalTBCellParameters.h"
-#include "HGCal/Geometry/interface/HGCalTBGeometryParameters.h"
 #include "math.h"
 #include <stdlib.h>
 #include <iostream>
@@ -9,13 +8,11 @@
 bool HGCalTBTopology::iu_iv_valid(int layer, int sensor_iu, int sensor_iv, int iu, int iv, int sensorSize) const
 {
 	bool Is_Valid_sensor_iu_iv = true;
-//	if( abs(sensor_iu+sensor_iv)>1 || abs(sensor_iu)>1 || abs(sensor_iv)>1 )
-//	  Is_Valid_sensor_iu_iv=false; //!!ASSUMES NO MORE THAN 7 SEVEN MODULES PER LAYER!!
-//
-//	  There are no offcentral layers in the DESY TB
+	if( abs(sensor_iu+sensor_iv)>1 || abs(sensor_iu)>1 || abs(sensor_iv)>1 )
+	  Is_Valid_sensor_iu_iv=false; //!!ASSUMES NO MORE THAN 7 SEVEN MODULES PER LAYER!!
         int aiv = abs(iv);
         int iuc = (iv < 0) ? (-iu) : (iu);
-	if(layer <= HGCAL_TB_GEOMETRY::NUMBER_OF_LAYERS && Is_Valid_sensor_iu_iv) {
+	if(Is_Valid_sensor_iu_iv) {
 		if(sensorSize == 128) {
 			if (iv == 0) return (iu >= -5 && iu <= 5);
 			else if (aiv == 1) return (iuc >= -6 && iuc <= 5);
@@ -81,3 +78,4 @@ std::set<HGCalTBDetId> HGCalTBTopology::getNeighboringCellsDetID(HGCalTBDetId de
 	}
 	return detids;
 }
+

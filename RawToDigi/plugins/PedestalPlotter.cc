@@ -63,6 +63,7 @@ private:
   std::string m_pedestalLow_filename;
   bool m_writeNoisyChannelFile;
   std::string m_noisyChannels_filename;
+  bool m_writeTreeOutput;
   std::string m_electronicMap;
   int m_NTSForPedestalComputation;
 
@@ -87,9 +88,9 @@ PedestalPlotter::PedestalPlotter(const edm::ParameterSet& iConfig) :
   m_pedestalLow_filename( iConfig.getUntrackedParameter<std::string>("LowGainPedestalFileName",std::string("pedestalLG.txt")) ),
   m_writeNoisyChannelFile(iConfig.getUntrackedParameter<bool>("WriteNoisyChannelsFile",false)),
   m_noisyChannels_filename( iConfig.getUntrackedParameter<std::string>("NoisyChannelsFileName",std::string("noisyChannels.txt")) ),
+  m_writeTreeOutput(iConfig.getUntrackedParameter<bool>("WriteTreeOutput",false)),
   m_electronicMap(iConfig.getUntrackedParameter<std::string>("ElectronicMap","HGCal/CondObjects/data/map_CERN_Hexaboard_28Layers.txt")),
   m_NTSForPedestalComputation(iConfig.getUntrackedParameter<int>("NTSForPedestalComputation",1))    
-
 {
   m_HGCalTBSkiroc2CMSCollection = consumes<HGCalTBSkiroc2CMSCollection>(iConfig.getParameter<edm::InputTag>("InputCollection"));
 
@@ -119,9 +120,6 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
 
   m_evtID++;
 
-
-//  if(m_evtID > 10) return;
-
   if( !skirocs->size() ) return;
   
   for( size_t iski=0;iski<skirocs->size(); iski++ ){
@@ -137,11 +135,8 @@ void PedestalPlotter::analyze(const edm::Event& event, const edm::EventSetup& se
 	setOfConnectedDetId.insert(p);
       }
       else continue;
-
       for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-
-	if( rollpositions[it]<=m_NTSForPedestalComputation ){ //consider only a certain number of time samples for pedestal subtraction
-
+	if( rollpositions[it]<m_NTSForPedestalComputation ){ //consider only a certain number of time samples for pedestal subtraction
 	  uint32_t key=iboard*100000+(iski%HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA)*10000+ichan*100+it;
 	  std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
 	  if( iter==m_channelMap.end() ){
@@ -280,18 +275,20 @@ void PedestalPlotter::endJob()
   }
 
 
-  TTree* pedestalTree = fs->make<TTree>("pedestalTree", "pedestalTree");
-  int board, skiroc, channel, sca;
+  TTree* pedestalTree = NULL;
+  int iboard, iski, ichan, sca;
   double median_high, RMS_high, median_low, RMS_low;
-  pedestalTree->Branch("board", &board);
-  pedestalTree->Branch("skiroc", &skiroc);
-  pedestalTree->Branch("channel", &channel);
-  pedestalTree->Branch("sca", &sca);
-  pedestalTree->Branch("median_high", &median_high);
-  pedestalTree->Branch("RMS_high", &RMS_high);
-  pedestalTree->Branch("median_low", &median_low);
-  pedestalTree->Branch("RMS_low", &RMS_low);
-
+  if( m_writeTreeOutput ){
+    pedestalTree=fs->make<TTree>("pedestalTree", "pedestalTree");
+    pedestalTree->Branch("board", &iboard);
+    pedestalTree->Branch("skiroc", &iski);
+    pedestalTree->Branch("channel", &ichan);
+    pedestalTree->Branch("sca", &sca);
+    pedestalTree->Branch("median_high", &median_high);
+    pedestalTree->Branch("RMS_high", &RMS_high);
+    pedestalTree->Branch("median_low", &median_low);
+    pedestalTree->Branch("RMS_low", &RMS_low);
+  }
 
   std::fstream noisyChannels;
   if( m_writeNoisyChannelFile )
@@ -301,9 +298,9 @@ void PedestalPlotter::endJob()
   std::map<int,int> countNoise;
 
   for( std::set< std::pair<int,HGCalTBDetId> >::iterator it=setOfConnectedDetId.begin(); it!=setOfConnectedDetId.end(); ++it ){
-    int iboard=(*it).first/1000;
-    int iski=((*it).first%1000)/100;
-    int ichan=(*it).first%100;
+    iboard=(*it).first/1000;
+    iski=((*it).first%1000)/100;
+    ichan=(*it).first%100;
     if( m_writePedestalFile ){
       pedestalHG << iboard << " " << iski << " " << ichan ;
       pedestalLG << iboard << " " << iski << " " << ichan ;
@@ -317,10 +314,6 @@ void PedestalPlotter::endJob()
 
     
     for( size_t it=0; it<NUMBER_OF_SCA; it++ ){
-      board = iboard;
-      skiroc = iski;
-      channel = ichan;
-      sca = it;
 
       int key=iboard*100000+iski*10000+ichan*100+it;
       std::map<int,hgcal_channel>::iterator iter=m_channelMap.find(key);
@@ -334,12 +327,14 @@ void PedestalPlotter::endJob()
       hgRMSMap[ 100*iboard+it ]->Fill(iux , iuy, hgRMS );
       lgRMSMap[ 100*iboard+it ]->Fill(iux , iuy, lgRMS );
       
-      median_high = hgMean;
-      RMS_high = hgRMS;
-      median_low = lgMean;
-      RMS_low = lgRMS;
-      pedestalTree->Fill();
-
+      if( m_writeTreeOutput ){
+	sca = it;
+	median_high = hgMean;
+	RMS_high = hgRMS;
+	median_low = lgMean;
+	RMS_low = lgRMS;
+	pedestalTree->Fill();
+      }
 
       if( m_writePedestalFile ){
       	pedestalHG << " " << hgMean << " " << hgRMS;

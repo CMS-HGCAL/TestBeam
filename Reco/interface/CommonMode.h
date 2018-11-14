@@ -14,19 +14,20 @@
   
 class CommonMode{
  public:
-  CommonMode( HGCalElectronicsMap &map, bool useMedian=true, bool cmPerChip=true, float threshold=100 );
+  CommonMode( HGCalElectronicsMap &map, bool useMedian=true, bool cmPerChip=true, float threshold=100, int expectedMaxTS=3 );
   ~CommonMode(){}
   void Evaluate( edm::Handle<HGCalTBRawHitCollection> hits );
   std::map<int,commonModeNoise> CommonModeNoiseMap() const {return _cmMap;} 
  private:
   void EvaluateMedianPerChip( edm::Handle<HGCalTBRawHitCollection> hits );
-  void EvaluateMedianPerLayer( edm::Handle<HGCalTBRawHitCollection> hits );
+  void EvaluateMedianPerBoard( edm::Handle<HGCalTBRawHitCollection> hits );
   void EvaluateAveragePerChip( edm::Handle<HGCalTBRawHitCollection> hits );
-  void EvaluateAveragePerLayer( edm::Handle<HGCalTBRawHitCollection> hits );
+  void EvaluateMedianPerBoardWithThr( edm::Handle<HGCalTBRawHitCollection> hits );
   HGCalElectronicsMap _emap;
   bool _useMedian;
   bool _cmPerChip;
   float _threshold;
+  int _expectedMaxTS;
 
   double thresholdHG;
   double thresholdLG;
