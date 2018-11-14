@@ -90,7 +90,7 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   edm::Handle<HGCalTBRawHitCollection> rawhits;
   event.getByToken(m_HGCalTBRawHitCollection, rawhits);
 
-  CommonMode cm(essource_.emap_, true, false); //default is common mode per chip using the median, here: median per layer
+  CommonMode cm(essource_.emap_); //default is common mode per chip using the median, here: median per layer
   if (m_subtractCommonMode) cm.Evaluate( rawhits );
   std::map<int, commonModeNoise> cmMap = cm.CommonModeNoiseMap();
   
