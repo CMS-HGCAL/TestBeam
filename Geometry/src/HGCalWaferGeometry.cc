@@ -21,7 +21,6 @@ void HexGeometry::initCellGeom(bool fine){
   int    rows = (fine) ? nF : nC;
   double cell = (fine) ? wafer/nFine : wafer/nCoarse;
   double dx   = 0.5*cell;
-  //double dy   = 0.5*dx*tan(30.0*M_PI/180.0);
   double dy   = 0.5*cell*tan(30.0*M_PI/180.0);
   int    ny   = (fine) ? nyFine : nyCoarse;
   for (int ir = 0; ir < rows; ++ir) {
@@ -60,31 +59,31 @@ void HexGeometry::initCellGeom(bool fine){
 }
 
 
-/////wafer geometry
+/////wafer geometry, dedicated for 7-wafer daisy layers
 void HexGeometry::initWaferGeom(){
-  const int nC(3);
-  int nCoarse(3), nyCoarse(3);
-  int cellCoarse[nC] = {2,3,2};
-  double wafer(19*HGCAL_TB_CELL::FULL_CELL_SIDE*3);
+  const int nC(5);
+  int nCoarse(5), nxCoarse(3);
+  int cellCoarse[nC] = {1,2,1,2,1};
+  double wafer(19*HGCAL_TB_CELL::FULL_CELL_SIDE);
 
   int    rows = nC;
-  double cell = wafer/nCoarse;
+  double cell = wafer;
   double dx   = 0.5*cell;
   double dy   = 0.5*cell*tan(30.0*M_PI/180.0);
-  int    ny   = nyCoarse;
+  int    nx   = nxCoarse;
+  
   for (int ir = 0; ir < rows; ++ir) {
-    int    column = cellCoarse[ir];
-    int    nx     = 1 - column;
-    double ypos   = dy*ny;
-    for (int ic = 0; ic<column; ++ic) {
-      double xpos = dx*nx;
-      nx += 2;
-      //xypos.push_back(std::pair<double,double>(xpos,ypos));
-      xypos_wafer.push_back(std::pair<double,double>(ypos,xpos));  ///currently we have rotated the geometry by 90 degrees so x becomes y and y becomes x.
+    double xpos = (2-ir)*dx;
+    if (cellCoarse[ir]==1) {
+      double ypos = 0;
+      xypos_wafer.push_back(std::pair<double,double>(xpos, ypos));
+    } else if (cellCoarse[ir]==2) {
+      double ypos = dx+dy;
+      xypos_wafer.push_back(std::pair<double,double>(xpos, ypos));    
+      xypos_wafer.push_back(std::pair<double,double>(xpos, -ypos));    
     }
-    //ny += 6;
-    ny -= 3;
   }
+
   std::cout << "Initialize HexGeometry for a wafer " << xypos_wafer.size() << " wafer"
       << std::endl;
 
