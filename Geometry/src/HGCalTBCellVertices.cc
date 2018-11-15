@@ -29,6 +29,8 @@ std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(i
 	double vertex_x_tmp = 0., vertex_y_tmp = 0.;
 	Cell_co.clear();
 	if(ValidFlag) {
+		double rotation = TEST_BEAM_LAYER_ROTATION;
+		if ((sensor_iu==9)&&(sensor_iv==9)) rotation = -PI;		//special coordinate convention for the DESY TB 2018 		
 		for(int iii = 0; iii < 6; iii++) { // May have to be generalized to deal with polygons of any size
 			vertex_x_tmp = x_co_FullHex[iii] + iu * x0 + iv * vx0;
 			vertex_y_tmp = y_co_FullHex[iii] + iv * vy0;
@@ -36,7 +38,7 @@ std::vector<std::pair<double, double>> HGCalTBCellVertices::GetCellCoordinates(i
 			if(fabs(vertex_x_tmp) <= Xmax(iv, fabs(vertex_y_tmp)) + delta) {
 				vertex_x_tmp += sensor_iu*X0 + sensor_iv*VX0;
 				vertex_y_tmp += sensor_iv*VY0;
-				auto point = RotateLayer(std::make_pair(vertex_x_tmp, vertex_y_tmp), TEST_BEAM_LAYER_ROTATION);
+				auto point = RotateLayer(std::make_pair(vertex_x_tmp, vertex_y_tmp), rotation);
 //				if(flipX==true) point.first=-point.first;
 				Cell_co.push_back(point);
 			}
@@ -55,12 +57,14 @@ std::pair<double, double> HGCalTBCellVertices::GetCellCentreCoordinates(int laye
 	double centre_x_tmp = 0., centre_y_tmp = 0.;
 	bool ValidFlag   = Top.iu_iv_valid(layer, sensor_iu, sensor_iv, iu, iv, sensorsize);
 	if(ValidFlag) {    
+		double rotation = TEST_BEAM_LAYER_ROTATION;
+		if ((sensor_iu==9)&&(sensor_iv==9)) rotation = -PI;
 		centre_x_tmp = ( (iu * x0 + iv * vx0) < 0) ? ((iu * x0 + iv * vx0) + delta) : ((iu * x0 + iv * vx0) - delta)  ;
 		centre_y_tmp = ( (iv * vy0) < 0) ? ((iv * vy0) + delta) : ((iv * vy0) - delta);
 		
 		centre_x_tmp += sensor_iu*X0 + sensor_iv*VX0;
 		centre_y_tmp += sensor_iv*VY0;
-		auto point = RotateLayer(std::make_pair(centre_x_tmp, centre_y_tmp), TEST_BEAM_LAYER_ROTATION);
+		auto point = RotateLayer(std::make_pair(centre_x_tmp, centre_y_tmp), rotation);
 //		if(flipX==true) point.first = - point.first;
 		return point;
     

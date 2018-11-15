@@ -500,6 +500,7 @@ void HGCalTBGenSimSource::makeRecHit(int layer, int wafer, bool onDaisyStructure
 	skiRocIndex = skiRocIndex % HGCAL_TB_GEOMETRY::N_SKIROC_PER_HEXA;
 
 	recHit.setTime(-1);
+	
 	recHit.setCellCenterCoordinate(x + X, y + Y);
 
 

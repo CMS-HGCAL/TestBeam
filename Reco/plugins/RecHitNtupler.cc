@@ -62,9 +62,6 @@ private:
     edm::EDGetTokenT<HGCalTBRecHitCollection> m_HGCalTBRecHitCollection;
 
     HGCalTBTopology IsCellValid;
-    HGCalTBCellVertices TheCell;
-    std::vector<std::pair<Float16_t, Float16_t>> CellXY;
-    std::pair<Float16_t, Float16_t> CellCentreXY;
 
     // Output tree
     TTree* tree_;
@@ -312,12 +309,6 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
     		 hit.id().iu(),hit.id().iv(),m_sensorsize)
     	    ) continue;
 
-    	CellCentreXY = TheCell.GetCellCentreCoordinatesForPlots(
-    	    hit.id().layer(),
-    	    hit.id().sensorIU(),
-    	    hit.id().sensorIV(),
-    	    hit.id().iu(),hit.id().iv(),m_sensorsize
-    	    );
 
     	// get layer and module ID
     	HGCalTBLayer layer = essource_.layout_.at(hit.id().layer()-1);
@@ -330,15 +321,9 @@ void RecHitNtupler::analyze(const edm::Event& event, const edm::EventSetup& setu
     	rechit_module_.push_back(moduleId);
     	rechit_layer_.push_back(hit.id().layer());
 
-    	rechit_x_.push_back( CellCentreXY.first );        //conversion to mm
-        rechit_y_.push_back( CellCentreXY.second );        //conversion to mm
+    	rechit_x_.push_back( hit.cellCenter_x );       
+        rechit_y_.push_back( hit.cellCenter_y );       
     	rechit_z_.push_back( layerPositions[hit.id().layer()] );
-
-    	/*
-    	// or instead?
-    	rechit_x_.push_back( hit.cellCenter_x );
-    	rechit_y_.push_back( hit.cellCenter_y );
-    	*/
 
 
     	rechit_iu_.push_back( hit.id().iu() );
