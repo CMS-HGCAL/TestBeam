@@ -735,7 +735,7 @@ void HGCalTBWireChamberSource::ReadAlignmentParameters(int fileIndex) {
 		if (readCounter == 4) readCounter = -1;
 	}
 
-#ifdef DEBUG
+
 	std::cout << "Min run: " << minRun << "   Max run: " << maxRun << std::endl;
 	for (int i = 0; i < 4; i++) {
 		std::cout << "Alignment parameter: " << i * 100 + 11 << ": " << _parameters[i * 100 + 11] << std::endl;
@@ -743,7 +743,7 @@ void HGCalTBWireChamberSource::ReadAlignmentParameters(int fileIndex) {
 		std::cout << "Alignment parameter: " << i * 100 + 21 << ": " << _parameters[i * 100 + 21] << std::endl;
 		std::cout << "Alignment parameter: " << i * 100 + 22 << ": " << _parameters[i * 100 + 22] << std::endl;
 	}
-#endif
+
 	loadedAlignmentParameters[std::make_pair(minRun, maxRun)] = _parameters;
 
 	return ReadAlignmentParameters(fileIndex + 1);
