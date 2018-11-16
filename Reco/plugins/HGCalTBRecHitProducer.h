@@ -47,6 +47,7 @@ class HGCalTBRecHitProducer : public edm::EDProducer
   double m_maxADCCut;
   bool m_useCalibration;
   bool m_subtractCommonMode;
+  std::string m_subtractCommonModeOption;
   double m_commonModeThreshold;
   int m_TSForCommonModeNoiseSubtraction;
 

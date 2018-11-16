@@ -17,6 +17,7 @@ HGCalTBRecHitProducer::HGCalTBRecHitProducer(const edm::ParameterSet& cfg) :
   m_expectedMaxTimeSample(cfg.getUntrackedParameter<int>("ExpectedMaxTimeSample", 3)),
   m_maxADCCut(cfg.getUntrackedParameter<double>("MaxADCCut", 15)),
   m_subtractCommonMode(cfg.getUntrackedParameter<bool>("subtractCommonMode", true)),
+  m_subtractCommonModeOption(cfg.getUntrackedParameter<std::string>("subtractCommonModeOption", "board_thr")),
   m_commonModeThreshold(cfg.getUntrackedParameter<double>("commonModeThreshold", 100)),
   m_TSForCommonModeNoiseSubtraction(cfg.getUntrackedParameter<int>("TSForCommonModeNoiseSubtraction", -1)), //-1: use all TS
   m_preselectionMethod(cfg.getUntrackedParameter<std::string>("preselectionMethod", "TB2018"))
@@ -91,7 +92,13 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   edm::Handle<HGCalTBRawHitCollection> rawhits;
   event.getByToken(m_HGCalTBRawHitCollection, rawhits);
 
-  CommonMode cm(essource_.emap_, false, false, m_commonModeThreshold, m_expectedMaxTimeSample); //default is common mode per chip using the median
+  CommonMode cm(essource_.emap_);//default is common mode per chip using the median
+  if( m_subtractCommonModeOption=="chip" ){}
+  else if( m_subtractCommonModeOption=="board" )
+    cm=CommonMode(essource_.emap_, true, false); 
+  else if( m_subtractCommonModeOption=="board_thr" )
+    cm=CommonMode(essource_.emap_, false, false, m_commonModeThreshold, m_expectedMaxTimeSample); 
+
   if (m_subtractCommonMode) cm.Evaluate( rawhits );
   std::map<int, commonModeNoise> cmMap = cm.CommonModeNoiseMap();
 
@@ -118,40 +125,44 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
     unsigned int short toaRise = rawhit.toaRise();
     unsigned int short toaFall = rawhit.toaFall();
 
-    switch ( rawhit.detid().cellType() ) {
-    default :
-      for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
-        subHG[it] = 0;
-        subLG[it] = 0;
+    for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
+      subHG[it] = 0;
+      subLG[it] = 0;
+    }
+    if( m_subtractCommonMode ){
+      int cmKey = m_subtractCommonModeOption=="chip" ? iski : iboard;
+      switch ( rawhit.detid().cellType() ) {
+      default :
+	break;
+      case 0:
+	for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
+	  subHG[it] = cmMap[cmKey].fullHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+	  subLG[it] = cmMap[cmKey].fullLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+	}
+	break;
+      case 2 :
+	for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
+	  subHG[it] = cmMap[cmKey].halfHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+	  subLG[it] = cmMap[cmKey].halfLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+	}
+	break;
+      case 3 :
+	for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
+	  subHG[it] = cmMap[cmKey].mouseBiteHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+	  subLG[it] = cmMap[cmKey].mouseBiteLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+	}
+	break;
+      case 4 : for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
+	  subHG[it] = cmMap[cmKey].outerHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+	  subLG[it] = cmMap[cmKey].outerLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+	}
+	break;
+      case 5 : for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
+	  subHG[it] = cmMap[cmKey].mergedHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+	  subLG[it] = cmMap[cmKey].mergedLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+	}
+	break;
       }
-    case 0 :
-      for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
-        subHG[it] = m_subtractCommonMode ? cmMap[iski].fullHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] : 0.;
-        subLG[it] = m_subtractCommonMode ? cmMap[iski].fullLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] : 0.;
-      }
-      break;
-    case 2 :
-      for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
-        subHG[it] = m_subtractCommonMode ? cmMap[iski].halfHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] : 0.;
-        subLG[it] = m_subtractCommonMode ? cmMap[iski].halfLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] : 0.;
-      }
-      break;
-    case 3 :
-      for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
-        subHG[it] = m_subtractCommonMode ? cmMap[iski].mouseBiteHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] : 0.;
-        subLG[it] = m_subtractCommonMode ? cmMap[iski].mouseBiteLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] : 0.;
-      }
-      break;
-    case 4 : for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
-        subHG[it] = m_subtractCommonMode ? cmMap[iski].outerHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] : 0.;
-        subLG[it] = m_subtractCommonMode ? cmMap[iski].outerLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] : 0.;
-      }
-      break;
-    case 5 : for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
-        subHG[it] = m_subtractCommonMode ? cmMap[iski].mergedHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] : 0.;
-        subLG[it] = m_subtractCommonMode ? cmMap[iski].mergedLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] : 0.;
-      }
-      break;
     }
     for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
       sampleHG.push_back(rawhit.highGainADC(it) - subHG[it]);

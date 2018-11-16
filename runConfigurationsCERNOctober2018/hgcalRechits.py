@@ -7,44 +7,44 @@ options = VarParsing.VarParsing('standard') # avoid the options: maxEvents, file
 
 
 options.register('dataFile',
-                 '',
+                 '/eos/cms/store/group/dpg_hgcal/tb_hgcal/2018/cern_h2_october/offline_analysis/rawhits/v1/RAWHITS_419.root',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'file containing raw input')
 
 options.register('outputFile',
-                 '',
+                 'toto.root',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
 
 options.register('processedFile',
-                 '',
+                 'rechit.root',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Output file where pedestal histograms are stored')
 
 options.register('NHexaBoards',
-                28,
+                94,
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.int,
                  'Number of hexaboards for analysis.'
                 )
 
 options.register('electronicMap',
-                 '',
+                 'emap_full_October2018_setup1_v5_promptReco.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Name of the electronic map file in HGCal/CondObjects/data/')
 
 options.register('hgcalLayout',
-                 '',
+                 'layer_geom_full_October2018_setup1_v5_promptReco.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Name of the hgcal layout file in HGCal/CondObjects/data/')
 
 options.register('adcCalibrations',
-                 '',
+                 'hgcal_calibration_October2018_JuneCalibForEE.txt',
                  VarParsing.VarParsing.multiplicity.singleton,
                  VarParsing.VarParsing.varType.string,
                  'Name of the hgcal ADC to MIP calibration file in HGCal/CondObjects/data/')
@@ -102,6 +102,7 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         ExpectedMaxTimeSample=cms.untracked.int32(options.ExpectedMaxTimesample),
                                         MaxADCCut=cms.untracked.double(15),
                                         subtractCommonMode=cms.untracked.bool(True),
+                                        subtractCommonModeOption=cms.untracked.string("board_thr"),
                                         commonModeThreshold=cms.untracked.double(100.),
                                         TSForCommonModeNoiseSubtraction=cms.untracked.int32(-1)
 )
