@@ -61,8 +61,13 @@ void HGCalTBRecHitProducer::beginJob()
   else _preselectionMethod = NONE;
   //  std::cout << essource_.adccalibmap_ << std::endl;
 
-  edm::Service<TFileService> fs;
+  if ( m_subtractCommonModeOption == "chip" ) _commonModeSubtractionMethod = CM_PERCHIP;
+  else if ( m_subtractCommonModeOption == "board" ) _commonModeSubtractionMethod = CM_PERBOARD;
+  else if ( m_subtractCommonModeOption == "board_thr" ) _commonModeSubtractionMethod = CM_PERBOARDWITHTHRESHOLD;
+  else _commonModeSubtractionMethod = CM_PERCHIP;
 
+
+  edm::Service<TFileService> fs;
 
   std::ostringstream os( std::ostringstream::ate );
   for (int ib = 0; ib < HGCAL_TB_GEOMETRY::NUMBER_OF_HEXABOARD; ib++) {
@@ -93,11 +98,11 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
   event.getByToken(m_HGCalTBRawHitCollection, rawhits);
 
   CommonMode cm(essource_.emap_);//default is common mode per chip using the median
-  if( m_subtractCommonModeOption=="chip" ){}
-  else if( m_subtractCommonModeOption=="board" )
-    cm=CommonMode(essource_.emap_, true, false); 
-  else if( m_subtractCommonModeOption=="board_thr" )
-    cm=CommonMode(essource_.emap_, false, false, m_commonModeThreshold, m_expectedMaxTimeSample); 
+  if ( _commonModeSubtractionMethod == CM_PERCHIP ) {}
+  else if ( _commonModeSubtractionMethod == CM_PERBOARD )
+    cm = CommonMode(essource_.emap_, true, false);
+  else if ( _commonModeSubtractionMethod == CM_PERBOARDWITHTHRESHOLD )
+    cm = CommonMode(essource_.emap_, false, false, m_commonModeThreshold, m_expectedMaxTimeSample);
 
   if (m_subtractCommonMode) cm.Evaluate( rawhits );
   std::map<int, commonModeNoise> cmMap = cm.CommonModeNoiseMap();
@@ -129,39 +134,39 @@ void HGCalTBRecHitProducer::produce(edm::Event& event, const edm::EventSetup& iS
       subHG[it] = 0;
       subLG[it] = 0;
     }
-    if( m_subtractCommonMode ){
-      int cmKey = m_subtractCommonModeOption=="chip" ? iski : iboard;
+    if ( m_subtractCommonMode ) {
+      int cmKey = _commonModeSubtractionMethod == CM_PERCHIP ? iski : iboard;
       switch ( rawhit.detid().cellType() ) {
       default :
-	break;
+        break;
       case 0:
-	for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
-	  subHG[it] = cmMap[cmKey].fullHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
-	  subLG[it] = cmMap[cmKey].fullLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
-	}
-	break;
+        for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
+          subHG[it] = cmMap[cmKey].fullHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+          subLG[it] = cmMap[cmKey].fullLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+        }
+        break;
       case 2 :
-	for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
-	  subHG[it] = cmMap[cmKey].halfHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
-	  subLG[it] = cmMap[cmKey].halfLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
-	}
-	break;
+        for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
+          subHG[it] = cmMap[cmKey].halfHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+          subLG[it] = cmMap[cmKey].halfLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+        }
+        break;
       case 3 :
-	for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
-	  subHG[it] = cmMap[cmKey].mouseBiteHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
-	  subLG[it] = cmMap[cmKey].mouseBiteLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
-	}
-	break;
+        for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
+          subHG[it] = cmMap[cmKey].mouseBiteHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+          subLG[it] = cmMap[cmKey].mouseBiteLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+        }
+        break;
       case 4 : for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
-	  subHG[it] = cmMap[cmKey].outerHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
-	  subLG[it] = cmMap[cmKey].outerLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
-	}
-	break;
+          subHG[it] = cmMap[cmKey].outerHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+          subLG[it] = cmMap[cmKey].outerLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+        }
+        break;
       case 5 : for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {
-	  subHG[it] = cmMap[cmKey].mergedHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
-	  subLG[it] = cmMap[cmKey].mergedLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
-	}
-	break;
+          subHG[it] = cmMap[cmKey].mergedHG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+          subLG[it] = cmMap[cmKey].mergedLG[(m_TSForCommonModeNoiseSubtraction == -1) ? it : m_TSForCommonModeNoiseSubtraction] ;
+        }
+        break;
       }
     }
     for ( int it = 0; it < NUMBER_OF_TIME_SAMPLES; it++ ) {

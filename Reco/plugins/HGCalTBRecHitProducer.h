@@ -31,6 +31,12 @@ enum PreselectionMethod {
   NONE
 };
 
+enum CommonModeSubtractionMethod {
+  CM_PERBOARD = 0,
+  CM_PERCHIP,
+  CM_PERBOARDWITHTHRESHOLD
+};
+
 class HGCalTBRecHitProducer : public edm::EDProducer
 {
  public:
@@ -63,6 +69,8 @@ class HGCalTBRecHitProducer : public edm::EDProducer
 
   std::string m_preselectionMethod;
   PreselectionMethod _preselectionMethod;
+
+  CommonModeSubtractionMethod _commonModeSubtractionMethod;
 
   struct {
     HGCalElectronicsMap emap_;
