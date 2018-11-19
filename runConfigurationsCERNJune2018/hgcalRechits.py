@@ -93,7 +93,11 @@ process.rechitproducer = cms.EDProducer("HGCalTBRecHitProducer",
                                         ADCCalibrations = cms.untracked.string(adcCalibrations),                                       
                                         calibrationPerChannel=cms.untracked.bool(True),
                                         ExpectedMaxTimeSample=cms.untracked.int32(3),
-                                        MaxADCCut=cms.untracked.double(20)
+                                        MaxADCCut=cms.untracked.double(20),
+                                        subtractCommonMode=cms.untracked.bool(False),
+                                        subtractCommonModeOption=cms.untracked.string("board_thr"),
+                                        commonModeThreshold=cms.untracked.double(100.),
+                                        TSForCommonModeNoiseSubtraction=cms.untracked.int32(-1)
 )
 
 
