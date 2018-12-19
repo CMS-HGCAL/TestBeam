@@ -42,10 +42,30 @@ class HGCalTBBeamWireChamberProducer : public edm::EDProducer{
     short XCET_021507_signal, XCET_021523_signal;
     short scintillator_coincidences;
     short scintillator_vetos;
-    short valid_TS_MCP1, valid_TS_MCP2;
-    float TS_15PercentRise_MCP1; float TS_15PercentRise_MCP2; float TS_30PercentRise_MCP2; float TS_30PercentRise_MCP1; float TS_45PercentRise_MCP1; float TS_45PercentRise_MCP2; float TS_60PercentRise_MCP1; float TS_60PercentRise_MCP2; float amp_MCP1; float amp_MCP2;
-    float TS_MCP1, TS_MCP2, TS_MCP1_to_last_falling_Edge, TS_MCP2_to_last_falling_Edge;
-    
+
+    short valid_TS_MCP1;
+    short valid_TS_MCP2;
+    float noise_MCP1;
+    float noise_MCP2;
+    float TSpeak_MCP1;
+    float TSpeak_MCP2;
+    float amp_MCP1;
+    float amp_MCP2;
+    float ampFit_MCP1;
+    float ampFit_MCP2;
+    float TSfitPeak_MCP1;
+    float TSfitPeak_MCP2;
+    float TScf_MCP1;
+    float TScf_MCP2;
+    float charge5nsS_MCP1;
+    float charge5nsS_MCP2;
+    float charge5nsB_MCP1;
+    float charge5nsB_MCP2;
+    float TS_toClock_FE_MCP1;
+    float TS_toClock_FE_MCP2;
+    float meanClockFE;
+    float rmsClockFE;
+
     TBranch                   *b_run;   
     TBranch                   *b_event;   
     TBranch                   *b_goodDWC_Measurement;   
@@ -79,23 +99,29 @@ class HGCalTBBeamWireChamberProducer : public edm::EDProducer{
     TBranch                   *b_XCET_021523_signal;
     TBranch                   *b_scintillator_coincidences;
     TBranch                   *b_scintillator_vetos;
+
     TBranch                   *b_valid_TS_MCP1;
     TBranch                   *b_valid_TS_MCP2;
-    TBranch                   *b_TS_MCP1;
-    TBranch                   *b_TS_MCP2;
-    TBranch                   *b_TS_15PercentRise_MCP1;
-    TBranch                   *b_TS_15PercentRise_MCP2;
-    TBranch                   *b_TS_30PercentRise_MCP2;
-    TBranch                   *b_TS_30PercentRise_MCP1;
-    TBranch                   *b_TS_45PercentRise_MCP1;
-    TBranch                   *b_TS_45PercentRise_MCP2;
-    TBranch                   *b_TS_60PercentRise_MCP1;
-    TBranch                   *b_TS_60PercentRise_MCP2;
+    TBranch                   *b_noise_MCP1;
+    TBranch                   *b_noise_MCP2;
+    TBranch                   *b_TSpeak_MCP1;
+    TBranch                   *b_TSpeak_MCP2;
     TBranch                   *b_amp_MCP1;
-    TBranch                   *b_amp_MCP2;    
-    TBranch                   *b_TS_MCP1_to_last_falling_Edge;
-    TBranch                   *b_TS_MCP2_to_last_falling_Edge;
-
+    TBranch                   *b_amp_MCP2;
+    TBranch                   *b_ampFit_MCP1;
+    TBranch                   *b_ampFit_MCP2;
+    TBranch                   *b_TSfitPeak_MCP1;
+    TBranch                   *b_TSfitPeak_MCP2;
+    TBranch                   *b_TScf_MCP1;
+    TBranch                   *b_TScf_MCP2;
+    TBranch                   *b_charge5nsS_MCP1;
+    TBranch                   *b_charge5nsS_MCP2;
+    TBranch                   *b_charge5nsB_MCP1;
+    TBranch                   *b_charge5nsB_MCP2;
+    TBranch                   *b_TS_toClock_FE_MCP1;
+    TBranch                   *b_TS_toClock_FE_MCP2;
+    TBranch                   *b_meanClockFE;
+    TBranch                   *b_rmsClockFE;
 
     int loaded_run;
     std::map<int, int> goodDWC_Measurement_loaded;
@@ -136,21 +162,26 @@ class HGCalTBBeamWireChamberProducer : public edm::EDProducer{
 
     std::map<int, short> valid_TS_MCP1_loaded;
     std::map<int, short> valid_TS_MCP2_loaded;
-    std::map<int, float> TS_MCP1_loaded;
-    std::map<int, float> TS_MCP2_loaded;
-    std::map<int, float> TS_15PercentRise_MCP1_loaded;
-    std::map<int, float> TS_15PercentRise_MCP2_loaded;
-    std::map<int, float> TS_30PercentRise_MCP2_loaded;
-    std::map<int, float> TS_30PercentRise_MCP1_loaded;
-    std::map<int, float> TS_45PercentRise_MCP1_loaded;
-    std::map<int, float> TS_45PercentRise_MCP2_loaded;
-    std::map<int, float> TS_60PercentRise_MCP1_loaded;
-    std::map<int, float> TS_60PercentRise_MCP2_loaded;
+    std::map<int, float> noise_MCP1_loaded;
+    std::map<int, float> noise_MCP2_loaded;
+    std::map<int, int> TSpeak_MCP1_loaded;
+    std::map<int, int> TSpeak_MCP2_loaded;
     std::map<int, float> amp_MCP1_loaded;
     std::map<int, float> amp_MCP2_loaded;
-
-    std::map<int, float> TS_MCP1_to_last_falling_Edge_loaded;
-    std::map<int, float> TS_MCP2_to_last_falling_Edge_loaded;
+    std::map<int, float> ampFit_MCP1_loaded;
+    std::map<int, float> ampFit_MCP2_loaded;
+    std::map<int, float> TSfitPeak_MCP1_loaded;
+    std::map<int, float> TSfitPeak_MCP2_loaded;
+    std::map<int, float> TScf_MCP1_loaded;
+    std::map<int, float> TScf_MCP2_loaded;
+    std::map<int, float> charge5nsS_MCP1_loaded;
+    std::map<int, float> charge5nsS_MCP2_loaded;
+    std::map<int, float> charge5nsB_MCP1_loaded;
+    std::map<int, float> charge5nsB_MCP2_loaded;
+    std::map<int, float> TS_toClock_FE_MCP1_loaded;
+    std::map<int, float> TS_toClock_FE_MCP2_loaded;
+    std::map<int, float> meanClockFE_loaded;
+    std::map<int, float> rmsClockFE_loaded;
 
     void loadRun(int loading_run);
 };

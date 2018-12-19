@@ -557,15 +557,16 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 				pedestal_ch7[i] = digi_samples.at(7)->at(i);
 			}
 
+			MCPwaveform mcpX;
 
 			//determine and subtract the baseline for all samples
-			substractBaseline(N_digi_samples, MCP1_waveform, getBaseline(findAbsolutePeak(N_digi_samples, MCP1_waveform, "pos"), MCP1_waveform, 90, -1));
-			substractBaseline(N_digi_samples, MCP2_waveform, getBaseline(findAbsolutePeak(N_digi_samples, MCP2_waveform, "pos"), MCP2_waveform, 90, -1));
-			substractBaseline(N_digi_samples, pedestal_ch4, getBaseline(findAbsolutePeak(N_digi_samples, pedestal_ch4, "pos"), pedestal_ch4, 90, -1));
-			substractBaseline(N_digi_samples, pedestal_ch5, getBaseline(findAbsolutePeak(N_digi_samples, pedestal_ch5, "pos"), pedestal_ch5, 90, -1));
-			substractBaseline(N_digi_samples, pedestal_ch6, getBaseline(findAbsolutePeak(N_digi_samples, pedestal_ch6, "pos"), pedestal_ch6, 90, -1));
-			substractBaseline(N_digi_samples, pedestal_ch7, getBaseline(findAbsolutePeak(N_digi_samples, pedestal_ch7, "pos"), pedestal_ch7, 90, -1));
-
+			//range chosen is 5 - 50
+			mcpX.substractBaseline(N_digi_samples, MCP1_waveform);
+			mcpX.substractBaseline(N_digi_samples, MCP2_waveform);
+			mcpX.substractBaseline(N_digi_samples, pedestal_ch4);
+			mcpX.substractBaseline(N_digi_samples, pedestal_ch5);
+			mcpX.substractBaseline(N_digi_samples, pedestal_ch6);
+			mcpX.substractBaseline(N_digi_samples, pedestal_ch7);
 
 			//step1: obtain common mode noise from inactive channels
 			short* commonBaseline = new short[N_digi_samples];
@@ -583,62 +584,118 @@ void HGCalTBWireChamberSource::produce(edm::Event & event) {
 			short* MCP2_waveform_cleared = new short[N_digi_samples];
 			for (int i = 0; i < N_digi_samples; i++) MCP1_waveform_cleared[i] = +commonBaseline[i] - MCP1_waveform[i];
 			for (int i = 0; i < N_digi_samples; i++) MCP2_waveform_cleared[i] = +commonBaseline[i] - MCP2_waveform[i];
-
-
-			//3. apply gaussian fits around the maximum (+/- 1 sample) and the linear fit to the rising edge
-			peakValues* MCPSignal1 = analysePeak(N_digi_samples, MCP1_waveform_cleared);
-			peakValues* MCPSignal2 = analysePeak(N_digi_samples, MCP2_waveform_cleared);
-#ifdef DEBUG
-			std::cout << "MCP1: " << MCPSignal1->fQuality << "   " << MCPSignal1->peak << "  " << MCPSignal1->amp << "  " << MCPSignal1->amppeak << "  " << MCPSignal1->tpeak << "  " << MCPSignal1->base << "  " << std::endl;
-			std::cout << "MCP2: " << MCPSignal2->fQuality << "   " << MCPSignal2->peak << "  " << MCPSignal2->amp << "  " << MCPSignal2->amppeak << "  " << MCPSignal2->tpeak << "  " << MCPSignal2->base << "  " << std::endl;
-#endif
-
-			//4. determine distance to the prior falling clock edge
-			float priorFallingClockEdge_MCP1 = 0;
-			for (int sample = 2; sample < N_digi_samples - 1; sample++) {
-				if (sample > MCPSignal1->tpeak) break;
-				if ((digi_clock[sample - 2] == 4095) && (digi_clock[sample - 1] > digi_clock[sample]) && (digi_clock[sample] > digi_clock[sample + 1])) {
-					float under3200 = sample + (3200. - digi_clock[sample]) / (digi_clock[sample + 1] - digi_clock[sample]);
-#ifdef DEBUG					
-					std::cout << digi_clock[sample - 1] << "  " << sample << "," << digi_clock[sample] << "  " << sample + 1 << "," << digi_clock[sample + 1] << ": " << under3200 << std::endl;
-#endif					
-					if (sample < MCPSignal1->tpeak) priorFallingClockEdge_MCP1 = under3200;
-				}
-			}
 			
-			float priorFallingClockEdge_MCP2 = 0;
-			for (int sample = 2; sample < N_digi_samples - 1; sample++) {
-				if (sample > MCPSignal2->tpeak) break;
-				if ((digi_clock[sample - 2] == 4095) && (digi_clock[sample - 1] > digi_clock[sample]) && (digi_clock[sample] > digi_clock[sample + 1])) {
-					float under3200 = sample + (3200. - digi_clock[sample]) / (digi_clock[sample + 1] - digi_clock[sample]);
-#ifdef DEBUG					
-					std::cout << digi_clock[sample - 1] << "  " << sample << "," << digi_clock[sample] << "  " << sample + 1 << "," << digi_clock[sample + 1] << ": " << under3200 << std::endl;
-#endif					
-					if (sample < MCPSignal2->tpeak) priorFallingClockEdge_MCP2 = under3200;
-				}
-			}
+			//3. apply pol2 fits around the maximum (+/- 5 sample) 
+			// and the linear fit to the rising edge (with 5 points = 1ns = about the rise time)
+			MCPwaveform* mcp1signl = new MCPwaveform(0, N_digi_samples, MCP1_waveform_cleared, "pos");
+			MCPwaveform* mcp2signl = new MCPwaveform(0, N_digi_samples, MCP2_waveform_cleared, "pos");
+#ifdef DEBUG
+			std::cout << " mcp1 baseline = " << mcp1signl->getBaseline(90, -1) << std::endl;
+			std::cout << " mcp2 baseline = " << mcp2signl->getBaseline(90, -1) << std::endl;
+#endif
+
+			mcp1signl->analysePeak();
+			mcp2signl->analysePeak();
 
 #ifdef DEBUG
-			std::cout << "Falling clock edge: " << priorFallingClockEdge_MCP1 << "  " << priorFallingClockEdge_MCP2 << std::endl;
+			std::cout << "MCP1: " << mcp1signl->getQuality() << " fitAmp " << mcp1signl->getFitAmp() << " amp " << mcp1signl->getAmp()
+				  << " peak = " << mcp1signl->getPeak() << " fit peak = " << mcp1signl->getFitPeak()
+				  << " CF " << mcp1signl->getTimeCF(0.5) << " chargeS " << mcp1signl->getCharge5nsS() 
+				  << " chargeB "   << mcp1signl->getCharge5nsB() << "  " << std::endl;
+
+			std::cout << "MCP2: " << mcp2signl->getQuality() << " fitAmp " << mcp2signl->getFitAmp() << " amp " << mcp2signl->getAmp()
+				  << " peak = " << mcp2signl->getPeak() << " fit peak = " << mcp2signl->getFitPeak()
+				  << " CF " << mcp2signl->getTimeCF(0.5) << " chargeS " << mcp2signl->getCharge5nsS() 
+				  << " chargeB "   << mcp2signl->getCharge5nsB() << "  " << std::endl;
 #endif
+			
+			//timeCF available only for goodQuality waveform (-1 otherwise)
+			//loose goodQuality criteria (amp > 3.*noise && amp > 100.)
+			//not to loose acceptance => need study and tuning for analysis
+			float MCP1sampleTimeCF = mcp1signl->getTimeCF(0.5);
+			float MCP2sampleTimeCF = mcp2signl->getTimeCF(0.5);
+
+
+			//4. extract time stamp from synch board clock 
+			// take mean from 8 falling edges and save also rms 
+			// assume y = A + B x                                       
+			// B = (NSxy Sy - Sx Sy)/(NSxx - SxSx)                      
+			// A = Sy/N - B (Sx/N) = (Sxx Sy - Sx Sxy)/(NSxx - SxSx)    
+			std::vector<float> tsClock_FE_at3200;
+			for(int startSample = 2; startSample < 1000; startSample += 125){
+			  float xx = 0.;
+			  float xy = 0.;
+			  float Sx = 0.;
+			  float Sy = 0.;
+			  float Sxx = 0.;
+			  float Sxy = 0.;
+			  int usedSamples=0;
+			  for (int sample = startSample; sample < N_digi_samples; ++sample){
+			    if(digi_clock[sample] == 4095 && digi_clock[sample+1] < 4095 && digi_clock[sample+2] < 4095){
+			      for(int iSample=sample+1; iSample<sample+5; ++iSample){
+				xx = iSample*iSample;
+				xy = iSample * digi_clock[iSample];
+				Sx += iSample;
+				Sy += digi_clock[iSample];
+				Sxx += xx;
+				Sxy += xy;
+				++usedSamples;
+			      }
+			      break;
+			    }
+			  }
+			  float Delta = usedSamples*Sxx - Sx*Sx;
+			  float a = (Sxx*Sy - Sx*Sxy) / Delta;
+			  float oneOverb = Delta / (usedSamples*Sxy - Sx*Sy);
+			  float ts_at3200 = (3200. - a) * oneOverb;
+			  tsClock_FE_at3200.push_back(ts_at3200);
+			}
+			//just take mean and rms
+			float sum = 0.;
+			float var = 0.;
+			unsigned int FEsize = tsClock_FE_at3200.size();
+			for(unsigned int ij=0; ij<FEsize; ++ij){
+			  sum += (tsClock_FE_at3200.at(ij) - 125*ij) * 0.2;
+			  var += pow((tsClock_FE_at3200.at(ij) - 125*ij) * 0.2, 2.);
+			}
+			float meanClockFE_at3200 = sum/FEsize;
+			float rmsClockFE_at3200 = (FEsize * var - sum*sum) / (FEsize*FEsize);
+
+			//refer time from MCP1 and MCP2 to the same reference
+			float deltaMCP1 = MCP1sampleTimeCF - meanClockFE_at3200/0.2;
+			float deltaMCP2 = MCP2sampleTimeCF - meanClockFE_at3200/0.2;
+			float TS_fromMeanClockFE_MCP1 = deltaMCP1 - int(std::min(deltaMCP1, deltaMCP2)) / 125 * 125.;
+			float TS_fromMeanClockFE_MCP2 = deltaMCP2 - int(std::min(deltaMCP1, deltaMCP2)) / 125 * 125.;
+
 
 			//5. Write to run data object as URs
-			rd->booleanUserRecords.add("valid_TS_MCP1", MCPSignal1->fQuality);
-			rd->booleanUserRecords.add("valid_TS_MCP2", MCPSignal2->fQuality);
-			rd->doubleUserRecords.add("TS_MCP1", 0.2 * MCPSignal1->tpeak);
-			rd->doubleUserRecords.add("TS_MCP2", 0.2 * MCPSignal2->tpeak);
-			rd->doubleUserRecords.add("TS_15PercentRise_MCP1", 0.2 * MCPSignal1->tlinear15);
-			rd->doubleUserRecords.add("TS_15PercentRise_MCP2", 0.2 * MCPSignal2->tlinear15);
-			rd->doubleUserRecords.add("TS_30PercentRise_MCP1", 0.2 * MCPSignal1->tlinear30);
-			rd->doubleUserRecords.add("TS_30PercentRise_MCP2", 0.2 * MCPSignal2->tlinear30);
-			rd->doubleUserRecords.add("TS_45PercentRise_MCP1", 0.2 * MCPSignal1->tlinear45);
-			rd->doubleUserRecords.add("TS_45PercentRise_MCP2", 0.2 * MCPSignal2->tlinear45);
-			rd->doubleUserRecords.add("TS_60PercentRise_MCP1", 0.2 * MCPSignal1->tlinear60);
-			rd->doubleUserRecords.add("TS_60PercentRise_MCP2", 0.2 * MCPSignal2->tlinear60);
-			rd->doubleUserRecords.add("amp_MCP1", MCPSignal1->amppeak);
-			rd->doubleUserRecords.add("amp_MCP2", MCPSignal2->amppeak);			
-			rd->doubleUserRecords.add("TS_MCP1_to_last_falling_Edge", 0.2 * (MCPSignal1->tpeak - priorFallingClockEdge_MCP1));
-			rd->doubleUserRecords.add("TS_MCP2_to_last_falling_Edge", 0.2 * (MCPSignal2->tpeak - priorFallingClockEdge_MCP2));
+			rd->intUserRecords.add("valid_TS_MCP1", mcp1signl->getQuality());
+			rd->intUserRecords.add("valid_TS_MCP2", mcp2signl->getQuality());
+			rd->doubleUserRecords.add("noise_MCP1", mcp1signl->getNoise());
+			rd->doubleUserRecords.add("noise_MCP2", mcp2signl->getNoise());
+			rd->doubleUserRecords.add("TSpeak_MCP1", mcp1signl->getPeak()*0.2);
+			rd->doubleUserRecords.add("TSpeak_MCP2", mcp2signl->getPeak()*0.2);
+			rd->doubleUserRecords.add("amp_MCP1", mcp1signl->getAmp());
+			rd->doubleUserRecords.add("amp_MCP2", mcp2signl->getAmp());
+			rd->doubleUserRecords.add("ampFit_MCP1", mcp1signl->getFitAmp());
+			rd->doubleUserRecords.add("ampFit_MCP2", mcp2signl->getFitAmp());
+			rd->doubleUserRecords.add("TSfitPeak_MCP1", mcp1signl->getFitPeak()*0.2);
+			rd->doubleUserRecords.add("TSfitPeak_MCP2", mcp2signl->getFitPeak()*0.2);
+			rd->doubleUserRecords.add("TScf_MCP1", mcp1signl->getTimeCF(0.5)*0.2);
+			rd->doubleUserRecords.add("TScf_MCP2", mcp2signl->getTimeCF(0.5)*0.2);
+
+			rd->doubleUserRecords.add("charge5nsS_MCP1", mcp1signl->getCharge5nsS());
+			rd->doubleUserRecords.add("charge5nsS_MCP2", mcp2signl->getCharge5nsS());
+			rd->doubleUserRecords.add("charge5nsB_MCP1", mcp1signl->getCharge5nsB());
+			rd->doubleUserRecords.add("charge5nsB_MCP2", mcp2signl->getCharge5nsB());
+
+			rd->doubleUserRecords.add("TS_toClock_FE_MCP1", TS_fromMeanClockFE_MCP1*0.2);
+			rd->doubleUserRecords.add("TS_toClock_FE_MCP2", TS_fromMeanClockFE_MCP2*0.2);
+			rd->doubleUserRecords.add("meanClockFE", meanClockFE_at3200);
+			rd->doubleUserRecords.add("rmsClockFE", rmsClockFE_at3200);
+
+			delete mcp1signl;
+			delete mcp2signl;
 		}
 	}
 
