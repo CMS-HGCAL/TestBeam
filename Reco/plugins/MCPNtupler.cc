@@ -50,21 +50,26 @@ private:
 
     short valid_TS_MCP1;
     short valid_TS_MCP2;
-    float TS_MCP1;
-    float TS_MCP2;
-    float TS_15PercentRise_MCP1;
-    float TS_15PercentRise_MCP2;
-    float TS_30PercentRise_MCP2;
-    float TS_30PercentRise_MCP1;
-    float TS_45PercentRise_MCP1;
-    float TS_45PercentRise_MCP2;
-    float TS_60PercentRise_MCP1;
-    float TS_60PercentRise_MCP2;
+    float noise_MCP1;
+    float noise_MCP2;
+    float TSpeak_MCP1;
+    float TSpeak_MCP2;
     float amp_MCP1;
-    float amp_MCP2;    
-    float TS_MCP1_to_last_falling_Edge;
-    float TS_MCP2_to_last_falling_Edge;
-
+    float amp_MCP2;
+    float ampFit_MCP1;
+    float ampFit_MCP2;
+    float TSfitPeak_MCP1;
+    float TSfitPeak_MCP2;
+    float TScf_MCP1;
+    float TScf_MCP2;
+    float charge5nsS_MCP1;
+    float charge5nsS_MCP2;
+    float charge5nsB_MCP1;
+    float charge5nsB_MCP2;
+    float TS_toClock_FE_MCP1;
+    float TS_toClock_FE_MCP2;
+    float meanClockFE;
+    float rmsClockFE;
 };
 
 void MCPNtupler::clearVariables() {
@@ -87,24 +92,29 @@ MCPNtupler::MCPNtupler(const edm::ParameterSet& iConfig)
     // event info
     tree_->Branch("event", &ev_event_);
     tree_->Branch("run", &ev_run_);
+
     tree_->Branch("valid_TS_MCP1", &valid_TS_MCP1);
     tree_->Branch("valid_TS_MCP2", &valid_TS_MCP2);
-    tree_->Branch("TS_MCP1", &TS_MCP1);
-    tree_->Branch("TS_MCP2", &TS_MCP2);
-    tree_->Branch("TS_15PercentRise_MCP1", &TS_15PercentRise_MCP1);
-    tree_->Branch("TS_15PercentRise_MCP2", &TS_15PercentRise_MCP2);
-    tree_->Branch("TS_30PercentRise_MCP2", &TS_30PercentRise_MCP2);
-    tree_->Branch("TS_30PercentRise_MCP1", &TS_30PercentRise_MCP1);
-    tree_->Branch("TS_45PercentRise_MCP1", &TS_45PercentRise_MCP1);
-    tree_->Branch("TS_45PercentRise_MCP2", &TS_45PercentRise_MCP2);
-    tree_->Branch("TS_60PercentRise_MCP1", &TS_60PercentRise_MCP1);
-    tree_->Branch("TS_60PercentRise_MCP2", &TS_60PercentRise_MCP2);
+    tree_->Branch("noise_MCP1", &noise_MCP1);
+    tree_->Branch("noise_MCP2", &noise_MCP2);
+    tree_->Branch("TSpeak_MCP1", &TSpeak_MCP1); 
+    tree_->Branch("TSpeak_MCP2", &TSpeak_MCP2); 
     tree_->Branch("amp_MCP1", &amp_MCP1);
-    tree_->Branch("amp_MCP2", &amp_MCP2);    
-
-    tree_->Branch("TS_MCP1_to_last_falling_Edge", &TS_MCP1_to_last_falling_Edge);
-    tree_->Branch("TS_MCP2_to_last_falling_Edge", &TS_MCP2_to_last_falling_Edge);
-
+    tree_->Branch("amp_MCP2", &amp_MCP2);
+    tree_->Branch("ampFit_MCP1", &ampFit_MCP1);
+    tree_->Branch("ampFit_MCP2", &ampFit_MCP2);
+    tree_->Branch("TSfitPeak_MCP1", &TSfitPeak_MCP1);
+    tree_->Branch("TSfitPeak_MCP2", &TSfitPeak_MCP2);
+    tree_->Branch("TScf_MCP1", &TScf_MCP1);
+    tree_->Branch("TScf_MCP2", &TScf_MCP2);
+    tree_->Branch("charge5nsS_MCP1", &charge5nsS_MCP1);
+    tree_->Branch("charge5nsS_MCP2", &charge5nsS_MCP2);
+    tree_->Branch("charge5nsB_MCP1", &charge5nsB_MCP1);
+    tree_->Branch("charge5nsB_MCP2", &charge5nsB_MCP2);
+    tree_->Branch("TS_toClock_FE_MCP1", &TS_toClock_FE_MCP1);
+    tree_->Branch("TS_toClock_FE_MCP2", &TS_toClock_FE_MCP2);
+    tree_->Branch("meanClockFE", &meanClockFE);
+    tree_->Branch("rmsClockFE", &rmsClockFE);
 }
 
 
@@ -126,22 +136,29 @@ void MCPNtupler::analyze(const edm::Event& event, const edm::EventSetup& setup)
     ev_run_ = rd->run;
     ev_event_ = rd->event;
 
-    if (rd->intUserRecords.has("valid_TS_MCP1")) valid_TS_MCP1 = rd->intUserRecords.get("valid_TS_MCP1"); else valid_TS_MCP1 = -999;
-    if (rd->intUserRecords.has("valid_TS_MCP2")) valid_TS_MCP2 = rd->intUserRecords.get("valid_TS_MCP2"); else valid_TS_MCP2 = -999;
-    if (rd->doubleUserRecords.has("TS_15PercentRise_MCP1")) TS_15PercentRise_MCP1 = rd->doubleUserRecords.get("TS_15PercentRise_MCP1"); else TS_15PercentRise_MCP1 = -999;
-    if (rd->doubleUserRecords.has("TS_15PercentRise_MCP2")) TS_15PercentRise_MCP2 = rd->doubleUserRecords.get("TS_15PercentRise_MCP2"); else TS_15PercentRise_MCP2 = -999;
-    if (rd->doubleUserRecords.has("TS_30PercentRise_MCP2")) TS_30PercentRise_MCP2 = rd->doubleUserRecords.get("TS_30PercentRise_MCP2"); else TS_30PercentRise_MCP2 = -999;
-    if (rd->doubleUserRecords.has("TS_30PercentRise_MCP1")) TS_30PercentRise_MCP1 = rd->doubleUserRecords.get("TS_30PercentRise_MCP1"); else TS_30PercentRise_MCP1 = -999;
-    if (rd->doubleUserRecords.has("TS_45PercentRise_MCP1")) TS_45PercentRise_MCP1 = rd->doubleUserRecords.get("TS_45PercentRise_MCP1"); else TS_45PercentRise_MCP1 = -999;
-    if (rd->doubleUserRecords.has("TS_45PercentRise_MCP2")) TS_45PercentRise_MCP2 = rd->doubleUserRecords.get("TS_45PercentRise_MCP2"); else TS_45PercentRise_MCP2 = -999;
-    if (rd->doubleUserRecords.has("TS_60PercentRise_MCP1")) TS_60PercentRise_MCP1 = rd->doubleUserRecords.get("TS_60PercentRise_MCP1"); else TS_60PercentRise_MCP1 = -999;
-    if (rd->doubleUserRecords.has("TS_60PercentRise_MCP2")) TS_60PercentRise_MCP2 = rd->doubleUserRecords.get("TS_60PercentRise_MCP2"); else TS_60PercentRise_MCP2 = -999;
-    if (rd->doubleUserRecords.has("amp_MCP1")) amp_MCP1 = rd->doubleUserRecords.get("amp_MCP1"); else amp_MCP1 = -999;
-    if (rd->doubleUserRecords.has("amp_MCP2")) amp_MCP2 = rd->doubleUserRecords.get("amp_MCP2"); else amp_MCP2 = -999;    
-    if (rd->doubleUserRecords.has("TS_MCP1")) TS_MCP1 = rd->doubleUserRecords.get("TS_MCP1"); else TS_MCP1 = -999;
-    if (rd->doubleUserRecords.has("TS_MCP2")) TS_MCP2 = rd->doubleUserRecords.get("TS_MCP2"); else TS_MCP2 = -999;
-    if (rd->doubleUserRecords.has("TS_MCP1_to_last_falling_Edge")) TS_MCP1_to_last_falling_Edge = rd->doubleUserRecords.get("TS_MCP1_to_last_falling_Edge"); else TS_MCP1_to_last_falling_Edge = -999;
-    if (rd->doubleUserRecords.has("TS_MCP2_to_last_falling_Edge")) TS_MCP2_to_last_falling_Edge = rd->doubleUserRecords.get("TS_MCP2_to_last_falling_Edge"); else TS_MCP2_to_last_falling_Edge = -999;
+
+    valid_TS_MCP1 = (rd->intUserRecords.has("valid_TS_MCP1")) ? rd->intUserRecords.get("valid_TS_MCP1") : -999;
+    valid_TS_MCP2 = (rd->intUserRecords.has("valid_TS_MCP2")) ? rd->intUserRecords.get("valid_TS_MCP2") : -999;
+    noise_MCP1 = (rd->doubleUserRecords.has("noise_MCP1")) ? rd->doubleUserRecords.get("noise_MCP1") : -999;
+    noise_MCP2 = (rd->doubleUserRecords.has("noise_MCP2")) ? rd->doubleUserRecords.get("noise_MCP2") : -999;
+    TSpeak_MCP1 = (rd->doubleUserRecords.has("TSpeak_MCP1")) ? rd->doubleUserRecords.get("TSpeak_MCP1") : -999;
+    TSpeak_MCP2 = (rd->doubleUserRecords.has("TSpeak_MCP2")) ? rd->doubleUserRecords.get("TSpeak_MCP2") : -999;
+    amp_MCP1 = (rd->doubleUserRecords.has("amp_MCP1")) ? rd->doubleUserRecords.get("amp_MCP1") : -999;
+    amp_MCP2 = (rd->doubleUserRecords.has("amp_MCP2")) ? rd->doubleUserRecords.get("amp_MCP2") : -999;
+    ampFit_MCP1 = (rd->doubleUserRecords.has("ampFit_MCP1")) ? rd->doubleUserRecords.get("ampFit_MCP1") : -999;
+    ampFit_MCP2 = (rd->doubleUserRecords.has("ampFit_MCP2")) ? rd->doubleUserRecords.get("ampFit_MCP2") : -999;
+    TSfitPeak_MCP1 = (rd->doubleUserRecords.has("TSfitPeak_MCP1")) ? rd->doubleUserRecords.get("TSfitPeak_MCP1") : -999;
+    TSfitPeak_MCP2 = (rd->doubleUserRecords.has("TSfitPeak_MCP2")) ? rd->doubleUserRecords.get("TSfitPeak_MCP2") : -999;
+    TScf_MCP1 = (rd->doubleUserRecords.has("TScf_MCP1")) ? rd->doubleUserRecords.get("TScf_MCP1") : -999;
+    TScf_MCP2 = (rd->doubleUserRecords.has("TScf_MCP2")) ? rd->doubleUserRecords.get("TScf_MCP2") : -999;
+    charge5nsS_MCP1 = (rd->doubleUserRecords.has("charge5nsS_MCP1")) ? rd->doubleUserRecords.get("charge5nsS_MCP1") : -999;
+    charge5nsS_MCP2 = (rd->doubleUserRecords.has("charge5nsS_MCP2")) ? rd->doubleUserRecords.get("charge5nsS_MCP2") : -999;
+    charge5nsB_MCP1 = (rd->doubleUserRecords.has("charge5nsB_MCP1")) ? rd->doubleUserRecords.get("charge5nsB_MCP1") : -999;
+    charge5nsB_MCP2 = (rd->doubleUserRecords.has("charge5nsB_MCP2")) ? rd->doubleUserRecords.get("charge5nsB_MCP2") : -999;
+    TS_toClock_FE_MCP1 = (rd->doubleUserRecords.has("TS_toClock_FE_MCP1")) ? rd->doubleUserRecords.get("TS_toClock_FE_MCP1") : -999;
+    TS_toClock_FE_MCP2 = (rd->doubleUserRecords.has("TS_toClock_FE_MCP2")) ? rd->doubleUserRecords.get("TS_toClock_FE_MCP2") : -999;
+    meanClockFE = (rd->doubleUserRecords.has("meanClockFE")) ? rd->doubleUserRecords.get("meanClockFE") : -999;
+    rmsClockFE = (rd->doubleUserRecords.has("rmsClockFE")) ? rd->doubleUserRecords.get("rmsClockFE") : -999;
 
     tree_->Fill();
 }

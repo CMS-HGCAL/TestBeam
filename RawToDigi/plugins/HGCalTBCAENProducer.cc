@@ -61,21 +61,26 @@ void HGCalTBBeamWireChamberProducer::beginJob() {
     tree->SetBranchAddress("N_scintillator_veto_timestamps", &scintillator_vetos, &b_scintillator_vetos);
     tree->SetBranchAddress("valid_TS_MCP1", &valid_TS_MCP1, &b_valid_TS_MCP1);
     tree->SetBranchAddress("valid_TS_MCP2", &valid_TS_MCP2, &b_valid_TS_MCP2);
-    tree->SetBranchAddress("TS_15PercentRise_MCP1", &TS_15PercentRise_MCP1, &b_TS_15PercentRise_MCP1);
-    tree->SetBranchAddress("TS_15PercentRise_MCP2", &TS_15PercentRise_MCP2, &b_TS_15PercentRise_MCP2);
-    tree->SetBranchAddress("TS_30PercentRise_MCP1", &TS_30PercentRise_MCP1, &b_TS_30PercentRise_MCP1);
-    tree->SetBranchAddress("TS_30PercentRise_MCP2", &TS_30PercentRise_MCP2, &b_TS_30PercentRise_MCP2);
-    tree->SetBranchAddress("TS_45PercentRise_MCP1", &TS_45PercentRise_MCP1, &b_TS_45PercentRise_MCP1);
-    tree->SetBranchAddress("TS_45PercentRise_MCP2", &TS_45PercentRise_MCP2, &b_TS_45PercentRise_MCP2);
-    tree->SetBranchAddress("TS_60PercentRise_MCP1", &TS_60PercentRise_MCP1, &b_TS_60PercentRise_MCP1);
-    tree->SetBranchAddress("TS_60PercentRise_MCP2", &TS_60PercentRise_MCP2, &b_TS_60PercentRise_MCP2);
+    tree->SetBranchAddress("noise_MCP1", &noise_MCP1, &b_noise_MCP1);
+    tree->SetBranchAddress("noise_MCP2", &noise_MCP2, &b_noise_MCP1);
+    tree->SetBranchAddress("TSpeak_MCP1", &TSpeak_MCP1, &b_TSpeak_MCP1);
+    tree->SetBranchAddress("TSpeak_MCP2", &TSpeak_MCP2, &b_TSpeak_MCP2);
     tree->SetBranchAddress("amp_MCP1", &amp_MCP1, &b_amp_MCP1);
     tree->SetBranchAddress("amp_MCP2", &amp_MCP2, &b_amp_MCP2);
-
-    tree->SetBranchAddress("TS_MCP1", &TS_MCP1, &b_TS_MCP1);
-    tree->SetBranchAddress("TS_MCP2", &TS_MCP2, &b_TS_MCP2);
-    tree->SetBranchAddress("TS_MCP1_to_last_falling_Edge", &TS_MCP1_to_last_falling_Edge, &b_TS_MCP1_to_last_falling_Edge);
-    tree->SetBranchAddress("TS_MCP2_to_last_falling_Edge", &TS_MCP2_to_last_falling_Edge, &b_TS_MCP2_to_last_falling_Edge);
+    tree->SetBranchAddress("ampFit_MCP1", &ampFit_MCP1, &b_ampFit_MCP1);
+    tree->SetBranchAddress("ampFit_MCP2", &ampFit_MCP2, &b_ampFit_MCP2);
+    tree->SetBranchAddress("TSfitPeak_MCP1", &TSfitPeak_MCP1, &b_TSfitPeak_MCP1);
+    tree->SetBranchAddress("TSfitPeak_MCP2", &TSfitPeak_MCP2, &b_TSfitPeak_MCP2);
+    tree->SetBranchAddress("TScf_MCP1", &TScf_MCP1, &b_TScf_MCP1);
+    tree->SetBranchAddress("TScf_MCP2", &TScf_MCP2, &b_TScf_MCP2);
+    tree->SetBranchAddress("charge5nsS_MCP1", &charge5nsS_MCP1, &b_charge5nsS_MCP1);
+    tree->SetBranchAddress("charge5nsS_MCP2", &charge5nsS_MCP2, &b_charge5nsS_MCP2);
+    tree->SetBranchAddress("charge5nsB_MCP1", &charge5nsB_MCP1, &b_charge5nsB_MCP1);
+    tree->SetBranchAddress("charge5nsB_MCP2", &charge5nsB_MCP2, &b_charge5nsB_MCP2);
+    tree->SetBranchAddress("TS_toClock_FE_MCP1", &TS_toClock_FE_MCP1, &b_TS_toClock_FE_MCP1);
+    tree->SetBranchAddress("TS_toClock_FE_MCP2", &TS_toClock_FE_MCP2, &b_TS_toClock_FE_MCP2);
+    tree->SetBranchAddress("meanClockFE", &meanClockFE, &b_meanClockFE);
+    tree->SetBranchAddress("rmsClockFE", &rmsClockFE, &b_rmsClockFE);
 
     loaded_run = -1;
 }
@@ -219,22 +224,28 @@ void HGCalTBBeamWireChamberProducer::produce(edm::Event& event, const edm::Event
             rd_full->intUserRecords.add("scintillator_coincidence_timestamps", scintillator_coincidences_loaded[event_nr]);
             rd_full->intUserRecords.add("scintillator_coincidence_timestamps", scintillator_vetos_loaded[event_nr]);
             //MCPs
-            rd_full->intUserRecords.add("valid_TS_MCP1", valid_TS_MCP1_loaded[event_nr]);
-            rd_full->intUserRecords.add("valid_TS_MCP2", valid_TS_MCP2_loaded[event_nr]);
-            rd_full->doubleUserRecords.add("TS_MCP1", TS_MCP1_loaded[event_nr]);
-            rd_full->doubleUserRecords.add("TS_MCP2", TS_MCP2_loaded[event_nr]);
-            rd_full->doubleUserRecords.add("TS_15PercentRise_MCP1", TS_15PercentRise_MCP1_loaded[event_nr]);
-            rd_full->doubleUserRecords.add("TS_15PercentRise_MCP2", TS_15PercentRise_MCP2_loaded[event_nr]);
-            rd_full->doubleUserRecords.add("TS_30PercentRise_MCP2", TS_30PercentRise_MCP2_loaded[event_nr]);
-            rd_full->doubleUserRecords.add("TS_30PercentRise_MCP1", TS_30PercentRise_MCP1_loaded[event_nr]);
-            rd_full->doubleUserRecords.add("TS_45PercentRise_MCP1", TS_45PercentRise_MCP1_loaded[event_nr]);
-            rd_full->doubleUserRecords.add("TS_45PercentRise_MCP2", TS_45PercentRise_MCP2_loaded[event_nr]);
-            rd_full->doubleUserRecords.add("TS_60PercentRise_MCP1", TS_60PercentRise_MCP1_loaded[event_nr]);
-            rd_full->doubleUserRecords.add("TS_60PercentRise_MCP2", TS_60PercentRise_MCP2_loaded[event_nr]);
-            rd_full->doubleUserRecords.add("amp_MCP1", amp_MCP1_loaded[event_nr]);
-            rd_full->doubleUserRecords.add("amp_MCP2", amp_MCP2_loaded[event_nr]);
-            rd_full->doubleUserRecords.add("TS_MCP1_to_last_falling_Edge", TS_MCP1_to_last_falling_Edge_loaded[event_nr]);
-            rd_full->doubleUserRecords.add("TS_MCP2_to_last_falling_Edge", TS_MCP2_to_last_falling_Edge_loaded[event_nr]);
+	    rd_full->intUserRecords.add("valid_TS_MCP1", valid_TS_MCP1_loaded[event_nr]);
+	    rd_full->intUserRecords.add("valid_TS_MCP2", valid_TS_MCP2_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("noise_MCP1", noise_MCP1_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("noise_MCP2", noise_MCP2_loaded[event_nr]); 
+	    rd_full->doubleUserRecords.add("TSpeak_MCP1", TSpeak_MCP1_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("TSpeak_MCP2", TSpeak_MCP2_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("amp_MCP1", amp_MCP1_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("amp_MCP2", amp_MCP2_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("ampFit_MCP1", ampFit_MCP1_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("ampFit_MCP2", ampFit_MCP2_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("TSfitPeak_MCP1", TSfitPeak_MCP1_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("TSfitPeak_MCP2", TSfitPeak_MCP2_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("TScf_MCP1", TScf_MCP1_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("TScf_MCP2", TScf_MCP2_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("charge5nsS_MCP1", charge5nsS_MCP1_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("charge5nsS_MCP2", charge5nsS_MCP2_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("charge5nsB_MCP1", charge5nsB_MCP1_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("charge5nsB_MCP2", charge5nsB_MCP2_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("TS_toClock_FE_MCP1", TS_toClock_FE_MCP1_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("TS_toClock_FE_MCP2", TS_toClock_FE_MCP2_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("meanClockFE", meanClockFE_loaded[event_nr]);
+	    rd_full->doubleUserRecords.add("rmsClockFE", rmsClockFE_loaded[event_nr]);
         }
     }
     (*dwcs)[0] = *dwc1;
@@ -258,9 +269,29 @@ void HGCalTBBeamWireChamberProducer::loadRun(int loading_run) {
     reco3_x_loaded.clear(); reco3_y_loaded.clear(); z3_loaded.clear(); averageHitMultiplicty3_loaded.clear();
     reco4_x_loaded.clear(); reco4_y_loaded.clear(); z4_loaded.clear(); averageHitMultiplicty4_loaded.clear();
     XCET_021507_signal_loaded.clear(); XCET_021523_signal_loaded.clear(); scintillator_coincidences_loaded.clear(); scintillator_vetos_loaded.clear();
-    valid_TS_MCP1_loaded.clear(); valid_TS_MCP2_loaded.clear();
-    TS_15PercentRise_MCP1_loaded.clear(); TS_15PercentRise_MCP2_loaded.clear(); TS_30PercentRise_MCP2_loaded.clear(); TS_30PercentRise_MCP1_loaded.clear(); TS_45PercentRise_MCP1_loaded.clear(); TS_45PercentRise_MCP2_loaded.clear(); TS_60PercentRise_MCP1_loaded.clear(); TS_60PercentRise_MCP2_loaded.clear(); amp_MCP1_loaded.clear(); amp_MCP2_loaded.clear();
-    TS_MCP1_loaded.clear(); TS_MCP2_loaded.clear(); TS_MCP1_to_last_falling_Edge_loaded.clear(); TS_MCP2_to_last_falling_Edge_loaded.clear();
+
+    valid_TS_MCP1_loaded.clear();
+    valid_TS_MCP2_loaded.clear();
+    noise_MCP1_loaded.clear();
+    noise_MCP2_loaded.clear();
+    TSpeak_MCP1_loaded.clear();
+    TSpeak_MCP2_loaded.clear();
+    amp_MCP1_loaded.clear();
+    amp_MCP2_loaded.clear();
+    ampFit_MCP1_loaded.clear();
+    ampFit_MCP2_loaded.clear();
+    TSfitPeak_MCP1_loaded.clear();
+    TSfitPeak_MCP2_loaded.clear();
+    TScf_MCP1_loaded.clear();
+    TScf_MCP2_loaded.clear();
+    charge5nsS_MCP1_loaded.clear();
+    charge5nsS_MCP2_loaded.clear();
+    charge5nsB_MCP1_loaded.clear();
+    charge5nsB_MCP2_loaded.clear();
+    TS_toClock_FE_MCP1_loaded.clear();
+    TS_toClock_FE_MCP2_loaded.clear();
+    meanClockFE_loaded.clear();
+    rmsClockFE_loaded.clear();
 
     if (tree == NULL) return;
 
@@ -312,22 +343,28 @@ void HGCalTBBeamWireChamberProducer::loadRun(int loading_run) {
         scintillator_coincidences_loaded[eventId] = scintillator_coincidences;
         scintillator_vetos_loaded[eventId] = scintillator_vetos;
 
-        valid_TS_MCP1_loaded[eventId] = valid_TS_MCP1;
-        valid_TS_MCP2_loaded[eventId] = valid_TS_MCP2;
-        TS_MCP1_loaded[eventId] = TS_MCP1;
-        TS_MCP2_loaded[eventId] = TS_MCP2;
-        TS_15PercentRise_MCP1_loaded[eventId] = TS_15PercentRise_MCP1;
-        TS_15PercentRise_MCP2_loaded[eventId] = TS_15PercentRise_MCP2;
-        TS_30PercentRise_MCP2_loaded[eventId] = TS_30PercentRise_MCP2;
-        TS_30PercentRise_MCP1_loaded[eventId] = TS_30PercentRise_MCP1;
-        TS_45PercentRise_MCP1_loaded[eventId] = TS_45PercentRise_MCP1;
-        TS_45PercentRise_MCP2_loaded[eventId] = TS_45PercentRise_MCP2;
-        TS_60PercentRise_MCP1_loaded[eventId] = TS_60PercentRise_MCP1;
-        TS_60PercentRise_MCP2_loaded[eventId] = TS_60PercentRise_MCP2;
-        amp_MCP1_loaded[eventId] = amp_MCP1;
-        amp_MCP2_loaded[eventId] = amp_MCP2;
-        TS_MCP1_to_last_falling_Edge_loaded[eventId] = TS_MCP1_to_last_falling_Edge;
-        TS_MCP2_to_last_falling_Edge_loaded[eventId] = TS_MCP2_to_last_falling_Edge;
+	valid_TS_MCP1_loaded[eventId] = valid_TS_MCP1;
+	valid_TS_MCP2_loaded[eventId] = valid_TS_MCP2;
+	noise_MCP1_loaded[eventId] = noise_MCP1;
+	noise_MCP2_loaded[eventId] = noise_MCP2;
+	TSpeak_MCP1_loaded[eventId] = TSpeak_MCP1;
+	TSpeak_MCP2_loaded[eventId] = TSpeak_MCP2;
+	amp_MCP1_loaded[eventId] = amp_MCP1;
+	amp_MCP2_loaded[eventId] = amp_MCP2;
+	ampFit_MCP1_loaded[eventId] = ampFit_MCP1;
+	ampFit_MCP2_loaded[eventId] = ampFit_MCP2;
+	TSfitPeak_MCP1_loaded[eventId] = TSfitPeak_MCP1;
+	TSfitPeak_MCP2_loaded[eventId] = TSfitPeak_MCP2;
+	TScf_MCP1_loaded[eventId] = TScf_MCP1;
+	TScf_MCP2_loaded[eventId] = TScf_MCP2;
+	charge5nsS_MCP1_loaded[eventId] = charge5nsS_MCP1;
+	charge5nsS_MCP2_loaded[eventId] = charge5nsS_MCP2;
+	charge5nsB_MCP1_loaded[eventId] = charge5nsB_MCP1;
+	charge5nsB_MCP2_loaded[eventId] = charge5nsB_MCP2;
+	TS_toClock_FE_MCP1_loaded[eventId] = TS_toClock_FE_MCP1;
+	TS_toClock_FE_MCP2_loaded[eventId] = TS_toClock_FE_MCP2;
+	meanClockFE_loaded[eventId] = meanClockFE;
+	rmsClockFE_loaded[eventId] = rmsClockFE;
     }
 #ifdef DEBUG
     std::cout << "Loaded run " << loading_run << std::endl;
